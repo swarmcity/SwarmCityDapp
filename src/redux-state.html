@@ -1,0 +1,34 @@
+<script src="../node_modules/redux/dist/redux.min.js"></script>
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<script>
+let initialState = {
+    language: 'en',
+};
+
+let reducer = function(state, action) {
+    if (!state) {
+        return initialState;
+    }
+    switch (action.type) {
+        case 'LOCATION': {
+            let location = state.location;
+            location = action.location;
+            return Object.assign({}, state, {
+                location: location,
+            });
+        }
+        case 'LANGUAGE': {
+            let language = state.language;
+            language = action.language;
+            return Object.assign({}, state, {
+                language: language,
+            });
+            
+        }
+    }
+};
+const store = Redux.createStore(reducer, /* preloadedState, */
+    window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
+ReduxMixin = new PolymerRedux(store);
+</script>

@@ -1,0 +1,189 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../displays/display-language.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-language">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .close {
+                @apply --xmark-grey4-small;
+                @apply --close;
+            }
+
+            .container[wide-layout] .close {
+                @apply --close-wide;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+            }
+
+            .title {
+                @apply --body-default;
+                position: fixed;
+                margin-top: 100px;
+            }
+
+            .header {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                background-color: #F4F4F4;
+                box-sizing: border-box;
+                height: 180px;
+                position: fixed;
+                top: 0;
+                width: 100vw;
+            }
+
+
+            display-language {
+                width: 80vw;
+                max-width: 375px;
+                margin-top: 180px;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start;
+            }
+
+
+            .container[wide-layout] .header {
+                @apply --layout-vertical;
+                @apply --layout-start;
+            }
+
+            .container[wide-layout] .title {
+                margin-left: 10vw;
+            }
+
+            .container[wide-layout] display-language {
+                margin-left: 10vw;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="header">
+                <div class="close" on-click="_changePage"></div>
+                <div class="title">{{localize('Choose a language')}}</div>
+            </div>
+            <div class="list">
+                <display-language buttons path="{{path}}" id="displayLanguage"></display-language>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class MyLanguage extends new ReduxMixin(Polymer.mixinBehaviors([
+                Polymer.AppLocalizeBehavior,
+            ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-language';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Location is the page path the user is on
+                    * @type {String}
+                    */
+                    location: {
+                        type: String,
+                        statePath: 'location',
+                        observer: '_entryAnimation',
+                    },
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * location checks if the user is on this page and fires the entry animation
+            */
+            _entryAnimation() {
+                if (this.location.nowAt == 'language') {
+                    this.$.displayLanguage.animate(
+                    [
+                        {'transform': 'translateY(-100%)'},
+                        {'transform': 'translate(0)'},
+                    ], {
+                        fill: 'none',
+                        duration: 300,
+                        iterations: 1,
+                        easing: 'cubic-bezier(0.177,0,0.086,1)',
+                        delay: 0,
+                    }
+                    );
+                }
+            }
+            /**
+            * changes the current path to welcome-page when X is seclected
+            */
+            _exitAnimation() {
+                const exitAnim = this.$.displayLanguage.animate(
+                    [
+                        {'transform': 'translate(0)'},
+                        {'transform': 'translateY(-100%)'},
+                    ], {
+                        fill: 'none',
+                        duration: 300,
+                        iterations: 1,
+                        easing: 'cubic-bezier(0.177,0,0.086,1)',
+                        delay: 0,
+                    }
+                    );
+                    exitAnim.onfinish = this._changePage.bind(this);
+            }
+            _changePage() {
+                this.set('route.path', 'welcome/');
+            }
+            /**
+            * triggered after the user selects a language
+            */
+            _path() {
+                if (this.path) {
+                    this.set('route.path', 'welcome/');
+                }
+            }
+        }
+        window.customElements.define(MyLanguage.is, MyLanguage);
+    </script>
+</dom-module>

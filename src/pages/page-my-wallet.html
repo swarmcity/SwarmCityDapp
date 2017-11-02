@@ -1,0 +1,248 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-transaction-status.html">
+
+<dom-module id="page-my-wallet">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+    -->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                width: 100vw;
+                max-width: 100%;
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+                width: 100%;
+                min-height: 100vh;
+                max-width: 100%;
+                box-sizing: border-box;
+                padding: 0 14vw;
+                overflow: auto;
+            }
+
+            .container[wide-layout] {
+                padding: 0 12vw;
+            }
+
+            .top {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 100px 0 0 0;
+                width: 100%;
+            }
+
+            .container[wide-layout] .top {
+                @apply --layout-start;
+            }
+
+            .close {
+                @apply --xmark-grey3-small;
+                @apply --close;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .divider {
+                width: 100vw;
+                background-color: #9B9B9B;
+                opacity: 0.2;
+                height: 1px;
+            }
+
+            .yellowbox {
+                color: var(--sc-yellow);
+            }
+
+            .container[wide-layout] .yellowbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .swt {
+                @apply --main-title1;
+            }
+
+            .fiat {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --body-bold;
+                margin: 1vh 0 0 0;
+            }
+
+            .container[wide-layout] .fiat {
+                margin: 0 0 0 1vw;
+            }
+
+            .eth {
+                @apply --body-detail;
+                margin: 2vh 0 5vh 0;
+                color: var(--sc-grey3);
+            }
+
+            .middle {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                width: 100%;
+                height: 100%;
+            }
+
+            display-transaction-status {
+                box-sizing: border-box;
+                padding: 5vh 0;
+            }
+
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding-top: 4vh;
+            }
+
+            .pubkey {
+                @apply --small-light;
+                color: var(--sc-grey3);
+                margin: 5vh 0 0 0;
+            }
+
+            .container[wide-layout] .pubkey {
+                margin: 0 0 0 0;
+            }
+
+            .bluetext {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin: 1vh 0 0 0;
+            }
+
+            .container[wide-layout] .bluetext {
+                margin: 0 0 0 25px;
+            }
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="close" on-click="_close"></div>
+                <div class="yellowbox">
+                    <div class="swt">44 SWT</div>
+                    <div class="fiat">= 44 USD</div>
+                </div>
+                <div class="eth">0.0002 ETH</div>
+            </div>
+            <div class="divider"></div>
+            <div class="middle">
+                <display-transaction-status path="{{path}}">
+                </display-transaction-status>
+            </div>
+            <div class="divider"></div>
+            <div class="bottom">
+                <div class="pubkey">0x339D78...</div>
+                <div class="bluetext">{{localize('show my keys')}}</div>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        class MyWallet extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-my-wallet';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                if (typeof sessionStorage.getItem('origin') === 'string'
+                    || sessionStorage.getItem('origin') instanceof String) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
+
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyWallet.is, MyWallet);
+    </script>
+</dom-module>

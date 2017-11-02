@@ -1,0 +1,491 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-hashtag-deals></display-hashtag-deals>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-hashtag-deals-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-hashtag-deals-top-container` | Mixin applied to the container | `{}` |
+| `--display-hashtag-deals-time` | Mixin applied to the time | `{}` |
+| `--display-hashtag-deals-name` | Mixin applied to the name | `{}` |
+| `--display-hashtag-deals-description` | Mixin applied to the description | `{}` |
+| `--display-hashtag-deals-for` | Mixin applied to the word for | `{}` |
+| `--display-hashtag-deals-amount` | Mixin applied to the amount | `{}` |
+-->
+<dom-module id="display-hashtag-deals">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                width: 100%;
+            }
+
+            .box {
+                background-color: var(--sc-white);
+                @apply --layout-vertical;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 25px 40px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            }
+
+            .empty {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 30px 10vw;
+                word-wrap: break-word;
+                @apply --body-default;
+                color: var(--sc-grey3);
+            }
+
+            .container[wide-layout] .empty {
+                padding: 0;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
+                @apply --layout-flex;
+            }
+
+            .bottom {
+                margin-top: 12px;
+                @apply --layout-horizontal;
+            }
+
+            .avatar {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-image: url("../../images/defaultavatar.png");
+                background-size: 30px;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+            }
+
+            .replycount {
+                @apply --small-bold;
+                margin-top: 2px;
+                color: var(--sc-grey4);
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .replyicon {
+                @apply --reply-grey4-mini;
+            }
+
+            .description {
+                @apply --layout-flex;
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                padding-right: 10px;
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+            }
+
+            .price {
+
+                @apply --body-bold;
+                color: var(--sc-yellow);
+            }
+
+            .for {
+
+                @apply --smallest-bold;
+                color: var(--sc-yellow);
+            }
+
+            .container[wide-layout] .pricebox {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+            }
+
+            .container[wide-layout] .for {
+                @apply --body-bold;
+                font-size: 14px;
+                margin: 0 6px 2px 0;
+            }
+
+            .container[wide-layout] .price {
+
+                @apply --main-title4;
+            }
+
+            .container[wide-layout] {
+                padding: 30px 10vw;
+            }
+
+            .container[wide-layout] .box {
+                max-width: 68vw;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .replyicon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <div class="container" wide-layout$="{{wide}}">
+            <!-- <div class="empty">{{localize('Currently no deals selected. Try a broader search.')}}</div> -->
+            <div class="box" on-click="_toNewHere">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                    <div class="replycount">5</div>
+                    <div class="replyicon"></div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Looking for a ride to the airport</div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">55500 SWT</div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" on-click="_toDetail">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                    <div class="replycount">5</div>
+                    <div class="replyicon"></div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Ride from literon busstop to protest</div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">5 SWT</div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" on-click="_next">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                    <div class="replycount">5</div>
+                    <div class="replyicon"></div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                            ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+                            eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+                            deserunt mollit anim id est laborum.</div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">5 SWT</div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" on-click="_next">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                    <div class="replycount">5</div>
+                    <div class="replyicon"></div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Looking for a ride to the airport</div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">5 SWT</div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" on-click="_next">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                    <div class="replycount">5</div>
+                    <div class="replyicon"></div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Looking for a ride to the airport</div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">5 SWT</div>
+                    </div>
+                </div>
+            </div>
+            <div class="box" on-click="_next">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                    <div class="replycount">5</div>
+                    <div class="replyicon"></div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Looking for a ride to the airport</div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">5 SWT</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class DisplayHashtagDeals extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-hashtag-deals';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Loading indicates if the componant is loading
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    // /**
+                    //  * range is the range the usert selected in slider
+                    //  * @type {Number}
+                    //  */
+                    // range: {
+                    //     type: Number,
+                    //     observer: '_rangeChanged',
+                    // },
+                    /**
+                    * route data represents the curent route
+                    * @type {String}
+                    */
+                    routeData: {
+                        type: String,
+                        observer: '_getHashtag',
+                    },
+                    /**
+                    * Hashtag represents the selected hashtag
+                    * @type {String}
+                    */
+                    hashtag: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * showSlider determines of the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                    /**
+                    * showInfo indicates if the hashtag info panel is open or not
+                    * @type {Boolean}
+                    */
+                    showInfo: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * Gets the selected hashtag
+            */
+            _getHashtag() {
+                if (this.routeData.page) {
+                    this.loading = true;
+                    this.$.web3.deals(this.routeData.page)
+                        .then((data) => {
+                            this.hashtag = data;
+                            this.loading = false;
+                            this._getDeals();
+                        });
+                }
+            }
+
+            /**
+            * Gets the deals for the selected hashtag
+            */
+            _getDeals() {
+                this.deals = [];
+                Promise.all([
+                    this.$.storage.accountExists(),
+                    this.$.web3.deals(this.hashtag.id),
+                ])
+                    .then((data) => {
+                        if (data[0].username && data[0].address && data[0].avatar) {
+                            this.completeAccount = true;
+                        }
+
+                        if (data[0].location) {
+                            this.location = data[0].location;
+                            this._getDistanceTimeImage(data);
+                        } else {
+                            this._getTimeImage(data);
+                        }
+                    })
+                    .catch((err) => { });
+            }
+
+            /**
+            * Gets the distance time and image for a deal
+            * @param {array} data data is an array of the users acocunt and the deals
+            */
+            _getDistanceTimeImage(data) {
+                for (let i = 0; i < data[1].items.length; i++) {
+                    Promise.all([
+                        this.$.utility.geoHashDistance(data[0].location,
+                            data[1].items[i].location),
+                        this.$.utility.convertTime(data[1].items[i].time),
+                        this.$.ipfs.getHash(data[1].items[i].avatar),
+                    ])
+                        .then((details) => {
+                            data[1].items[i].distance = details[0];
+                            data[1].items[i].time = details[1];
+                            data[1].items[i].avatar = details[2];
+                            this.push('deals', data[1].items[i]);
+                        });
+                }
+            }
+
+            /**
+            * Gets the time and image for a deal
+            * @param {array} data data is an array of the users acocunt and the deals
+            */
+            _getTimeImage(data) {
+                for (let i = 0; i < data[1].items.length; i++) {
+                    Promise.all([
+                        this.$.utility.convertTime(data[1].items[i].time),
+                        this.$.ipfs.getHash(data[1].items[i].avatar),
+                    ])
+                        .then((details) => {
+                            data[1].items[i].time = details[0];
+                            data[1].items[i].avatar = details[1];
+                            this.push('deals', data[1].items[i]);
+                        });
+                }
+            }
+
+            // /**
+            //  * re renders the dom repeat when the users changes the range
+            //  */
+            // _rangeChanged() {
+            //     this.$.domRepeat.render();
+            // }
+
+            // /**
+            //  * filters the list according to the selected range
+            //  * @param {object} event is curent iteration in the dom repeat
+            //  * @return {boolean} true if there is no distance
+            //  */
+            // _isWithinRange(event) {
+            //     if (event.distance) {
+            //         return (this.range > event.distance);
+            //     } else {
+            //         return true;
+            //     }
+            // }
+
+            _toNewHere() {
+                if (!this.showSlider && !this.showInfo) {
+                    // stores the current hashtag choice in session
+                    sessionStorage.setItem('hashtagID', this.routeData.page);
+                    this.path = 'new-here/';
+                }
+            }
+            _toDetail() {
+                if (!this.showSlider && !this.showInfo) {
+                    // stores the current hashtag choice in session
+                    sessionStorage.setItem('hashtagID', this.routeData.page);
+                    this.path = 'detail/';
+                }
+            }
+        }
+        window.customElements.define(DisplayHashtagDeals.is, DisplayHashtagDeals);
+    </script>
+</dom-module>

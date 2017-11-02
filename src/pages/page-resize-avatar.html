@@ -1,0 +1,248 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-image-upload.html">
+
+<dom-module id="page-resize-avatar">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+             :host {
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                height: 100%;
+                width: 100%;
+                @apply --layout-vertical;
+                background-image: var(--sc-bg);
+            }
+
+            .container[wide-layout] {
+                box-sizing: border-box;
+                padding: 0 0 0 12vw;
+            }
+
+            .top {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 10vh 0 0 0;
+                @apply --layout-flex;
+            }
+
+            .container[wide-layout] .top {
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 15vh 0 0 0;
+            }
+
+            .container[wide-layout] .middle {
+                @apply --layout-start;
+                height: 20vh;
+            }
+
+            .avatarcontainer {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                background-color: var(--sc-grey4);
+                width: 250px;
+                height: 250px;
+            }
+
+            .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+                padding-top: 73px;
+            }
+
+            img {
+                width: 100px;
+                height: 100px;
+                cursor: pointer;
+                border-radius: 50%;
+                border: 2px solid var(--sc-blue);
+            }
+
+            .rotate {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+            }
+
+            .rotate-icon {
+                @apply --rotate-blue-normal;
+                cursor: pointer;
+            }
+
+            .blacktext {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --small-bold;
+                color: var(--sc-grey4);
+                margin-top: 10px;
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                height: 40vh;
+                width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-start;
+                height: 35vh;
+            }
+
+            .bluetext {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+            .container[wide-layout] .bluetext {
+                margin-top: 40px;
+            }
+
+            .buttons {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                margin-bottom: 100px;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+            }
+
+            .round-button:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --vmark-blue-normal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .rotate-icon,
+                .disagree,
+                .agree {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="avatarcontainer">
+                    <div class="avatar"><img src="../../images/defaultavatar.png"></div>
+                    <div class="rotate">
+                        <div class="rotate-icon"></div>
+                    </div>
+                </div>
+                <div class="blacktext">{{localize('Scroll to zoom - drag to move')}}</div>
+                <template is="dom-if" if="{{wide}}">
+                    <span class="bluetext">{{localize('choose another file')}}</span>
+                </template>
+            </div>
+            <div class="bottom">
+                <div class="buttons">
+                    <div class="disagree" on-click="_disagree"></div>
+                    <div class="round-button" on-click="_agree">
+                        <div class="agree"></div>
+                    </div>
+                </div>
+                <template is="dom-if" if="{{!wide}}">
+                    <span class="bluetext">{{localize('choose another file')}}</span>
+                </template>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyResizeAvatar extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-resize-avatar';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            *changes the current path to password warning
+            **/
+            _agree() {
+                this.path = 'choose-avatar-and-username/';
+            }
+            /**
+            *changes the current path to previous
+            **/
+            _disagree() {
+                window.history.back();
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyResizeAvatar.is, MyResizeAvatar);
+    </script>
+</dom-module>

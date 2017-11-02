@@ -7,7 +7,7 @@ module.exports = {
   target: 'web',
   entry: './webpack.js',
   output: {
-    path: path.resolve(__dirname, './src/components/functions'),
+    path: path.resolve(__dirname, './src/data'),
     filename: 'webpack.min.js',
     library: 'webpack',
     libraryTarget: 'var',

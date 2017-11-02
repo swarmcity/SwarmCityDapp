@@ -1,0 +1,295 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="display-language.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-filter-deals></display-filter-deals>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--filter-list-filter-list` | Mixin applied to the container | `{}` |
+| `--filter-list` | Mixin applied to the hashtag | `{}` |
+| `--filter-list-description` | Mixin applied to the deals | `{}` |
+-->
+<dom-module id="display-filter-deals">
+    <template>
+        <style>
+             :host {
+                display: block;
+            }
+
+            .togglebox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+            .range-description {
+                @apply --body-default;
+                color: var(--sc-grey4);
+                margin-top: 5px;
+            }
+
+            .activity {
+                @apply --body-default;
+                color: var(--sc-grey2);
+            }
+
+            .sliderbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 800px;
+            }
+
+            paper-slider {
+                @apply --layout-flex;
+                --paper-slider-knob-color: var(--sc-yellow);
+                --paper-slider-active-color: var(--sc-yellow);
+            }
+
+            .pin-icon {
+                @apply --locationmarker-grey4-small;
+            }
+
+            .globe-icon {
+                @apply --globe-grey4-small;
+            }
+
+            .arrowup-icon {
+                @apply --arrowup-grey4-small;
+                cursor: pointer;
+            }
+
+            .arrowup {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+            }
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .arrowup-icon, .globe-icon, .pin-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+
+        <display-language language="{{language}}"></display-language>
+
+        <div class="container">
+            <template is="dom-if" if="{{toggle}}">
+                <div class="toggle" on-click="_toggleSlider">{{localize('filter deals')}}</div>
+            </template>
+            <template is="dom-if" if="{{slider}}">
+                <div class="togglebox">
+                    <div class="activity">{{localize('Looking for deals')}}...</div>
+                    <div class="range-description">{{localize('within +/- 100km from your location')}}</div>
+                    <div class="sliderbox">
+                        <div class="pin-icon"></div>
+                        <paper-slider .class="slider" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
+                        <div class="globe-icon"></div>
+                    </div>
+                    <div class="arrowup">
+                        <div class="arrowup-icon" on-click="_closeSlider"></div>
+                    </div>
+                </div>
+            </template>
+
+
+        </div>
+
+    </template>
+    <script>
+        class MyFilterDeals extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-filter-deals';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * Loading indicates if the componant is loading
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * Selected if true shows the toggle text
+                    * @type {String}
+                    */
+                    toggle: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Selected if true shows the slider
+                    * @type {String}
+                    */
+                    slider: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * range is the range the user selected in slider
+                    * @type {Number}
+                    */
+                    range: {
+                        type: Number,
+                        notify: true,
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Value is the value of the slider
+                    * @type {Number}
+                    */
+                    value: {
+                        type: Number,
+                        value: 0,
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * showSlider determines of the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_setDesc',
+                        notify: true,
+                    },
+                    /**
+                    * showInfo indicates if the info panel is open or not
+                    * @type {Boolean}
+                    */
+                    showInfo: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                    /**
+                    * rangeDescription is the description of the range
+                    * @type {String}
+                    */
+                    rangeDescription: {
+                        type: String,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Closes the slider
+            */
+            _closeSlider() {
+                this.showSlider = false;
+            }
+            /**
+            * When the slider is shown se the default description
+            */
+            _setDesc() {
+                this.rangeDescription = this.localize('world wide');
+                this.value = 1;
+            }
+
+            /**
+            * Determine what the selected range is
+            */
+            _calcRange() {
+                const x = this.value;
+                switch (true) {
+                    case (x < 2):
+                        this.rangeDescription = this.localize('world wide');
+                        this.range = 10000000000000000000;
+                        break;
+                    case (x < 3):
+                        this.rangeDescription =
+                            this.localize('within +/- 1000km from your location');
+                        this.range = 1000000;
+                        break;
+                    case (x < 4):
+                        this.rangeDescription =
+                            this.localize('within +/- 100km from your location');
+                        this.range = 100000;
+                        break;
+                    case (x < 5):
+                        this.rangeDescription =
+                            this.localize('within +/- 10km from your location');
+                        this.range = 10000;
+                        break;
+                    case (x < 6):
+                        this.rangeDescription =
+                            this.localize('within +/- 1km from your location');
+                        this.range = 1000;
+                        break;
+                    case (x < 7):
+                        this.rangeDescription =
+                            this.localize('within +/- 0.5km from your location');
+                        this.range = 500;
+                }
+            }
+
+            /**
+            * Show and hide the slider or redirect to location
+            */
+            _toggleSlider() {
+                this.$.storage.accountExists()
+                    .then((account) => {
+                        if (!account.location) {
+                            sessionStorage.setItem('origin', this.route.path);
+                            this.set('route.path', 'location/');
+                        } else {
+                            if (this.showInfo) {
+                                this.showInfo = !this.showInfo;
+                            }
+                            this.showSlider = !this.showSlider;
+                        }
+                    });
+            }
+        }
+        window.customElements.define(MyFilterDeals.is, MyFilterDeals);
+    </script>
+</dom-module>

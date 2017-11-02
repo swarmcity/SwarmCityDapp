@@ -1,0 +1,307 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-my-info.html">
+<link rel="import" href="../displays/display-dealstate-detail.html">
+
+<dom-module id="page-detail">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                width: 100vw;
+                display: block;
+                max-width: 100%;
+                --max-width: 800px;
+            }
+
+            .container {
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                background-image: var(--sc-bg);
+                width: 100%;
+            }
+
+            .container[wide-layout] {
+                box-sizing: border-box;
+                padding: 0 20vw 12vh 12vw;
+            }
+
+            display-my-info {
+                box-sizing: border-box;
+                padding: 8vh 14vw 5vh 14vw;
+                width: 100%;
+                max-width: var(--max-width);
+            }
+
+            .container[wide-layout] display-my-info {
+                padding: 8vh 0 5vh 0;
+            }
+
+            .page-content {
+                @apply --layout-vertical;
+                @apply --layout-flex;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                width: 100%;
+                padding: 0 14vw;
+                max-width: var(--max-width);
+            }
+
+            .container[wide-layout] .page-content {
+                padding: 0 5vw;
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding-top: 3vh;
+                width: 100%;
+                max-width: var(--max-width);
+            }
+
+            .container[wide-layout] .top-margin {
+                height: 10vh;
+            }
+
+            .close {
+                @apply --xmark-grey3-small;
+                cursor: pointer;
+                margin-right: 5vw;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
+                @apply --layout-flex;
+            }
+
+            .bottom {
+                margin-top: 12px;
+                @apply --layout-horizontal;
+            }
+
+            .avatar {
+                width: 50px;
+                height: 50px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-image: url("../../images/defaultavatar.png");
+                background-size: 50px;
+            }
+
+            .date {
+                @apply --small-light;
+                color: var(--sc-grey4);
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .description {
+                @apply --layout-flex;
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-detail;
+                color: var(--sc-grey4);
+            }
+
+            .hashtag {
+                @apply --body-bold;
+                margin-top: 5px;
+                color: var(--sc-grey4);
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+            }
+
+            .container[wide-layout] .pricebox {
+                @apply --layout-end-justified;
+            }
+
+            .price {
+
+                @apply --main-title3;
+                color: var(--sc-yellow);
+            }
+
+            .for {
+                @apply --body-bold;
+                color: var(--sc-yellow);
+            }
+
+            .linkbox {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                height: 65px;
+            }
+
+            .link {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey2);
+            }
+
+            display-dealstate-detail {
+                margin-top: 1.5px;
+                background-color: var(--sc-white);
+                width: 100%;
+                max-width: var(--max-width);
+                width: 100%;
+            }
+
+            .switch {
+                @apply --layout-horizontal;
+                box-sizing: border-box;
+                padding: 0 0 5vh 0;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon,
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="{{completeAccount}}">
+                <display-my-info></display-my-info>
+            </template>
+            <template is="dom-if" if="{{!completeAccount}}">
+                <div class="top-margin"></div>
+            </template>
+            <div class="closebox">
+                <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+            </div>
+            <div class="page-content">
+                <div class="top">
+                    <div class="avatar"></div>
+                    <div class="meta">
+                        <div class="date">Yesterday, 18:21</div>
+                        <div class="user">Sally Singer · 1 SWR</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="description">Ride from literon busstop to protest</div>
+                </div>
+                <div class="hashtag">#pioneer</div>
+                <div class="switch">
+                    <div class="linkbox">
+                        <span class="link">shareable link</span>
+                    </div>
+                    <div class="pricebox">
+                        <div class="for">for</div>
+                        <div class="price">5 SWT</div>
+                    </div>
+                </div>
+            </div>
+            <display-dealstate-detail  path="{{path}}"></display-dealstate-detail>
+            
+        </div>
+
+    </template>
+
+    <script>
+        class MyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-detail';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * completeAccount represents true of the user
+                    * has a username, avatar and address
+                    * @type {Boolean}
+                    */
+                    completeAccount: {
+                        type: Boolean,
+                        value: true,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                if (typeof sessionStorage.getItem('hashtagID') === 'string'
+                    || sessionStorage.getItem('hashtagID') instanceof String) {
+                    this.path = 'hashtag/' + sessionStorage.getItem('hashtagID');
+                    sessionStorage.removeItem('hashtagID');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyDetail.is, MyDetail);
+    </script>
+</dom-module>

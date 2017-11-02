@@ -1,0 +1,392 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-my-info.html">
+<link rel="import" href="../displays/display-filter-list.html">
+<link rel="import" href="../displays/display-hashtag-list.html">
+
+<dom-module id="page-hashtag-list">
+    <template>
+        <!--
+        Page specific styles, if the style is used on more than one page, move it to shared styles.
+        -->
+        <style include="shared-styles">
+            :host {
+                width: 100vw;
+                min-height: 80vh;
+                display: block;
+                max-width: 100%;
+            }
+
+            .container {
+                height: 100%;
+                width: 100%;
+                background-color: var(--sc-grey1);
+            }
+
+            .header {
+                @apply --layout-horizontal;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 40px 40px 0 40px;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 2;
+            }
+
+            .container[wide-layout] .header {
+                box-sizing: border-box;
+                padding: 60px 10vw 0 10vw;
+            }
+
+            .topleft {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+            }
+
+            .topright {
+                @apply --layout-end;
+                @apply --layout-vertical;
+            }
+
+            .back {
+                cursor: pointer;
+                @apply --logout-grey3-small;
+            }
+
+            .slider {
+                border-bottom: 2px solid black;
+                position: fixed;
+                top: 152px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 40px 2vh 40px;
+                background-image: var(--sc-bg);
+                z-index: 1;
+            }
+
+            .container[wide-layout] .slider {
+                padding: 0 40px 2vh 40px;
+                padding: 0 10vw 2vh 10vw;
+                top: 190px;
+            }
+
+            .slider-hidden {
+                display: none;
+            }
+
+            .slider-hidden-visible {
+                animation: slideDown 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .slider-visible-hidden {
+                animation: slideUp 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .fade-hidden {
+                opacity: 1;
+            }
+
+            .fade-hidden-visible {
+                animation: fadeIn 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .fade-visible-hidden {
+                animation: fadeOut 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .filter-toggle {
+                cursor: pointer;
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                margin-bottom: 18px;
+                border-bottom: 2px dotted var(--sc-grey3);
+                margin-top: 41px;
+            }
+
+            [highlight-filter] {
+                color: white;
+                background-color: var(--sc-grey4);
+                border-bottom: 0;
+                padding: 0 40px 2vh 40px;
+                padding: 1px 2px;
+            }
+
+            .container[wide-layout] .filter-toggle {
+                margin-top: 59px;
+            }
+
+            display-hashtag-list {
+                margin-top: 152px;
+            }
+
+            .container[wide-layout] display-hashtag-list {
+                margin-top: 190px;
+            }
+
+            .fullheight {
+                height: 100%;
+            }
+
+            @keyframes slideUp {
+                0% {
+                    transform: translateY(0%);
+                }
+                100% {
+                    transform: translateY(-110%);
+                }
+            }
+
+            @keyframes slideDown {
+                0% {
+                    transform: translateY(-80%);
+                }
+                100% {
+                    transform: translateY(0%);
+                }
+            }
+
+            @keyframes fadeIn {
+                0% {
+                    opacity: 0.2;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeOut {
+                0% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0.2;
+                }
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .back {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="header">
+
+                <div class="topleft">
+                    <display-my-info id="myInfo" complete-account="{{completeAccount}}">
+                    </display-my-info>
+                </div>
+
+
+                <div class="topright">
+                    <div class="back" on-click="_back" id="back"></div>
+
+                    <display-filter-list toggle id="filterToggle" class="filter-toggle" highlight-filter$="{{highlightFilterToggle}}" show-slider="{{showSlider}}"
+                        range="{{range}}" route="{{route}}" path="{{path}}">
+                    </display-filter-list>
+
+                </div>
+
+            </div>
+
+            <display-filter-list slider class$="slider [[sliderState]]" show-slider="{{showSlider}}" range="{{range}}" route="{{route}}"
+                path="{{path}}">
+            </display-filter-list>
+
+            <div class$="fade [[fadeState]] fullheight" on-click="_fadeClose">
+                <display-hashtag-list id="hashtagList" range="[[range]]" path="{{path}}" show-slider="{{showSlider}}">
+                </display-hashtag-list>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class HashtagList extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-hashtag-list';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The animation object
+                    */
+                    animation: {
+                        type: Object,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * The entry animation for this page
+                    */
+                    entryAnimation: {
+                        type: Object,
+                    },
+                    /**
+                    * Location is the page path the user is on
+                    * @type {String}
+                    */
+                    location: {
+                        type: String,
+                        statePath: 'location',
+                    },
+                    /**
+                    * sliderState represents style state of the slider
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * sliderState represents style state of the slider
+                    * @type {String}
+                    */
+                    sliderState: {
+                        type: String,
+                        value: 'slider-hidden',
+                    },
+                    /**
+                    * completeAccount determines if an account is present
+                    * in localstorage or not
+                    * @type {Boolean}
+                    */
+                    completeAccount: {
+                        type: Boolean,
+                    },
+                    /**
+                    * showSlider determines if the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
+                        observer: '_toggleSlider',
+                    },
+                    /**
+                    * fadeState represents the state of hashtaglist container
+                    * @type {String}
+                    */
+                    fadeState: {
+                        type: String,
+                        value: 'fade-hidden',
+                    },
+                    /**
+                    * highlightFilterToggle toggles
+                    * the background style of the show filter text link
+                    * @type {Boolean}
+                    */
+                    highlightFilterToggle: {
+                        type: Boolean,
+                        value: false,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this.entryAnimation = {
+                    descriptionArray: [
+                        {'transform': 'translateX(100%)'},
+                        {'transform': 'translateX(0)'},
+                    ],
+                    descriptionObject: {
+                        fill: 'forwards',
+                        duration: 500,
+                        iterations: 1,
+                        iterationStart: 0,
+                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                        delay: 0,
+                        endDelay: 0,
+                    },
+                };
+            }
+            _path() {
+                if (this.path) {
+                    this.set('route.path', this.path);
+                }
+            }
+            /**
+            * determines the state of the slider and the fade
+            */
+            _toggleSlider() {
+                switch (this.sliderState) {
+                    case 'slider-hidden':
+                        this.sliderState = 'slider-hidden-visible';
+                        this.fadeState = 'fade-visible-hidden';
+                        this.highlightFilterToggle = true;
+                        break;
+                    case 'slider-hidden-visible':
+                        this.sliderState = 'slider-visible-hidden';
+                        this.fadeState = 'fade-hidden-visible';
+                        this.highlightFilterToggle = false;
+                        setTimeout(() => {
+                            this.sliderState = 'slider-hidden';
+                        }, 300);
+                        break;
+                    case 'slider-visible-hidden':
+                        this.sliderState = 'slider-hidden-visible';
+                        this.fadeState = 'fade-visible-hidden';
+                        this.highlightFilterToggle = true;
+                }
+            }
+            /**
+            * closes open slider box
+            */
+            _fadeClose() {
+                if (this.showSlider) {
+                    this.showSlider = !this.showSlider;
+                }
+            }
+            /**
+            * takes the user to the welcome page
+            */
+            _back() {
+                this.animation = {
+                    from: 'hashtag-list',
+                    to: 'welcome',
+                    entryPlaying: false,
+                    exitPlaying: false,
+                    descriptionArray: [
+                        {'transform': 'translateX(0)'},
+                        {'transform': 'translateX(100%)'},
+                    ],
+                    descriptionObject: {
+                        fill: 'forwards',
+                        duration: 500,
+                        iterations: 1,
+                        iterationStart: 0,
+                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                        delay: 0,
+                        endDelay: 0,
+                    },
+                };
+            }
+        }
+        window.customElements.define(HashtagList.is, HashtagList);
+    </script>
+</dom-module>

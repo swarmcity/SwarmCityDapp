@@ -1,0 +1,565 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-my-profile">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                width: 100vw;
+                max-width: 100%;
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                background-color: #DADADA;
+                width: 100%;
+                min-height: 100vh;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                max-width: 100%;
+            }
+
+            .top {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-end-justified;
+                background-image: var(--sc-bg);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 14vw 10vh 14vw;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] .top {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 16vh 12vw 10vh 12vw;
+                max-width: 100%;
+            }
+
+            .close {
+                @apply --xmark-grey3-small;
+                @apply --close;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            img {
+                width: 90px;
+                height: 90px;
+                cursor: pointer;
+                border-radius: 50%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .avatarcontainer {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                margin-left: 40px;
+                margin-top: 12vh;
+            }
+
+            .container[wide-layout] .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                margin: 0 0 0 0;
+            }
+
+            .arrowcontainer {
+                @apply --base-shadow;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+                height: 30px;
+                width: 30px;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                position: relative;
+                right: 25px;
+                cursor: pointer;
+            }
+
+            .arrowup {
+                @apply --arrowup-white-mini;
+            }
+
+            .topflex {
+                @apply --layout-flex;
+                width: 100%;
+            }
+
+            paper-input {
+                width: 100%;
+                text-align: center;
+                margin-top: 6vh;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 250px;
+                margin: 0 0 0 0;
+            }
+
+            .keybox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 3vh 0 0 0;
+                width: 100%;
+            }
+
+            .container[wide-layout] .keybox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 3vh 0 0 0;
+            }
+
+            .pubkey {
+                margin-top: 3vh;
+                /* max-width: 75px; */
+            }
+
+            .container[wide-layout] .pubkey {
+                margin: 0px 10px 0 0;
+            }
+
+            .greytext {
+                @apply --small-light;
+                color: var(--sc-grey3);
+            }
+
+            .showkeys {
+                margin-top: 1vh;
+            }
+
+            .container[wide-layout] .showkeys {
+                margin-top: 0px;
+            }
+
+            .bluelink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+            .greylink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey2);
+            }
+
+            .container[wide-layout] .topright {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                margin-top: 3vh;
+            }
+
+            .notifications {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --small-light;
+                color: var(--sc-grey4);
+                background-color: #DADADA;
+                box-sizing: border-box;
+                padding: 2px 8px 4px 8px;
+                border-radius: 12px;
+                margin-top: 7vh;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .notifications {
+                margin-top: 0;
+            }
+
+            .hashtagbox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 50px 14vw 50px 14vw;
+            }
+
+            .container[wide-layout] .hashtagbox {
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 40px 12vw 70px 12vw;
+            }
+
+            .temp {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                box-sizing: border-box;
+                padding: 2px 0 2px 0;
+                width: 100%;
+            }
+
+            .container[wide-layout] .temp {
+                max-width: 60vw;
+            }
+
+            .hashtagname {
+                @apply --body-bold;
+                box-sizing: border-box;
+                padding-right: 10px;
+            }
+
+            .deals {
+                min-width: 75px;
+            }
+
+            .ruler {
+                @apply --layout-flex;
+            }
+
+            .container[wide-layout] .ruler {
+                box-sizing: border-box;
+                margin: 0 35px 4px 35px;
+                border-bottom: 2px solid rgba(25, 25, 25, 0.1);
+            }
+
+
+            .rep-amount {
+                @apply --body-bold;
+            }
+
+            .rep {
+                @apply --small-bold;
+                margin: 0 0 0.5px 5px;
+            }
+
+            .divider {
+                width: 100vw;
+                background-color: #9B9B9B;
+                opacity: 0.2;
+                height: 1px;
+                max-width: 100%;
+            }
+
+            .buttonbox {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 50px 14vw;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] .buttonbox {
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 50px 12vw;
+            }
+
+            .truncate {
+                width: 75px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .logout {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big-fullwhite;
+                box-sizing: border-box;
+                width: 100%;
+                margin: 0 0 10px 0;
+                max-width: 320px;
+            }
+
+            .logout:active {
+                @apply --button-active;
+            }
+
+            .backup {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big-fullwhite;
+                box-sizing: border-box;
+                width: 100%;
+                margin: 0 0 0 0;
+                max-width: 320px;
+            }
+
+            .backup:active {
+                @apply --button-active;
+            }
+
+
+            .delete {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big;
+                color: var(--sc-red2);
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .delete:active {
+                @apply --button-active;
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --layout-center;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 45px 14vw 35px 14vw;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 40px 12vw 85px 12vw;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="close" on-click="_close"></div>
+                <div class="avatarcontainer">
+                    <div class="avatar">
+                        <img src="../../images/defaultavatar.png" on-click="_toResizeAvatar">
+                        <div class="arrowcontainer" on-click="_toResizeAvatar">
+                            <div class="arrowup"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="topflex">
+                    <div class="username">
+                        <paper-input label="Username" always-float-label></paper-input>
+                    </div>
+                    <div class="keybox">
+                        <div class="pubkey truncate">
+                            <span class="greytext">0x339D7851463546164646546435468453546</span>
+                        </div>
+                        <div class="showkeys">
+                            <span class="bluelink">{{localize('show my keys')}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="topright">
+                    <div class="notifications" on-click="_toNotifications">{{localize('no new notifications')}}</div>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="hashtagbox">
+                <div class="temp">
+                    <div class="hashtagname">#pioneer</div>
+                    <div class="deals">
+                        <span class="greylink">{{localize('show deals')}}</span>
+                    </div>
+                    <div class="ruler"></div>
+                    <div class="rep-amount">16</div>
+                    <div class="rep">SWR</div>
+                </div>
+                <div class="temp">
+                    <div class="hashtagname">#needaride</div>
+                    <div class="deals">
+                        <span class="greylink">show deals</span>
+                    </div>
+                    <div class="ruler"></div>
+                    <div class="rep-amount">7</div>
+                    <div class="rep">SWR</div>
+                </div>
+                <div class="temp">
+                    <div class="hashtagname">#swarmbnb</div>
+                    <div class="deals">
+                        <span class="greylink">show deals</span>
+                    </div>
+                    <div class="ruler"></div>
+                    <div class="rep-amount">2</div>
+                    <div class="rep">SWR</div>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="buttonbox">
+                <div class="logout" on-click="_logout">{{localize('logout this user')}}</div>
+                <div class="backup" on-click="_backup">{{localize('backup this user')}}</div>
+            </div>
+            <div class="bottom">
+                <div class="delete" on-click="_delete">{{localize('delete this user')}}</div>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        class MyProfile extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-my-profile';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * Error is a string message being shown when passwords don't match
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        value: '',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                if (typeof sessionStorage.getItem('origin') === 'string'
+                    || sessionStorage.getItem('origin') instanceof String) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
+            /**
+            * takes the user to page-resize-avatar
+            */
+            _toResizeAvatar() {
+                this.path = 'resize-avatar/';
+            }
+            /**
+            * takes the user to page notifications
+            */
+            _toNotifications() {
+                this.path = 'notifications/';
+            }
+            /**
+            * takes the user to make-backup-profile
+            */
+            _backup() {
+                this.path = 'make-backup-profile/';
+            }
+            /**
+            * takes the user to warning-delete
+            */
+            _delete() {
+                this.path = 'warning-delete/';
+            }
+            /**
+            * compares written passwords and updates label with it
+            */
+            _equals() {
+                if (this.$.password.value == this.$.repeat.value ||
+                    this.$.repeat.value == '') {
+                    this.error = '';
+                } else {
+                    this.error = '[' + this.localize('password mismatch?') + ']';
+                }
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyProfile.is, MyProfile);
+    </script>
+</dom-module>

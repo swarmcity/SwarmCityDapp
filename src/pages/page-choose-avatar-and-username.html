@@ -1,0 +1,297 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-choose-avatar-and-username">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+             :host {
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout--start-justified;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+                height: 100%;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 14vw;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout--start-justified;
+                @apply --layout-start;
+                padding: 0 12vw;
+            }
+
+            .top {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-end-justified;
+                width: 100%;
+                height: 30vh;
+            }
+
+            .container[wide-layout] .top {
+                @apply --layout-start;
+                height: 35vh;
+            }
+
+            .close {
+                @apply --xmark-grey3-small;
+                @apply --close;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .title {
+                @apply --main-title1;
+                color: var(--sc-grey3b);
+                word-wrap: break-word;
+                text-align: center;
+            }
+
+            .container[wide-layout] .title {
+                @apply --main-title1-wide;
+                text-align: left;
+                max-width: 750px;
+            }
+
+            .middle {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                @apply --layout-flex;
+                width: 100%;
+            }
+
+            .container[wide-layout] .middle {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 0 0 5vh 0;
+            }
+
+            img {
+                width: 90px;
+                height: 90px;
+                cursor: pointer;
+                border-radius: 50%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                height: 30vh;
+                width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                height: 35vh;
+                padding: 0 0 0 0;
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            paper-input {
+                width: 100%;
+                text-align: center;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .btn {
+                @apply --icon-button-big;
+            }
+
+            .btn:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+
+            .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                margin-left: 3.6vh;
+            }
+
+            .container[wide-layout] .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                margin-left: 0;
+            }
+
+            .arrowcontainer {
+                @apply --base-shadow;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+                height: 30px;
+                width: 30px;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                position: relative;
+                right: 25px;
+                cursor: pointer;
+            }
+
+            .arrowup {
+                @apply --arrowup-white-mini;
+            }
+
+            .inputcontainer {
+
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .arrowup,
+                .agree {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="close" on-click="_close"></div>
+                <div class="title">{{localize('Choose an avatar and a username.')}}</div>
+
+            </div>
+            <div class="middle">
+                <div class="avatar"><img src="../../images/defaultavatar.png">
+                    <div class="arrowcontainer" on-click="_toResizeAvatar">
+                        <div class="arrowup"></div>
+                    </div>
+                </div>
+                <div class="inputcontainer">
+                    <paper-input label="Username" always-float-label></paper-input>
+                </div>
+            </div>
+            <div class="bottom">
+                <div class="btn">
+                    <div class="agree" on-click="_agree"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </template>
+
+    <script>
+        class MyChooseAvatarAndUsername extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-choose-avatar-and-username';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to page-stop-signup
+            */
+            _close() {
+                this.path = 'new-here/';
+            }
+            /**
+            * takes the user to the next page in user creation
+            */
+            _toResizeAvatar() {
+                this.path = 'resize-avatar/';
+            }
+
+            _agree() {
+                this.path = 'password-warning/';
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements
+            .define(MyChooseAvatarAndUsername.is, MyChooseAvatarAndUsername);
+    </script>
+</dom-module>

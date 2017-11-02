@@ -1,0 +1,53 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-view404">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style>
+            :host {
+                display: block;
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+        Oops you hit a 404.
+        <a href="[[rootPath]]">Head back to home.</a>
+    </template>
+
+    <script>
+        class MyView404 extends Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        ) {
+            static get is() {
+                return 'page-view404';
+            }
+            static get properties() {
+                return {
+                    /**
+                     * root path
+                     */
+                    rootPath: String,
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        }
+        window.customElements.define(MyView404.is, MyView404);
+    </script>
+</dom-module>

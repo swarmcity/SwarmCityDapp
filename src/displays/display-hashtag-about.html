@@ -1,0 +1,226 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="display-language.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-geolocation></display-geolocation>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-hashtag-about-toggle` | Mixin applied to the toggle text | `{}` |
+| `--display-hashtag-about-box` | Mixin applied to the box | `{}` |
+| `--display-hashtag-about-maintained` | Mixin applied to the maintained text | `{}` |
+| `--display-hashtag-about-contact` | Mixin applied to the contact details | `{}` |
+
+-->
+<dom-module id="display-hashtag-about">
+    <template>
+        <style>
+             :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+            }
+
+            .info {
+                width: 100%;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                word-wrap: break-word;
+                line-height: 20px;
+            }
+
+            .commission {
+                width: 100%;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                word-wrap: break-word;
+                margin-top: 15px;
+            }
+
+            .container[wide-layout] .commission {
+                margin-top: 5px;
+            }
+
+            .contact {
+                margin-top: 30px;
+                @apply --small-light;
+                color: var(--sc-grey2);
+            }
+
+            .linkbox {
+                margin-top: 8px;
+            }
+
+            .toggle {
+                padding: 1px 3px;
+                cursor: pointer;
+            }
+            .links {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                border-bottom: 1px dotted var(--sc-blue);
+            }
+            .arrowup {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+            }
+            .arrowup-icon {
+                @apply --arrowup-blue-small;
+                cursor: pointer;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="{{toggle}}">
+                <div class="toggle" on-click="_toggle">i</div>
+            </template>
+            <template is="dom-if" if="{{info}}">
+                <div>
+                    <div class="info">{{localize('This hashtag is maintained by')}} 0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09.</div>
+                    <div class="commission">{{localize('The hashtagcommission is')}} 0.05 SWT.</div>
+                    <div class="contact">{{localize('Contact')}}:</div>
+                    <div class="linkbox">
+                        <span class="links">
+                        hashtagman@gmail.com</span>
+                    </div>
+                    <div class="linkbox">
+                        <span class="links">@hashtag (Twitter)</span></div>
+                </div>
+                <div class="arrowup">
+                        <div class="arrowup-icon" on-click="_closeInfo"></div>
+                    </div>
+            </template>
+        </div>
+
+    </template>
+    <script>
+        class DisplayHashtagAbout extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-hashtag-about';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * Loading indicates if the componant is loading
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * Selected if true shows the toggle text
+                    * @type {String}
+                    */
+                    toggle: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Selected if true shows the info panel
+                    * @type {String}
+                    */
+                    info: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * showInfo indicates if the info panel is open or not
+                    * @type {Boolean}
+                    */
+                    showInfo: {
+                        type: Boolean,
+                        notify: true,
+                        value: false,
+                    },
+                    /**
+                    * showSlider determines of the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                    /**
+                    * hashtag represents the hashtag data
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Closes the slider
+            */
+            _closeInfo() {
+                this.showInfo = false;
+            }
+            /**
+            * Togles if the information is shown or hidden
+            */
+            _toggle() {
+                if (this.showSlider) {
+                    this.showSlider = !this.showSlider;
+                }
+                this.showInfo = !this.showInfo;
+            }
+
+            /**
+            * TGet the hashtags
+            */
+            _getHashtag() {
+                if (this.routeData.page) {
+                    this.loading = true;
+                    this.$.web3.deals(this.routeData.page)
+                        .then((data) => {
+                            this.hashtagName = data.name;
+                            this.hashtag = data;
+                            this.loading = false;
+                        });
+                }
+            }
+        }
+        window.customElements.define(DisplayHashtagAbout.is, DisplayHashtagAbout);
+    </script>
+</dom-module>

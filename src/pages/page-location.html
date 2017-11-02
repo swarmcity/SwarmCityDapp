@@ -1,0 +1,182 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../displays/display-geolocation.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-location">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+             :host {
+                background-color: var(--sc-blue);
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                background-color: var(--sc-blue);
+                height: 100%;
+                width: 100%;
+                @apply --layout-vertical;
+            }
+
+            .container>div:nth-child(1) {
+                height: 70%;
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-center-justified;
+                box-sizing: border-box;
+                padding: 0 14vw;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(1) {
+                @apply --main-title1;
+                color: var(--sc-white);
+                text-align: center;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2) {
+                @apply --small-light;
+                margin: 20px 0 0;
+                color: var(--sc-white);
+                text-align: center;
+            }
+
+            .container>div:nth-child(2) {
+                box-sizing: border-box;
+                padding: 0 14vw;
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                height: 30%;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1) {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                @apply --xmark-grey4-normal;
+                cursor: pointer;
+                margin-right: 20px;
+            }
+
+            .container[wide-layout]>div:nth-child(1) {
+                height: 55%;
+                padding: 0 12vw 7vh;
+                @apply --layout-start;
+                @apply --layout-end-justified;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(1) {
+                @apply --main-title1-wide;
+                text-align: left;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2) {
+                @apply --small-light-wide;
+                text-align: left;
+            }
+
+            .container[wide-layout]>div:nth-child(2) {
+                height: 40%;
+                padding: 0 12vw;
+                @apply --layout-start;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+
+        <div class="container" wide-layout$="{{wide}}">
+            <div>
+                <div>{{localize('Can we ask for your location')}}</div>
+                <div>{{localize('When accepting your browser will ask you')}}</div>
+            </div>
+            <div>
+                <div>
+                    <div on-click="_disagree"></div>
+                    <display-geolocation path="{{path}}"></display-geolocation>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class MyLocation extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-location';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * takes the user to the hashtag list page
+            */
+            _disagree() {
+                window.history.back();
+            }
+
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyLocation.is, MyLocation);
+    </script>
+</dom-module>

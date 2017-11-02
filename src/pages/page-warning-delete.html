@@ -1,0 +1,167 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-warning-delete">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+             :host {
+                @apply --warning-red-host;
+            }
+
+            .container {
+                @apply --warning-red-container;
+            }
+
+            .container>div:nth-child(1) {
+                @apply --warning-red-top;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(1) {
+                @apply --warning-red-title;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2) {
+                @apply --warning-red-subtitle;
+            }
+
+            .container>div:nth-child(2) {
+                @apply --warning-red-bottom;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1) {
+                @apply --warning-red-buttonbox;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                @apply --warning-red-xmark;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2) {
+                @apply --warning-red-roundbutton;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
+                @apply --warning-red-vmark;
+            }
+
+            .container[wide-layout]>div:nth-child(1) {
+                @apply --warning-red-top-wide;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(1) {
+                @apply --warning-top-title-wide;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2) {
+                @apply --warning-red-subtitle-wide;
+            }
+
+            .container[wide-layout]>div:nth-child(2) {
+                @apply --warning-red-bottom-wide;
+            }
+
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1):active,
+            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1),
+                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+
+        <div class="container" wide-layout$="{{wide}}">
+            <div>
+                <div>{{localize('Do you want to delete this account?')}}</div>
+                <div>{{localize('This can not be undone.')}}</div>
+            </div>
+            <div>
+                <div>
+                    <div on-click="_disagree"></div>
+                    <div on-click="_deleteProfile">
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class MyWarningDelete extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-warning-delete';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * takes the user to the previous page
+            */
+            _disagree() {
+                this.path = 'my-profile/';
+            }
+
+            /**
+            * deletes the profile
+            */
+            _deleteProfile() {
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyWarningDelete.is, MyWarningDelete);
+    </script>
+</dom-module>

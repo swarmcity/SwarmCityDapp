@@ -1,0 +1,145 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../shared-styles.html">
+<!--
+
+Example:
+```
+<display-image-upload></display-image-upload>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-upload-input` | Mixin applied to file input | `{}` |
+| `--display-upload-container` | Mixin applied to the container | `{}` |
+| `--display-upload-button` | Mixin applied to the button | `{}` |
+| `--display-upload-preview` | Mixin applied to the preview image | `{}` |
+-->
+<dom-module id="display-image-upload">
+    <template>
+        <style include="shared-styles">
+             :host {
+                display: block;
+            }
+
+            input {
+                position: relative;
+                top: -200px;
+                left: -200px;
+            }
+
+            .container {
+                display: block;
+                height: 135px;
+                width: 135px;
+                position: relative;
+            }
+
+            .container label {
+                width: 276px;
+                height: 30px;
+                line-height: 30px;
+                text-align: center;
+                margin-bottom: 10px;
+                display: block;
+                border: none;
+                outline: none;
+                font-size: 15px;
+                cursor: pointer;
+                font-weight: 900;
+                color: var(--grey-4);
+                padding: 28px 42px 28px 42px;
+                background-color: rgba(255, 255, 255, 0.1);
+                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                overflow: hidden;
+            }
+
+            .title {
+                color: var(--swarm-city-blue)
+            }
+        </style>
+
+
+        <div class="container">
+            <label>
+                <div class="title">choose an image file</div>
+                <input type="file" on-change="_getFile"/>
+            </label>
+        </div>
+
+    </template>
+    <script>
+        class DisplayImageUpload extends Polymer.mixinBehaviors([
+                Polymer.AppLocalizeBehavior,
+            ],
+            Polymer.Element
+        ) {
+            static get is() {
+                return 'display-image-upload';
+            }
+            static get properties() {
+                return {
+                    /**
+                     * Loading indicates if the componant is loading
+                     * @type {Boolean}
+                     */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                     * Preview is a src path for the default preview image
+                     * @type {String}
+                     */
+                    preview: {
+                        type: String,
+                    },
+                };
+            }
+
+            /**
+             * Fired when the user selects a file
+             * @param {event} event The event from the on-change
+             */
+            _getFile(event) {
+                this.loading = true;
+                event.stopPropagation();
+                event.preventDefault();
+                const file = event.target.files[0];
+                this._base64(file);
+            }
+
+            /**
+             * Converts afile to base 64 for transport
+             * @param {file} file is a file with type of file
+             */
+            _base64(file) {
+                let reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    this.preview = reader.result;
+                };
+                reader.onerror = (error) => {
+                    this.loading = false;
+                    this.error = error;
+                };
+            }
+        }
+        window.customElements.define(DisplayImageUpload.is, DisplayImageUpload);
+    </script>
+</dom-module>

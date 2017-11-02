@@ -1,0 +1,418 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../displays/display-language.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-welcome">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                width: 100vw;
+                display: block;
+                max-width: 100%;
+            }
+
+            .container {
+                width: 100%;
+            }
+
+            .container>div:nth-child(1) {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                height: 80vh;
+                background-color: var(--sc-yellow);
+                position: relative;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(1) {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 30px 30px 0 0;
+                width: 100%;
+            }
+
+            display-language {
+                cursor: pointer;
+                @apply --small-bold;
+                text-transform: uppercase;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2) {
+                @apply --layout-vertical;
+                @apply --center-center;
+                @apply --layout-flex;
+                height: 100%;
+                width: 100%;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 0 0 8vh 0;
+                height: 60%;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                @apply --swlogo-grey4;
+                margin-bottom: 20px;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(2) {
+                @apply --body-detail;
+                font-size: 22px;
+                font-weight: 100;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(3) {
+                @apply --main-title1;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(2) {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                height: 40%;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(2)>div:nth-child(1) {
+                width: 75vw;
+                min-width: 200px;
+                max-width: 300px;
+                border: 1px solid black;
+                @apply --text-button-big;
+                background-color: rgba(250, 250, 250, 0.09);
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(2)>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
+            .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(2)>div:nth-child(1)>div:nth-child(2) {
+                @apply --smallest-light;
+            }
+
+            .container>div:nth-child(2) {
+                box-sizing: border-box;
+                background-color: var(--sc-white);
+                padding: 40px 0 40px 0;
+            }
+
+            .container>div:nth-child(2) ul li {
+                box-sizing: border-box;
+                list-style-type: none;
+                padding-bottom: 16px
+            }
+
+            .container>div:nth-child(2) ul li a {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                text-decoration: none;
+            }
+
+            .container>div:nth-child(3) {
+                box-sizing: border-box;
+                padding: 50px 0 50px 10vw;
+                background-color: #e6e6e6;
+            }
+
+            .container>div:nth-child(3)>div:nth-child(1) {
+                @apply --small-bold;
+                margin-bottom: 10px;
+            }
+
+            .container>div:nth-child(3) ul {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                text-decoration: none;
+            }
+
+            .container>div:nth-child(3) ul li {
+                box-sizing: border-box;
+                list-style-type: none;
+                padding-bottom: 8px;
+            }
+
+            .container>div:nth-child(3) ul li a {
+                @apply --small-light;
+                color: var(--sc-grey4);
+                text-decoration: none;
+                border-bottom: 1px dotted var(--sc-grey2);
+            }
+
+            .container[wide-layout]>div:nth-child(1) {
+                height: 80vh;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2) {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
+                @apply --layout-start;
+                @apply --layout-end-justified;
+                @apply --layout-flex;
+                box-sizing: border-box;
+                padding: 0 0 18vh 10vw;
+                height: 100%;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(2) {
+                font-size: 34px;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(3) {
+                font-size: 78px;
+                line-height: 68px;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                margin-bottom: 30px;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(2) {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 0 10vw 18vh 0;
+                height: 100%;
+            }
+
+            .container[wide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(2)>div:nth-child(1) {
+                padding: 36px 42px;
+                max-width: 220px;
+            }
+
+            .container[wide-layout]>div:nth-child(2) ul {
+                box-sizing: border-box;
+                padding: 0 0 0 10vw;
+            }
+
+            .container[wide-layout]>div:nth-child(2) ul li {
+                box-sizing: border-box;
+                display: inline;
+                list-style-type: none;
+                padding-right: 20px;
+            }
+
+            .container[wide-layout]>div:nth-child(2) ul li a {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                text-decoration: none;
+            }
+
+            .container[wide-layout]>div:nth-child(2) ul li a ::before {
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+            .container[wide-layout]>div:nth-child(3) ul li {
+                box-sizing: border-box;
+                display: inline;
+                padding-right: 20px;
+            }
+
+            .container[extrawide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                margin-bottom: 40px;
+            }
+
+            .container[extrawide-layout]>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(3) {
+                font-size: 98px;
+                line-height: 82px;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .container>div:nth-child(1)>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <iron-media-query query="(min-width: 1281px)" query-matches="{{extrawide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <div class="container" wide-layout$="{{wide}}" extrawide-layout$="{{extrawide}}">
+            <div id="top">
+                <div>
+                    <display-language selected path="{{path}}"></display-language>
+                </div>
+                <div>
+                    <div>
+                        <div></div>
+                        <div>{{localize('welcome')}}</div>
+                        <div>swarm.
+                            <template is="dom-if" if="{{wide}}">
+                                <br>
+                            </template>city</div>
+                    </div>
+                    <div>
+                        <div autofocus on-click="_btnClick" on-KeyPress="_btnKeyPress">
+                            <div>{{localize('enter here')}}</div>
+                            <div>{{localize('boardwalk')}} v2.0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="middle">
+                <ul>
+                    <li>
+                        <a href="https://thisis.swarm.city/" target="_blank">{{localize('This is Swarm City')}}</a>
+                    </li>
+                    <li>
+                        <a href="http://swarmcitizens.org/" target="_blank">{{localize('Support')}}</a>
+                    </li>
+                    <li>
+                        <a href="http://swarmcitizens.org/app.php/help/faq?sid=f4439589cebbcbfea36e2508ec12f155" target="_blank">{{localize('FAQ')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://advisors.swarm.city/" target="_blank">{{localize('Advisors')}}</a>
+                    </li>
+                </ul>
+            </div>
+            <div id="bottom">
+                <div>{{localize('Find Swarm City on')}}</div>
+                <ul>
+                    <li>
+                        <a href="https://www.facebook.com/groups/SwarmCity/" target="_blank">{{localize('Facebook')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://discordapp.com/invite/6CsYT64" target="_blank">{{localize('Discord')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://slackinvite.swarm.city" target="_blank">{{localize('Slack')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://medium.com/swarm-city-times" target="_blank">{{localize('Medium')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/swarmcity" target="_blank">{{localize('Github')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://twitter.com/swarmcitydapp" target="_blank">{{localize('Twitter')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg" target="_blank">{{localize('Youtube')}}</a>
+                    </li>
+                    <li>
+                        <a href="https://www.reddit.com/r/SwarmCity/" target="_blank">{{localize('Reddit')}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class PageWelcome extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-welcome';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The animation object.
+                    */
+                    animation: {
+                        type: Object,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * The entry animation for this page
+                    */
+                    entryAnimation: {
+                        type: Object,
+                    },
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this.entryAnimation = {
+                    descriptionArray: [
+                        {'transform': 'translateX(-100%)'},
+                        {'transform': 'translateX(0)'},
+                    ],
+                    descriptionObject: {
+                        fill: 'forwards',
+                        duration: 500,
+                        iterations: 1,
+                        iterationStart: 0,
+                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                        delay: 0,
+                        endDelay: 0,
+                    },
+                };
+            }
+
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+
+            /**
+            * loads the next page, once loaded fires the exit animation
+            */
+            _btnClick() {
+                this.animation = {
+                    from: 'welcome',
+                    to: 'hashtag-list',
+                    entryPlaying: false,
+                    exitPlaying: false,
+                    descriptionArray: [
+                        {'transform': 'translateX(0)'},
+                        {'transform': 'translateX(-100%)'},
+                    ],
+                    descriptionObject: {
+                        fill: 'forwards',
+                        duration: 500,
+                        iterations: 1,
+                        iterationStart: 0,
+                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                        delay: 0,
+                        endDelay: 0,
+                    },
+                };
+            }
+        } window.customElements.define(PageWelcome.is, PageWelcome);
+    </script>
+</dom-module>

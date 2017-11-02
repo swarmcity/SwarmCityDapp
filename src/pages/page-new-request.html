@@ -1,0 +1,301 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-my-info.html">
+
+<dom-module id="page-new-request">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                background-image: var(--sc-bg);
+                height: 100%;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+            display-my-info {
+                box-sizing: border-box;
+                padding: 8vh 14vw 5vh 14vw;
+                width: 100%;
+            }
+
+            .container[wide-layout] display-my-info {
+                padding: 10vh 12vw;
+                z-index: 11;
+            }
+
+            .content {
+                @apply --layout-flex;
+                box-sizing: border-box;
+                padding: 7vh 14vw 0 14vw;
+                height: 100%;
+                width: 100%;
+            }
+
+            .container[wide-layout] .content {
+                padding: 0 12vw;
+            }
+
+            paper-textarea {
+                text-indent: 1px;
+                box-sizing: border-box;
+                padding: 0 2px;
+                width: 72vw;
+                margin-top: 5vh;
+                text-align: left;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-textarea {
+                width: inherit;
+                max-width: 60vw;
+                margin-top: 5vh;
+            }
+
+            paper-input {
+                text-indent: 1px;
+                width: 100%;
+                text-align: left;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .budget {
+                @apply --layout-flex;
+                margin-top: 10px;
+                max-width: 250px;
+            }
+
+            .container[wide-layout] .budget {
+                margin-top: 20px;
+                width: 250px;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .currency {
+                margin: 0 0 4px 15px;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .container[wide-layout] .cost {
+                text-align: left;
+            }
+
+            .cost {
+                @apply --small-bold;
+                margin-top: 8vh;
+                text-align: center;
+                color: var(--sc-grey4);
+            }
+
+            .container[wide-layout] .fee {
+                text-align: left;
+            }
+
+            .fee {
+                @apply --small-light;
+                text-align: center;
+                color: var(--sc-grey4);
+            }
+
+            .buttonbox {
+                margin-top: 10vh;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .container[wide-layout] .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                margin-top: 15vh;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+            }
+
+            .round-button:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --vmark-blue-normal;
+            }
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .agree {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <display-my-info avatarSmall></display-my-info>
+            <div class="content">
+                <paper-textarea class="request" label="{{localize('What are you looking for?')}}" type="txt"></paper-textarea>
+                <div class="horizontal">
+                    <paper-input class="budget" label="{{localize('What is your budget?')}}" type="txt"></paper-input>
+                    <div class="currency">SWT</div>
+                </div>
+                <div class="infobox">
+                    <div class="cost">{{localize('Total cost:')}} 20.05 SWT</div>
+                    <div class="fee">{{localize('The hashtag fee for')}} #Pioneer {{localize('is')}} 0.05 SWT</div>
+                </div>
+                <div class="buttonbox">
+                    <div class="disagree" on-click="_close" on-keypress="_close" tabindex="2" autofocus></div>
+                    <div class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
+                        <div class="agree"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </template>
+
+    <script>
+        class MyNewRequest extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-new-request';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                if (typeof sessionStorage.getItem('hashtagID') === 'string'
+                    || sessionStorage.getItem('hashtagID') instanceof String) {
+                    this.path = 'hashtag/' + sessionStorage.getItem('hashtagID');
+                    sessionStorage.removeItem('hashtagID');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
+            /**
+            * takes the user to page new-request-processing
+            */
+            _confirm() {
+                    this.set('route.path', 'new-request-processing');
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyNewRequest.is, MyNewRequest);
+    </script>
+</dom-module>

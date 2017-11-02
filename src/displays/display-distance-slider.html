@@ -1,0 +1,233 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="display-language.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-distance-slider></display-distance-slider>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--distance-slider-filter-list` | Mixin applied to the container | `{}` |
+| `--distance-slider` | Mixin applied to the hashtag | `{}` |
+| `--distance-slider-description` | Mixin applied to the deals | `{}` |
+-->
+<dom-module id="display-distance-slider">
+    <template>
+        <style>
+             :host {
+                display: block;
+            }
+
+            .container {
+                @apply --distance-slider-container;
+            }
+
+            .container p:nth-child(1) {
+                @apply --distance-slider-filter-list;
+            }
+
+            .range-description {
+                @apply --distance-slider-description;
+            }
+
+            paper-slider {
+                animation-name: scaleIn;
+                animation: scaleIn 0.5s forwards;
+                @apply --distance-slider;
+            }
+
+            @keyframes scaleIn {
+                0% {
+                    transform: scale(0, 0);
+                }
+                100% {
+                    transform: scale(1, 1);
+                }
+            }
+        </style>
+
+        <display-language language="{{language}}"></display-language>
+
+        <div class="container">
+            <p on-click="_toggleSlider">{{localize('filter list')}}</p>
+            <template is="dom-if" if="{{showSlider}}">
+                <p class="range-description">{{rangeDescription}}</p>
+                <paper-slider id="ratings" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
+            </template>
+        </div>
+
+    </template>
+    <script>
+        class DisplayDistanceSlider extends new ReduxMixin(Polymer.mixinBehaviors([
+                Polymer.AppLocalizeBehavior,
+            ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-distance-slider';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * Loading indicates if the componant is loading
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * range is the range the usert selected in slider
+                    * @type {Number}
+                    */
+                    range: {
+                        type: Number,
+                        notify: true,
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_routeChanged',
+                    },
+                    /**
+                    * Value is the value of the slider
+                    * @type {Number}
+                    */
+                    value: {
+                        type: Number,
+                        value: 0,
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * showSlider determines of the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_setDesc',
+                    },
+                    /**
+                    * rangeDescription is the description of the range
+                    * @type {String}
+                    */
+                    rangeDescription: {
+                        type: String,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * When the slider is shown se the default description
+            */
+            _setDesc() {
+                this.rangeDescription = this.localize('world wide');
+                this.value = 1;
+            }
+
+            /**
+            * Determine what the selected range is
+            */
+            _calcRange() {
+                const x = this.value;
+                switch (true) {
+                    case (x < 2):
+                        this.rangeDescription = this.localize('world wide');
+                        this.range = 10000000000000000000;
+                        break;
+                    case (x < 3):
+                        this.rangeDescription = this.localize('within 1000km');
+                        this.range = 1000000;
+                        break;
+                    case (x < 4):
+                        this.rangeDescription = this.localize('within 100km');
+                        this.range = 100000;
+                        break;
+                    case (x < 5):
+                        this.rangeDescription = this.localize('within 10km');
+                        this.range = 10000;
+                        break;
+                    case (x < 6):
+                        this.rangeDescription = this.localize('within 1km');
+                        this.range = 1000;
+                        break;
+                    case (x < 7):
+                        this.rangeDescription = this.localize('within 05km');
+                        this.range = 500;
+                }
+            }
+
+            /**
+            * Show and hide the slider or redirect to location
+            */
+            _toggleSlider() {
+                this.$.storage.accountExists()
+                    .then((account) => {
+                        if (!account.location) {
+                            sessionStorage.setItem('origin', this.route.path);
+                            this.set('route.path', 'location/');
+                        } else {
+                            this.showSlider = !this.showSlider;
+                        }
+                    });
+            }
+            /**
+            * See if location has been added on route change
+            */
+            _routeChanged() {
+                if (this.route.path == '/hashtag-list/') {
+                    this.$.storage.accountExists()
+                        .then((account) => {
+                            if (account.location) {
+                                this.showSlider = !this.showSlider;
+                            }
+                        });
+                }
+            }
+        }
+        window.customElements.define(DisplayDistanceSlider.is, DisplayDistanceSlider);
+    </script>
+</dom-module>

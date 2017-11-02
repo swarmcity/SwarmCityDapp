@@ -1,0 +1,540 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-my-info.html">
+<link rel="import" href="../displays/display-hashtag-about.html">
+<link rel="import" href="../displays/display-hashtag-deals.html">
+<link rel="import" href="../displays/display-deal-btn.html">
+<link rel="import" href="../displays/display-filter-deals.html">
+
+<dom-module id="page-hashtag">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+             :host {
+                width: 100vw;
+                height: 100%;
+                display: block;
+                max-width: 100%;
+            }
+
+            .container {
+                width: 100%;
+                height: 100%;
+                background-color: var(--sc-grey1);
+            }
+
+            .header {
+                @apply --layout-vertical;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 40px 40px 0 40px;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 2;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+                height: 50px;
+            }
+
+            .bottom {
+                @apply --layout-end;
+                @apply --layout-horizontal;
+                @apply --layout-wrap;
+                width: 100%;
+                margin-bottom: 18px;
+            }
+
+            .container .bottom {
+                margin-bottom: 28px;
+            }
+
+            .container[wide-layout] .header {
+                box-sizing: border-box;
+                padding: 60px 10vw 0 10vw;
+            }
+
+            .leftbottom {
+                margin-top: 30px;
+                @apply --layout-horizontal;
+                @apply --layout-flex;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .container[wide-layout] .leftbottom {
+                margin-top: 40px;
+            }
+
+            .hashtag {
+                @apply --main-title2;
+                color: var(--sc-grey4);
+            }
+
+            .back {
+                cursor: pointer;
+                @apply --arrowleft-grey3-small;
+            }
+
+            .info-toggle {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin: 0px 0px 8px 10px;
+            }
+
+            .filter-toggle {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                margin: 0px 0px 8px 10px;
+                border-bottom: 2px dotted var(--sc-grey3);
+                cursor: pointer;
+            }
+
+            [highlight-info] {
+                color: white;
+                background-color: var(--sc-blue);
+                border-bottom: 0;
+            }
+
+            [highlight-filter] {
+                color: white;
+                background-color: var(--sc-grey4);
+                border-bottom: 0;
+                padding: 1px 2px;
+            }
+
+            display-my-info {
+                @apply --layout-flex;
+            }
+
+            display-hashtag-deals {
+                margin: 184px 0 0 0;
+            }
+
+            .container[wide-layout] display-hashtag-deals {
+                margin-top: 206px;
+            }
+
+            .container[wide-layout] .top {
+                height: 42px;
+            }
+
+            .dealbtn {
+                position: fixed;
+                bottom: 50px;
+                right: 30px;
+            }
+
+            .container[wide-layout] .dealbtn {
+                bottom: auto;
+                right: 10vw;
+                top: 248px;
+            }
+
+            .slider {
+                border-bottom: 2px solid black;
+                position: fixed;
+                top: 184px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 40px 2vh 40px;
+                background-image: var(--sc-bg);
+                z-index: 1;
+            }
+
+            .slider-hidden-visible {
+                animation: slideDown 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .slider-visible-hidden {
+                animation: slideUp 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .slider-hidden {
+                display: none;
+            }
+
+            .info-hidden-visible {
+                animation: slideDown 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .info-visible-hidden {
+                animation: slideUp 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .info-hidden {
+                display: none;
+            }
+
+            .fade-hidden {
+                opacity: 1;
+            }
+
+            .fade-hidden-visible {
+                animation: fadeOut 0.1s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .fade-visible-hidden {
+                animation: fadeIn 0.1s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
+            }
+
+            .info {
+                border-bottom: 2px solid var(--sc-blue);
+                position: fixed;
+                top: 184px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 40px 2vh 40px;
+                background-image: var(--sc-bg);
+                z-index: 1;
+            }
+
+            .container[wide-layout] .slider {
+                padding: 0 10vw 2vh 10vw;
+                top: 206px;
+            }
+
+            .container[wide-layout] .info {
+                padding: 0 10vw 2vh 10vw;
+                top: 206px;
+            }
+
+            .fullheight {
+                height: 100%;
+            }
+
+
+            @keyframes slideUp {
+                0% {
+                    transform: translateY(0%);
+                }
+                100% {
+                    transform: translateY(-110%);
+                }
+            }
+
+            @keyframes slideDown {
+                0% {
+                    transform: translateY(-80%);
+                }
+                100% {
+                    transform: translateY(0%);
+                }
+            }
+
+            @keyframes infoUp {
+                0% {
+                    transform: translateY(0%);
+                }
+                100% {
+                    transform: translateY(-110%);
+                }
+            }
+
+            @keyframes infoDown {
+                0% {
+                    transform: translateY(-80%);
+                }
+                100% {
+                    transform: translateY(0%);
+                }
+            }
+
+
+            @keyframes fadeIn {
+                0% {
+                    opacity: 0.2;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeOut {
+                0% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0.2;
+                }
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .back {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <app-route route="{{route}}" pattern="/hashtag/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+
+        <div class="container" wide-layout$="{{wide}}">
+
+            <div class="header">
+                <div class="top">
+                    <display-my-info complete-account="{{completeAccount}}"></display-my-info>
+                    <div class="back" on-click="_back"></div>
+                </div>
+                <div class="bottom">
+                    <div class="leftbottom">
+                        <div class="hashtag">#{{hashtag.name}}</div>
+                    <display-hashtag-about 
+                        toggle 
+                        class="info-toggle" 
+                        highlight-info$="{{highlightInfoToggle}}"
+                        show-info="{{showInfo}}" 
+                        show-slider="{{showSlider}}">
+                    </display-hashtag-about>
+                    </div>
+                    <display-filter-deals 
+                        toggle 
+                        class="filter-toggle"
+                        highlight-filter$="{{highlightFilterToggle}}"
+                        show-slider="{{showSlider}}" 
+                        show-info="{{showInfo}}" 
+                        range="{{range}}"
+                        route="{{route}}" 
+                        path="{{path}}">
+                    </display-filter-deals>
+                </div>
+            </div>
+
+            <display-hashtag-about 
+                info 
+                class$="info [[infoState]]"
+                show-info="{{showInfo}}" >
+            </display-hashtag-about>
+
+            <display-filter-deals 
+                slider 
+                class$="slider [[sliderState]]" 
+                show-slider="{{showSlider}}" 
+                range="{{range}}" 
+                route="{{route}}" 
+                path="{{path}}">
+            </display-filter-deals>
+
+            <div class$="fade [[fadeState]] fullheight" on-click="_fadeClose">
+                <display-hashtag-deals 
+                    range="{{range}}" 
+                    hashtag="{{hashtag}}" 
+                    route-data="[[routeData]]" 
+                    path="{{path}}" 
+                    show-slider="{{showSlider}}"
+                    show-info="{{showInfo}}">
+                </display-hashtag-deals>
+
+                <div class="dealbtn">
+                    <display-deal-btn 
+                    route-data="[[routeData]]" 
+                    path="{{path}}">
+                </display-deal-btn>
+                </div>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        class NewHashtag extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-hashtag';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * sliderState represents the state of the slider
+                    * @type {String}
+                    */
+                    sliderState: {
+                        type: String,
+                        value: 'slider-initial',
+                    },
+                    /**
+                    * infoState represents the state of the info area
+                    * @type {String}
+                    */
+                    infoState: {
+                        type: String,
+                        value: 'info-initial',
+                    },
+                    /**
+                    * fadeState represents the state of the fade area
+                    * @type {String}
+                    */
+                    fadeState: {
+                        type: String,
+                        value: 'fade-hidden',
+                    },
+                    /**
+                    * showSlider determines of the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
+                        observer: '_toggleSlider',
+                    },
+                    /**
+                    * showInfo indicates if the hashtag info panel is open or not
+                    * @type {Boolean}
+                    */
+                    showInfo: {
+                        type: Boolean,
+                        observer: '_toggleInfo',
+                    },
+                    /**
+                    * highlightFilterToggle toggles
+                    * the background style of the show filter text link
+                    * @type {Boolean}
+                    */
+                    highlightFilterToggle: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * highlightInfoToggle toggles
+                    * the background style of the show filter text link
+                    * @type {Boolean}
+                    */
+                    highlightInfoToggle: {
+                        type: Boolean,
+                        value: false,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+            /**
+            * shows and hides the slider
+            */
+            _toggleSlider() {
+                switch (this.sliderState) {
+                    case 'slider-initial':
+                        this.sliderState = 'slider-hidden';
+                        this.fadeState = 'fade-visible-hidden';
+                        break;
+                    case 'slider-hidden':
+                        this.sliderState = 'slider-hidden-visible';
+                        this.fadeState = 'fade-hidden-visible';
+                        this.highlightFilterToggle = true;
+                        this.highlightInfoToggle = false;
+                        break;
+                    case 'slider-hidden-visible':
+                        this.sliderState = 'slider-visible-hidden';
+                        this.fadeState = 'fade-visible-hidden';
+                        this.highlightFilterToggle = false;
+                        setTimeout(() =>{
+                            this.sliderState = 'slider-hidden';
+                        }, 300);
+                        break;
+                    case 'slider-visible-hidden':
+                        this.sliderState = 'slider-hidden-visible';
+                        this.fadeState = 'fade-hidden-visible';
+                        this.highlightFilterToggle = true;
+                        this.highlightInfoToggle = false;
+                }
+            }
+            /**
+            * shows and hides the info box
+            */
+            _toggleInfo() {
+                switch (this.infoState) {
+                    case 'info-initial':
+                        this.infoState = 'info-hidden';
+                        break;
+                    case 'info-hidden':
+                        this.infoState = 'info-hidden-visible';
+                        this.sliderState = 'slider-hidden';
+                        this.fadeState = 'fade-hidden-visible';
+                        this.highlightInfoToggle = true;
+                        this.highlightFilterToggle = false;
+                        setTimeout(() =>{
+                            this.sliderState = 'slider-hidden';
+                        }, 300);
+                        break;
+                    case 'info-hidden-visible':
+                        this.infoState = 'info-visible-hidden';
+                        this.fadeState = 'fade-visible-hidden';
+                        this.highlightInfoToggle = false;
+                        break;
+                    case 'info-visible-hidden':
+                        this.infoState = 'info-hidden-visible';
+                        this.sliderState = 'slider-hidden';
+                        this.fadeState = 'fade-hidden-visible';
+                        this.highlightInfoToggle = true;
+                        this.highlightFilterToggle = false;
+                }
+            }
+            /**
+            * closes open header boxes
+            */
+            _fadeClose() {
+                if (this.showSlider) {
+                    this.showSlider = !this.showSlider;
+                }
+                else if (this.showInfo) {
+                    this.showInfo = !this.showInfo;
+                }
+            }
+            /**
+            * takes the user to the hashtag list page
+            */
+            _back() {
+                this.set('route.path', 'hashtag-list/');
+                this.infoState = 'info-hidden';
+                this.sliderState = 'slider-hidden';
+                this.fadeState = 'fade-hidden';
+                this.highlightInfoToggle = false;
+                this.highlightFilterToggle = false;
+            }
+        }
+        window.customElements.define(NewHashtag.is, NewHashtag);
+    </script>
+</dom-module>

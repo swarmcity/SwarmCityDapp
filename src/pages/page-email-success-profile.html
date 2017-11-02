@@ -1,0 +1,187 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-email-success-profile">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+    -->
+        <style include="shared-styles">
+             :host {
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                height: 100%;
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 0 14vw;
+            }
+
+            .container[wide-layout] {
+                padding: 0 12vw 0 12vw;
+            }
+
+            .title {
+                @apply --main-title1;
+                color: var(--sc-blue);
+                word-wrap: break-word;
+                text-align: center;
+                margin: 15vh 0 4vh 0;
+            }
+
+            .container[wide-layout] .title {
+                margin: 25vh 0 4vh 0;
+                @apply --layout-horizontal;
+                @apply --layout--start-justified;
+                @apply --main-title1-wide;
+                max-width: 750px;
+            }
+
+            .top {
+                @apply --layout-flex;
+                height: 100%;
+                width: 100%;
+            }
+
+            .greytext {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+                margin-bottom: 4vh;
+                text-align: center;
+                line-height: 22px;
+            }
+
+            .container[wide-layout] .greytext {
+                margin-bottom: 2vh;
+                text-align: left;
+                max-width: 430px;
+            }
+
+            .button {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --text-button-big-fullwhite;
+                width: 100%;
+                max-width: 320px;
+                margin-top: 12vh;
+            }
+
+            .container[wide-layout] .button {
+                margin-top: 0px;
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+
+            .bluetext {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin-top: 4vh;
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                height: 40vh;
+                width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-start;
+                height: 35vh;
+            }
+        </style>
+
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="title">{{localize('Success!')}}</div>
+                <div class="greytext">{{localize('The file has been sent to your email.')}}</div>
+                <div class="greytext">{{localize('Your account file combined with your password will always give you access to your SWT balance.')}}</div>
+            </div>
+            <div class="bottom">
+                <div class="button" on-click="_back">{{localize('back to profile')}}</div>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        class MyEmailBackupProfile extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-email-success-profile';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to page-stop-signup
+            */
+            _close() {
+                this.path = 'stop-signup/';
+            }
+            /**
+            * takes the user to page-my-profile
+            */
+            _back() {
+                this.path = 'my-profile/';
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyEmailBackupProfile.is, MyEmailBackupProfile);
+    </script>
+</dom-module>
