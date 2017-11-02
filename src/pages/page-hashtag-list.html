@@ -232,6 +232,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    route: {
+                        type: Object,
+                        notify: true,
+                    },
                     /**
                     * The animation object
                     */
@@ -311,8 +315,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 this.entryAnimation = {
                     descriptionArray: [
-                        {'transform': 'translateX(100%)'},
-                        {'transform': 'translateX(0)'},
+                        { 'transform': 'translateX(100%)' },
+                        { 'transform': 'translateX(0)' },
                     ],
                     descriptionObject: {
                         fill: 'forwards',
@@ -324,11 +328,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         endDelay: 0,
                     },
                 };
-            }
-            _path() {
-                if (this.path) {
-                    this.set('route.path', this.path);
-                }
             }
             /**
             * determines the state of the slider and the fade
@@ -366,25 +365,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the welcome page
             */
             _back() {
-                this.animation = {
-                    from: 'hashtag-list',
-                    to: 'welcome',
-                    entryPlaying: false,
-                    exitPlaying: false,
-                    descriptionArray: [
-                        {'transform': 'translateX(0)'},
-                        {'transform': 'translateX(100%)'},
-                    ],
-                    descriptionObject: {
-                        fill: 'forwards',
-                        duration: 500,
-                        iterations: 1,
-                        iterationStart: 0,
-                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                        delay: 0,
-                        endDelay: 0,
-                    },
-                };
+                this.set('route.path', 'welcome/');
             }
         }
         window.customElements.define(HashtagList.is, HashtagList);

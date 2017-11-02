@@ -107,6 +107,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    route: {
+                        type: Object,
+                        notify: true,
+                    },
                     /**
                     * Location is the page path the user is on
                     * @type {String}
@@ -139,38 +143,11 @@ This code may only be used under the license found at https://github.com/swarmci
             * location checks if the user is on this page and fires the entry animation
             */
             _entryAnimation() {
-                if (this.location.nowAt == 'language') {
-                    this.$.displayLanguage.animate(
-                    [
-                        {'transform': 'translateY(-100%)'},
-                        {'transform': 'translate(0)'},
-                    ], {
-                        fill: 'none',
-                        duration: 300,
-                        iterations: 1,
-                        easing: 'cubic-bezier(0.177,0,0.086,1)',
-                        delay: 0,
-                    }
-                    );
-                }
             }
             /**
             * changes the current path to welcome-page when X is seclected
             */
             _exitAnimation() {
-                const exitAnim = this.$.displayLanguage.animate(
-                    [
-                        {'transform': 'translate(0)'},
-                        {'transform': 'translateY(-100%)'},
-                    ], {
-                        fill: 'none',
-                        duration: 300,
-                        iterations: 1,
-                        easing: 'cubic-bezier(0.177,0,0.086,1)',
-                        delay: 0,
-                    }
-                    );
-                    exitAnim.onfinish = this._changePage.bind(this);
             }
             _changePage() {
                 this.set('route.path', 'welcome/');
@@ -180,7 +157,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _path() {
                 if (this.path) {
-                    this.set('route.path', 'welcome/');
+                    this.set('route.path', this.path);
                 }
             }
         }
