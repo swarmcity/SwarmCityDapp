@@ -1,0 +1,79 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../redux-state.html">
+<dom-module id="socket-redux">
+
+    <script>
+        class SocketRedux extends new ReduxMixin(Polymer.Element) {
+            static get is() {
+                return 'socket-redux';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * balance represnts the users balance
+                    * @type {Array}
+                    */
+                    balance: {
+                        type: Array,
+                    },
+                    /**
+                    * fx is the SWT exchange rates
+                    * @type {Object}
+                    */
+                    fx: {
+                        type: Object,
+                    },
+                    /**
+                    * show the hashtags
+                    * @type {Array}
+                    */
+                    hashtags: {
+                        type: Array,
+                    },
+                };
+            }
+            /**
+            * Redux action for sertting balance
+            * @param {balance} balance
+            */
+            static get actions() {
+                return Object.assign({
+                    BALANCE: function(balance) {
+                        return {
+                            type: 'BALANCE',
+                            balance: balance,
+                        };
+                    },
+                    FX: function(fx) {
+                        return {
+                            type: 'FX',
+                            fx: fx,
+                        };
+                    },
+                    HASHTAGS: function(hashtags) {
+                        return {
+                            type: 'HASHTAGS',
+                            hashtags: hashtags,
+                        };
+                    },
+                });
+            }
+            ready() {
+                super.ready();
+                socket.on('balanceChanged', (data) => {
+                    this.balance = data;
+                    this.dispatch('BALANCE', this.balance);
+                });
+                socket.on('fxChanged', (data) => {
+                    this.fx = data;
+                    this.dispatch('FX', this.fx);
+                });
+                socket.on('hashtagsChanged', (data) => {
+                    this.hashtags = data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+            }
+        } window.customElements.define(SocketRedux.is, SocketRedux);
+    </script>
+</dom-module>
+
