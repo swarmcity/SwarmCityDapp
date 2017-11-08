@@ -111,25 +111,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 animation: fadeOut 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
             }
 
-            .filter-toggle {
-                cursor: pointer;
-                @apply --small-bold;
-                color: var(--sc-grey3);
-                margin-bottom: 18px;
-                border-bottom: 2px dotted var(--sc-grey3);
-                margin-top: 41px;
-            }
-
             [highlight-filter] {
                 color: white;
                 background-color: var(--sc-grey4);
                 border-bottom: 0;
                 padding: 0 40px 2vh 40px;
                 padding: 1px 2px;
-            }
-
-            .container[wide-layout] .filter-toggle {
-                margin-top: 59px;
             }
 
             display-hashtag-list {
@@ -194,30 +181,20 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="header">
 
                 <div class="topleft">
-                    <display-my-info id="myInfo" complete-account="{{completeAccount}}">
+                    <display-my-info id="myInfo" complete-account="{{completeAccount}}" path="{{path}}">
                     </display-my-info>
                 </div>
 
-
                 <div class="topright">
                     <div class="back" on-click="_back" id="back"></div>
-
-                    <display-filter-list toggle id="filterToggle" class="filter-toggle" highlight-filter$="{{highlightFilterToggle}}" show-slider="{{showSlider}}"
-                        range="{{range}}" route="{{route}}" path="{{path}}">
-                    </display-filter-list>
-
                 </div>
 
             </div>
 
-            <display-filter-list slider class$="slider [[sliderState]]" show-slider="{{showSlider}}" range="{{range}}" route="{{route}}"
-                path="{{path}}">
-            </display-filter-list>
-
             <div class$="fade [[fadeState]] fullheight" on-click="_fadeClose">
-                <display-hashtag-list id="hashtagList" range="[[range]]" path="{{path}}" show-slider="{{showSlider}}">
-                </display-hashtag-list>
+                <display-hashtag-list id="hashtagList" path="{{path}}"></display-hashtag-list>
             </div>
+            
         </div>
     </template>
 
@@ -283,29 +260,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                     },
                     /**
-                    * showSlider determines if the slider is show or not
-                    * @type {Boolean}
-                    */
-                    showSlider: {
-                        type: Boolean,
-                        observer: '_toggleSlider',
-                    },
-                    /**
                     * fadeState represents the state of hashtaglist container
                     * @type {String}
                     */
                     fadeState: {
                         type: String,
                         value: 'fade-hidden',
-                    },
-                    /**
-                    * highlightFilterToggle toggles
-                    * the background style of the show filter text link
-                    * @type {Boolean}
-                    */
-                    highlightFilterToggle: {
-                        type: Boolean,
-                        value: false,
                     },
                 };
             }
@@ -366,6 +326,16 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _back() {
                 this.set('route.path', 'welcome/');
+            }
+
+            /**
+            * triggered after the user selects a language
+            */
+            _path() {
+                if (this.path) {
+                    this.set('route.path', this.path);
+                    this.path = null;
+                }
             }
         }
         window.customElements.define(HashtagList.is, HashtagList);
