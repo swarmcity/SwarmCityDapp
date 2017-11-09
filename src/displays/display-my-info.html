@@ -73,7 +73,7 @@ The following custom properties and mixins are available for styling:
         
         <template is="dom-if" if="{{completeAccount}}">
             <div class="container" wide-layout$="{{wide}}">
-                <img on-click="_toProfile" src="../../images/defaultavatar.png">
+                <img on-click="_toProfile" src="{{avatar}}">
                 <div>
                     <div on-click="_toProfile">{{username}}</div>
                     <div on-click="_toWallet">{{balance}} SWT</div>
@@ -83,11 +83,11 @@ The following custom properties and mixins are available for styling:
 
     </template>
     <script>
-        class DisplayMyInfo extends Polymer.mixinBehaviors([
+        class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
-        ) {
+        )) {
             static get is() {
                 return 'display-my-info';
             }
@@ -108,7 +108,6 @@ The following custom properties and mixins are available for styling:
                     */
                     username: {
                         type: String,
-                        value: 'Xavier Hendrickx',
                     },
                     /**
                     * Avatar represents the users IPFS to their avatar image
@@ -116,6 +115,7 @@ The following custom properties and mixins are available for styling:
                     */
                     avatar: {
                         type: String,
+                        value: '../../images/defaultavatar.png',
                     },
                     /**
                     * Balance represents the users SWT balance
@@ -123,7 +123,7 @@ The following custom properties and mixins are available for styling:
                     */
                     balance: {
                         type: Number,
-                        value: 0,
+                        statePath: 'balance',
                     },
                     /**
                     * completeAccount represents true of the user
@@ -140,8 +140,14 @@ The following custom properties and mixins are available for styling:
             /**
             * Fired when the component first loads
             */
-            connectedCallback() {
-                super.connectedCallback();
+            ready() {
+                super.ready();
+                let data = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.avatar = data.user.avatar;
+                this.username = data.user.username;
+                if (this.username) {
+                    this.completeAccount = true;
+                }
             }
             /**
             * takes the user to the my-profile page
