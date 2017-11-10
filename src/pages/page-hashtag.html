@@ -297,7 +297,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
                 <div class="bottom">
                     <div class="leftbottom">
-                        <div class="hashtag">#{{hashtag.name}}</div>
+                        <div class="hashtag"># {{hashtag.name}} </div>
                     <display-hashtag-about 
                         toggle 
                         class="info-toggle" 
@@ -345,10 +345,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 </display-hashtag-deals>
 
                 <div class="dealbtn">
-                    <display-deal-btn 
+                    <!-- <display-deal-btn 
                     route-data="[[routeData]]" 
                     path="{{path}}">
-                </display-deal-btn>
+                </display-deal-btn> -->
                 </div>
             </div>
         </div>
@@ -432,12 +432,49 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * highlightInfoToggle toggles
+                    * the background style of the show filter text link
+                    * @type {Boolean}
+                    */
+                    hashtags: {
+                        type: Array,
+                        statePath: 'hashtags',
+                        observer: '_filterHashtags',
+                    },
+                    /**
+                    * the curent route
+                    */
+                    route: {
+                        type: String,
+                        observer: '_routeChanged',
+                    },
+                    /**
+                    * the selected hashtag
+                    */
+                    hashtag: {
+                        type: Object,
+                    },
                 };
             }
 
-            connectedCallback() {
-                super.connectedCallback();
+            ready() {
+                super.ready();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * find the selected hashtag
+            */
+            _filterHashtags() {
+                let selectedHashtag = this.hashtags.filter((hashtag) => {
+                    return hashtag.id == this.route.path.split('/')[2];
+                });
+                this.hashtag = selectedHashtag[0];
+            }
+            _routeChanged() {
+                if (this.hashtags) {
+                    this._filterHashtags();
+                }
             }
             /**
             * shows and hides the slider
