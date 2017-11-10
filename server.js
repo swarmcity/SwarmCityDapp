@@ -1,8 +1,8 @@
-var prpl = require('prpl-server');
-var express = require('express');
-var helmet = require('helmet');
-var app = express();
-var server = require('http').createServer(app);
+const prpl = require('prpl-server');
+const express = require('express');
+const helmet = require('helmet');
+const app = express();
+const server = require('http').createServer(app);
 
 app.use(helmet());
 

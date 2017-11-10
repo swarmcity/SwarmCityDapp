@@ -7,7 +7,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
 <!--
@@ -288,7 +287,6 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <app-route route="{{route}}" pattern="/hashtag/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
         <div class="container" wide-layout$="{{wide}}">
 
@@ -441,16 +439,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
-
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
-            }
             /**
             * shows and hides the slider
             */
@@ -527,12 +515,24 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the hashtag list page
             */
             _back() {
-                this.set('route.path', 'hashtag-list/');
-                this.infoState = 'info-hidden';
-                this.sliderState = 'slider-hidden';
-                this.fadeState = 'fade-hidden';
-                this.highlightInfoToggle = false;
-                this.highlightFilterToggle = false;
+                this.path = 'hashtag-list/';
+
+                // this.infoState = 'info-hidden';
+                // this.sliderState = 'slider-hidden';
+                // this.fadeState = 'fade-hidden';
+                // this.highlightInfoToggle = false;
+                // this.highlightFilterToggle = false;
+            }
+
+
+            /**
+            * triggered after the user selects a language
+            */
+            _path() {
+                if (this.path) {
+                    this.set('route.path', this.path);
+                    this.path = null;
+                }
             }
         }
         window.customElements.define(NewHashtag.is, NewHashtag);
