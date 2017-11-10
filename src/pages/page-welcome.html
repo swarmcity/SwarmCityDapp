@@ -331,6 +331,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    route: {
+                        type: Object,
+                        notify: true,
+                    },
                     /**
                     * The animation object.
                     */
@@ -342,8 +346,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     /**
                     * The entry animation for this page
                     */
-                    entryAnimation: {
-                        type: Object,
+                    entryPlaying: {
+                        type: Boolean,
+                    },
+                    /**
+                    * The exit animation for this page
+                    */
+                    exitPlaying: {
+                        type: Boolean,
                     },
                     language: {
                         type: String,
@@ -362,21 +372,6 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                this.entryAnimation = {
-                    descriptionArray: [
-                        {'transform': 'translateX(-100%)'},
-                        {'transform': 'translateX(0)'},
-                    ],
-                    descriptionObject: {
-                        fill: 'forwards',
-                        duration: 500,
-                        iterations: 1,
-                        iterationStart: 0,
-                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                        delay: 0,
-                        endDelay: 0,
-                    },
-                };
             }
 
             /**
@@ -393,25 +388,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * loads the next page, once loaded fires the exit animation
             */
             _btnClick() {
-                this.animation = {
-                    from: 'welcome',
-                    to: 'hashtag-list',
-                    entryPlaying: false,
-                    exitPlaying: false,
-                    descriptionArray: [
-                        {'transform': 'translateX(0)'},
-                        {'transform': 'translateX(-100%)'},
-                    ],
-                    descriptionObject: {
-                        fill: 'forwards',
-                        duration: 500,
-                        iterations: 1,
-                        iterationStart: 0,
-                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                        delay: 0,
-                        endDelay: 0,
-                    },
-                };
+                this.set('route.path', 'hashtag-list/');
             }
         } window.customElements.define(PageWelcome.is, PageWelcome);
     </script>

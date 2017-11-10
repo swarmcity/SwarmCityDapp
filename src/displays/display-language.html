@@ -39,7 +39,7 @@ Example:
 
         <template is="dom-if" if="{{selected}}">
             <div class="language" on-click="_navigateTo">
-                {{language.name}}
+                {{language}}
             </div>
         </template>
 
@@ -60,7 +60,6 @@ Example:
             Polymer.Element
         )) {
             static get is() {
-
                 return 'display-language';
             }
             static get properties() {
@@ -71,7 +70,7 @@ Example:
                     */
                     language: {
                         type: String,
-                        statePath: 'language'
+                        statePath: 'language',
                     },
                     /**
                     * Selected if true shows the users selected language
@@ -101,7 +100,7 @@ Example:
                     },
                     locales: {
                         type: Array,
-                    }
+                    },
                 };
             }
             /**
@@ -122,7 +121,6 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this._showButtons();
-                console.log(this.language);
             }
 
             /**
@@ -133,7 +131,7 @@ Example:
             _showButtons() {
                 if (this.buttons) {
                     this.locales = [
-                        {iso: 'en', name: 'English'}, 
+                        {iso: 'en', name: 'English'},
                         {iso: 'cn', name: '中文'},
                         {iso: 'fr', name: 'Français'},
                         {iso: 'nl', name: 'Nederlands'},
@@ -150,21 +148,29 @@ Example:
             * @param {event} event represents the button the user clicked
             */
             _selectLanguage(event) {
-                console.log(event.model.__data.item.iso);
-                // let account = this.account;
-                // account.language = this.iso[event.model.__data.index];
-                // this.$.localStorage.saveAccount(account);
-                // this.language = this.iso[event.model.__data.index];
-                // this.dispatch('LANGUAGE', this.language);
-                // if (this.path == undefined) {
-                //     this.path = 'welcome/';
-                // }
-                // if (this.path == 'welcome/') {
-                //     this.path = '/';
-                // }
-                // if (this.path == '/') {
-                //     this.path = 'welcome/';
-                // }
+                const selectedLanguage = event.model.__data.item.iso;
+                this.dispatch('LANGUAGE', selectedLanguage);
+                if (this.path == undefined) {
+                    this.path = 'welcome/';
+                }
+                if (this.path == 'welcome/') {
+                    this.path = '/';
+                }
+                if (this.path == '/') {
+                    this.path = 'welcome/';
+                }
+
+                let data = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (data) {
+                    data.user.language = selectedLanguage;
+                } else {
+                    data = {
+                        user: {
+                            language: selectedLanguage,
+                        },
+                    };
+                }
+                localStorage.setItem('SwarmCity', JSON.stringify(data));
             }
 
             /**

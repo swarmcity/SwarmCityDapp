@@ -88,27 +88,17 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="box" on-click="_toHashtag">
-                <div class="flex">
-                    <div class="hashtag">
-                        <span class="cursor">#Pioneer</span>
-                    </div>
-                    <div class="deals">25 {{localize('deals done')}}</div>
-                </div>
-                <div class="right"></div>
-            </div>
-
-            <!-- <template is="dom-repeat" items="{{hashtags}}" id="domRepeat">
+            <template is="dom-repeat" items="{{hashtags}}" id="domRepeat">
                 <div class="box" on-click="_toHashtag">
                     <div class="flex">
-                        <div class="hashtag">
-                            <span class="cursor">#[[item.hashtag_name]]</span>
-                        </div>
+                            <div class="hashtag">
+                                <span class="cursor">#[[item.name]]</span>
+                            </div>
                         <div class="deals">[[item.deals]] {{localize('deals done')}}</div>
                     </div>
                     <div class="right"></div>
                 </div>
-            </template> -->
+            </template> 
         </div>
     </template>
     <script>
@@ -131,15 +121,6 @@ The following custom properties and mixins are available for styling:
                         statePath: 'language',
                     },
                     /**
-                    * Loading indicates if the componant is loading
-                    * @type {Boolean}
-                    */
-                    loading: {
-                        type: Boolean,
-                        value: false,
-                        notify: true,
-                    },
-                    /**
                     * Path signlas to the parent to change the path
                     * @type {String}
                     */
@@ -156,39 +137,19 @@ The following custom properties and mixins are available for styling:
                         type: Array,
                         statePath: 'hashtags',
                     },
-                    /**
-                    * showSlider determines of the slider is show or not
-                    * @type {Boolean}
-                    */
-                    showSlider: {
-                        type: Boolean,
-                    },
                 };
-            }
-
-            static get observers() {
-                return [
-                    '_hashtagChanged(hashtags.*)',
-                ];
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
-
-            _hashtagChanged() {
-                this.$.domRepeat.render();
-            }
             /**
             * @param {object} e represents the selected hashtag
             * When a hashtag is selected change the route to include the hashtag id.
             */
             _toHashtag(e) {
-                if (!this.showSlider) {
-                    this.path = null;
-                    this.path = 'hashtag/-KuQnhD1zADJ1ukDTiG6/';
-                }
+                this.path = 'hashtag/'+e.model.__data.item.id+'/';
             }
         }
         window.customElements.define(DisplayHashtagList.is, DisplayHashtagList);
