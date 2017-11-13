@@ -30,7 +30,7 @@ The following custom properties and mixins are available for styling:
 <dom-module id="display-filter-deals">
     <template>
         <style>
-             :host {
+            :host {
                 display: block;
             }
 
@@ -96,25 +96,18 @@ The following custom properties and mixins are available for styling:
         <display-language language="{{language}}"></display-language>
 
         <div class="container">
-            <template is="dom-if" if="{{toggle}}">
-                <div class="toggle" on-click="_toggleSlider">{{localize('filter deals')}}</div>
-            </template>
-            <template is="dom-if" if="{{slider}}">
-                <div class="togglebox">
-                    <div class="activity">{{localize('Looking for deals')}}...</div>
-                    <div class="range-description">{{localize('within +/- 100km from your location')}}</div>
-                    <div class="sliderbox">
-                        <div class="pin-icon"></div>
-                        <paper-slider .class="slider" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
-                        <div class="globe-icon"></div>
-                    </div>
-                    <div class="arrowup">
-                        <div class="arrowup-icon" on-click="_closeSlider"></div>
-                    </div>
+            <div class="togglebox">
+                <div class="activity">{{localize('Looking for deals')}}...</div>
+                <div class="range-description">{{localize('within +/- 100km from your location')}}</div>
+                <div class="sliderbox">
+                    <div class="pin-icon"></div>
+                    <paper-slider .class="slider" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
+                    <div class="globe-icon"></div>
                 </div>
-            </template>
-
-
+                <div class="arrowup">
+                    <div class="arrowup-icon" on-click="_closeSlider"></div>
+                </div>
+            </div>
         </div>
 
     </template>
@@ -195,9 +188,8 @@ The following custom properties and mixins are available for styling:
                     */
                     showSlider: {
                         type: Boolean,
-                        value: false,
-                        observer: '_setDesc',
                         notify: true,
+                        reflectToAttribute: true,
                     },
                     /**
                     * showInfo indicates if the info panel is open or not
@@ -225,7 +217,7 @@ The following custom properties and mixins are available for styling:
             * Closes the slider
             */
             _closeSlider() {
-                this.showSlider = false;
+                this.showSlider = (new Date).getTime();
             }
             /**
             * When the slider is shown se the default description
