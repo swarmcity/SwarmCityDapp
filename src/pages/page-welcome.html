@@ -343,18 +343,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         reflectToAttribute: true,
                         notify: true,
                     },
-                    /**
-                    * The entry animation for this page
-                    */
-                    entryPlaying: {
-                        type: Boolean,
-                    },
-                    /**
-                    * The exit animation for this page
-                    */
-                    exitPlaying: {
-                        type: Boolean,
-                    },
                     language: {
                         type: String,
                         statePath: 'language',
@@ -367,8 +355,17 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    pageID: {
+                        type: String,
+                        value: 'welcome',                        
+                    }
                 };
             }
+
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -389,6 +386,18 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _btnClick() {
                 this.set('route.path', 'hashtag-list/');
+            }
+
+            _loadElementAnimations() {
+                if(this.routeHistory[0] == this.pageID) {
+                    // Here come the Exit Animations
+
+
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    
+
+                }
             }
         } window.customElements.define(PageWelcome.is, PageWelcome);
     </script>
