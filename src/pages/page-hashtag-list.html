@@ -245,6 +245,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'hashtag-list',
+                    },
+                    /**
                     * sliderState represents style state of the slider
                     * @type {String}
                     */
@@ -338,6 +354,79 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.path = null;
                 }
             }
+
+            _loadElementAnimations() {
+
+                if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        this.$.hashtagList.animate(
+                            [
+                                { 'transform': 'translateY(0px)' },
+                                { 'transform': 'translateY(50px)' }
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        )
+                        this.$.back.animate(
+                            [
+                                { 'opacity': '1' },
+                                { 'opacity': '0' }
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        )
+                    } else if (this.routeHistory[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        this.$.hashtagList.animate(
+                            [
+                                { 'transform': 'translateY(50px)' },
+                                { 'transform': 'translateY(0)' }
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                delay: 300,
+                                endDelay: 0,
+                            }
+                        )
+                        this.$.back.animate(
+                            [
+                                { 'opacity': '0' },
+                                { 'opacity': '1' }
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                delay: 300,
+                                endDelay: 0,
+                            }
+                        )
+                    }                
+                }
+            }
+
+
         }
         window.customElements.define(HashtagList.is, HashtagList);
     </script>
