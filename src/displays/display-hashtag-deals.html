@@ -174,6 +174,8 @@ The following custom properties and mixins are available for styling:
         <display-language language="{{language}}"></display-language>
         <div class="container" wide-layout$="{{wide}}">
             <!-- <div class="empty">{{localize('Currently no deals selected. Try a broader search.')}}</div> -->
+            
+        <template is="dom-repeat" items="{{hashtagDeals}}">
             <div class="box" on-click="_toNewHere">
                 <div class="top">
                     <div class="avatar"></div>
@@ -192,100 +194,9 @@ The following custom properties and mixins are available for styling:
                     </div>
                 </div>
             </div>
-            <div class="box" on-click="_toDetail">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Ride from literon busstop to protest</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                            eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                            deserunt mollit anim id est laborum.</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
+        </template>
+
+
         </div>
     </template>
     <script>
@@ -308,22 +219,14 @@ The following custom properties and mixins are available for styling:
                         statePath: 'language',
                     },
                     /**
-                    * Loading indicates if the componant is loading
+                    * all the deals for all hashtags
                     * @type {Boolean}
                     */
-                    loading: {
+                    deals: {
                         type: Boolean,
-                        value: false,
-                        notify: true,
+                        statePath: 'deals',
+                        observer: '_filterThisDeal'
                     },
-                    // /**
-                    //  * range is the range the usert selected in slider
-                    //  * @type {Number}
-                    //  */
-                    // range: {
-                    //     type: Number,
-                    //     observer: '_rangeChanged',
-                    // },
                     /**
                     * route data represents the curent route
                     * @type {String}
@@ -371,6 +274,18 @@ The following custom properties and mixins are available for styling:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * Filters all deals to just the deals we need for this hashtag
+            */
+            _filterThisDeal() {
+                // TODO:
+                // Get this hashtags ID as this.hashtagId
+                // from this.deals filter out just the data for this hashtag...
+                this.hashtagDeals = this.deals.filter( (data) => {
+                    return (data.id == this.hashtagId);
+                });
             }
 
             /**
