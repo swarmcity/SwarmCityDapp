@@ -18,7 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-hashtag-deals.html">
 <link rel="import" href="../displays/display-deal-btn.html">
 <link rel="import" href="../displays/display-filter-deals.html">
-<link rel="import" href="../displays/display-deal-involved.html">
+<link rel="import" href="../displays/display-item-involved.html">
 
 <dom-module id="page-hashtag">
     <template>
@@ -36,6 +36,11 @@ This code may only be used under the license found at https://github.com/swarmci
             .container {
                 width: 100%;
                 background-image: var(--sc-bg);
+            }
+
+            .pushdown {
+                width: 100%;
+                height: 144px;
             }
 
             .header {
@@ -92,12 +97,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-end;
             }
 
-            display-deal-involved {
-                margin-top: 10px;
-                margin-bottom: 20px;
+            display-item-involved {
+                position: relative;
+                z-index: 2;
             }
 
-            .container[wide-layout] display-deal-involved {
+            .container[wide-layout] display-item-involved {
                 margin-top: 15px;
                 margin-bottom: 2px;
             }
@@ -258,8 +263,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
 
-        <div class="container" wide-layout$="{{wide}}" onscroll="">
-
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
                     <display-my-info></display-my-info>
@@ -283,7 +288,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </template>
             </dom-if>
 
-            <div class="temp">te</div>
+            <display-item-involved></display-item-involved>
 
 
             <div class="slidebox">
@@ -304,7 +309,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
 
             <div id="fadeArea" on-click="_fadeClose">
-                <!-- <display-deal-involved></display-deal-involved> -->
+                <!-- <display-item-involved></display-item-involved> -->
                 <display-hashtag-deals 
                     range="{{range}}" 
                     hashtag="{{hashtag}}" 
@@ -537,7 +542,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             resizeHeaderOnScroll() {
-                console.log(' test');
+                console.log('test');
                 const distanceY = window.pageYOffset || document.documentElement.scrollTop,
                 shrinkOn = 200,
                 headerEl = document.getElementById('hashtag');
