@@ -15,7 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-hashtag-about.html">
-<link rel="import" href="../displays/display-hashtag-deals.html">
+<link rel="import" href="../displays/display-hashtag-items.html">
 <link rel="import" href="../displays/display-deal-btn.html">
 <link rel="import" href="../displays/display-filter-deals.html">
 <link rel="import" href="../displays/display-item-involved.html">
@@ -40,7 +40,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .pushdown {
                 width: 100%;
-                height: 144px;
+                height: 136px;
             }
 
             .header {
@@ -72,22 +72,22 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 42px;
             }
 
+            display-my-info {
+                @apply --layout-flex;
+            }
+
             .bottom {
                 @apply --layout-start;
                 @apply --layout-horizontal;
                 @apply --layout-wrap;
                 box-sizing: border-box;
-                padding: 5px 40px;
+                padding: 5px 40px 5px 40px;
                 width: 100%;
             }
 
             .container[wide-layout] .bottom {
                 box-sizing: border-box;
                 padding: 0 10vw;
-            }
-
-            .container .bottom {
-                margin-bottom: 8px;
             }
 
             .leftbottom {
@@ -123,9 +123,13 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .info-toggle {
                 @apply --small-bold;
+                @apply --layout-center;
                 color: var(--sc-blue);
                 border-bottom: 2px dotted var(--sc-blue);
                 margin: 0px 0px 8px 10px;
+                box-sizing: border-box;
+                padding: 1px 3px;
+                cursor: pointer;
             }
 
             .highlight-info {
@@ -134,41 +138,59 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 0;
             }
 
-            .filter-toggle {
+            .scrollbar {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                position: sticky;
+                top: 134px;
+                z-index: 1;
+            }
+
+            .buttonbar {
+                @apply --layout-center;
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
                 box-sizing: border-box;
-                padding: 5px 40px;
-                color: var(--sc-grey3);
-                cursor: pointer;
+                padding: 5px 40px 10px 40px;
                 z-index: 2;
                 background-image: var(--sc-bg);
+                min-height: 27px;
+            }
+
+            .filter-toggle {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                cursor: pointer;
+                background-color: #e0dfe0;
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 4px 6px;
             }
 
             .highlight-filter {
                 color: white;
-                background-color: var(--sc-grey4);
-                border-bottom: 0;
-                padding: 1px 2px;
+                background-color: var(--sc-grey3);
             }
 
-            .filter-text {
-                @apply --small-bold;
-                background-color: var(--sc-grey2);
-                border-radius: 2%;
-                box-sizing: border-box;
-                padding: 0 2px;
-            }
-
-            display-my-info {
+            .flex {
                 @apply --layout-flex;
             }
 
-            display-hashtag-deals {
+            .involved-toggle {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                background-color: var(--sc-white);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 4px 6px;
+                cursor: pointer;
+            }
+
+            display-hashtag-items {
                 margin: 0 0 0 0;
             }
 
-            .container[wide-layout] display-hashtag-deals {
+            .container[wide-layout] display-hashtag-items {
                 margin-top: 156px;
             }
 
@@ -211,45 +233,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 position: absolute;
                 width: 100%;
                 box-sizing: border-box;
-                padding: 0 40px 2vh 40px;
-                background-image: var(--sc-bg);
-                margin-top: -145px;
-            }
-
-            .toggle {
-                box-sizing: border-box;
-                padding: 1px 3px;
-                cursor: pointer;
-            }
-
-            .slidebox {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                position: sticky;
-                top: 144px;
-                z-index: 1;
-            }
-
-            .temp {
-                position: relative;
-                margin-top: 144px;
-                width: 100%;
-                height: 550px;
-                background-color: green;
-                z-index: 2;
-            }
-
-            .flex {
-                @apply --layout-flex;
-            }
-
-            .involved-toggle {
-                @apply --small-bold;
-                color: var(--sc-blue);
+                padding: 50px 40px 2vh 40px;
                 background-color: var(--sc-white);
-                border-radius: 2%;
-                box-sizing: border-box;
-                padding: 0 2px;
+                margin-top: -185px;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -273,7 +259,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="bottom">
                     <div class="leftbottom">
                         <div id="hashtag" class="hashtag">#NeedaRide</div>
-                        <div id="infolink" class="toggle info-toggle" on-click="_toggleInfo">i</div>
+                        <div id="infolink" class="info-toggle" on-click="_toggleInfo">i</div>
                     </div>
                 </div>
             </div>
@@ -291,11 +277,11 @@ This code may only be used under the license found at https://github.com/swarmci
             <display-item-involved></display-item-involved>
 
 
-            <div class="slidebox">
-                <div class="filter-toggle" >
-                    <div id="filterlink" class="filter-text" on-click="_toggleSlider">filter deals</div>
+            <div class="scrollbar">
+                <div class="buttonbar" >
+                    <div id="filtertoggle" class="filter-toggle" on-click="_toggleSlider">filter deals</div>
                     <div class="flex"></div>
-                    <div class="involved-toggle" on-click="_backToTop">5 open items</div>
+                    <div class="involved-toggle" on-click="_backToTop">1 request</div>
                 </div>
                 <dom-if if="{{showSlider}}">
                     <template>
@@ -310,14 +296,14 @@ This code may only be used under the license found at https://github.com/swarmci
 
             <div id="fadeArea" on-click="_fadeClose">
                 <!-- <display-item-involved></display-item-involved> -->
-                <display-hashtag-deals 
+                <display-hashtag-items 
                     range="{{range}}" 
                     hashtag="{{hashtag}}" 
                     route-data="[[routeData]]" 
                     path="{{path}}" 
                     show-slider="{{showSlider}}"
                     show-info="{{showInfo}}">
-                </display-hashtag-deals>
+                </display-hashtag-items>
 
                 <div class="dealbtn">
                     <display-deal-btn 
@@ -442,7 +428,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _toggleSlider() {
                 return new Promise((resolve, reject) => {
                     if (this.showInfo) {
-                        this.$.filterlink.classList.add('highlight-filter');
+                        this.$.filtertoggle.classList.add('highlight-filter');
                         this._fadeInOut();
                         this._toggleInfo().then(() => {
                             this.showSlider = true;
@@ -457,7 +443,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         });
                     }
                     else if (!this.showSlider) {
-                        this.$.filterlink.classList.add('highlight-filter');
+                        this.$.filtertoggle.classList.add('highlight-filter');
                         this._fadeInOut();
                         this.showSlider = true;
                         setTimeout(() => {
@@ -472,7 +458,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             };
                         }, 1);
                     } else {
-                        this.$.filterlink.classList.remove('highlight-filter');
+                        this.$.filtertoggle.classList.remove('highlight-filter');
                         this._fadeInOut();
                         let animation = this.shadowRoot
                             .querySelector('#slider').animate(
@@ -607,7 +593,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.anim = {
                     slideDownSlider: {
                         arr: [{transform: 'translateY(0)'},
-                        {transform: 'translateY(170px)'}],
+                        {transform: 'translateY(223px)'}],
                         obj: {
                             fill: 'both',
                             duration: 250,
@@ -616,7 +602,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         },
                     },
                     slideUpSlider: {
-                        arr: [{transform: 'translateY(170px)'},
+                        arr: [{transform: 'translateY(223px)'},
                         {transform: 'translateY(0)'}],
                         obj: {
                             fill: 'both',
