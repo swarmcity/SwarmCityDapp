@@ -1,0 +1,83 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-deal-involved></display-deal-involved>
+```
+
+-->
+<dom-module id="display-deal-involved">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+                min-height: 100%;
+                overflow: auto;
+            }
+
+            .temp {
+                width: 100%;
+                height: 100px;
+                background-color: green;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" id="container" wide-layout$="{{wide}}">
+
+            <template is="dom-if" if="{{test}}">
+                <div class="temp"></div>
+            </template>
+        </div>
+    </template>
+    <script>
+        class MyDisplayDealInvolved extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-deal-involved';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        }
+
+        window.customElements
+            .define(MyDisplayDealInvolved.is, MyDisplayDealInvolved);
+    </script>
+</dom-module>

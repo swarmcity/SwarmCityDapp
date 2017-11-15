@@ -4,15 +4,15 @@ Copyright (c) 2017 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="display-language.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="display-language.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
 <link rel="import" href="../redux-state.html">
 <!--
 
 Example:
 ```
-<display-geolocation></display-geolocation>
+<display-filter-deals></display-filter-deals>
 ```
 
 ### Styling
@@ -23,96 +23,104 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--display-hashtag-about-toggle` | Mixin applied to the toggle text | `{}` |
-| `--display-hashtag-about-box` | Mixin applied to the box | `{}` |
-| `--display-hashtag-about-maintained` | Mixin applied to the maintained text | `{}` |
-| `--display-hashtag-about-contact` | Mixin applied to the contact details | `{}` |
-
+| `--filter-list-filter-list` | Mixin applied to the container | `{}` |
+| `--filter-list` | Mixin applied to the hashtag | `{}` |
+| `--filter-list-description` | Mixin applied to the deals | `{}` |
 -->
-<dom-module id="display-hashtag-about">
+<dom-module id="display-filter-deals">
     <template>
         <style>
             :host {
                 display: block;
             }
 
-            .container {
+            .togglebox {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
+                @apply --layout-start;
             }
 
-            .info {
-                width: 100%;
+            .range-description {
                 @apply --body-default;
                 color: var(--sc-grey4);
-                word-wrap: break-word;
-                line-height: 20px;
-            }
-
-            .commission {
-                width: 100%;
-                @apply --body-default;
-                color: var(--sc-grey4);
-                word-wrap: break-word;
-                margin-top: 15px;
-            }
-
-            .container[wide-layout] .commission {
                 margin-top: 5px;
             }
 
-            .contact {
-                margin-top: 30px;
-                @apply --small-light;
+            .activity {
+                @apply --body-default;
                 color: var(--sc-grey2);
             }
 
-            .linkbox {
-                margin-top: 8px;
+            .sliderbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 800px;
             }
-            .links {
-                @apply --small-bold;
-                color: var(--sc-blue);
-                border-bottom: 1px dotted var(--sc-blue);
-                text-decoration: none;
+
+            paper-slider {
+                @apply --layout-flex;
+                --paper-slider-knob-color: var(--sc-yellow);
+                --paper-slider-active-color: var(--sc-yellow);
             }
+
+            .pin-icon {
+                @apply --locationmarker-grey4-small;
+            }
+
+            .globe-icon {
+                @apply --globe-grey4-small;
+            }
+
+            .arrowup-icon {
+                @apply --arrowup-grey4-small;
+                cursor: pointer;
+            }
+
             .arrowup {
                 width: 100%;
                 @apply --layout-horizontal;
                 @apply --layout-end-justified;
             }
-            .arrowup-icon {
-                @apply --arrowup-blue-small;
-                cursor: pointer;
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .arrowup-icon,
+                .globe-icon,
+                .pin-icon {
+                    @apply --retina;
+                }
             }
         </style>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+
         <display-language language="{{language}}"></display-language>
-        <div class="container" wide-layout$="{{wide}}">
-                <div>
-                    <div class="info">{{localize('This hashtag is maintained by')}} {{hashtagInfo.maintainer}}.</div>
-                    <div class="commission">{{localize('The hashtagcommission is')}} {{hashtagInfo.commission}} SWT.</div>
-                    <div class="contact">{{localize('Contact')}}:</div>
-                    <template is="dom-repeat" items="{{hashtagInfo.contact}}">
-                        <div class="linkbox">
-                            <a href="{{item.link}}"  target="_blank" class="links">{{item.name}}</a>
-                        </div>
-                    </template>
+        <div class="container">
+            <div class="togglebox">
+                <div class="activity">{{localize('Looking for deals')}}...</div>
+                <div class="range-description">{{localize('within +/- 100km from your location')}}</div>
+                <div class="sliderbox">
+                    <div class="pin-icon"></div>
+                    <paper-slider .class="slider" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
+                    <div class="globe-icon"></div>
                 </div>
                 <div class="arrowup">
-                    <div class="arrowup-icon" on-click="_closeInfo"></div>
+                    <div class="arrowup-icon" on-click="_closeSlider"></div>
                 </div>
+            </div>
         </div>
 
     </template>
     <script>
-        class DisplayHashtagAbout extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyFilterDeals extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-hashtag-about';
+                return 'display-filter-deals';
             }
             static get properties() {
                 return {
@@ -123,25 +131,62 @@ The following custom properties and mixins are available for styling:
                     language: {
                         type: String,
                         statePath: 'language',
+                        observer: '_calcRange',
                     },
                     /**
-                    * showInfo indicates if the info panel is open or not
+                    * Loading indicates if the componant is loading
                     * @type {Boolean}
                     */
-                    showInfo: {
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * range is the range the user selected in slider
+                    * @type {Number}
+                    */
+                    range: {
                         type: Number,
+                        notify: true,
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Value is the value of the slider
+                    * @type {Number}
+                    */
+                    value: {
+                        type: Number,
+                        value: 0,
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * showSlider determines of the slider is show or not
+                    * @type {Boolean}
+                    */
+                    showSlider: {
+                        type: Boolean,
                         notify: true,
                         reflectToAttribute: true,
                     },
                     /**
-                    * hashtag info represents the selected hashtag
-                    * @type {Object}
+                    * rangeDescription is the description of the range
+                    * @type {String}
                     */
-                    hashtagInfo: {
-                        type: Object,
+                    rangeDescription: {
+                        type: String,
                     },
                 };
             }
+
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -149,9 +194,72 @@ The following custom properties and mixins are available for styling:
             /**
             * Closes the slider
             */
-            _closeInfo() {
-                this.showInfo = (new Date).getTime();
+            _closeSlider() {
+                this.showSlider = (new Date).getTime();
             }
-        } window.customElements.define(DisplayHashtagAbout.is, DisplayHashtagAbout);
+            /**
+            * When the slider is shown se the default description
+            */
+            _setDesc() {
+                this.rangeDescription = this.localize('world wide');
+                this.value = 1;
+            }
+
+            /**
+            * Determine what the selected range is
+            */
+            _calcRange() {
+                const x = this.value;
+                switch (true) {
+                    case (x < 2):
+                        this.rangeDescription = this.localize('world wide');
+                        this.range = 10000000000000000000;
+                        break;
+                    case (x < 3):
+                        this.rangeDescription =
+                            this.localize('within +/- 1000km from your location');
+                        this.range = 1000000;
+                        break;
+                    case (x < 4):
+                        this.rangeDescription =
+                            this.localize('within +/- 100km from your location');
+                        this.range = 100000;
+                        break;
+                    case (x < 5):
+                        this.rangeDescription =
+                            this.localize('within +/- 10km from your location');
+                        this.range = 10000;
+                        break;
+                    case (x < 6):
+                        this.rangeDescription =
+                            this.localize('within +/- 1km from your location');
+                        this.range = 1000;
+                        break;
+                    case (x < 7):
+                        this.rangeDescription =
+                            this.localize('within +/- 0.5km from your location');
+                        this.range = 500;
+                }
+            }
+
+            /**
+            * Show and hide the slider or redirect to location
+            */
+            _toggleSlider() {
+                this.$.storage.accountExists()
+                    .then((account) => {
+                        if (!account.location) {
+                            sessionStorage.setItem('origin', this.route.path);
+                            this.set('route.path', 'location/');
+                        } else {
+                            if (this.showInfo) {
+                                this.showInfo = !this.showInfo;
+                            }
+                            this.showSlider = !this.showSlider;
+                        }
+                    });
+            }
+        }
+        window.customElements.define(MyFilterDeals.is, MyFilterDeals);
     </script>
 </dom-module>
