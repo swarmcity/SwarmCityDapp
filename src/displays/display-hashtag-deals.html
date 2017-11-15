@@ -175,22 +175,22 @@ The following custom properties and mixins are available for styling:
         <div class="container" wide-layout$="{{wide}}">
             <!-- <div class="empty">{{localize('Currently no deals selected. Try a broader search.')}}</div> -->
             
-        <template is="dom-repeat" items="{{hashtagDeals}}">
+        <template is="dom-repeat" items="{{items}}">
             <div class="box" on-click="_toNewHere">
                 <div class="top">
                     <div class="avatar"></div>
                     <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
+                        <div class="date">[[item.dateTime]]</div>
+                        <div class="user">[[item.name]] · [[item.reputation]] SWR</div>
                     </div>
-                    <div class="replycount">5</div>
+                    <div class="replycount">[[item.offers]]</div>
                     <div class="replyicon"></div>
                 </div>
                 <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
+                    <div class="description">[[item.description]]</div>
                     <div class="pricebox">
                         <div class="for">for</div>
-                        <div class="price">55500 SWT</div>
+                        <div class="price">[[item.balance]] SWT</div>
                     </div>
                 </div>
             </div>
@@ -222,10 +222,10 @@ The following custom properties and mixins are available for styling:
                     * all the deals for all hashtags
                     * @type {Boolean}
                     */
-                    deals: {
+                    itemCollection: {
                         type: Boolean,
-                        statePath: 'deals',
-                        observer: '_filterThisDeal'
+                        statePath: 'itemCollection',
+                        observer: '_filterItems'
                     },
                     /**
                     * route data represents the curent route
@@ -268,6 +268,9 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         notify: true,
                     },
+                    items: {
+                        type: Object,
+                    },
                 };
             }
 
@@ -279,13 +282,13 @@ The following custom properties and mixins are available for styling:
             /**
             * Filters all deals to just the deals we need for this hashtag
             */
-            _filterThisDeal() {
-                // TODO:
-                // Get this hashtags ID as this.hashtagId
-                // from this.deals filter out just the data for this hashtag...
-                this.hashtagDeals = this.deals.filter( (data) => {
+            _filterItems() {
+                // TODO: Get the below hashtag ID from the parent component
+                this.hashtagId = '7c9v87bc98v7b';
+                const filteredItems = this.itemCollection.filter( (data) => {
                     return (data.id == this.hashtagId);
                 });
+                this.items = filteredItems[0].items;
             }
 
             /**
