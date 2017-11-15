@@ -101,35 +101,36 @@ The following custom properties and mixins are available for styling:
              * and saves it to local storage
              */
             _getLocation() {
-                let geoHash = '';
-                this.$.utility.getLocation()
-                    .then((latlon) => {
-                        return this.$.utility
-                            .toGeohash(latlon.latitude, latlon.longitude);
-                    })
-                    .then((data) => {
-                        geoHash = data;
-                        return this.$.storage.accountExists();
-                    })
-                    .then((account) => {
-                        if (account == false) {
-                            return this.$.storage.saveAccount({
-                                'location': geoHash,
-                            });
-                        } else {
-                            account.location = geoHash;
-                            return this.$.storage.saveAccount(account);
-                        }
-                    })
-                    .then((account) => {
-                        if (typeof sessionStorage.getItem('origin') === 'string'
-                            || sessionStorage.getItem('origin') instanceof String) {
-                            this.path = sessionStorage.getItem('origin');
-                        }
-                        else {
-                            this.set('route.path', 'hashtag-list');
-                        }
-                    });
+                console.log('fired');
+                // let geoHash = '';
+                // this.$.utility.getLocation()
+                //     .then((latlon) => {
+                //         return this.$.utility
+                //             .toGeohash(latlon.latitude, latlon.longitude);
+                //     })
+                //     .then((data) => {
+                //         geoHash = data;
+                //         return this.$.storage.accountExists();
+                //     })
+                //     .then((account) => {
+                //         if (account == false) {
+                //             return this.$.storage.saveAccount({
+                //                 'location': geoHash,
+                //             });
+                //         } else {
+                //             account.location = geoHash;
+                //             return this.$.storage.saveAccount(account);
+                //         }
+                //     })
+                //     .then((account) => {
+                //         if (typeof sessionStorage.getItem('origin') === 'string'
+                //             || sessionStorage.getItem('origin') instanceof String) {
+                //             this.path = sessionStorage.getItem('origin');
+                //         }
+                //         else {
+                //             this.set('route.path', 'hashtag-list');
+                //         }
+                //     });
             }
         }
         window.customElements.define(DisplayGeolocation.is, DisplayGeolocation);
