@@ -18,7 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-hashtag-items.html">
 <link rel="import" href="../displays/display-deal-btn.html">
 <link rel="import" href="../displays/display-filter-deals.html">
-<link rel="import" href="../displays/display-item-involved.html">
+<link rel="import" href="../displays/display-items-involved.html">
 
 <dom-module id="page-hashtag">
     <template>
@@ -97,12 +97,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-end;
             }
 
-            display-item-involved {
+            display-items-involved {
                 position: relative;
                 z-index: 2;
             }
 
-            .container[wide-layout] display-item-involved {
+            .container[wide-layout] display-items-involved {
                 margin-top: 15px;
                 margin-bottom: 2px;
             }
@@ -235,7 +235,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 50px 40px 2vh 40px;
                 background-color: var(--sc-white);
-                margin-top: -185px;
+                margin-top: -101px;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -274,8 +274,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </template>
             </dom-if>
 
-            <display-item-involved></display-item-involved>
-
+            <display-items-involved></display-items-involved>
 
             <div class="scrollbar">
                 <div class="buttonbar" >
@@ -295,7 +294,6 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
 
             <div id="fadeArea" on-click="_fadeClose">
-                <!-- <display-item-involved></display-item-involved> -->
                 <display-hashtag-items 
                     range="{{range}}" 
                     hashtag="{{hashtag}}" 
@@ -399,7 +397,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.ready();
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                this.addEventListener('scroll', this.resizeHeaderOnScroll);
             }
             /**
             * find the selected hashtag
@@ -526,18 +523,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 });
             }
-
-            resizeHeaderOnScroll() {
-                console.log('test');
-                const distanceY = window.pageYOffset || document.documentElement.scrollTop,
-                shrinkOn = 200,
-                headerEl = document.getElementById('hashtag');
-                    if (distanceY > shrinkOn) {
-                        headerEl.classList.add("smaller");
-                        } else {
-                        headerEl.classList.remove("smaller");
-                        }
-}
             /**
             * fades part of the page in and out
             */
@@ -562,12 +547,12 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _backToTop() {
                 let scrollDuration = 500;
-                let scrollStep = -window.scrollY / (scrollDuration / 15),
-                    scrollInterval = setInterval(function(){
+                let scrollStep = -window.scrollY / (scrollDuration / 15);
+                let scrollInterval = setInterval(function() {
                         if ( window.scrollY != 0 ) {
                             window.scrollBy( 0, scrollStep );
                         }
-                        else clearInterval(scrollInterval); 
+                        else clearInterval(scrollInterval);
                     },
                 15);
             }
