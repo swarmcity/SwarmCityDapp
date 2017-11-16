@@ -28,34 +28,71 @@ Example:
             }
 
             .box {
-                @apply --layout-horizontal;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
                 background-color: var(--sc-white);
-                max-width: 100%;
                 box-sizing: border-box;
-                padding: 25px 40px;
+                padding: 25px 20px 15px 40px;
                 cursor: pointer;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1);
                 margin: 0px 10px 4px 10px;
+                cursor: pointer;
             }
 
-            .avatar {
+            .box:active {
+                @apply --button-active;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                margin-bottom: 10px;
+            }
+
+            .bottom {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;                
+            }
+
+            .avatarbox {
                 width: 30px;
                 height: 30px;
                 cursor: pointer;
                 border-radius: 50%;
+                margin-top: 2px;
                 margin-right: 10px;
                 background-image: url("../../images/defaultavatar.png");
                 background-size: 30px;
             }
 
-            .right {
+            .top-flex {
                 @apply --layout-vertical;
-                @apply --layout-center-justified;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+            }
+
+            .activitybar {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                height: 16px;
             }
 
             .activity {
                 @apply --smallest-light;
+                @apply --layout-flex;
                 color: var(--sc-grey4);
+                margin-top: 2px;
+            }
+
+            .number {
+                @apply --small-bold;
+                margin-top: 2px;
+                color: var(--sc-grey4);
+            }
+
+            .reply-icon {
+                @apply --reply-grey4-mini;
+                margin-right: 10px;
             }
 
             .content {
@@ -63,32 +100,233 @@ Example:
                 color: var(--sc-grey4);
             }
 
+            .bottom-flex {
+                @apply --layout-flex;
+                @apply --small-bold;
+                color: var(--sc-grey4);
+                margin-left: 40px;                
+            }
+
+            .highlight-blue {
+                color: var(--sc-blue);
+            }
+
+            .highlight-green{
+                color: var(--sc-green);
+            }
+
+            .highlight-red{
+                color: var(--sc-red);
+            }
+
+            .conflict-box {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding: 25px 20px 15px 40px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+                cursor: pointer;
+            }
+
+
+            .conflict-avatarbox {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-top: 2px;
+                margin-right: 10px;
+                background-image: url("../../images/defaultavatar.png");
+                background-size: 30px;
+            }
+
+            .conflict-middle {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+            }
+
+            .conflict-middle-top {
+                @apply --small-bold;
+                color: var(--sc-red);
+            }
+
+            .conflict-middle-bottom {
+                @apply --small-bold;
+            }
+
+            .conflict-right {
+                @apply --next-blue-small;
+            }
+
+
+            /* <div class="conflict-box">
+                <div class="conflict-avatarbox"></div>
+                <div class="conflict-middle"></div>
+                    <div class="conflict-middle-top"></div>
+                    <div class="conflict-middle-bottom"></div>
+                <div class="conflict-right"></div>
+            </div> */
+
+
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
 
-
+            <!-- openrequest (user = not seeker): -->
             <div class="box">
-                <div class="left">
-                    <div class="avatar"></div>
-                </div>
-                <div class="right">
-                    <div class="activity">You replied to this request</div>
-                    <div class="content">Needaride from here to...</div>
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">You replied to this request</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
                 </div>
             </div>
 
+            <!-- openrequest (user = seeker): -->
             <div class="box">
-                <div class="left">
-                    <div class="avatar"></div>
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">Your request</div>
+                            <div class="number">0</div>
+                            <div class="reply-icon"></div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
                 </div>
-                <div class="middle">
-                    <div class="activity">You replied to this request</div>
-                    <div class="content">Needaride from here to...</div>
-                </div>
-                <div class="right"></div>
             </div>
 
+            <!-- providerselected (user = seeker): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">Your request</div>
+                            <div class="number">3</div>
+                            <div class="reply-icon"></div>
+                        </div>
+                        <div class="content">Ride from literon busstop...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">You selected Sally Singer to <span class="highlight-blue">make a deal</span></div>
+                </div>
+            </div>
+
+            <!-- providerselected (user = provider): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">You replied to this request</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">You're selected to make a <span class="highlight-blue">deal</span></div>
+                </div>
+            </div>
+
+            <!-- providerselected (user = NOT provider): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">You replied to this request</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">You're not selected to make a deal.</div>
+                </div>
+            </div>
+
+            <!-- indeal (user = seeker): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox">
+                    </div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">Your deal</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">You're in a <span class="highlight-green">deal</span> for 18 SWT.</div>
+                </div>
+            </div>
+
+            <!-- indeal (user = provider): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">You replied to this request</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">You're in a <span class="highlight-green">deal</span> for 18 SWT.</div>
+                </div>
+            </div>
+
+            <!-- inconflict (user = seeker): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">Your deal</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">This deal is <span class="highlight-red">in conflict</span></div>
+                </div>
+            </div>
+
+            <!-- inconflict (user = provider): -->
+            <div class="box">
+                <div class="top">
+                    <div class="avatarbox"></div>
+                    <div class="top-flex">
+                        <div class="activitybar">
+                            <div class="activity">You replied to this request</div>
+                        </div>
+                        <div class="content">Needaride from here to...</div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="bottom-flex">This deal is<span class="highlight-red">in conflict</span></div>
+                </div>
+            </div>
+
+            <!-- inconflict (viez for HASHTAGOWNER): -->
+            <div class="conflict-box">
+                <div class="conflict-avatarbox"></div>
+                <div class="conflict-middle"></div>
+                    <div class="conflict-middle-top">Deal in conflict</div>
+                    <div class="conflict-middle-bottom">for 5 SWT</div>
+                <div class="conflict-right"></div>
+            </div>
 
     </template>
     <script>
