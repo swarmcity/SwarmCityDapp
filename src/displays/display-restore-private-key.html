@@ -1,0 +1,141 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<!--
+
+Example:
+```
+<display-restore-private-key></display-restore-private-key>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| Please remove all css from this file out to mixins
+
+-->
+<dom-module id="display-restore-private-key">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+            .middle {
+                width: 100%;
+                @apply --layout-flex;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+            }
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                height: 30vh;
+                width: 100%;
+            }
+            .btn {
+                @apply --icon-button-big;
+            }
+            .btn:active {
+                @apply --button-active;
+            }
+            .agree {
+                @apply --vmark-blue-normal;
+            }
+            paper-input {
+                width: 100%;
+                margin-top: 6vh;
+                text-align: center;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply(--body-bold);
+                }
+                --paper-input-error: {
+                    @apply(--body-bold);
+                }
+                --paper-input-prefix: {
+                    @apply(--body-default);
+                }
+                --paper-input-suffix: {
+                    @apply(--body-default);
+                }
+            }
+            .messagebox {
+                margin-top: 2vh;
+                height: 4vh;
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+        </style>
+
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="middle">
+            <paper-input label="{{localize('Private key?')}}" type="txt" value="{{privateKey}}"></paper-input>
+            <div class="messagebox"></div>
+        </div>
+        <div class="bottom">
+            <div class="btn">
+                <div class="agree" on-click="_agree"></div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-restore-private-key';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                };
+            }
+            /**
+            * takes the user to the hashtag list page
+            */
+            _agree() {
+                // restore the key file
+                // save the keyfile to local storage
+                this.path = 'choose-avatar-and-username/';
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        } window.customElements.define(DisplayMyInfo.is, DisplayMyInfo);
+    </script>
+</dom-module>
