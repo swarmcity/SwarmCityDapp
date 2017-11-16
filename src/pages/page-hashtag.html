@@ -27,14 +27,12 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
         <style include="shared-styles">
             :host {
-                width: 100vw;
                 height: 100%;
                 display: block;
-                max-width: 100%;
             }
 
             .container {
-                width: 100%;
+                width: 100vw;
                 background-image: var(--sc-bg);
             }
 
@@ -145,6 +143,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .scrollbar {
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
+                width: 100%;
                 position: sticky;
                 top: 134px;
                 z-index: 1;
@@ -209,6 +208,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 position: fixed;
                 bottom: 50px;
                 right: 30px;
+                z-index: 55;
             }
 
             .container[wide-layout] .dealbtn {
@@ -240,13 +240,13 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             display-filter-deals {
+                width: calc(100% - 20px);
                 border-bottom: 2px solid;
                 position: absolute;
-                width: 100%;
                 box-sizing: border-box;
+                margin: -101px 10px 4px 10px;
                 padding: 50px 40px 2vh 40px;
                 background-color: var(--sc-white);
-                margin-top: -101px;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -261,6 +261,18 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
 
         <div class="container" wide-layout$="{{wide}}">
+
+            <dom-if if="{{!faded}}">
+                <template>
+                    <div class="dealbtn">
+                        <display-deal-btn 
+                            route-data="[[routeData]]" 
+                            path="{{path}}">
+                        </display-deal-btn>
+                    </div>
+                </template>
+            </dom-if>
+
             <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
@@ -313,13 +325,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     show-slider="{{showSlider}}"
                     show-info="{{showInfo}}">
                 </display-hashtag-items>
-
-                <div class="dealbtn">
-                    <display-deal-btn 
-                        route-data="[[routeData]]" 
-                        path="{{path}}">
-                    </display-deal-btn>
-                </div>
             </div>
 
         </div>
