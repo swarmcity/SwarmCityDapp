@@ -14,11 +14,11 @@
             */
             createKey(password) {
                 return new Promise((resolve, reject) => {
-                    const privateKey = dragon.randomBytes(32);
-                    const publicKey = dragon.privateToPublic(privateKey);
-                    const address = dragon.publicToAddress(publicKey);
+                    const privateKey = webpack.randomBytes(32);
+                    const publicKey = webpack.privateToPublic(privateKey);
+                    const address = webpack.publicToAddress(publicKey);
                     const hexPrivateKey = privateKey.toString('hex');
-                    const hexAddress = dragon.toChecksumAddress(`0x${address.toString('hex')}`);
+                    const hexAddress = webpack.toChecksumAddress(`0x${address.toString('hex')}`);
                     if (privateKey.length === 32
                     && hexPrivateKey.length === 64
                     && hexAddress.length === 42) {
@@ -36,12 +36,12 @@
             */
             restoreKey(suppliedPrivateKey, password) {
                 return new Promise((resolve, reject) => {
-                    const Buffer = dragon.Buffer.Buffer;
+                    const Buffer = webpack.Buffer.Buffer;
                     const privateKey = new Buffer(suppliedPrivateKey, 'hex');
-                    const publicKey = dragon.privateToPublic(privateKey);
-                    const address = dragon.publicToAddress(publicKey);
+                    const publicKey = webpack.privateToPublic(privateKey);
+                    const address = webpack.publicToAddress(publicKey);
                     const hexPrivateKey = privateKey.toString('hex');
-                    const hexAddress = dragon.toChecksumAddress(`0x${address.toString('hex')}`);
+                    const hexAddress = webpack.toChecksumAddress(`0x${address.toString('hex')}`);
                     if (privateKey.length === 32
                     && hexPrivateKey.length === 64
                     && hexAddress.length === 42) {
@@ -58,8 +58,8 @@
             */
             deriveAddress(privateKey) {
                 return new Promise((resolve, reject) => {
-                    const publicKey = dragon.privateToPublic(privateKey);
-                    resolve(dragon.publicToAddress(publicKey));
+                    const publicKey = webpack.privateToPublic(privateKey);
+                    resolve(webpack.publicToAddress(publicKey));
                 });
             }
             /**
@@ -71,14 +71,14 @@
             */
             utcKeystore(privateKey, hexAddress, password) {
                 return new Promise((resolve, reject) => {
-                    const id = dragon.uuid.v4({random: dragon.randomBytes(16)});
-                    const salt = dragon.randomBytes(32);
-                    const iv = dragon.randomBytes(16);
-                    const Buffer = dragon.Buffer.Buffer;
-                    const key = dragon.scrypt(new Buffer(password), salt, 1024, 8, 1, 32);
-                    const cipher = dragon.createCipheriv('aes-128-ctr', key.slice(0, 16), iv);
+                    const id = webpack.uuid.v4({random: webpack.randomBytes(16)});
+                    const salt = webpack.randomBytes(32);
+                    const iv = webpack.randomBytes(16);
+                    const Buffer = webpack.Buffer.Buffer;
+                    const key = webpack.scrypt(new Buffer(password), salt, 1024, 8, 1, 32);
+                    const cipher = webpack.createCipheriv('aes-128-ctr', key.slice(0, 16), iv);
                     const ciphertext = Buffer.concat([cipher.update(privateKey), cipher.final()]);
-                    const mac = dragon.sha3(Buffer.concat([key.slice(16, 32),
+                    const mac = webpack.sha3(Buffer.concat([key.slice(16, 32),
                     new Buffer(ciphertext, 'hex')]));
                     resolve({
                         fileName: ['UTC--',
@@ -118,7 +118,7 @@
             */
             makeQRCode(data) {
                 return new Promise((resolve, reject) => {
-                    dragon.QRCode.toDataURL(data, (err, url) => {
+                    webpack.QRCode.toDataURL(data, (err, url) => {
                         if (err) {
                             reject(err);
                         } else {
@@ -135,11 +135,11 @@
             */
             decryptUtcKeystore(utcKeystore, password) {
                 return new Promise((resolve, reject) => {
-                    const Buffer = dragon.Buffer.Buffer;
+                    const Buffer = webpack.Buffer.Buffer;
                     const kdfparams = utcKeystore.Crypto.kdfparams;
                     let key;
                     if (utcKeystore.Crypto.kdf === 'scrypt') {
-                        key = dragon.scrypt(new Buffer(password), new Buffer(kdfparams.salt, 'hex'),
+                        key = webpack.scrypt(new Buffer(password), new Buffer(kdfparams.salt, 'hex'),
                         kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
                     }
                     else if (utcKeystore.Crypto.kdf === 'pbkdf2') {
@@ -152,11 +152,11 @@
                         reject(Error('Unsupported key derivation scheme'));
                     }
                     const ciphertext = new Buffer(utcKeystore.Crypto.ciphertext, 'hex');
-                    const mac = dragon.sha3(Buffer.concat([key.slice(16, 32), ciphertext]));
+                    const mac = webpack.sha3(Buffer.concat([key.slice(16, 32), ciphertext]));
                     if (mac.toString('hex') !== utcKeystore.Crypto.mac) {
                         reject(Error('Wrong Password'));
                     }
-                    const decipher = dragon.createDecipheriv(utcKeystore.Crypto.cipher, key.slice(0, 16),
+                    const decipher = webpack.createDecipheriv(utcKeystore.Crypto.cipher, key.slice(0, 16),
                     new Buffer(utcKeystore.Crypto.cipherparams.iv, 'hex'));
                     resolve(Buffer.concat([decipher.update(ciphertext), decipher.final()]));
                 });
