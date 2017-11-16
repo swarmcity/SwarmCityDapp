@@ -88,7 +88,6 @@ The following custom properties and mixins are available for styling:
         <data-wallet id="wallet"></data-wallet>
         <div class="middle">
             <paper-input label="{{localize('Private key?')}}" type="txt" value="{{privateKey}}"></paper-input>
-            <paper-input label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
             <div class="messagebox"></div>
         </div>
         <div class="bottom">
@@ -106,6 +105,20 @@ The following custom properties and mixins are available for styling:
         )) {
             static get is() {
                 return 'display-restore-private-key';
+            }
+            /**
+            * Redux action for sertting private Key
+            * @param {privatekey} privatekey
+            */
+            static get actions() {
+                return Object.assign({
+                    PRIVATEKEY: function(privatekey) {
+                        return {
+                            type: 'PRIVATEKEY',
+                            privatekey: privatekey,
+                        };
+                    },
+                });
             }
             static get properties() {
                 return {
@@ -126,19 +139,10 @@ The following custom properties and mixins are available for styling:
             }
             /**
             * takes the user to the hashtag list page
-            * 163bce6447f2b8ff3868f5a742da7fe3c668242d483ae453d652ec2701690cd7 <== private key
-            * 0x54b95d09ddb6c3532f5d9dd0c77c2633cd9c8168 <== Address
             */
             _agree() {
-                this.$.wallet.restoreKey(this.privateKey, this.password)
-                    .then((data) => {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.keyStore = data.utcKeystore;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    })
-                    .then((data) => {
-                        this.path = 'choose-avatar-and-username/';
-                    });
+                this.dispatch('PRIVATEKEY', this.privateKey);
+                this.path = 'choose-avatar-and-username/';
             }
             /**
             * Fired when the component first loads
