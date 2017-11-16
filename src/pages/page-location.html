@@ -6,7 +6,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
 <!--
@@ -113,8 +112,6 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <app-location route="{{route}}"></app-location>
-
         <div class="container" wide-layout$="{{wide}}">
             <div>
                 <div>{{localize('Can we ask for your location')}}</div>
@@ -123,7 +120,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div>
                 <div>
                     <div on-click="_goBack"></div>
-                    <display-geolocation path="{{path}}"></display-geolocation>
+                    <display-geolocation></display-geolocation>
                 </div>
             </div>
         </div>
@@ -144,37 +141,17 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'language',
                     },
-                    /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        observer: '_path',
-                    },
                 };
             }
-
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
-
             /**
             * takes the user to the hashtag list page
             */
             _goBack() {
                 window.history.back();
-            }
-
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
             }
         }
         window.customElements.define(MyLocation.is, MyLocation);
