@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<script src="../data/lightwallet.min.js"></script>
 <!--
 
 Example:
@@ -49,14 +50,45 @@ The following custom properties and mixins are available for styling:
                 margin: 0 14px 14px 0;
                 max-width: 320px;
             }
+            paper-input {
+                width: 100%;
+                text-align: center;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
 
         </style>
 
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <input type="file" name="file" id="file" class="inputfile" on-change="_getFile"/>
-        <label for="file">
-            <div class="select">{{localize('select file')}}</div>
-        </label> 
+
+        <template is="dom-if" if="{{!askPassword}}">
+            <input type="file" name="file" id="file" class="inputfile" on-change="_getFile"/>
+            <label for="file">
+                <div class="select">{{localize('select file')}}</div>
+            </label>
+        </template>
+
+        <template is="dom-if" if="{{askPassword}}">
+            <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+            <div class="select" on-click="_decrypt">Restore</div>
+            <div class="select" on-click="_cancel">Cancel</div>
+        </template>
+        {{error}}
 
     </template>
     <script>
@@ -97,13 +129,67 @@ The following custom properties and mixins are available for styling:
                         reflectToAttribute: true,
                         notify: true,
                     },
+                    /**
+                    * wallet represnts the users wallet
+                    * @type {Object}
+                    */
+                    wallet: {
+                        type: Object,
+                    },
+                    /**
+                    * askPassword represents of the password field ois shown or not
+                    * @type {Boolean}
+                    */
+                    askPassword: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * error shows the readers parse error
+                    * @type {Boolean}
+                    */
+                    error: {
+                        type: Object,
+                    },
                 };
             }
             /**
-            * takes the user to the hashtag list page
+            * Fired when the user selects a file
+            * @param {event} event The event from the on-change
             */
-            _agree() {
-
+            _getFile(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                const file = event.target.files[0];
+                let reader = new FileReader();
+                reader.readAsText(file);
+                reader.onload = () => {
+                    this.wallet = JSON.parse(reader.result);
+                    this.askPassword = true;
+                };
+                reader.onerror = (error) => {
+                    this.error = error;
+                };
+            }
+            /**
+            * Fired when the Restore button is clicked
+            */
+            _decrypt() {
+                const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
+                keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
+                    if (!err) {
+                        let privatekey = keystore.exportPrivateKey('0x' + keystore.getAddresses()[0],
+                        pwDerivedKey);
+                        this.dispatch('PRIVATEKEY', privatekey);
+                    }
+                });
+            }
+            /**
+            * Fired when the ccancel btn is clicked
+            */
+            _cancel() {
+                this.askPassword = false;
+                this.error = null;
             }
             /**
             * Fired when the component first loads
