@@ -32,7 +32,7 @@ The following custom properties and mixins are available for styling:
 <dom-module id="display-hashtag-about">
     <template>
         <style>
-             :host {
+            :host {
                 display: block;
             }
 
@@ -71,20 +71,19 @@ The following custom properties and mixins are available for styling:
                 margin-top: 8px;
             }
 
-            .toggle {
-                padding: 1px 3px;
-                cursor: pointer;
-            }
             .links {
                 @apply --small-bold;
                 color: var(--sc-blue);
                 border-bottom: 1px dotted var(--sc-blue);
+                text-decoration: none;
             }
+
             .arrowup {
                 width: 100%;
                 @apply --layout-horizontal;
                 @apply --layout-end-justified;
             }
+
             .arrowup-icon {
                 @apply --arrowup-blue-small;
                 cursor: pointer;
@@ -93,25 +92,19 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <display-language language="{{language}}"></display-language>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-if" if="{{toggle}}">
-                <div class="toggle" on-click="_toggle">i</div>
-            </template>
-            <template is="dom-if" if="{{info}}">
-                <div>
-                    <div class="info">{{localize('This hashtag is maintained by')}} 0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09.</div>
-                    <div class="commission">{{localize('The hashtagcommission is')}} 0.05 SWT.</div>
-                    <div class="contact">{{localize('Contact')}}:</div>
+            <div>
+                <div class="info">{{localize('This hashtag is maintained by')}} {{hashtagInfo.maintainer}}.</div>
+                <div class="commission">{{localize('The hashtagcommission is')}} {{hashtagInfo.commission}} SWT.</div>
+                <div class="contact">{{localize('Contact')}}:</div>
+                <template is="dom-repeat" items="{{hashtagInfo.contact}}">
                     <div class="linkbox">
-                        <span class="links">
-                        hashtagman@gmail.com</span>
+                        <a href="{{item.link}}" target="_blank" class="links">{{item.name}}</a>
                     </div>
-                    <div class="linkbox">
-                        <span class="links">@hashtag (Twitter)</span></div>
-                </div>
-                <div class="arrowup">
-                        <div class="arrowup-icon" on-click="_closeInfo"></div>
-                    </div>
-            </template>
+                </template>
+            </div>
+            <div class="arrowup">
+                <div class="arrowup-icon" on-click="_closeInfo"></div>
+            </div>
         </div>
 
     </template>
@@ -133,55 +126,21 @@ The following custom properties and mixins are available for styling:
                     language: {
                         type: String,
                         statePath: 'language',
-                        // observer: '_calcRange',
-                    },
-                    /**
-                    * Loading indicates if the componant is loading
-                    * @type {Boolean}
-                    */
-                    loading: {
-                        type: Boolean,
-                        value: false,
-                        notify: true,
-                    },
-                    /**
-                    * Selected if true shows the toggle text
-                    * @type {String}
-                    */
-                    toggle: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * Selected if true shows the info panel
-                    * @type {String}
-                    */
-                    info: {
-                        type: Boolean,
-                        value: false,
                     },
                     /**
                     * showInfo indicates if the info panel is open or not
                     * @type {Boolean}
                     */
                     showInfo: {
-                        type: Boolean,
+                        type: Number,
                         notify: true,
-                        value: false,
+                        reflectToAttribute: true,
                     },
                     /**
-                    * showSlider determines of the slider is show or not
-                    * @type {Boolean}
-                    */
-                    showSlider: {
-                        type: Boolean,
-                        notify: true,
-                    },
-                    /**
-                    * hashtag represents the hashtag data
+                    * hashtag info represents the selected hashtag
                     * @type {Object}
                     */
-                    hashtag: {
+                    hashtagInfo: {
                         type: Object,
                     },
                 };
@@ -194,33 +153,8 @@ The following custom properties and mixins are available for styling:
             * Closes the slider
             */
             _closeInfo() {
-                this.showInfo = false;
+                this.showInfo = (new Date).getTime();
             }
-            /**
-            * Togles if the information is shown or hidden
-            */
-            _toggle() {
-                if (this.showSlider) {
-                    this.showSlider = !this.showSlider;
-                }
-                this.showInfo = !this.showInfo;
-            }
-
-            /**
-            * TGet the hashtags
-            */
-            _getHashtag() {
-                if (this.routeData.page) {
-                    this.loading = true;
-                    this.$.web3.deals(this.routeData.page)
-                        .then((data) => {
-                            this.hashtagName = data.name;
-                            this.hashtag = data;
-                            this.loading = false;
-                        });
-                }
-            }
-        }
-        window.customElements.define(DisplayHashtagAbout.is, DisplayHashtagAbout);
+        } window.customElements.define(DisplayHashtagAbout.is, DisplayHashtagAbout);
     </script>
 </dom-module>

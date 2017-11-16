@@ -5,13 +5,17 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../data/data-web3.html">
+<link rel="import" href="../data/data-ipfs.html">
+<link rel="import" href="../data/data-utility.html">
+<link rel="import" href="../data/data-local-storage.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
 <!--
 
 Example:
 ```
-<display-reply></display-reply>
+<display-replies></display-replies>
 ```
 
 ### Styling
@@ -22,15 +26,15 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--display-reply-avatar` | Mixin applied to the avatar | `{}` |
-| `--display-reply-top-container` | Mixin applied to the container | `{}` |
-| `--display-reply-time` | Mixin applied to the time | `{}` |
-| `--display-reply-name` | Mixin applied to the name | `{}` |
-| `--display-reply-description` | Mixin applied to the description | `{}` |
-| `--display-reply-for` | Mixin applied to the word for | `{}` |
-| `--display-reply-amount` | Mixin applied to the amount | `{}` |
+| `--display-replies-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-replies-top-container` | Mixin applied to the container | `{}` |
+| `--display-replies-time` | Mixin applied to the time | `{}` |
+| `--display-replies-name` | Mixin applied to the name | `{}` |
+| `--display-replies-description` | Mixin applied to the description | `{}` |
+| `--display-replies-for` | Mixin applied to the word for | `{}` |
+| `--display-replies-amount` | Mixin applied to the amount | `{}` |
 -->
-<dom-module id="display-reply">
+<dom-module id="display-replies">
     <template>
         <style include="shared-styles">
             :host {
@@ -246,7 +250,6 @@ The following custom properties and mixins are available for styling:
                     </div>
                     <div class="right">
                         <div class="date">Yesterday, 18:21</div>
-
                         <template is="dom-if" if="{{!myReply}}">
                             <div class="user">Sally Singer · 1 SWR</div>
                         </template>
@@ -283,13 +286,13 @@ The following custom properties and mixins are available for styling:
         </div>
     </template>
     <script>
-        class DisplayReply extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDisplayReplies extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-reply';
+                return 'display-replies';
             }
             static get properties() {
                 return {
@@ -344,14 +347,26 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * repliedByMe if true indicates user has replied to request
+                    * @type {Boolean}
+                    */
+                    repliedByMe: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                /* once loaded a request, iterate over replies to request.
+                * If user has already replied, set this.repliedByMe to true. */
+                this.repliedByMe = false;
             }
         }
-        window.customElements.define(DisplayReply.is, DisplayReply);
+        window.customElements.define(MyDisplayReplies.is, MyDisplayReplies);
     </script>
 </dom-module>

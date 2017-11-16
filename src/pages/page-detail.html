@@ -16,6 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-dealstate-detail.html">
+<link rel="import" href="../displays/display-dealstate-mydetail.html">
 
 <dom-module id="page-detail">
     <template>
@@ -36,6 +37,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 background-image: var(--sc-bg);
                 width: 100%;
+                min-height: 100vh;
             }
 
             .container[wide-layout] {
@@ -177,7 +179,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-grey2);
             }
 
-            display-dealstate-detail {
+            .dealstate {
                 margin-top: 1.5px;
                 background-color: var(--sc-white);
                 width: 100%;
@@ -189,6 +191,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 box-sizing: border-box;
                 padding: 0 0 5vh 0;
+            }
+            .tempswitch {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                @apply --small-bold;
+                position: fixed;
+                top: 5px;
+                left: 5px;
+                cursor: pointer;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -203,6 +214,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
+            <div class="tempswitch" on-click="_switch"> “( ͡° ͜ʖ ͡°)”</div>
             <template is="dom-if" if="{{completeAccount}}">
                 <display-my-info></display-my-info>
             </template>
@@ -234,8 +246,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                 </div>
             </div>
-            <display-dealstate-detail  path="{{path}}"></display-dealstate-detail>
-            
+            <div class="dealstate">
+                <template is="dom-if" if="{{myRequest}}">
+                    <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
+                </template>
+                <template is="dom-if" if="{{!myRequest}}">
+                    <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
+                </template>
+            </div>
+
         </div>
 
     </template>
@@ -264,13 +283,21 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * completeAccount represents true of the user
+                    * completeAccount represents true if the user
                     * has a username, avatar and address
                     * @type {Boolean}
                     */
                     completeAccount: {
                         type: Boolean,
                         value: true,
+                    },
+                    /**
+                    * myRequest represents true if user posted this request
+                    * @type {Boolean}
+                    */
+                    myRequest: {
+                        type: Boolean,
+                        value: false,
                     },
                 };
             }
@@ -292,6 +319,11 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', 'hashtag-list');
                 }
             }
+
+            _switch() {
+                this.myRequest = !this.myRequest;
+            }
+
             /**
             * changes the current path
             */

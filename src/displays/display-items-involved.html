@@ -1,0 +1,130 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-items-involved></display-items-involved>
+```
+
+-->
+<dom-module id="display-items-involved">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 0 4px 0;
+            }
+
+            .box {
+                @apply --layout-horizontal;
+                background-color: var(--sc-white);
+                max-width: 100%;
+                box-sizing: border-box;
+                padding: 25px 40px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+            }
+
+            .avatar {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-image: url("../../images/defaultavatar.png");
+                background-size: 30px;
+            }
+
+            .right {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+            }
+
+            .activity {
+                @apply --smallest-light;
+                color: var(--sc-grey4);
+            }
+
+            .content {
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" id="container" wide-layout$="{{wide}}">
+
+
+            <div class="box">
+                <div class="left">
+                    <div class="avatar"></div>
+                </div>
+                <div class="right">
+                    <div class="activity">You replied to this request</div>
+                    <div class="content">Needaride from here to...</div>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="left">
+                    <div class="avatar"></div>
+                </div>
+                <div class="middle">
+                    <div class="activity">You replied to this request</div>
+                    <div class="content">Needaride from here to...</div>
+                </div>
+                <div class="right"></div>
+            </div>
+
+
+    </template>
+    <script>
+        class MyDisplayItemsInvolved extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-items-involved';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        }
+
+        window.customElements
+            .define(MyDisplayItemsInvolved.is, MyDisplayItemsInvolved);
+    </script>
+</dom-module>

@@ -15,9 +15,10 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-hashtag-about.html">
-<link rel="import" href="../displays/display-hashtag-deals.html">
+<link rel="import" href="../displays/display-hashtag-items.html">
 <link rel="import" href="../displays/display-deal-btn.html">
 <link rel="import" href="../displays/display-filter-deals.html">
+<link rel="import" href="../displays/display-items-involved.html">
 
 <dom-module id="page-hashtag">
     <template>
@@ -25,7 +26,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-             :host {
+            :host {
                 width: 100vw;
                 height: 100%;
                 display: block;
@@ -34,58 +35,85 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 width: 100%;
-                height: 100%;
-                background-color: var(--sc-grey1);
+                background-image: var(--sc-bg);
+            }
+
+            .pushdown {
+                width: 100%;
+                height: 136px;
             }
 
             .header {
                 @apply --layout-vertical;
-                background-image: var(--sc-bg);
+                width: 100%;
                 box-sizing: border-box;
-                padding: 40px 40px 0 40px;
+                padding: 40px 0 0 0;
+                background-image: var(--sc-bg);
                 position: fixed;
                 top: 0;
-                width: 100%;
-                z-index: 2;
-            }
-
-            .top {
-                @apply --layout-horizontal;
-                height: 50px;
-            }
-
-            .bottom {
-                @apply --layout-end;
-                @apply --layout-horizontal;
-                @apply --layout-wrap;
-                width: 100%;
-                margin-bottom: 18px;
-            }
-
-            .container .bottom {
-                margin-bottom: 28px;
+                z-index: 4;
             }
 
             .container[wide-layout] .header {
                 box-sizing: border-box;
-                padding: 60px 10vw 0 10vw;
+                padding: 60px 0 0 0;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+                box-sizing: border-box;
+                padding: 0 40px;
+                height: 50px;
+            }
+
+            .container[wide-layout] .top {
+                box-sizing: border-box;
+                padding: 0 10vw;
+                height: 42px;
+            }
+
+            display-my-info {
+                @apply --layout-flex;
+            }
+
+            .bottom {
+                @apply --layout-start;
+                @apply --layout-horizontal;
+                @apply --layout-wrap;
+                box-sizing: border-box;
+                padding: 5px 40px 5px 40px;
+                width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                box-sizing: border-box;
+                padding: 0 10vw;
             }
 
             .leftbottom {
-                margin-top: 30px;
                 @apply --layout-horizontal;
                 @apply --layout-flex;
                 @apply --layout-start-justified;
                 @apply --layout-end;
             }
 
-            .container[wide-layout] .leftbottom {
-                margin-top: 40px;
+            display-items-involved {
+                position: relative;
+                z-index: 2;
+            }
+
+            .container[wide-layout] display-items-involved {
+                margin-top: 15px;
+                margin-bottom: 2px;
             }
 
             .hashtag {
                 @apply --main-title2;
                 color: var(--sc-grey4);
+            }
+
+            .smaller {
+                @apply --small-bold;
             }
 
             .back {
@@ -95,46 +123,82 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .info-toggle {
                 @apply --small-bold;
+                @apply --layout-center;
                 color: var(--sc-blue);
                 border-bottom: 2px dotted var(--sc-blue);
                 margin: 0px 0px 8px 10px;
-            }
-
-            .filter-toggle {
-                @apply --small-bold;
-                color: var(--sc-grey3);
-                margin: 0px 0px 8px 10px;
-                border-bottom: 2px dotted var(--sc-grey3);
+                box-sizing: border-box;
+                padding: 1px 3px;
                 cursor: pointer;
             }
 
-            [highlight-info] {
+            .highlight-info {
                 color: white;
                 background-color: var(--sc-blue);
                 border-bottom: 0;
             }
 
-            [highlight-filter] {
-                color: white;
-                background-color: var(--sc-grey4);
-                border-bottom: 0;
-                padding: 1px 2px;
+            .scrollbar {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                position: sticky;
+                top: 134px;
+                z-index: 1;
             }
 
-            display-my-info {
+            .buttonbar {
+                @apply --layout-center;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                box-sizing: border-box;
+                padding: 5px 40px 10px 40px;
+                z-index: 2;
+                background-image: var(--sc-bg);
+                min-height: 27px;
+            }
+
+            .filter-toggle {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                cursor: pointer;
+                background-color: #e0dfe0;
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 4px 6px;
+            }
+
+            .highlight-filter {
+                color: white;
+                background-color: var(--sc-grey3);
+            }
+
+            .flex {
                 @apply --layout-flex;
             }
 
-            display-hashtag-deals {
-                margin: 184px 0 0 0;
+            .involved-toggle {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                background-color: var(--sc-white);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 4px 6px;
+                cursor: pointer;
             }
 
-            .container[wide-layout] display-hashtag-deals {
-                margin-top: 206px;
+            display-hashtag-items {
+                margin: 0 0 0 0;
             }
 
-            .container[wide-layout] .top {
-                height: 42px;
+            display-items-involved {
+                background-image: var(--sc-bg);
+                position: relative;
+                z-index: 2;
+                margin: 0 0 0 0;
+            }
+
+            .container[wide-layout] display-hashtag-items {
+                margin-top: 156px;
             }
 
             .dealbtn {
@@ -149,64 +213,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 top: 248px;
             }
 
-            .slider {
-                border-bottom: 2px solid black;
-                position: fixed;
-                top: 184px;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0 40px 2vh 40px;
-                background-image: var(--sc-bg);
-                z-index: 1;
-            }
-
-            .slider-hidden-visible {
-                animation: slideDown 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .slider-visible-hidden {
-                animation: slideUp 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .slider-hidden {
-                display: none;
-            }
-
-            .info-hidden-visible {
-                animation: slideDown 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .info-visible-hidden {
-                animation: slideUp 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .info-hidden {
-                display: none;
-            }
-
-            .fade-hidden {
-                opacity: 1;
-            }
-
-            .fade-hidden-visible {
-                animation: fadeOut 0.1s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .fade-visible-hidden {
-                animation: fadeIn 0.1s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .info {
-                border-bottom: 2px solid var(--sc-blue);
-                position: fixed;
-                top: 184px;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0 40px 2vh 40px;
-                background-image: var(--sc-bg);
-                z-index: 1;
-            }
-
             .container[wide-layout] .slider {
                 padding: 0 10vw 2vh 10vw;
                 top: 206px;
@@ -217,64 +223,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 top: 206px;
             }
 
-            .fullheight {
-                height: 100%;
+            display-hashtag-about {
+                border-bottom: 2px solid var(--sc-blue);
+                position: fixed;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 40px 2vh 40px;
+                background-image: var(--sc-bg);
+                left: 0px;
+                margin-top: -267px;
+                z-index: 3;
             }
 
-
-            @keyframes slideUp {
-                0% {
-                    transform: translateY(0%);
-                }
-                100% {
-                    transform: translateY(-110%);
-                }
-            }
-
-            @keyframes slideDown {
-                0% {
-                    transform: translateY(-80%);
-                }
-                100% {
-                    transform: translateY(0%);
-                }
-            }
-
-            @keyframes infoUp {
-                0% {
-                    transform: translateY(0%);
-                }
-                100% {
-                    transform: translateY(-110%);
-                }
-            }
-
-            @keyframes infoDown {
-                0% {
-                    transform: translateY(-80%);
-                }
-                100% {
-                    transform: translateY(0%);
-                }
-            }
-
-
-            @keyframes fadeIn {
-                0% {
-                    opacity: 0.2;
-                }
-                100% {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes fadeOut {
-                0% {
-                    opacity: 1;
-                }
-                100% {
-                    opacity: 0.2;
-                }
+            display-filter-deals {
+                border-bottom: 2px solid;
+                position: absolute;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 50px 40px 2vh 40px;
+                background-color: var(--sc-white);
+                margin-top: -101px;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -289,68 +257,67 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
 
         <div class="container" wide-layout$="{{wide}}">
-
+            <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
-                    <display-my-info complete-account="{{completeAccount}}"></display-my-info>
+                    <display-my-info></display-my-info>
                     <div class="back" on-click="_back"></div>
                 </div>
                 <div class="bottom">
                     <div class="leftbottom">
-                        <div class="hashtag">#{{hashtag.name}}</div>
-                    <display-hashtag-about 
-                        toggle 
-                        class="info-toggle" 
-                        highlight-info$="{{highlightInfoToggle}}"
-                        show-info="{{showInfo}}" 
-                        show-slider="{{showSlider}}">
-                    </display-hashtag-about>
+                        <div id="hashtag" class="hashtag"># {{hashtag.name}}</div>
+                        <div id="infolink" class="info-toggle" on-click="_toggleInfo">i</div>
                     </div>
-                    <display-filter-deals 
-                        toggle 
-                        class="filter-toggle"
-                        highlight-filter$="{{highlightFilterToggle}}"
-                        show-slider="{{showSlider}}" 
-                        show-info="{{showInfo}}" 
-                        range="{{range}}"
-                        route="{{route}}" 
-                        path="{{path}}">
-                    </display-filter-deals>
                 </div>
             </div>
 
-            <display-hashtag-about 
-                info 
-                class$="info [[infoState]]"
-                show-info="{{showInfo}}" >
-            </display-hashtag-about>
+            <dom-if if="{{showInfo}}">
+                <template>
+                    <display-hashtag-about 
+                        id="about" class="info" 
+                        hashtag-info="[[hashtag]]" 
+                        show-info="{{showInfo}}">
+                    </display-hashtag-about>
+                </template>
+            </dom-if>
 
-            <display-filter-deals 
-                slider 
-                class$="slider [[sliderState]]" 
-                show-slider="{{showSlider}}" 
-                range="{{range}}" 
-                route="{{route}}" 
-                path="{{path}}">
-            </display-filter-deals>
+            <display-items-involved></display-items-involved>
 
-            <div class$="fade [[fadeState]] fullheight" on-click="_fadeClose">
-                <display-hashtag-deals 
+            <div class="scrollbar">
+                <div class="buttonbar" >
+                    <div id="filtertoggle" class="filter-toggle" on-click="_toggleSlider">filter deals</div>
+                    <div class="flex"></div>
+                    <div class="involved-toggle" on-click="_backToTop">1 request</div>
+                </div>
+                <dom-if if="{{showSlider}}">
+                    <template>
+                        <display-filter-deals 
+                            id="slider" class="slider" 
+                            show-slider="{{showSlider}}" 
+                            range="{{range}}">
+                        </display-filter-deals>
+                    </template>
+                </dom-if>
+            </div>
+
+            <div id="fadeArea" on-click="_fadeClose">
+                <display-hashtag-items 
                     range="{{range}}" 
                     hashtag="{{hashtag}}" 
                     route-data="[[routeData]]" 
                     path="{{path}}" 
                     show-slider="{{showSlider}}"
                     show-info="{{showInfo}}">
-                </display-hashtag-deals>
+                </display-hashtag-items>
 
                 <div class="dealbtn">
                     <display-deal-btn 
-                    route-data="[[routeData]]" 
-                    path="{{path}}">
-                </display-deal-btn>
+                        route-data="[[routeData]]" 
+                        path="{{path}}">
+                    </display-deal-btn>
                 </div>
             </div>
+
         </div>
 
     </template>
@@ -375,36 +342,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * sliderState represents the state of the slider
-                    * @type {String}
-                    */
-                    sliderState: {
-                        type: String,
-                        value: 'slider-initial',
-                    },
-                    /**
-                    * infoState represents the state of the info area
-                    * @type {String}
-                    */
-                    infoState: {
-                        type: String,
-                        value: 'info-initial',
-                    },
-                    /**
-                    * fadeState represents the state of the fade area
-                    * @type {String}
-                    */
-                    fadeState: {
-                        type: String,
-                        value: 'fade-hidden',
-                    },
-                    /**
                     * showSlider determines of the slider is show or not
                     * @type {Boolean}
                     */
                     showSlider: {
                         type: Boolean,
-                        observer: '_toggleSlider',
+                        value: false,
                     },
                     /**
                     * showInfo indicates if the hashtag info panel is open or not
@@ -412,14 +355,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     showInfo: {
                         type: Boolean,
-                        observer: '_toggleInfo',
+                        value: false,
                     },
                     /**
-                    * highlightFilterToggle toggles
-                    * the background style of the show filter text link
+                    * faded indicates if the dealsarea is faded or not
                     * @type {Boolean}
                     */
-                    highlightFilterToggle: {
+                    faded: {
                         type: Boolean,
                         value: false,
                     },
@@ -428,103 +370,205 @@ This code may only be used under the license found at https://github.com/swarmci
                     * the background style of the show filter text link
                     * @type {Boolean}
                     */
-                    highlightInfoToggle: {
-                        type: Boolean,
-                        value: false,
+                    hashtags: {
+                        type: Array,
+                        statePath: 'hashtags',
+                        observer: '_filterHashtags',
+                    },
+                    /**
+                    * the curent route
+                    * @type {String}
+                    */
+                    route: {
+                        type: String,
+                        observer: '_routeChanged',
+                    },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                    },
+                    /**
+                    * the animation object
+                    * @type {Object}
+                    */
+                    anim: {
+                        type: Object,
                     },
                 };
             }
 
-            connectedCallback() {
-                super.connectedCallback();
+            ready() {
+                super.ready();
+                this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
+            * find the selected hashtag
+            */
+            _filterHashtags() {
+                let selectedHashtag = this.hashtags.filter((hashtag) => {
+                    return hashtag.id == this.route.path.split('/')[2];
+                });
+                this.hashtag = selectedHashtag[0];
+            }
+            /**
+            * the pages route has changed
+            */
+            _routeChanged() {
+                // TODO: Reset the page on load, close the
+                // info and filter of they are open,
+                // if faded out, fade in
+                if (this.hashtags) {
+                    this._filterHashtags();
+                }
+            }
+            /**
             * shows and hides the slider
+            * @return {Promise} resolves when animations have finished playing
             */
             _toggleSlider() {
-                switch (this.sliderState) {
-                    case 'slider-initial':
-                        this.sliderState = 'slider-hidden';
-                        this.fadeState = 'fade-visible-hidden';
-                        break;
-                    case 'slider-hidden':
-                        this.sliderState = 'slider-hidden-visible';
-                        this.fadeState = 'fade-hidden-visible';
-                        this.highlightFilterToggle = true;
-                        this.highlightInfoToggle = false;
-                        break;
-                    case 'slider-hidden-visible':
-                        this.sliderState = 'slider-visible-hidden';
-                        this.fadeState = 'fade-visible-hidden';
-                        this.highlightFilterToggle = false;
-                        setTimeout(() =>{
-                            this.sliderState = 'slider-hidden';
-                        }, 300);
-                        break;
-                    case 'slider-visible-hidden':
-                        this.sliderState = 'slider-hidden-visible';
-                        this.fadeState = 'fade-hidden-visible';
-                        this.highlightFilterToggle = true;
-                        this.highlightInfoToggle = false;
-                }
+                return new Promise((resolve, reject) => {
+                    if (this.showInfo) {
+                        this.$.filtertoggle.classList.add('highlight-filter');
+                        this._fadeInOut();
+                        this._toggleInfo().then(() => {
+                            this.showSlider = true;
+                            setTimeout(() => {
+                                let animation = this.shadowRoot
+                                    .querySelector('#slider').animate(
+                                    this.anim.slideDownSlider.arr,
+                                    this.anim.slideDownSlider.obj
+                                    );
+                                animation.play();
+                            }, 1);
+                        });
+                    }
+                    else if (!this.showSlider) {
+                        this.$.filtertoggle.classList.add('highlight-filter');
+                        this._fadeInOut();
+                        this.showSlider = true;
+                        setTimeout(() => {
+                            let animation = this.shadowRoot
+                                .querySelector('#slider').animate(
+                                this.anim.slideDownSlider.arr,
+                                this.anim.slideDownSlider.obj
+                                );
+                            animation.play();
+                            animation.onfinish = () => {
+                                resolve();
+                            };
+                        }, 1);
+                    } else {
+                        this.$.filtertoggle.classList.remove('highlight-filter');
+                        this._fadeInOut();
+                        let animation = this.shadowRoot
+                            .querySelector('#slider').animate(
+                            this.anim.slideUpSlider.arr,
+                            this.anim.slideUpSlider.obj
+                            );
+                        animation.play();
+                        animation.onfinish = () => {
+                            this.showSlider = false;
+                            resolve();
+                        };
+                    }
+                });
             }
             /**
             * shows and hides the info box
+            * @return {Promise} resolves when animations have finished playing
             */
             _toggleInfo() {
-                switch (this.infoState) {
-                    case 'info-initial':
-                        this.infoState = 'info-hidden';
-                        break;
-                    case 'info-hidden':
-                        this.infoState = 'info-hidden-visible';
-                        this.sliderState = 'slider-hidden';
-                        this.fadeState = 'fade-hidden-visible';
-                        this.highlightInfoToggle = true;
-                        this.highlightFilterToggle = false;
-                        setTimeout(() =>{
-                            this.sliderState = 'slider-hidden';
-                        }, 300);
-                        break;
-                    case 'info-hidden-visible':
-                        this.infoState = 'info-visible-hidden';
-                        this.fadeState = 'fade-visible-hidden';
-                        this.highlightInfoToggle = false;
-                        break;
-                    case 'info-visible-hidden':
-                        this.infoState = 'info-hidden-visible';
-                        this.sliderState = 'slider-hidden';
-                        this.fadeState = 'fade-hidden-visible';
-                        this.highlightInfoToggle = true;
-                        this.highlightFilterToggle = false;
+                return new Promise((resolve, reject) => {
+                    if (this.showSlider) {
+                        this.$.infolink.classList.add('highlight-info');
+                        this._fadeInOut();
+                        this._toggleSlider().then(() => {
+                            this.showInfo = true;
+                            setTimeout(() => {
+                                let animation = this.shadowRoot
+                                    .querySelector('#about').animate(
+                                    this.anim.slideDownInfo.arr,
+                                    this.anim.slideDownInfo.obj
+                                    );
+                                animation.play();
+                            }, 1);
+                        });
+                    }
+                    else if (!this.showInfo) {
+                        this.$.infolink.classList.add('highlight-info');
+                        this._fadeInOut();
+                        this.showInfo = true;
+                        setTimeout(() => {
+                            let animation = this.shadowRoot
+                                .querySelector('#about').animate(
+                                this.anim.slideDownInfo.arr,
+                                this.anim.slideDownInfo.obj
+                                );
+                            animation.play();
+                            animation.onfinish = () => {
+                                resolve();
+                            };
+                        }, 1);
+                    } else {
+                        this.$.infolink.classList.remove('highlight-info');
+                        this._fadeInOut();
+                        let animation = this.shadowRoot
+                            .querySelector('#about').animate(
+                            this.anim.slideUpInfo.arr,
+                            this.anim.slideUpInfo.obj
+                            );
+                        animation.play();
+                        animation.onfinish = () => {
+                            this.showInfo = false;
+
+                            resolve();
+                        };
+                    }
+                });
+            }
+            /**
+            * fades part of the page in and out
+            */
+            _fadeInOut() {
+                if (!this.faded) {
+                    this.faded = !this.faded;
+                    this.$.fadeArea.animate(
+                        this.anim.fadeOut.arr,
+                        this.anim.fadeOut.obj
+                    );
+                }
+                else {
+                    this.faded = !this.faded;
+                    this.$.fadeArea.animate(
+                        this.anim.fadeIn.arr,
+                        this.anim.fadeIn.obj
+                    );
                 }
             }
             /**
-            * closes open header boxes
+            * takes the user back to the top of the page
             */
-            _fadeClose() {
-                if (this.showSlider) {
-                    this.showSlider = !this.showSlider;
-                }
-                else if (this.showInfo) {
-                    this.showInfo = !this.showInfo;
-                }
+            _backToTop() {
+                let scrollDuration = 500;
+                let scrollStep = -window.scrollY / (scrollDuration / 15);
+                let scrollInterval = setInterval(function() {
+                        if ( window.scrollY != 0 ) {
+                            window.scrollBy( 0, scrollStep );
+                        }
+                        else clearInterval(scrollInterval);
+                    },
+                15);
             }
             /**
             * takes the user to the hashtag list page
             */
             _back() {
                 this.path = 'hashtag-list/';
-
-                // this.infoState = 'info-hidden';
-                // this.sliderState = 'slider-hidden';
-                // this.fadeState = 'fade-hidden';
-                // this.highlightInfoToggle = false;
-                // this.highlightFilterToggle = false;
             }
-
-
             /**
             * triggered after the user selects a language
             */
@@ -534,7 +578,73 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.path = null;
                 }
             }
-        }
-        window.customElements.define(NewHashtag.is, NewHashtag);
+            /**
+            * All animations this page needs
+            */
+            _loadAnimations() {
+                this.anim = {
+                    slideDownSlider: {
+                        arr: [{transform: 'translateY(0)'},
+                        {transform: 'translateY(223px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    slideUpSlider: {
+                        arr: [{transform: 'translateY(223px)'},
+                        {transform: 'translateY(0)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    slideDownInfo: {
+                        arr: [{transform: 'translateY(0)'},
+                        {transform: 'translateY(267px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    slideUpInfo: {
+                        arr: [{transform: 'translateY(267px)'},
+                        {transform: 'translateY(0)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    fadeOut: {
+                        arr: [{opacity: 1},
+                        {opacity: 0.2}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    fadeIn: {
+                        arr: [{opacity: 0.2},
+                        {opacity: 1}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                };
+            }
+        } window.customElements.define(NewHashtag.is, NewHashtag);
     </script>
 </dom-module>
