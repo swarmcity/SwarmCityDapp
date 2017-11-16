@@ -1,0 +1,166 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<script src="webpack.min.js" async></script>
+
+<dom-module id="data-wallet">
+    <script>
+        class DataWallet extends Polymer.Element {
+            static get is() {
+                return 'data-wallet';
+            }
+            /**
+            * create a private key and address
+            * @return {Object} utcKeyStore
+            * @argument {String} password
+            */
+            createKey(password) {
+                return new Promise((resolve, reject) => {
+                    const privateKey = dragon.randomBytes(32);
+                    const publicKey = dragon.privateToPublic(privateKey);
+                    const address = dragon.publicToAddress(publicKey);
+                    const hexPrivateKey = privateKey.toString('hex');
+                    const hexAddress = dragon.toChecksumAddress(`0x${address.toString('hex')}`);
+                    if (privateKey.length === 32
+                    && hexPrivateKey.length === 64
+                    && hexAddress.length === 42) {
+                        resolve(this.utcKeystore(privateKey, hexAddress, password));
+                    } else {
+                        reject('Create Key Error');
+                    }
+                });
+            }
+            /**
+            * create a keystire from private key and password
+            * @return {utcKeyStore} utcKeyStore
+            * @argument {String} suppliedPrivateKey
+            * @argument {String} password
+            */
+            restoreKey(suppliedPrivateKey, password) {
+                return new Promise((resolve, reject) => {
+                    const Buffer = dragon.Buffer.Buffer;
+                    const privateKey = new Buffer(suppliedPrivateKey, 'hex');
+                    const publicKey = dragon.privateToPublic(privateKey);
+                    const address = dragon.publicToAddress(publicKey);
+                    const hexPrivateKey = privateKey.toString('hex');
+                    const hexAddress = dragon.toChecksumAddress(`0x${address.toString('hex')}`);
+                    if (privateKey.length === 32
+                    && hexPrivateKey.length === 64
+                    && hexAddress.length === 42) {
+                        resolve(this.utcKeystore(privateKey, hexAddress, password));
+                    } else {
+                        reject('Restore Key Error');
+                    }
+                });
+            }
+            /**
+            * create a address from public key
+            * @return {utcKeyStore} utcKeyStore
+            * @argument {String} privateKey
+            */
+            deriveAddress(privateKey) {
+                return new Promise((resolve, reject) => {
+                    const publicKey = dragon.privateToPublic(privateKey);
+                    resolve(dragon.publicToAddress(publicKey));
+                });
+            }
+            /**
+            * create a utc Keystore
+            * @return {utcKeyStore} utcKeyStore
+            * @argument {String} privateKey
+            * @argument {String} hexAddress
+            * @argument {String} password
+            */
+            utcKeystore(privateKey, hexAddress, password) {
+                return new Promise((resolve, reject) => {
+                    const id = dragon.uuid.v4({random: dragon.randomBytes(16)});
+                    const salt = dragon.randomBytes(32);
+                    const iv = dragon.randomBytes(16);
+                    const Buffer = dragon.Buffer.Buffer;
+                    const key = dragon.scrypt(new Buffer(password), salt, 1024, 8, 1, 32);
+                    const cipher = dragon.createCipheriv('aes-128-ctr', key.slice(0, 16), iv);
+                    const ciphertext = Buffer.concat([cipher.update(privateKey), cipher.final()]);
+                    const mac = dragon.sha3(Buffer.concat([key.slice(16, 32),
+                    new Buffer(ciphertext, 'hex')]));
+                    resolve({
+                        fileName: ['UTC--',
+                        new Date().toJSON().replace(/:/g, '-'), '--',
+                        hexAddress].join(''),
+                        address: hexAddress,
+                        privateKey: privateKey.toString('hex'),
+                        utcKeystore: {
+                            version: 3,
+                            id: id,
+                            address: hexAddress,
+                            Crypto: {
+                                ciphertext: ciphertext.toString('hex'),
+                                cipherparams: {
+                                    iv: iv.toString('hex'),
+                                },
+                                cipher: 'aes-128-ctr',
+                                kdf: 'scrypt',
+                                kdfparams: {
+                                    'dklen': 32,
+                                    'salt': salt.toString('hex'),
+                                    'n': 1024,
+                                    'r': 8,
+                                    'p': 1,
+                                },
+                                mac: mac.toString('hex'),
+                            },
+                        },
+                    });
+                });
+            }
+
+            /**
+            * dmake qr codes
+            * @return {QRCode} QRCode
+            * @argument {String} data
+            */
+            makeQRCode(data) {
+                return new Promise((resolve, reject) => {
+                    dragon.QRCode.toDataURL(data, (err, url) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(url);
+                        }
+                    });
+                });
+            }
+            /**
+            * decrypt utc keystore
+            * @return {privateKey} privateKey
+            * @argument {String} utcKeystore
+            * @argument {String} password
+            */
+            decryptUtcKeystore(utcKeystore, password) {
+                return new Promise((resolve, reject) => {
+                    const Buffer = dragon.Buffer.Buffer;
+                    const kdfparams = utcKeystore.Crypto.kdfparams;
+                    let key;
+                    if (utcKeystore.Crypto.kdf === 'scrypt') {
+                        key = dragon.scrypt(new Buffer(password), new Buffer(kdfparams.salt, 'hex'),
+                        kdfparams.n, kdfparams.r, kdfparams.p, kdfparams.dklen);
+                    }
+                    else if (utcKeystore.Crypto.kdf === 'pbkdf2') {
+                        if (kdfparams.prf !== 'hmac-sha256') {
+                            reject(Error('hmac-sha256 is not supported'));
+                        }
+                        key = pbkdf2Sync(new Buffer(password), new Buffer(kdfparams.salt, 'hex'),
+                        kdfparams.c, kdfparams.dklen, 'sha256');
+                    } else {
+                        reject(Error('Unsupported key derivation scheme'));
+                    }
+                    const ciphertext = new Buffer(utcKeystore.Crypto.ciphertext, 'hex');
+                    const mac = dragon.sha3(Buffer.concat([key.slice(16, 32), ciphertext]));
+                    if (mac.toString('hex') !== utcKeystore.Crypto.mac) {
+                        reject(Error('Wrong Password'));
+                    }
+                    const decipher = dragon.createDecipheriv(utcKeystore.Crypto.cipher, key.slice(0, 16),
+                    new Buffer(utcKeystore.Crypto.cipherparams.iv, 'hex'));
+                    resolve(Buffer.concat([decipher.update(ciphertext), decipher.final()]));
+                });
+            }
+        } window.customElements.define(DataWallet.is, DataWallet);
+    </script>
+</dom-module>
