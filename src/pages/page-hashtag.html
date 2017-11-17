@@ -79,7 +79,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 @apply --layout-wrap;
                 box-sizing: border-box;
-                padding: 5px 40px 5px 40px;
+                padding: 5px 40px 5px 25px;
                 width: 100%;
             }
 
@@ -110,6 +110,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-grey4);
             }
 
+            .hashtag-scroll {
+                font-size: 19px;
+            }
+
             .smaller {
                 @apply --small-bold;
             }
@@ -132,6 +136,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 1px 3px;
                 cursor: pointer;
+            }
+
+            .info-toggle-scroll {
+                display: none;
             }
 
             .highlight-info {
@@ -406,6 +414,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     anim: {
                         type: Object,
                     },
+                    /**
+                    * Indicates if an element has been scaled due to scrolling
+                    * @type {Boolean}
+                    */
+                    scrollScaled: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
 
@@ -413,6 +429,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.ready();
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                window.onscroll = this._scrollHandler.bind(this);
             }
             /**
             * find the selected hashtag
@@ -588,6 +605,29 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
+            * triggered once the user starts scrolling
+            */
+            _scrollHandler() {
+                if (window.scrollY != 0 && !this.scrollScaled) {
+                    this.$.infolink.classList.add('info-toggle-scroll');
+                    this.$.hashtag.animate(
+                        this.anim.scaleOut.arr,
+                        this.anim.scaleOut.obj
+                    );
+                    this.scrollScaled = true;
+                } else if (window.scrollY == 0) {
+                    setTimeout(()=> {
+                        this.$.infolink.classList.remove('info-toggle-scroll');
+                        }, 150
+                    );
+                    this.$.hashtag.animate(
+                        this.anim.scaleIn.arr,
+                        this.anim.scaleIn.obj
+                    );
+                    this.scrollScaled = false;
+                }
+            }
+            /**
             * All animations this page needs
             */
             _loadAnimations() {
@@ -650,6 +690,24 @@ This code may only be used under the license found at https://github.com/swarmci
                             duration: 250,
                             direction: 'normal',
                             easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    scaleIn: {
+                        arr: [{transform: 'scale(0.7) translateX(0)'},
+                        {transform: 'scale(1) translateX(0)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 100,
+                            direction: 'normal',
+                    },
+                    },
+                    scaleOut: {
+                        arr: [{transform: 'scale(1) translateX(0)'},
+                        {transform: 'scale(0.7) translateX(0)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 100,
+                            direction: 'normal',
                         },
                     },
                 };
