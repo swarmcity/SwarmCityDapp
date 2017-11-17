@@ -38,7 +38,12 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .pushdown {
                 width: 100%;
-                height: 136px;
+                height: 156px;
+            }
+
+            .container[wide-layout] .pushdown {
+                width: 100%;
+                height: 186px;
             }
 
             .header {
@@ -54,7 +59,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] .header {
                 box-sizing: border-box;
-                padding: 60px 0 0 0;
+                padding: 50px 0 20px 0;
             }
 
             .top {
@@ -65,9 +70,9 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .container[wide-layout] .top {
+                height: 70px;
                 box-sizing: border-box;
-                padding: 0 10vw;
-                height: 42px;
+                padding: 0px 10vw 0px;
             }
 
             display-my-info {
@@ -79,13 +84,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 @apply --layout-wrap;
                 box-sizing: border-box;
-                padding: 5px 40px 5px 40px;
+                padding: 14px 40px 8px 40px;
                 width: 100%;
             }
 
             .container[wide-layout] .bottom {
                 box-sizing: border-box;
-                padding: 0 10vw;
+                padding: 10px 10vw 0px;
             }
 
             .leftbottom {
@@ -107,12 +112,14 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .hashtag {
                 @apply --main-title2;
+                    font-size: 30px;
+
                 color: var(--sc-grey4);
                 transition: font-size 0.10s;
             }
 
             .hashtag-scroll {
-                font-size: 19px;
+                font-size: 22px;
             }
 
             .smaller {
@@ -154,8 +161,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center-justified;
                 width: 100%;
                 position: sticky;
-                top: 134px;
+                top: 148px;
                 z-index: 1;
+            }
+
+            .container[wide-layout] .scrollbar {
+                top: 186px;
             }
 
             .buttonbar {
@@ -163,11 +174,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
                 box-sizing: border-box;
-                padding: 5px 40px 10px 40px;
+                padding: 0px 40px 10px 40px;
                 z-index: 2;
                 background-image: var(--sc-bg);
                 min-height: 27px;
             }
+
+            .container[wide-layout] .buttonbar {
+                padding: 0px 10vw 10px;
+                margin: 0px 10px 0px 10px;
+                /*background-image: none;*/
+            }            
 
             .filter-toggle {
                 @apply --small-bold;
@@ -209,10 +226,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0 0 0 0;
             }
 
-            .container[wide-layout] display-hashtag-items {
+/*            .container[wide-layout] display-hashtag-items {
                 margin-top: 156px;
             }
-
+*/
             .dealbtn {
                 position: fixed;
                 bottom: 50px;
@@ -223,7 +240,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] .dealbtn {
                 bottom: auto;
                 right: 10vw;
-                top: 248px;
+                top: 200px;
             }
 
             .container[wide-layout] .slider {
@@ -290,7 +307,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
                 <div class="bottom">
                     <div class="leftbottom">
-                        <div id="hashtag" class="hashtag"># {{hashtag.name}}</div>
+                        <div id="hashtag" class="hashtag">#{{hashtag.name}}</div>
                         <div id="infolink" class="info-toggle" on-click="_toggleInfo">i</div>
                     </div>
                 </div>
@@ -311,8 +328,8 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="scrollbar">
                 <div class="buttonbar" >
                     <div id="filtertoggle" class="filter-toggle" on-click="_toggleSlider">filter deals</div>
-                    <div class="flex"></div>
-                    <div class="involved-toggle" on-click="_backToTop">1 request</div>
+                    <!-- <div class="flex"></div>
+                    <div class="involved-toggle" on-click="_backToTop">1 request</div> -->
                 </div>
                 <dom-if if="{{showSlider}}">
                     <template>
@@ -601,6 +618,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * triggered once the user starts scrolling
             */
             _scrollHandler() {
+            if(!this.wide){
+
+
                 if (window.scrollY != 0) {
                     if (!this.$.hashtag.classList.contains('hashtag-scroll')) {
                         this.$.hashtag.classList.add('hashtag-scroll');
@@ -612,6 +632,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.$.hashtag.classList.remove('hashtag-scroll');
                     this.$.infolink.classList.remove('info-toggle-scroll');
                 }
+            }
+
             }
             /**
             * All animations this page needs
