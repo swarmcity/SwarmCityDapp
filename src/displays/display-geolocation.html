@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../data/data-location.html">
 <!--
 
 Example:
@@ -51,6 +52,7 @@ The following custom properties and mixins are available for styling:
                 }
             }
         </style>
+        <data-location id="location"></data-location>
         <div class="container">
             <div>
                 <div on-click="_getLocation"></div>
@@ -66,69 +68,22 @@ The following custom properties and mixins are available for styling:
             static get is() {
                 return 'display-geolocation';
             }
-            static get properties() {
-                return {
-                    /**
-                     * Loading indicates if the componant is loading
-                     * @type {Boolean}
-                     */
-                    loading: {
-                        type: Boolean,
-                        value: false,
-                        notify: true,
-                    },
-                    /**
-                     * Preview is a src path for the default preview image
-                     * @type {Boolean}
-                     */
-                    preview: {
-                        type: String,
-                    },
-                    /**
-                     * Path signlas to the parent to change the path
-                     * @type {String}
-                     */
-                    path: {
-                        type: String,
-                        value: null,
-                        notify: true,
-                    },
-                };
-            }
-
             /**
              * Get s the users location cinverts it tio a geo hash
              * and saves it to local storage
              */
             _getLocation() {
-                let geoHash = '';
-                this.$.utility.getLocation()
+                    this.$.location.getLocation()
                     .then((latlon) => {
-                        return this.$.utility
-                            .toGeohash(latlon.latitude, latlon.longitude);
+                        return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
                     })
                     .then((data) => {
-                        geoHash = data;
-                        return this.$.storage.accountExists();
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.user.location = data;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
                     })
-                    .then((account) => {
-                        if (account == false) {
-                            return this.$.storage.saveAccount({
-                                'location': geoHash,
-                            });
-                        } else {
-                            account.location = geoHash;
-                            return this.$.storage.saveAccount(account);
-                        }
-                    })
-                    .then((account) => {
-                        if (typeof sessionStorage.getItem('origin') === 'string'
-                            || sessionStorage.getItem('origin') instanceof String) {
-                            this.path = sessionStorage.getItem('origin');
-                        }
-                        else {
-                            this.set('route.path', 'hashtag-list');
-                        }
+                    .then(() => {
+                        window.history.back();
                     });
             }
         }

@@ -1,0 +1,203 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<script src="../data/lightwallet.min.js"></script>
+<!--
+
+Example:
+```
+<display-restore-json-file></display-restore-json-file>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| Please remove all css from this file out to mixins
+
+-->
+<dom-module id="display-restore-json-file">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+            .inputfile {
+                width: 0.1px;
+                height: 0.1px;
+                opacity: 0;
+                overflow: hidden;
+                position: absolute;
+                z-index: -1;
+            }
+            .select {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big-fullwhite;
+                color: var(--sc-blue);
+                box-sizing: border-box;
+                width: 100%;
+                margin: 0 14px 14px 0;
+                max-width: 320px;
+            }
+            paper-input {
+                width: 100%;
+                text-align: center;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+        </style>
+
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+
+        <template is="dom-if" if="{{!askPassword}}">
+            <input type="file" name="file" id="file" class="inputfile" on-change="_getFile"/>
+            <label for="file">
+                <div class="select">{{localize('select file')}}</div>
+            </label>
+        </template>
+
+        <template is="dom-if" if="{{askPassword}}">
+            <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+            <div class="select" on-click="_decrypt">Restore</div>
+            <div class="select" on-click="_cancel">Cancel</div>
+        </template>
+        {{error}}
+
+    </template>
+    <script>
+        class DisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-restore-json-file';
+            }
+            /**
+            * Redux action for sertting private Key
+            * @param {privatekey} privatekey
+            */
+            static get actions() {
+                return Object.assign({
+                    PRIVATEKEY: function(privatekey) {
+                        return {
+                            type: 'PRIVATEKEY',
+                            privatekey: privatekey,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * wallet represnts the users wallet
+                    * @type {Object}
+                    */
+                    wallet: {
+                        type: Object,
+                    },
+                    /**
+                    * askPassword represents of the password field ois shown or not
+                    * @type {Boolean}
+                    */
+                    askPassword: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * error shows the readers parse error
+                    * @type {Boolean}
+                    */
+                    error: {
+                        type: Object,
+                    },
+                };
+            }
+            /**
+            * Fired when the user selects a file
+            * @param {event} event The event from the on-change
+            */
+            _getFile(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                const file = event.target.files[0];
+                let reader = new FileReader();
+                reader.readAsText(file);
+                reader.onload = () => {
+                    this.wallet = JSON.parse(reader.result);
+                    this.askPassword = true;
+                };
+                reader.onerror = (error) => {
+                    this.error = error;
+                };
+            }
+            /**
+            * Fired when the Restore button is clicked
+            */
+            _decrypt() {
+                const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
+                keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
+                    if (!err) {
+                        let privatekey = keystore.exportPrivateKey('0x' + keystore.getAddresses()[0],
+                        pwDerivedKey);
+                        this.dispatch('PRIVATEKEY', privatekey);
+                    }
+                });
+            }
+            /**
+            * Fired when the ccancel btn is clicked
+            */
+            _cancel() {
+                this.askPassword = false;
+                this.error = null;
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        } window.customElements.define(DisplayRestoreJsonFile.is, DisplayRestoreJsonFile);
+    </script>
+</dom-module>
