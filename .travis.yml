@@ -1,25 +1,21 @@
 language: node_js
-dist: trusty
 sudo: required
+dist: trusty
 addons:
-  firefox: "latest"
+    firefox: latest
   apt:
     sources:
-      - google-chrome
+    - google-chrome
     packages:
-      - google-chrome-stable
+    - google-chrome-stable
 node_js:
-  - "node"
-cache:
-  directories:
-    - $HOME/.cache/bower
-    - node_modules
+- '6'
 install:
-  - npm install -g polymer-cli
-  - npm install
-  - polymer install
+- npm install
+- npm install -g polymer-cli
+- polymer install
 before_script:
-  - npm run lint
+- npm run lint
 script:
-  - xvfb-run npm run test
-  - xvfb-run npm run test:integration
+- xvfb-run -s '-screen 0 1024x768x24' polymer test
+- xvfb-run -s '-screen 0 1024x768x24' polymer build

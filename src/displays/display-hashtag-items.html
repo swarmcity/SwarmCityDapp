@@ -11,7 +11,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
 Example:
 ```
-<display-hashtag-deals></display-hashtag-deals>
+<display-hashtag-items></display-hashtag-items>
 ```
 
 ### Styling
@@ -22,15 +22,15 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--display-hashtag-deals-avatar` | Mixin applied to the avatar | `{}` |
-| `--display-hashtag-deals-top-container` | Mixin applied to the container | `{}` |
-| `--display-hashtag-deals-time` | Mixin applied to the time | `{}` |
-| `--display-hashtag-deals-name` | Mixin applied to the name | `{}` |
-| `--display-hashtag-deals-description` | Mixin applied to the description | `{}` |
-| `--display-hashtag-deals-for` | Mixin applied to the word for | `{}` |
-| `--display-hashtag-deals-amount` | Mixin applied to the amount | `{}` |
+| `--display-hashtag-items-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-hashtag-items-top-container` | Mixin applied to the container | `{}` |
+| `--display-hashtag-items-time` | Mixin applied to the time | `{}` |
+| `--display-hashtag-items-name` | Mixin applied to the name | `{}` |
+| `--display-hashtag-items-description` | Mixin applied to the description | `{}` |
+| `--display-hashtag-items-for` | Mixin applied to the word for | `{}` |
+| `--display-hashtag-items-amount` | Mixin applied to the amount | `{}` |
 -->
-<dom-module id="display-hashtag-deals">
+<dom-module id="display-hashtag-items">
     <template>
         <style include="shared-styles">
             :host {
@@ -43,13 +43,18 @@ The following custom properties and mixins are available for styling:
             }
 
             .box {
-                background-color: var(--sc-white);
                 @apply --layout-vertical;
-                width: 100%;
+                background-color: var(--sc-white);
+                max-width: 100%;
                 box-sizing: border-box;
                 padding: 25px 40px;
                 cursor: pointer;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+            }
+
+            .box:active {
+                @apply --button-active;
             }
 
             .empty {
@@ -174,128 +179,39 @@ The following custom properties and mixins are available for styling:
         <display-language language="{{language}}"></display-language>
         <div class="container" wide-layout$="{{wide}}">
             <!-- <div class="empty">{{localize('Currently no deals selected. Try a broader search.')}}</div> -->
+            
+        <template is="dom-repeat" items="{{items}}">
             <div class="box" on-click="_toNewHere">
                 <div class="top">
                     <div class="avatar"></div>
                     <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
+                        <div class="date">[[item.dateTime]]</div>
+                        <div class="user">[[item.name]] · [[item.reputation]] SWR</div>
                     </div>
-                    <div class="replycount">5</div>
+                    <div class="replycount">[[item.offers]]</div>
                     <div class="replyicon"></div>
                 </div>
                 <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
+                    <div class="description">[[item.description]]</div>
                     <div class="pricebox">
                         <div class="for">for</div>
-                        <div class="price">55500 SWT</div>
+                        <div class="price">[[item.balance]] SWT</div>
                     </div>
                 </div>
             </div>
-            <div class="box" on-click="_toDetail">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Ride from literon busstop to protest</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                            ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                            eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                            deserunt mollit anim id est laborum.</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="box" on-click="_next">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
-                    </div>
-                    <div class="replycount">5</div>
-                    <div class="replyicon"></div>
-                </div>
-                <div class="bottom">
-                    <div class="description">Looking for a ride to the airport</div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
+        </template>
+
+
         </div>
     </template>
     <script>
-        class DisplayHashtagDeals extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDisplayHashtagItems extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-hashtag-deals';
+                return 'display-hashtag-items';
             }
             static get properties() {
                 return {
@@ -308,22 +224,14 @@ The following custom properties and mixins are available for styling:
                         statePath: 'language',
                     },
                     /**
-                    * Loading indicates if the componant is loading
+                    * all the deals for all hashtags
                     * @type {Boolean}
                     */
-                    loading: {
+                    itemCollection: {
                         type: Boolean,
-                        value: false,
-                        notify: true,
+                        statePath: 'itemCollection',
+                        observer: '_filterItems',
                     },
-                    // /**
-                    //  * range is the range the usert selected in slider
-                    //  * @type {Number}
-                    //  */
-                    // range: {
-                    //     type: Number,
-                    //     observer: '_rangeChanged',
-                    // },
                     /**
                     * route data represents the curent route
                     * @type {String}
@@ -365,12 +273,27 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         notify: true,
                     },
+                    items: {
+                        type: Object,
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * Filters all deals to just the deals we need for this hashtag
+            */
+            _filterItems() {
+                // TODO: Get the below hashtag ID from the parent component
+                this.hashtagId = '7c9v87bc98v7b';
+                const filteredItems = this.itemCollection.filter( (data) => {
+                    return (data.id == this.hashtagId);
+                });
+                this.items = filteredItems[0].items;
             }
 
             /**
@@ -486,6 +409,6 @@ The following custom properties and mixins are available for styling:
                 }
             }
         }
-        window.customElements.define(DisplayHashtagDeals.is, DisplayHashtagDeals);
+        window.customElements.define(MyDisplayHashtagItems.is, MyDisplayHashtagItems);
     </script>
 </dom-module>
