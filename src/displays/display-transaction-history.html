@@ -1,0 +1,175 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<!--
+
+Example:
+```
+<display-transaction-history></display-transaction-history>
+```
+
+-->
+<dom-module id="display-transaction-history">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --start-justified;
+            }
+
+            .repeated {
+                @apply --layout-vertical;
+                @apply --start-justified;
+            }
+
+            .state-box {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+            }
+
+            .timestamp {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+            }
+
+            .logtext {
+                @apply --body-default;
+                @apply --layout-flex;
+                max-width: 200px;
+                color: var(--sc-grey2);
+            }
+
+            .icon-complete {
+                @apply --vmark-blue-normal;
+            }
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
+            }
+
+            .loading {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-white);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon-complete {
+                    @apply --retina;
+                }
+            }
+
+        </style>
+        <div class="container">
+            <div class="repeated">
+                <div class="timestamp">3 seconds ago</div>
+                <div class="state-box">
+                    <div class="logtext">Receiving 666 SWT from Satan</div>
+                    <div class="loading">
+                        <div class="smallpoint" id="point1"></div>
+                        <div class="smallpoint" id="point2"></div>
+                        <div class="smallpoint" id="point3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="repeated">
+                <div class="timestamp">Yesterday, 18:21</div>
+                <div class="state-box">
+                    <div class="logtext">Received 999000 SWT from Sally Singer</div>
+                    <div class="icon-complete"></div>
+                </div>
+            </div>
+            <div class="repeated">
+                <div class="timestamp">2 weeks ago</div>
+                <div class="state-box">
+                    <div class="logtext">Received 7 SWT from Xardas</div>
+                </div>
+            </div>
+            <div class="repeated">
+                <div class="timestamp">2 weeks ago</div>
+                <div class="state-box">
+                    <div class="logtext">Sent 88 SWT to Kiki Pluch</div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDisplayTransactionHistory extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-transaction-history';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        }
+
+        window.customElements
+            .define(MyDisplayTransactionHistory.is, MyDisplayTransactionHistory);
+    </script>
+</dom-module>
