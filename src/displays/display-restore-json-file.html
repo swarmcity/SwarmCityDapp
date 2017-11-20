@@ -31,7 +31,23 @@ The following custom properties and mixins are available for styling:
         <style include="shared-styles">
             :host {
                 display: block;
+                width: 100%;
             }
+
+            .container {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+
             .inputfile {
                 width: 0.1px;
                 height: 0.1px;
@@ -40,6 +56,10 @@ The following custom properties and mixins are available for styling:
                 position: absolute;
                 z-index: -1;
             }
+
+            .container label {
+                width: 100%;
+            }
             .select {
                 @apply --layout-vertical;
                 @apply --layout-center-center;
@@ -47,9 +67,33 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-blue);
                 box-sizing: border-box;
                 width: 100%;
-                margin: 0 14px 14px 0;
+                /*margin: 0 14px 14px 0;*/
                 max-width: 320px;
             }
+
+
+            .select:active {
+                @apply --button-active;
+            }
+
+            .uploadedfile {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+
+
+            .container[wide-layout] .uploadedfile{
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+            }
+
+
             paper-input {
                 width: 100%;
                 text-align: center;
@@ -72,24 +116,80 @@ The following custom properties and mixins are available for styling:
                 }
             }
 
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            .btn {
+                margin-top: 7vh;
+                @apply --icon-button-big;
+            }
+
+            .container[wide-layout] .btn {
+                margin-top: 10vh;
+            }
+
+            .btn:active {
+                @apply --button-active;
+            }
+
+            .confirm {
+                @apply --next-blue-normal;
+            }
+
+
+            .cancel {
+                @apply --xmark-grey4-small;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .confirm,
+                .cancel {
+                    @apply --retina;
+                }
+            }
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .error {
+                @apply --body-bold;
+                color: var(--sc-red2);
+                margin-top: 30px;
+            }
+
         </style>
 
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+ 
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="{{!askPassword}}">
+                <div class="flex"></div>
+                <input type="file" name="file" id="file" class="inputfile" on-change="_getFile"/>
+                <label for="file">
+                    <div class="select">{{localize('select file')}}</div>
+                </label>
 
-        <template is="dom-if" if="{{!askPassword}}">
-            <input type="file" name="file" id="file" class="inputfile" on-change="_getFile"/>
-            <label for="file">
-                <div class="select">{{localize('select file')}}</div>
-            </label>
-        </template>
+                <!-- THIS NEEDS A DOM-IF -->
+                <div class="error">{{error}}</div>
 
-        <template is="dom-if" if="{{askPassword}}">
-            <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
-            <div class="select" on-click="_decrypt">Restore</div>
-            <div class="select" on-click="_cancel">Cancel</div>
-        </template>
-        {{error}}
+            </template>
 
+            <template is="dom-if" if="{{askPassword}}">
+                <div class="uploadedfile">
+                    <div>filename.JSON</div>
+                    <div class="cancel" on-click="_cancel"></div>
+                </div>
+                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+                    <div class="btn">
+                        <div class="confirm" on-click="_decrypt"></div>
+                    </div>
+            </template>
+        </div>
     </template>
     <script>
         class DisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
