@@ -64,11 +64,14 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center-justified;
             }
 
+            .container[wide-layout] img {
+                margin-top: 30vh;
+            }
+
             .container paper-input {
                 margin-top: 5vh;
                 width: 70%;
                 text-align: center;
-                @apply --sc-paper-input;
                 --paper-input-container-label: {
                     @apply --body-default;
                 }
@@ -84,6 +87,26 @@ The following custom properties and mixins are available for styling:
                 --paper-input-suffix: {
                     @apply --body-default;
                 }
+            }
+
+            .paper-input-blue {
+                --paper-checkbox-unchecked-color: var(--sc-grey4);
+                --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
+                --paper-checkbox-checkmark-color: var(--sc-white);
+                --paper-checkbox-checked-color: var(--sc-blue);
+                --paper-checkbox-checked-ink-color: var(--sc-blue);
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-blue);
+            }
+
+            .paper-input-white {
+                --paper-checkbox-unchecked-color: var(--sc-grey4);
+                --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
+                --paper-checkbox-checkmark-color: var(--sc-white);
+                --paper-checkbox-checked-color: var(--sc-blue);
+                --paper-checkbox-checked-ink-color: var(--sc-blue);
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-white);
             }
 
             .container[wide-layout] paper-input {
@@ -108,39 +131,68 @@ The following custom properties and mixins are available for styling:
 
             .submit {
                 @apply --icon-button-big;
+            }
+
+            .submit-blue {
                 background-color: var(--sc-blue);
+            }
+
+            .submit-white {
+                background-color: var(--sc-white);
             }
 
             .submit:active {
                 @apply --button-active;
             }
 
-            .icon-submit {
+            .icon-submit-blue {
                 @apply --vmark-white-normal;
             }
 
+            .icon-submit-white {
+                @apply --vmark-blue-normal;
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .disagree, .icon-submit {
+                .disagree,
+                .icon-submit {
                     @apply --retina;
                 }
             }
         </style>
-
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <img src="{{avatar}}">
-            <paper-input label="{{localize('password?')}}" autofocus type="password"></paper-input>
+            <dom-if if="{{blue}}">
+                <template>
+                    <paper-input class="paper-input-blue" label="{{localize('password?')}}" autofocus type="password"></paper-input>
+                </template>
+            </dom-if>
+            <dom-if if="{{white}}">
+                <template>
+                    <paper-input class="paper-input-white" label="{{localize('password?')}}" autofocus type="password"></paper-input>
+                </template>
+            </dom-if>
             <div class="buttonbox">
                 <div class="disagree" on-click="_disagree"></div>
-                <div class="submit" on-click="_getPrivKey">
-                    <div class="icon-submit"></div>
-                </div>
+                <dom-if if="{{blue}}">
+                    <template>
+                        <div class="submit submit-blue" on-click="_getPrivKey">
+                            <div class="icon-submit-blue"></div>
+                        </div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{white}}">
+                    <template>
+                        <div class="submit submit-white" on-click="_getPrivKey">
+                            <div class="icon-submit-white"></div>
+                        </div>
+                    </template>
+                </dom-if>
             </div>
         </div>
-
     </template>
     <script>
         class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -184,6 +236,22 @@ The following custom properties and mixins are available for styling:
                     privateKey: {
                         type: String,
                         notify: true,
+                    },
+                    /**
+                    * toggles the blue style elements
+                    * @type {Boolean}
+                    */
+                    blue: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * toggles the white style elements
+                    * @type {Boolean}
+                    */
+                    white: {
+                        type: Boolean,
+                        value: false,
                     },
                 };
             }
