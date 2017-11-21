@@ -20,69 +20,52 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
     -->
         <style include="shared-styles">
-             :host {
-                height: 100vh;
-                width: 100vw;
-                display: block;
+          :host {
+              @apply --titlepage-closed;
             }
 
             .container {
-                height: 100%;
-                width: 100%;
-                @apply --layout-vertical;
-                @apply --layout-end-justified;
                 background-image: var(--sc-bg);
-                box-sizing: border-box;
-                padding: 0 14vw;
+              @apply --titlepage-closed-container;
+            }
+            .container .top {
+              @apply --titlepage-closed-container-top;
+            }
+            .container .bottom {
+              @apply --titlepage-closed-container-bottom;
+            }
+            .container .title {
+              @apply --titlepage-title;
+              color: var(--sc-blue);
+            }
+            .container .subtitle {
+              @apply --titlepage-subtitle;
+              color: var(--sc-grey4);
             }
 
             .container[wide-layout] {
-                padding: 0 12vw 0 12vw;
+              @apply --titlepage-closed-wide-container;
             }
-
-            .title {
-                @apply --main-title1;
-                color: var(--sc-blue);
-                word-wrap: break-word;
-                text-align: center;
-                margin: 15vh 0 4vh 0;
+            .container[wide-layout] .top {
+              @apply --titlepage-closed-wide-container-top;
             }
-
+            .container[wide-layout] .bottom {
+              @apply --titlepage-closed-wide-container-bottom;
+            }
             .container[wide-layout] .title {
-                margin: 25vh 0 4vh 0;
-                @apply --layout-horizontal;
-                @apply --layout--start-justified;
-                @apply --main-title1-wide;
-                max-width: 750px;
+              @apply --titlepage-title-wide;
             }
-
-            .top {
-                @apply --layout-flex;
-                height: 100%;
-                width: 100%;
-            }
-
-            .greytext {
-                @apply --body-bold;
-                color: var(--sc-grey4);
-                margin-bottom: 4vh;
-                text-align: center;
-                line-height: 22px;
-            }
-
-            .container[wide-layout] .greytext {
-                margin-bottom: 2vh;
-                text-align: left;
-                max-width: 430px;
+            .container[wide-layout] .subtitle {
+              @apply --titlepage-subtitle-wide;
             }
 
             .button {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 @apply --text-button-big-fullwhite;
+                white-space: nowrap;
                 width: 100%;
                 max-width: 320px;
-                margin-top: 12vh;
             }
 
             .container[wide-layout] .button {
@@ -101,18 +84,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 4vh;
             }
 
-            .bottom {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-                height: 40vh;
-                width: 100%;
-            }
-
-            .container[wide-layout] .bottom {
-                @apply --layout-start;
-                height: 35vh;
-            }
         </style>
 
         <app-location route="{{route}}"></app-location>
@@ -120,8 +91,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title">{{localize('Success!')}}</div>
-                <div class="greytext">{{localize('The file has been sent to your email.')}}</div>
-                <div class="greytext">{{localize('Your account file combined with your password will always give you access to your SWT balance.')}}</div>
+                <div class="subtitle">{{localize('The file has been sent to your email.')}}</div>
+                <div class="subtitle">{{localize('Your account file combined with your password will always give you access to your SWT balance.')}}</div>
             </div>
             <div class="bottom">
                 <div class="button" on-click="_back">{{localize('back to profile')}}</div>
