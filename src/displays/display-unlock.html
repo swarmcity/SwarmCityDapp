@@ -1,0 +1,193 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<!--
+
+Example:
+```
+<display-unlock></display-unlock>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-unlock-container` | Mixin applied to the container | `{}` |
+-->
+
+<dom-module id="display-unlock">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                position: absolute;
+                min-width: 100vw;
+                min-height: 100vh;
+            }
+
+            img {
+                margin-top: 20vh;
+                width: 90px;
+                height: 90px;
+                cursor: pointer;
+                border-radius: 50%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .container paper-input {
+                margin-top: 5vh;
+                width: 70%;
+                text-align: center;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                margin-top: 8vh;
+            }
+
+            .disagree {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .submit {
+                @apply --icon-button-big;
+                background-color: var(--sc-blue);
+            }
+
+            .submit:active {
+                @apply --button-active;
+            }
+
+            .icon-submit {
+                @apply --vmark-white-normal;
+            }
+        </style>
+
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container">
+            <img src="{{avatar}}">
+            <paper-input label="{{localize('password?')}}" autofocus type="password"></paper-input>
+            <div class="buttonbox">
+                <div class="disagree" on-click="_disagree"></div>
+                <div class="submit" on-click="_getPrivKey">
+                    <div class="icon-submit"></div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-unlock';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The users selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * shows the users avatar
+                    * @type {Boolean}
+                    */
+                    avatar: {
+                        type: String,
+                        value: '../../images/defaultavatar.png',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            _disagree() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+
+            _getPrivKey() {
+                // check password && if correct populate private key property
+                this.privateKey = 'hfluhdliuh684684';
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+        }
+        window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
+    </script>
+</dom-module>
