@@ -30,32 +30,69 @@ The following custom properties and mixins are available for styling:
         <style include="shared-styles">
             :host {
                 display: block;
+                width: 100%;
             }
             .middle {
                 width: 100%;
                 @apply --layout-flex;
                 @apply --layout-vertical;
-                @apply --layout-start-justified;
+                @apply --layout-center-center;
             }
+
+            .container[wide-layout] .middle {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;               
+            }
+
+
             .bottom {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
-                height: 30vh;
+                background-color: rgba(0,0,0,0.05);
+
                 width: 100%;
+                max-width: 750px;
+
+                box-sizing:border-box;
+                padding: 40px;
+                @apply --small-light;
+                color: var(--sc-grey4);
+                text-align: center;
+
+                margin-top: 10vh;
             }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                width: 100%;
+                text-align: left;
+                margin-top: 10vh;
+                padding: 40px;
+
+            }
+
+
             .btn {
-                @apply --icon-button-big;
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                /*@apply --text-button-big-fullwhite;*/
+                @apply --text-button-small;
+                color: var(--sc-grey4);
+                box-sizing: border-box;
+                margin: 20px 14px 14px 0;
             }
+
             .btn:active {
                 @apply --button-active;
             }
-            .agree {
-                @apply --vmark-blue-normal;
-            }
+
+
             paper-input {
                 width: 100%;
-                margin-top: 6vh;
                 text-align: center;
                 @apply --sc-paper-input;
                 --paper-input-container-label: {
@@ -74,6 +111,14 @@ The following custom properties and mixins are available for styling:
                     @apply(--body-default);
                 }
             }
+
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+
             .messagebox {
                 margin-top: 2vh;
                 height: 4vh;
@@ -81,19 +126,143 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
             }
+
+
+            .showfullkey {
+                margin-top: 2vh;
+                @apply --small-bold;
+                @apply --layout-center;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+           .box {
+                @apply --layout-vertical;
+                @apply --layout--center;
+                @apply --layout--start-justified;
+                box-sizing: border-box;
+            }
+
+            .container[wide-layout] .box {
+                box-sizing: border-box;
+                @apply --layout-horizontal;
+                @apply --layout--start;
+                @apply --layout--start-justified;
+            }
+
+            .trianglecontainer {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-center-justified;
+                margin: 0px 10px 20px 10px;
+
+            }
+
+            .container[wide-layout] .trianglecontainer {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+/*                top: -9px;
+                left: -15px;*/
+                width: 54px;
+            }
+
+            .triangle {
+                @apply --alert-blue-normal;
+                position: relative;
+
+            }
+
+            .textbox {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                text-align: center;
+                margin: 0px 0px 20px 0px;
+
+            }
+
+            .container[wide-layout] .textbox {
+                text-align: left;
+            }
+
+            .iconbtn {
+                @apply --icon-button-big;
+                margin: 5vh 0px 10px;
+            }
+
+            .iconbtn:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+
+            .passset {
+                @apply --body-bold;
+                color: var(--sc-grey3);
+            }
+
         </style>
 
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="middle">
-            <paper-input label="{{localize('Private key?')}}" type="txt" value="{{privateKey}}"></paper-input>
-            <div class="messagebox"></div>
-        </div>
-        <div class="bottom">
-            <div class="btn">
-                <div class="agree" on-click="_agree"></div>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="middle">
+                <paper-input label="{{localize('Private key?')}}" type="txt" value="{{privateKey}}"></paper-input>
+                <!-- <div class="messagebox"></div> -->
+                <div class="showfullkey">{{localize('show full keys')}}</div>
             </div>
-        </div>
+            <div class="bottom">
+            <template is="dom-if" if="{{choosePassword}}">
+                <div>{{localize('To restore an account with a private key please choose a password for it first')}}</div>
+                <div class="btn" on-click="_agree">choose password</div>
+            </template>
 
+            <template is="dom-if" if="{{passwordWarning}}">
+                <div class="box">
+                    <div class="trianglecontainer">
+                        <div class="triangle"></div>
+                    </div>
+                    <div class="textbox">
+                        <div class="inner-top">{{localize('There is no password recovery available in Swarm City.')}}</div>
+                        <div class="inner-bottom">{{localize('Choose your password with care.')}}</div>
+                    </div>
+                </div>
+                <div class="iconbtn"> 
+                    <div class="agree" on-click=""></div> 
+                </div>
+            </template>
+
+
+            <template is="dom-if" if="{{passwordSubmit}}">
+                <paper-input id="password" label="{{localize('password?')}}" type="password"></paper-input>
+                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals"></paper-input>
+                <div class="errorcontainer">
+                    <span id="error">{{error}}</span>
+                </div>
+                <div class="iconbtn"> 
+                    <div class="agree" on-click=""></div> 
+                </div>
+
+            </template>
+
+
+            <template is="dom-if" if="{{passwordSet}}">
+                <div class="passset">{{localize('the password is set')}}</div>
+            </template>
+
+
+            </div>
+            <template is="dom-if" if="{{passwordSet}}">
+                <div class="iconbtn"> 
+                    <div class="agree" on-click=""></div> 
+                </div>
+            </template>
+
+
+        </div>
     </template>
     <script>
         class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -133,6 +302,44 @@ The following custom properties and mixins are available for styling:
                         reflectToAttribute: true,
                         notify: true,
                     },
+
+
+                    /**
+                    * choosePassword if true gives the option to choose password
+                    * @type {Boolean}
+                    */
+                    choosePassword: {
+                        type: Boolean,
+                        value: true,
+                    },
+
+                    /**
+                    * passwordWarning if true shows a warning about password
+                    * @type {Boolean}
+                    */
+                    passwordWarning: {
+                        type: Boolean,
+                        value: false,
+                    },
+
+                    /**
+                    * passwordSubmit if true give the option to submit a passw
+                    * @type {Boolean}
+                    */
+                    passwordSubmit: {
+                        type: Boolean,
+                        value: false,
+                    },
+
+                    /**
+                    * passwordSubmit if true shows that passw is set
+                    * @type {Boolean}
+                    */
+                    passwordSet: {
+                        type: Boolean,
+                        value: false,
+                    },
+
                 };
             }
             /**

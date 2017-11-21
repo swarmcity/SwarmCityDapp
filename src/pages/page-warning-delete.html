@@ -20,7 +20,80 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-             :host {
+            :host {
+              @apply --titlepage-closed;
+            }
+
+            .container {
+              background-color: var(--sc-red);
+              @apply --titlepage-closed-container;
+            }
+            .container .top {
+              @apply --titlepage-closed-container-top;
+            }
+            .container .bottom {
+              @apply --titlepage-closed-container-bottom;
+            }
+            .container .title {
+              @apply --titlepage-title;
+              color: var(--sc-white);
+            }
+            .container .subtitle {
+              @apply --titlepage-subtitle;
+              color: var(--sc-white);
+            }
+
+            .container[wide-layout] {
+              @apply --titlepage-closed-wide-container;
+            }
+            .container[wide-layout] .top {
+              @apply --titlepage-closed-wide-container-top;
+            }
+            .container[wide-layout] .bottom {
+              @apply --titlepage-closed-wide-container-bottom;
+            }
+            .container[wide-layout] .title {
+              @apply --titlepage-title-wide;
+            }
+            .container[wide-layout] .subtitle {
+              @apply --titlepage-subtitle-wide;
+            }
+
+            .close {
+                @apply --xmark-white-small;
+                @apply --close;
+            }
+            .close:active {
+                @apply --button-active;
+            }
+
+
+            .container .confirmers {
+              @apply --titlepage-confirmers;
+            }
+            .container[wide-layout] .confirmers {
+              @apply --titlepage-confirmers-wide;
+            }
+            .container .confirmers>div:nth-child(1) {
+              @apply --confirmers-x;
+              @apply --xmark-grey4-normal;
+            }
+
+
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
+            }
+
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+              @apply --vmark-red-normal;
+            }
+
+
+
+
+/*             :host {
                 @apply --warning-red-host;
             }
 
@@ -79,7 +152,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1):active,
             .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2):active {
                 @apply --button-active;
-            }
+            }*/
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -94,12 +167,12 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
 
         <div class="container" wide-layout$="{{wide}}">
-            <div>
-                <div>{{localize('Do you want to delete this account?')}}</div>
-                <div>{{localize('This can not be undone.')}}</div>
+            <div class="top">
+                <div class="title">{{localize('Do you want to delete this account?')}}</div>
+                <div class="subtitle">{{localize('This can not be undone.')}}</div>
             </div>
-            <div>
-                <div>
+            <div class="bottom">
+                <div class="confirmers">
                     <div on-click="_disagree"></div>
                     <div on-click="_deleteProfile">
                         <div></div>
