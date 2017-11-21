@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../data/data-wallet.html">
 <!--
 
 Example:
@@ -136,7 +137,7 @@ The following custom properties and mixins are available for styling:
                 border-bottom: 2px dotted var(--sc-blue);
             }
 
-           .box {
+            .box {
                 @apply --layout-vertical;
                 @apply --layout--center;
                 @apply --layout--start-justified;
@@ -206,7 +207,7 @@ The following custom properties and mixins are available for styling:
             }
 
         </style>
-
+        <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="middle">
@@ -237,13 +238,13 @@ The following custom properties and mixins are available for styling:
 
 
             <template is="dom-if" if="{{passwordSubmit}}">
-                <paper-input id="password" label="{{localize('password?')}}" type="password"></paper-input>
-                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals"></paper-input>
+                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" value="{{confirmPassword}}"></paper-input>
                 <div class="errorcontainer">
                     <span id="error">{{error}}</span>
                 </div>
                 <div class="iconbtn"> 
-                    <div class="agree" on-click=""></div> 
+                    <div class="agree" on-click="_passwordAndKeyEntered"></div> 
                 </div>
 
             </template>
@@ -289,7 +290,6 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                     },
 
-
                     /**
                     * choosePassword if true gives the option to choose password
                     * @type {Boolean}
@@ -326,6 +326,31 @@ The following custom properties and mixins are available for styling:
                         value: false,
                     },
 
+                    /**
+                    * The password the user has entered
+                    * @type {String}
+                    */
+                    password: {
+                        type: String,
+                    },
+
+                    /**
+                    * The password the user has entered the second time
+                    * @type {String}
+                    */
+                    confirmPassword: {
+                        type: String,
+                    },
+
+                    /**
+                    * User input error prompt
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        value: '',
+                    },
+
                 };
             }
             /**
@@ -343,6 +368,27 @@ The following custom properties and mixins are available for styling:
                 this.passwordSubmit = true;
             }
             /**
+            * The password and key have been entered
+            */
+            _passwordAndKeyEntered() {
+                this.error = '';
+                if (this.password === this.confirmPassword) {
+                    if (this.privateKey && this.privateKey.length === 64) {
+                        this.$.wallet.restoreKey(this.privateKey, this.password)
+                        .then((KeyStore) => {
+                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                            storage.keyStore = KeyStore;
+                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                            this.path = '/';
+                        });
+                    } else {
+                        this.error = 'The key is the wrong length';
+                    }
+                } else {
+                    this.error = 'The passwords dont match';
+                }
+            }
+            /**
             * Fired when the component first loads
             */
             connectedCallback() {
@@ -352,3 +398,5 @@ The following custom properties and mixins are available for styling:
         } window.customElements.define(DisplayMyInfo.is, DisplayMyInfo);
     </script>
 </dom-module>
+
+
