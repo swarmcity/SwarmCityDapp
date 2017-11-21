@@ -212,12 +212,12 @@ The following custom properties and mixins are available for styling:
             <div class="middle">
                 <paper-input label="{{localize('Private key?')}}" type="txt" value="{{privateKey}}"></paper-input>
                 <!-- <div class="messagebox"></div> -->
-                <div class="showfullkey">{{localize('show full keys')}}</div>
+                <!-- <div class="showfullkey">{{localize('show full keys')}}</div> -->
             </div>
             <div class="bottom">
             <template is="dom-if" if="{{choosePassword}}">
                 <div>{{localize('To restore an account with a private key please choose a password for it first')}}</div>
-                <div class="btn" on-click="_agree">choose password</div>
+                <div class="btn" on-click="_agreeToEnterPassword">choose password</div>
             </template>
 
             <template is="dom-if" if="{{passwordWarning}}">
@@ -231,7 +231,7 @@ The following custom properties and mixins are available for styling:
                     </div>
                 </div>
                 <div class="iconbtn"> 
-                    <div class="agree" on-click=""></div> 
+                    <div class="agree" on-click="_agreeToChoosePassword"></div> 
                 </div>
             </template>
 
@@ -272,20 +272,6 @@ The following custom properties and mixins are available for styling:
         )) {
             static get is() {
                 return 'display-restore-private-key';
-            }
-            /**
-            * Redux action for sertting private Key
-            * @param {privatekey} privatekey
-            */
-            static get actions() {
-                return Object.assign({
-                    PRIVATEKEY: function(privatekey) {
-                        return {
-                            type: 'PRIVATEKEY',
-                            privatekey: privatekey,
-                        };
-                    },
-                });
             }
             static get properties() {
                 return {
@@ -343,11 +329,18 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /**
-            * takes the user to the hashtag list page
+            * The user agrees to enter a password
             */
-            _agree() {
-                this.dispatch('PRIVATEKEY', this.privateKey);
-                this.path = 'choose-avatar-and-username/';
+            _agreeToEnterPassword() {
+                this.choosePassword = false;
+                this.passwordWarning = true;
+            }
+            /**
+            * The user agrees to choose a password with care
+            */
+            _agreeToChoosePassword() {
+                this.passwordWarning = false;
+                this.passwordSubmit = true;
             }
             /**
             * Fired when the component first loads
