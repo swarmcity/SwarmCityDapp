@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../data/data-wallet.html">
 <script src="../data/lightwallet.min.js"></script>
 <!--
 
@@ -163,9 +164,8 @@ The following custom properties and mixins are available for styling:
             }
 
         </style>
-
+        <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
- 
         <div class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{!askPassword}}">
                 <div class="flex"></div>
@@ -181,7 +181,7 @@ The following custom properties and mixins are available for styling:
 
             <template is="dom-if" if="{{askPassword}}">
                 <div class="uploadedfile">
-                    <div>filename.JSON</div>
+                    <div>{{filename}}</div>
                     <div class="cancel" on-click="_cancel"></div>
                 </div>
                 <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
@@ -199,20 +199,6 @@ The following custom properties and mixins are available for styling:
         )) {
             static get is() {
                 return 'display-restore-json-file';
-            }
-            /**
-            * Redux action for sertting private Key
-            * @param {privatekey} privatekey
-            */
-            static get actions() {
-                return Object.assign({
-                    PRIVATEKEY: function(privatekey) {
-                        return {
-                            type: 'PRIVATEKEY',
-                            privatekey: privatekey,
-                        };
-                    },
-                });
             }
             static get properties() {
                 return {
@@ -242,7 +228,7 @@ The following custom properties and mixins are available for styling:
                     */
                     askPassword: {
                         type: Boolean,
-                        value: true,
+                        value: false,
                     },
                     /**
                     * error shows the readers parse error
@@ -250,6 +236,20 @@ The following custom properties and mixins are available for styling:
                     */
                     error: {
                         type: Object,
+                    },
+                    /**
+                    * the name of the file selected
+                    * @type {Boolean}
+                    */
+                    filename: {
+                        type: String,
+                    },
+                                        /**
+                    * the password the user enters
+                    * @type {Boolean}
+                    */
+                    password: {
+                        type: String,
                     },
                 };
             }
@@ -260,6 +260,7 @@ The following custom properties and mixins are available for styling:
             _getFile(event) {
                 event.stopPropagation();
                 event.preventDefault();
+                this.filename = event.target.files[0].name;
                 const file = event.target.files[0];
                 let reader = new FileReader();
                 reader.readAsText(file);
@@ -275,14 +276,27 @@ The following custom properties and mixins are available for styling:
             * Fired when the Restore button is clicked
             */
             _decrypt() {
-                const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
-                keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
-                    if (!err) {
-                        let privatekey = keystore.exportPrivateKey('0x' + keystore.getAddresses()[0],
-                        pwDerivedKey);
-                        this.dispatch('PRIVATEKEY', privatekey);
-                    }
-                });
+                if (this.wallet.Crypto) {
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    storage.keyStore = this.wallet;
+                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                    this.path = 'choose-avatar-and-username/';
+                } else {
+                    const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
+                    keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
+                        if (!err) {
+                            const privatekey = keystore.exportPrivateKey('0x' + keystore.getAddresses()[0],
+                            pwDerivedKey);
+                            this.$.wallet.restoreKey(privatekey, this.password)
+                            .then((KeyStore) => {
+                                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                                storage.keyStore = KeyStore;
+                                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                this.path = 'choose-avatar-and-username/';
+                            });
+                        }
+                    });
+                }
             }
             /**
             * Fired when the ccancel btn is clicked
