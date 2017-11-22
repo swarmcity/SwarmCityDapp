@@ -13,6 +13,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-unlock.html">
 
 <dom-module id="page-my-keys">
     <template>
@@ -20,7 +21,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
     -->
         <style include="shared-styles">
-             :host {
+            :host {
                 height: 100vh;
                 width: 100vw;
                 display: block;
@@ -125,6 +126,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 text-align: left;
             }
 
+            .blur {
+                @apply --unlock-blur;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -135,21 +140,48 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="close" on-click="_close"></div>
             <div class="pubkey-container">
                 <div class="greytext">{{localize('Your public key')}}</div>
-                <div class="pubkey">0x369D787F4EdF4a0e57cDfCFB3 Dd92134e1982e06</div>
+                <div class="pubkey">{{publicKey}}}</div>
                 <span class="bluetext">{{localize('copy public key')}}</span>
-                <div class="qrcode"><img src="../../images/qrcode.png"></div>
+                <div class="qrcode">
+                    <img src="../../images/qrcode.png">
+                </div>
             </div>
             <div class="divider"></div>
             <div class="privkey-container">
-                <div class="greytext">{{localize('Your private key')}}</div>
-                <div class="warning">{{localize('Be careful in displaying your private key. Its the only thing needed to steal your funds.')}}</div>
-                <span class="bluetext" on-click="_showPrivKey">{{localize('show private key')}}</span>
+                <dom-if if="{{!showPrivKey}}">
+                    <template>
+                        <div class="greytext">{{localize('Your private key')}}</div>
+                        <div class="warning">{{localize('Be careful in displaying your private key. Its the only thing needed to steal your funds.')}}</div>
+                        <span class="bluetext" on-click="_toggleUnlock">{{localize('show private key')}}</span>
+                    </template>
+                </dom-if>
+                <dom-if if="{{showPrivKey}}">
+                    <template>
+                        <div class="greytext">{{localize('Your private key')}}</div>
+                        <div class="pubkey">{{privateKey}}</div>
+                        <span class="bluetext">{{localize('copy private key')}}</span>
+                        <div class="qrcode">
+                            <img src="../../images/qrcode.png">
+                        </div>
+                    </template>
+                </dom-if>
             </div>
         </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    color="white" 
+                    toggle-unlock="{{toggleUnlock}}" 
+                    private-key="{{privateKey}}" 
+                    qr-code-private-key="{{qrCodePrivateKey}}"
+                    qr-code-public-key="{{qrCodePublicKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
 
     <script>
@@ -175,6 +207,39 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_showPrivateKey',
+                    },
+                    /**
+                    * contains the public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        value: '0x369D787F4EdF4a0e57cDfCFB3Dd92134e1982e06',
+                    },
+                    /**
+                    * showPrivKey determines if the Private Key is shown or not
+                    * @type {Boolean}
+                    */
+                    showPrivKey: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
                 };
             }
 
@@ -189,10 +254,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = 'make-backup/';
             }
             /**
-            * changes the current path to page-show-private-key
+            * toggles the unlock display
             */
-            _showPrivKey() {
-                this.path = 'show-private-key/';
+            _toggleUnlock() {
+                this.toggleUnlock = !this.toggleUnlock;
             }
             /**
             * changes the current path
@@ -202,6 +267,25 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * shows the private key section
+            */
+            _showPrivateKey() {
+                if (this.privateKey) {
+                    this.showPrivKey = !this.showPrivKey;
+                }
             }
         }
         window.customElements.define(MyKeys.is, MyKeys);
