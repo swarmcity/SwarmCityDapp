@@ -239,7 +239,7 @@ The following custom properties and mixins are available for styling:
 
             <template is="dom-if" if="{{passwordSubmit}}">
                 <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
-                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" value="{{confirmPassword}}"></paper-input>
+                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals" value="{{confirmPassword}}"></paper-input>
                 <div class="errorcontainer">
                     <span id="error">{{error}}</span>
                 </div>
@@ -366,6 +366,16 @@ The following custom properties and mixins are available for styling:
             _agreeToChoosePassword() {
                 this.passwordWarning = false;
                 this.passwordSubmit = true;
+            }
+            /**
+            * compares written passwords and updates label with it
+            */
+            _equals() {
+                if (this.password == this.confirmPassword || this.confirmPassword == '') {
+                    this.error = '';
+                } else {
+                    this.error = this.localize('The passwords dont match.');
+                }
             }
             /**
             * The password and key have been entered
