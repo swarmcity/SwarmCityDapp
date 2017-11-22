@@ -31,15 +31,11 @@ The following custom properties and mixins are available for styling:
         <style include="shared-styles">
             :host {
                 display: block;
+                width: 100%;
+                height: 100%;
             }
-            .container {
-                background-image: var(--sc-bg);
-                @apply --titlepage-closed-container;
-            }
-            .container .bottom {
-                @apply --titlepage-closed-container-bottom;
-            }
-            .container paper-input {
+
+            paper-input {
                 width: 100%;
                 text-align: center;
 
@@ -60,6 +56,7 @@ The following custom properties and mixins are available for styling:
                     @apply --body-default;
                 }
             }
+            
             .container[wide-layout] paper-input {
                 text-align: left;
                 max-width: 400px;
@@ -68,14 +65,24 @@ The following custom properties and mixins are available for styling:
                 height: 15vh;
             }
             .container[wide-layout] .errorcontainer {
-                height: 12vh;
+                text-align: left;
+                height: 8vh;
             }
             #error {
                 margin-top: 20px;
                 @apply --body-bold;
                 color: var(--sc-red2);
                 @apply --layout-horizontal;
+                @apply --layout-start;
                 @apply --layout-center-justified;
+            }
+            .container[wide-layout] #error {
+                margin-top: 20px;
+                @apply --body-bold;
+                color: var(--sc-red2);
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
             }
             .btn {
                 @apply --icon-button-big;
@@ -90,8 +97,8 @@ The following custom properties and mixins are available for styling:
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}"></div>
-            <div class="bottom">
+        <div class="container" wide-layout$="{{wide}}">
+          <!--   <div class="bottom"> -->
                 <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
                 <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals" value="{{confirmPassword}}"></paper-input>
                     <div class="errorcontainer">
@@ -100,7 +107,7 @@ The following custom properties and mixins are available for styling:
                     <div class="btn">
                     <div class="agree" on-click="_agree"></div>
                 </div>
-            </div>
+            <!-- </div> -->
         </div>
 
     </template>
@@ -115,6 +122,14 @@ The following custom properties and mixins are available for styling:
             }
             static get properties() {
                 return {
+                    /**
+                    * specifies the users language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
                     /**
                     * Password
                     * @type {String}
