@@ -90,7 +90,7 @@ The following custom properties and mixins are available for styling:
                 }
             }
 
-            .paper-input-blue {
+            .blue {
                 --paper-checkbox-unchecked-color: var(--sc-grey4);
                 --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
                 --paper-checkbox-checkmark-color: var(--sc-white);
@@ -100,7 +100,7 @@ The following custom properties and mixins are available for styling:
                 --paper-input-container-focus-color: var(--sc-blue);
             }
 
-            .paper-input-white {
+            .white {
                 --paper-checkbox-unchecked-color: var(--sc-grey4);
                 --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
                 --paper-checkbox-checkmark-color: var(--sc-white);
@@ -108,6 +108,16 @@ The following custom properties and mixins are available for styling:
                 --paper-checkbox-checked-ink-color: var(--sc-blue);
                 --paper-input-container-color: var(--sc-grey4);
                 --paper-input-container-focus-color: var(--sc-white);
+            }
+
+            .red {
+                --paper-checkbox-unchecked-color: var(--sc-grey4);
+                --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
+                --paper-checkbox-checkmark-color: var(--sc-white);
+                --paper-checkbox-checked-color: var(--sc-blue);
+                --paper-checkbox-checked-ink-color: var(--sc-blue);
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-red);
             }
 
             .container[wide-layout] paper-input {
@@ -167,36 +177,17 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <img src="{{avatar}}">
-            <dom-if if="{{blue}}">
-                <template>
-                    <paper-input class="paper-input-blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
-                </template>
-            </dom-if>
-            <dom-if if="{{white}}">
-                <template>
-                    <paper-input class="paper-input-white" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
-                </template>
-            </dom-if>
+            <paper-input class="blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
+
             {{error}}
             <div class="buttonbox">
                 <div class="disagree" on-click="_disagree"></div>
-                <dom-if if="{{blue}}">
-                    <template>
-                        <div class="submit submit-blue" on-click="_getPrivKey">
-                            <div class="icon-submit-blue"></div>
-                        </div>
-                    </template>
-                </dom-if>
-                <dom-if if="{{white}}">
-                    <template>
-                        <div class="submit submit-white" on-click="_getPrivKey">
-                            <div class="icon-submit-white"></div>
-                        </div>
-                    </template>
-                </dom-if>
+                <div class="submit submit-blue" on-click="_getPrivKey">
+                    <div class="icon-submit-blue"></div>
+                </div>
             </div>
         </div>
-        
+
     </template>
     <script>
         class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -288,6 +279,13 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         notify: true,
                     },
+                    /**
+                    * switches the color theme
+                    * @type {String}
+                    */
+                    color: {
+                        type: String,
+                    },
                 };
             }
             /**
@@ -313,21 +311,21 @@ The following custom properties and mixins are available for styling:
             _getPrivKey() {
                 // check password && if correct populate private key property
                 this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
-                .then((privateKey) => {
-                    this.privateKey = privateKey.toString('hex');
-                    this.toggleUnlock = !this.toggleUnlock;
-                    this.$.wallet.makeQRCode(this.privateKey)
-                    .then((qrCodePrivateKey)=> {
-                        this.qrCodePrivateKey = qrCodePrivateKey;
+                    .then((privateKey) => {
+                        this.privateKey = privateKey.toString('hex');
+                        this.toggleUnlock = !this.toggleUnlock;
+                        this.$.wallet.makeQRCode(this.privateKey)
+                            .then((qrCodePrivateKey) => {
+                                this.qrCodePrivateKey = qrCodePrivateKey;
+                            });
+                        this.$.wallet.makeQRCode(this.publicKey)
+                            .then((qrCodePublicKey) => {
+                                this.qrCodePublicKey = qrCodePublicKey;
+                            });
+                    })
+                    .catch((error) => {
+                        this.error = 'Wrong Password, try again';
                     });
-                    this.$.wallet.makeQRCode(this.publicKey)
-                    .then((qrCodePublicKey)=> {
-                        this.qrCodePublicKey = qrCodePublicKey;
-                    });
-                })
-                .catch((error)=>{
-                    this.error = 'Wrong Password, try again';
-                });
             }
         }
         window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
