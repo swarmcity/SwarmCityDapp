@@ -262,10 +262,21 @@
         _save() {
             const canvas = this.$.canvas;
             const jpegUrl = canvas.toDataURL('image/jpeg');
-            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-            storage.user.avatar = jpegUrl;
-            localStorage.setItem('SwarmCity', JSON.stringify(storage));
-            this.path = 'choose-avatar-and-username/';
+            // make a new canvas
+            let newCanvas = document.createElement('canvas');
+            newCanvas.width = 100;
+            newCanvas.height = 100;
+            let ctx = newCanvas.getContext('2d');
+            let image = new Image();
+            image.onload = () => {
+                ctx.drawImage(image, -75, -75);
+                const avatarUrl = newCanvas.toDataURL('image/jpeg');
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                storage.user.avatar = avatarUrl;
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                this.path = 'choose-avatar-and-username/';
+            };
+            image.src = jpegUrl;
         }
         /**
         * Fired when the user selects a rotate
