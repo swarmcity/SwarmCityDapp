@@ -8,6 +8,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../data/data-wallet.html">
 
 <!--
 
@@ -162,19 +163,21 @@ The following custom properties and mixins are available for styling:
                 }
             }
         </style>
+        <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <img src="{{avatar}}">
             <dom-if if="{{blue}}">
                 <template>
-                    <paper-input class="paper-input-blue" label="{{localize('password?')}}" autofocus type="password"></paper-input>
+                    <paper-input class="paper-input-blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
                 </template>
             </dom-if>
             <dom-if if="{{white}}">
                 <template>
-                    <paper-input class="paper-input-white" label="{{localize('password?')}}" autofocus type="password"></paper-input>
+                    <paper-input class="paper-input-white" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
                 </template>
             </dom-if>
+            {{error}}
             <div class="buttonbox">
                 <div class="disagree" on-click="_disagree"></div>
                 <dom-if if="{{blue}}">
@@ -193,6 +196,7 @@ The following custom properties and mixins are available for styling:
                 </dom-if>
             </div>
         </div>
+        
     </template>
     <script>
         class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -238,6 +242,14 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                     },
                     /**
+                    * contains the public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
                     * toggles the blue style elements
                     * @type {Boolean}
                     */
@@ -253,6 +265,29 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * displays a wrong password error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                    },
+                    /**
+                    * base 64 qr code of the PrivateKey
+                    * @type {String}
+                    */
+                    qrCodePrivateKey: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * base 64 qr code of the PublicKey
+                    * @type {String}
+                    */
+                    qrCodePublicKey: {
+                        type: String,
+                        notify: true,
+                    },
                 };
             }
             /**
@@ -261,6 +296,10 @@ The following custom properties and mixins are available for styling:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.avatar = storage.user.avatar;
+                this.keyStore = storage.keyStore;
+                this.publicKey = storage.keyStore.address;
             }
             /**
             * Toggles the visibility of this display
@@ -273,8 +312,22 @@ The following custom properties and mixins are available for styling:
             */
             _getPrivKey() {
                 // check password && if correct populate private key property
-                this.privateKey = 'hfluhdliuh684684';
-                this.toggleUnlock = !this.toggleUnlock;
+                this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
+                .then((privateKey) => {
+                    this.privateKey = privateKey.toString('hex');
+                    this.toggleUnlock = !this.toggleUnlock;
+                    this.$.wallet.makeQRCode(this.privateKey)
+                    .then((qrCodePrivateKey)=> {
+                        this.qrCodePrivateKey = qrCodePrivateKey;
+                    });
+                    this.$.wallet.makeQRCode(this.publicKey)
+                    .then((qrCodePublicKey)=> {
+                        this.qrCodePublicKey = qrCodePublicKey;
+                    });
+                })
+                .catch((error)=>{
+                    this.error = 'Wrong Password, try again';
+                });
             }
         }
         window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
