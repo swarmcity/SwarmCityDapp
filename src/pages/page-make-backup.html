@@ -21,48 +21,41 @@ This code may only be used under the license found at https://github.com/swarmci
     -->
         <style include="shared-styles">
             :host {
-              @apply --titlepage-open;
+                @apply --titlepage-open;
             }
-
             .container {
-              background-image: var(--sc-bg);
-              @apply --titlepage-open-container;
+                background-image: var(--sc-bg);
+                @apply --titlepage-open-container;
             }
             .container .top {
-              @apply --titlepage-open-container-top;
+                @apply --titlepage-open-container-top;
             }
             .container .bottom {
-              @apply --titlepage-open-container-bottom;
+                @apply --titlepage-open-container-bottom;
             }
             .container .title {
-              @apply --titlepage-title;
-              color: var(--sc-grey3b);
+                @apply --titlepage-title;
+                color: var(--sc-grey3b);
             }
-
             .container[wide-layout] {
-              @apply --titlepage-open-wide-container;
+                @apply --titlepage-open-wide-container;
             }
             .container[wide-layout] .top {
-              @apply --titlepage-open-wide-container-top;
+                @apply --titlepage-open-wide-container-top;
             }
             .container[wide-layout] .bottom {
-              @apply --titlepage-open-wide-container-bottom;
+                @apply --titlepage-open-wide-container-bottom;
             }
             .container[wide-layout] .title {
-              @apply --titlepage-title-wide;
+                @apply --titlepage-title-wide;
             }
-
             .close {
                 @apply --xmark-grey3-small;
                 @apply --close;
             }
-
             .close:active {
                 @apply --button-active;
             }
-
-
-
             .container .buttons {
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
@@ -74,8 +67,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-start;
             }
-
-
             .container .emailbtn {
                 @apply --text-button-big-fullwhite;
                 color: var(--sc-blue);
@@ -90,8 +81,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0 0 14px 0;
                 max-width: 320px;
             }
-
-
             .container .downloadbtn {
                 @apply --text-button-big-fullwhite;
                 color: var(--sc-blue);
@@ -106,26 +95,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0;
                 max-width: 320px;
             }
-
-
-
             .container .trianglecontainer {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 position: relative;
                 top: 25px;
             }
-
             .container[wide-layout] .trianglecontainer {
                 @apply --layout-start-justified;
                 top: 85px;
                 left: 25px;
             }
-
             .container .triangle {
                 @apply --alert-blue-normal;
             }
-
             .container .box {
                 @apply --layout-vertical;
                 @apply --layout--start-justified;
@@ -135,24 +118,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 max-width:700px;
                 margin-bottom: 10vh;
             }
-
             .container[wide-layout] .box {
                 box-sizing: border-box;
                 padding: 40px 40px 40px 100px;
                 margin-bottom: 7vh;
             }
-
             .container .textbox {
                 @apply --layout-vertical;
                 @apply --body-bold;
                 color: var(--sc-grey4);
                 text-align: center;
             }
-
             .container[wide-layout] .textbox {
                 text-align: left;
             }
-
             .container .bluetext {
                 @apply --small-bold;
                 cursor: pointer;
@@ -160,7 +139,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-blue);
                 margin: 30px 0 60px 0;
             }
-
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -190,7 +168,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="bottom">
                 <div class="buttons">
-                    <div class="emailbtn" on-click="_mail">{{localize('email my file')}}</div>
+                    <div class="emailbtn" on-click="_print">print paper wallet</div>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </div>
                 <div class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</div>
@@ -246,6 +224,17 @@ This code may only be used under the license found at https://github.com/swarmci
             * downloads account info, after success routs to download-success
             */
             _download() {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                // TODO: Name this correctly
+                const filename = 'SwarmCity - UTC KeyStore';
+                const text = JSON.stringify(storage.keystore);
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
                 this.path = 'download-success/';
             }
             /**
@@ -262,6 +251,18 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * Prints the paper wallet
+            */
+            _print() {
+            // TODO: open the password component for the user to enter their password to unlock the vault
+            // then we can run the below code to print!!
+                let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
+                // All CSS for the print needs to be inline.
+                    myWindow.document.write("<title>Print Paper Wallet</title><img src='"+this.qrCodePublicKey+"' class='address'><p>Your Public Key / Address: "+this.publicKey+"</p><img src='"+this.qrCodePrivateKey+"' class='private-key'><p>Your Private Key: "+this.privateKey+"</p>"); // eslint-disable-line
+                    setTimeout(function() {myWindow.print();}, 200);
+                    myWindow.onfocus = function() {setTimeout(function() {myWindow.close();}, 200);};
             }
         }
         window.customElements.define(MyMakeBackup.is, MyMakeBackup);
