@@ -471,10 +471,28 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _toggleSlider() {
                 return new Promise((resolve, reject) => {
-                    if (this.showInfo) {
-                        this.$.filtertoggle.classList.add('highlight-filter');
-                        this._fadeInOut();
-                        this._toggleInfo().then(() => {
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    if (!storage.user.location) {
+                        this.path = 'location/';
+                    } else {
+                        if (this.showInfo) {
+                            this.$.filtertoggle.classList.add('highlight-filter');
+                            this._fadeInOut();
+                            this._toggleInfo().then(() => {
+                                this.showSlider = true;
+                                setTimeout(() => {
+                                    let animation = this.shadowRoot
+                                        .querySelector('#slider').animate(
+                                        this.anim.slideDownSlider.arr,
+                                        this.anim.slideDownSlider.obj
+                                        );
+                                    animation.play();
+                                }, 1);
+                            });
+                        }
+                        else if (!this.showSlider) {
+                            this.$.filtertoggle.classList.add('highlight-filter');
+                            this._fadeInOut();
                             this.showSlider = true;
                             setTimeout(() => {
                                 let animation = this.shadowRoot
@@ -483,37 +501,24 @@ This code may only be used under the license found at https://github.com/swarmci
                                     this.anim.slideDownSlider.obj
                                     );
                                 animation.play();
+                                animation.onfinish = () => {
+                                    resolve();
+                                };
                             }, 1);
-                        });
-                    }
-                    else if (!this.showSlider) {
-                        this.$.filtertoggle.classList.add('highlight-filter');
-                        this._fadeInOut();
-                        this.showSlider = true;
-                        setTimeout(() => {
+                        } else {
+                            this.$.filtertoggle.classList.remove('highlight-filter');
+                            this._fadeInOut();
                             let animation = this.shadowRoot
                                 .querySelector('#slider').animate(
-                                this.anim.slideDownSlider.arr,
-                                this.anim.slideDownSlider.obj
+                                this.anim.slideUpSlider.arr,
+                                this.anim.slideUpSlider.obj
                                 );
                             animation.play();
                             animation.onfinish = () => {
+                                this.showSlider = false;
                                 resolve();
                             };
-                        }, 1);
-                    } else {
-                        this.$.filtertoggle.classList.remove('highlight-filter');
-                        this._fadeInOut();
-                        let animation = this.shadowRoot
-                            .querySelector('#slider').animate(
-                            this.anim.slideUpSlider.arr,
-                            this.anim.slideUpSlider.obj
-                            );
-                        animation.play();
-                        animation.onfinish = () => {
-                            this.showSlider = false;
-                            resolve();
-                        };
+                        }
                     }
                 });
             }
