@@ -21,62 +21,73 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
         <style include="shared-styles">
             :host {
-              @apply --titlepage-closed;
+                @apply --titlepage-closed;
             }
 
             .container {
-              background-color: var(--sc-blue);
-              @apply --titlepage-closed-container;
+                background-color: var(--sc-blue);
+                @apply --titlepage-closed-container;
             }
+
             .container .top {
-              @apply --titlepage-closed-container-top;
+                @apply --titlepage-closed-container-top;
             }
+
             .container .bottom {
-              @apply --titlepage-closed-container-bottom;
+                @apply --titlepage-closed-container-bottom;
             }
+
             .container .title {
-              @apply --titlepage-title;
-              color: var(--sc-white);
+                @apply --titlepage-title;
+                color: var(--sc-white);
             }
+
             .container .subtitle {
-              @apply --titlepage-subtitle;
-              color: var(--sc-white);
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
             }
 
             .container[wide-layout] {
-              @apply --titlepage-closed-wide-container;
+                @apply --titlepage-closed-wide-container;
             }
+
             .container[wide-layout] .top {
-              @apply --titlepage-closed-wide-container-top;
+                @apply --titlepage-closed-wide-container-top;
             }
+
             .container[wide-layout] .bottom {
-              @apply --titlepage-closed-wide-container-bottom;
+                @apply --titlepage-closed-wide-container-bottom;
             }
+
             .container[wide-layout] .title {
-              @apply --titlepage-title-wide;
+                @apply --titlepage-title-wide;
             }
+
             .container[wide-layout] .subtitle {
-              @apply --titlepage-subtitle-wide;
+                @apply --titlepage-subtitle-wide;
             }
 
             .close {
                 @apply --xmark-white-small;
                 @apply --close;
             }
+
             .close:active {
                 @apply --button-active;
             }
 
 
             .container .confirmers {
-              @apply --titlepage-confirmers;
+                @apply --titlepage-confirmers;
             }
+
             .container[wide-layout] .confirmers {
-              @apply --titlepage-confirmers-wide;
+                @apply --titlepage-confirmers-wide;
             }
+
             .container .confirmers>div:nth-child(1) {
-              @apply --confirmers-x;
-              @apply --xmark-grey4-normal;
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
             }
 
 
@@ -87,11 +98,70 @@ This code may only be used under the license found at https://github.com/swarmci
 
 
             .container .confirmers>div:nth-child(2)>div:nth-child(1) {
-              @apply --confirm-red-vmark;
+                @apply --confirm-red-vmark;
             }
 
 
 
+            .container .loading {
+                height: 120px;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-center-justified;
+            }
+
+            .container[wide-layout] .loading {
+                height: 60px;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-center-justified;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-white);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -108,11 +178,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="subtitle">{{localize('When accepting your browser will ask you')}}</div>
             </div>
             <div class="bottom">
-                <div class="confirmers">
-                    <div on-click="_goBack"></div>
-                    <display-geolocation></display-geolocation>
-                </div>
+                <template is="dom-if" if="{{!loadingLocation}}">
+                    <div class="confirmers">
+                        <div on-click="_goBack"></div>
+                        <display-geolocation></display-geolocation>
+                    </div>
+                </template>
+                <template is="dom-if" if="{{loadingLocation}}">
+                    <div class="loading">
+                        <div class="smallpoint" id="point1"></div>
+                        <div class="smallpoint" id="point2"></div>
+                        <div class="smallpoint" id="point3"></div>
+                    </div>
+                </template>
             </div>
+
         </div>
     </template>
 
@@ -130,6 +210,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: {
                         type: String,
                         statePath: 'language',
+                    },
+                    /**
+                    * indicates if the page is waiting
+                    * @type {Boolean}
+                    */
+                    loadingLocation: {
+                        type: Boolean,
+                        value: false,
                     },
                 };
             }
