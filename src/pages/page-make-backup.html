@@ -168,7 +168,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="bottom">
                 <div class="buttons">
-                    <div class="emailbtn" on-click="_mail">{{localize('email my file')}}</div>
+                    <div class="emailbtn" on-click="_print">print paper wallet</div>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </div>
                 <div class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</div>
@@ -224,6 +224,17 @@ This code may only be used under the license found at https://github.com/swarmci
             * downloads account info, after success routs to download-success
             */
             _download() {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                // TODO: Name this correctly
+                const filename = 'SwarmCity - UTC KeyStore';
+                const text = JSON.stringify(storage.keystore);
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
                 this.path = 'download-success/';
             }
             /**
@@ -240,6 +251,18 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * Prints the paper wallet
+            */
+            _print() {
+            // TODO: open the password component for the user to enter their password to unlock the vault
+            // then we can run the below code to print!!
+                let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
+                // All CSS for the print needs to be inline.
+                    myWindow.document.write("<title>Print Paper Wallet</title><img src='"+this.qrCodePublicKey+"' class='address'><p>Your Public Key / Address: "+this.publicKey+"</p><img src='"+this.qrCodePrivateKey+"' class='private-key'><p>Your Private Key: "+this.privateKey+"</p>"); // eslint-disable-line
+                    setTimeout(function() {myWindow.print();}, 200);
+                    myWindow.onfocus = function() {setTimeout(function() {myWindow.close();}, 200);};
             }
         }
         window.customElements.define(MyMakeBackup.is, MyMakeBackup);
