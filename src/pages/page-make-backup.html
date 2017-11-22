@@ -204,7 +204,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="bottom">
                 <div class="buttons">
-                    <div class="emailbtn" on-click="_print">print paper wallet</div>
+                    <div class="emailbtn" on-click="_unlock">print paper wallet</div>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </div>
                 <div class="bluetext-margins">
@@ -258,6 +258,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                         observer: '_blur',
                     },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_print',
+                    },
                 };
             }
             connectedCallback() {
@@ -309,12 +317,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = null;
             }
             /**
+            * toggles the password unlock display
+            */
+            _unlock() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
             * Prints the paper wallet
             */
             _print() {
                 // TODO: open the password component for the user to
                 // enter their password to unlock the vault
-                this.toggleUnlock = !this.toggleUnlock;
                 // then we can run the below code to print!!
                 let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
                 // All CSS for the print needs to be inline.
