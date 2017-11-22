@@ -13,6 +13,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-unlock.html">
 
 <dom-module id="page-make-backup">
     <template>
@@ -170,6 +171,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-blue);
             }
 
+            .blur {
+                @apply --unlock-blur;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -207,6 +212,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
         </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    color="white"
+                    toggle-unlock="{{toggleUnlock}}" 
+                    private-key="{{privateKey}}" 
+                    qr-code-private-key="{{qrCodePrivateKey}}"
+                    qr-code-public-key="{{qrCodePublicKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
 
     </template>
 
@@ -232,6 +248,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
                     },
                 };
             }
@@ -289,12 +314,24 @@ This code may only be used under the license found at https://github.com/swarmci
             _print() {
                 // TODO: open the password component for the user to
                 // enter their password to unlock the vault
+                this.toggleUnlock = !this.toggleUnlock;
                 // then we can run the below code to print!!
                 let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
                 // All CSS for the print needs to be inline.
                 myWindow.document.write("<title>Print Paper Wallet</title><img src='" + this.qrCodePublicKey + "' class='address'><p>Your Public Key / Address: " + this.publicKey + "</p><img src='" + this.qrCodePrivateKey + "' class='private-key'><p>Your Private Key: " + this.privateKey + "</p>"); // eslint-disable-line
                 setTimeout(function() {myWindow.print();}, 200);
                 myWindow.onfocus = function() {setTimeout(function() {myWindow.close();}, 200);};
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
             }
         }
         window.customElements.define(MyMakeBackup.is, MyMakeBackup);
