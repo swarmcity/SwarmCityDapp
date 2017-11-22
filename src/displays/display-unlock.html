@@ -1,0 +1,282 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<!--
+
+Example:
+```
+<display-unlock></display-unlock>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-unlock-container` | Mixin applied to the container | `{}` |
+-->
+
+<dom-module id="display-unlock">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                position: absolute;
+                min-width: 100vw;
+                min-height: 100vh;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding-left: 10vw;
+            }
+
+            img {
+                margin-top: 20vh;
+                width: 90px;
+                height: 90px;
+                cursor: pointer;
+                border-radius: 50%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .container[wide-layout] img {
+                margin-top: 30vh;
+            }
+
+            .container paper-input {
+                margin-top: 5vh;
+                width: 70%;
+                text-align: center;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .paper-input-blue {
+                --paper-checkbox-unchecked-color: var(--sc-grey4);
+                --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
+                --paper-checkbox-checkmark-color: var(--sc-white);
+                --paper-checkbox-checked-color: var(--sc-blue);
+                --paper-checkbox-checked-ink-color: var(--sc-blue);
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-blue);
+            }
+
+            .paper-input-white {
+                --paper-checkbox-unchecked-color: var(--sc-grey4);
+                --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
+                --paper-checkbox-checkmark-color: var(--sc-white);
+                --paper-checkbox-checked-color: var(--sc-blue);
+                --paper-checkbox-checked-ink-color: var(--sc-blue);
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-white);
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                margin-top: 8vh;
+            }
+
+            .disagree {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .submit {
+                @apply --icon-button-big;
+            }
+
+            .submit-blue {
+                background-color: var(--sc-blue);
+            }
+
+            .submit-white {
+                background-color: var(--sc-white);
+            }
+
+            .submit:active {
+                @apply --button-active;
+            }
+
+            .icon-submit-blue {
+                @apply --vmark-white-normal;
+            }
+
+            .icon-submit-white {
+                @apply --vmark-blue-normal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .disagree,
+                .icon-submit {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <img src="{{avatar}}">
+            <dom-if if="{{blue}}">
+                <template>
+                    <paper-input class="paper-input-blue" label="{{localize('password?')}}" autofocus type="password"></paper-input>
+                </template>
+            </dom-if>
+            <dom-if if="{{white}}">
+                <template>
+                    <paper-input class="paper-input-white" label="{{localize('password?')}}" autofocus type="password"></paper-input>
+                </template>
+            </dom-if>
+            <div class="buttonbox">
+                <div class="disagree" on-click="_disagree"></div>
+                <dom-if if="{{blue}}">
+                    <template>
+                        <div class="submit submit-blue" on-click="_getPrivKey">
+                            <div class="icon-submit-blue"></div>
+                        </div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{white}}">
+                    <template>
+                        <div class="submit submit-white" on-click="_getPrivKey">
+                            <div class="icon-submit-white"></div>
+                        </div>
+                    </template>
+                </dom-if>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-unlock';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The users selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * shows the users avatar
+                    * @type {Boolean}
+                    */
+                    avatar: {
+                        type: String,
+                        value: '../../images/defaultavatar.png',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * toggles the blue style elements
+                    * @type {Boolean}
+                    */
+                    blue: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * toggles the white style elements
+                    * @type {Boolean}
+                    */
+                    white: {
+                        type: Boolean,
+                        value: false,
+                    },
+                };
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Toggles the visibility of this display
+            */
+            _disagree() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Checks for correct password, returns private key and closes this display
+            */
+            _getPrivKey() {
+                // check password && if correct populate private key property
+                this.privateKey = 'hfluhdliuh684684';
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+        }
+        window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
+    </script>
+</dom-module>
