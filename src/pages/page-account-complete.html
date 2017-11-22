@@ -279,9 +279,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     </template>
                                     <template is="dom-if" if="{{showPrivKey}}">
                                         <div class="privkey key" title='click to select all'>{{privateKey}}</div>
-                                        <img src="{{qrCodePrivateKey}}" class="qr-code">
-                                        <img src="{{qrCodePublicKey}}" class="qr-code">
-                                        <div on-click="_print">Print Now</div>
                                         <template is="dom-if" if="{{wide}}">
                                             <div class="keyclose" on-click="_toggleKeys"></div>
                                         </template>
@@ -449,16 +446,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.$.container.classList.remove('blur');
                 }
-            }
-            /**
-            * Prints the paper wallet
-            */
-            _print() {
-                let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
-                // All CSS for the print needs to be inline! Enjoy!
-                    myWindow.document.write("<title>Print Paper Wallet</title><img src='"+this.qrCodePublicKey+"' class='address'><p>Your Public Key / Address: "+this.publicKey+"</p><img src='"+this.qrCodePrivateKey+"' class='private-key'><p>Your Private Key: "+this.privateKey+"</p>"); // eslint-disable-line
-                    setTimeout(function() {myWindow.print();}, 200);
-                    myWindow.onfocus = function() {setTimeout(function() {myWindow.close();}, 200);};
             }
         }
         window.customElements.define(MyAccountComplete.is, MyAccountComplete);

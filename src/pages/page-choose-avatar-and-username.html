@@ -162,7 +162,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="inputcontainer">
-                        <paper-input label="{{localize('Username')}}" autofocus value="{{localize('Username')}}">{{username}}</paper-input>
+                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}">{{username}}</paper-input>
                     </div>
                 </div>
 
@@ -228,12 +228,14 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             ready() {
                 super.ready();
-                let data = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (data.user && data.user.avatar) {
-                    this.avatar = data.user.avatar;
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
                 }
-                if (data.user && data.user.username) {
-                    this.username = data.user.username;
+                if (storage.user && storage.user.username) {
+                    this.username = storage.user.username;
+                } else {
+                    this.username = 'username';
                 }
             }
             /**
@@ -255,7 +257,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                this.path = 'account-complete/';
+                this.path = 'password-warning/';
             }
             /**
             * changes the current path
