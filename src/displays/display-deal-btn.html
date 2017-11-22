@@ -25,7 +25,7 @@ The following custom properties and mixins are available for styling:
 <dom-module id="display-deal-btn">
     <template>
         <style include="shared-styles">
-             :host {
+            :host {
                 display: block;
             }
 
@@ -96,34 +96,16 @@ The following custom properties and mixins are available for styling:
                 };
             }
 
-            connectedCallback() {
-                super.connectedCallback();
-                this._getUser();
-            }
-
             /**
-            * Get the user
-            */
-            _getUser() {
-                this.$.storage.accountExists()
-                    .then((account) => {
-                        if (account.username && account.address && account.avatar) {
-                            this.username = account.username;
-                            this.completeAccount = true;
-                        }
-                    });
-            }
-
-            /**
-            * Eithe rgo to the new here or new deal page depending if the user has a
+            * Either go to the new here or new deal page depending if the user has a
             * complete acocunt.
             */
             _next() {
-                sessionStorage.setItem('hashtagID', this.routeData.page);
-                if (!this.completeAccount) {
-                    this.path = 'new-here/';
-                } else {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.keyStore.Crypto) {
                     this.path = 'new-request/';
+                } else {
+                    this.path = 'new-here/';
                 }
             }
         }
