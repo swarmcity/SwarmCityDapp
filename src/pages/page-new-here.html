@@ -20,56 +20,61 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-             :host {
-              @apply --titlepage-closed;
+            :host {
+                @apply --titlepage-closed;
             }
-
-
 
             .container {
-              background-color: var(--sc-blue);
-              @apply --titlepage-closed-container;
+                background-color: var(--sc-blue);
+                @apply --titlepage-closed-container;
             }
+
             .container .top {
-              @apply --titlepage-closed-container-top;
+                @apply --titlepage-closed-container-top;
             }
+
             .container .bottom {
-              @apply --titlepage-closed-container-bottom;
+                @apply --titlepage-closed-container-bottom;
             }
+
             .container .title {
-              @apply --titlepage-title;
-              color: var(--sc-white);
+                @apply --titlepage-title;
+                color: var(--sc-white);
             }
+
             .container .subtitle {
-              @apply --titlepage-subtitle;
-              color: var(--sc-white);
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
             }
 
             .container[wide-layout] {
-              @apply --titlepage-closed-wide-container;
+                @apply --titlepage-closed-wide-container;
             }
+
             .container[wide-layout] .top {
-              @apply --titlepage-closed-wide-container-top;
+                @apply --titlepage-closed-wide-container-top;
             }
+
             .container[wide-layout] .bottom {
-              @apply --titlepage-closed-wide-container-bottom;
+                @apply --titlepage-closed-wide-container-bottom;
             }
+
             .container[wide-layout] .title {
-              @apply --titlepage-title-wide;
+                @apply --titlepage-title-wide;
             }
+
             .container[wide-layout] .subtitle {
-              @apply --titlepage-subtitle-wide;
+                @apply --titlepage-subtitle-wide;
             }
 
             .close {
                 @apply --xmark-white-small;
                 @apply --close;
             }
+
             .close:active {
                 @apply --button-active;
             }
-
-
 
             .buttons {
                 @apply --layout-vertical;
@@ -77,6 +82,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center;
                 width: 100%;
             }
+
             .container[wide-layout] .buttons {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -88,16 +94,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-white);
                 box-sizing: border-box;
                 width: 100%;
-                margin: 0 0 14px 0;            
+                margin: 0 0 14px 0;
             }
+
             .container .create:active {
                 @apply --button-active;
             }
+
             .container[wide-layout] .create {
                 margin: 0 0 14px 0;
                 max-width: 320px;
             }
-
 
             .container .restore {
                 @apply --text-button-big;
@@ -106,14 +113,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100%;
                 margin: 0;
             }
+
             .container .restore:active {
                 @apply --button-active;
             }
+
             .container[wide-layout] .restore {
                 margin: 0;
                 max-width: 320px;
             }
-
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -122,31 +130,23 @@ This code may only be used under the license found at https://github.com/swarmci
                     @apply --retina;
                 }
             }
-
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-
         <div class="container" wide-layout$="{{wide}}">
-        
             <div class="top">
                 <div class="close" on-click="_close"></div>
                 <div class="title">{{localize('You must be new here')}}</div>
                 <div class="subtitle">{{localize('No account was found')}}</div>
             </div>
-
             <div class="bottom">
                 <div class="buttons">
                     <div class="create" on-click="_create">{{localize('create account')}}</div>
                     <div class="restore" on-click="_restore">{{localize('restore account')}}</div>
                 </div>
             </div>
-
         </div>
-
     </template>
-
     <script>
         class MyNewHere extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -188,7 +188,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the previous page
             */
             _close() {
-                this.path = 'hashtag/' + sessionStorage.getItem('hashtagID');
+                this.path = sessionStorage.getItem('origin');
                 sessionStorage.clear();
             }
             /**
