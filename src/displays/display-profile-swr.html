@@ -1,0 +1,134 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<!--
+
+Example:
+```
+<display-profile-swr></display-profile-swr>
+```
+
+-->
+<dom-module id="display-profile-swr">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --start-justified;
+                width: 100%;
+            }
+
+            .hashtag-repeaterbox {
+                @apply --layout-vertical;
+                @apply --start-justified;
+                width: 100%;
+                margin-bottom: 40px;
+            }
+
+            .hashtag-titlebox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                width: 100%;
+            }
+
+            .hashtag-name {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+            
+            .hashtag-swr {
+                margin-left: 20px;
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+            .hashtag-info {
+                margin-top: 10px;
+                @apply --small-light;
+                color: var(--sc-grey4);
+            }
+
+            .hashtag-detail {
+                margin-top: 5px;
+                @apply --small-light;
+                color: var(--sc-grey4);
+            }
+
+            .hashtag-togglebox {
+                margin-top: 5px;
+            }
+
+            .hashtag-bluelink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+
+        </style>
+        <div class="container">
+            <div class="hashtag-repeaterbox">
+                <div class="hashtag-titlebox">
+                    <div class="hashtag-name">#pioneer</div>
+                    <div class="hashtag-swr">11 SWR</div>
+                </div>
+                <div class="hashtag-info">You've earned 11 SWR on #pioneer.</div>
+                <div class="hashtag-detail">(2 deals done, 1 conflict)</div>
+                <div class="hashtag-togglebox">
+                    <span class="hashtag-bluelink">show deals</span>
+                </div>
+            </div>
+            <div class="hashtag-repeaterbox">
+                <div class="hashtag-titlebox">
+                    <div class="hashtag-name">#needaride</div>
+                    <div class="hashtag-swr">20 SWR</div>
+                </div>
+                <div class="hashtag-info">You've earned 20 SWR on #needaride.</div>
+                <div class="hashtag-detail">(4 deals done, 0 conflict)</div>
+                <div class="hashtag-togglebox">
+                    <span class="hashtag-bluelink">show deals</span>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDisplayProfileSWR extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-profile-swr';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        }
+
+        window.customElements
+            .define(MyDisplayProfileSWR.is, MyDisplayProfileSWR);
+    </script>
+</dom-module>
