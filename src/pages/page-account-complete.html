@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-show-keys.html">
 
 <dom-module id="page-account-complete">
     <template>
@@ -260,37 +261,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <img src="{{avatar}}">
                     <div class="info">
                         <div class="name">{{username}}</div>
-                        <div class="keybox">
-                            <template is="dom-if" if="{{!showPubKey}}">
-                                <div class="pubkey truncate" on-click="_togglePubKey">{{publicKey}}</div>
-                            </template>
-                            <template is="dom-if" if="{{showPubKey}}">
-                                <div class="pubkeybox">
-                                    <div class="pubkey key" title='click to select all'>{{publicKey}}</div>
-                                    <template is="dom-if" if="{{wide}}">
-                                        <template is="dom-if" if="{{!showPrivKey}}">
-                                            <div class="keyclose" on-click="_toggleKeys"></div>
-                                        </template>
-                                    </template>
-                                </div>
-                                <div class="privkeybox">
-                                    <template is="dom-if" if="{{!showPrivKey}}">
-                                        <span class="bluelink" on-click="_togglePrivKey">show my private key</span>
-                                    </template>
-                                    <template is="dom-if" if="{{showPrivKey}}">
-                                        <div class="privkey key" title='click to select all'>{{privateKey}}</div>
-                                        <template is="dom-if" if="{{wide}}">
-                                            <div class="keyclose" on-click="_toggleKeys"></div>
-                                        </template>
-                                    </template>
-                                </div>
-                                <template is="dom-if" if="{{!wide}}">
-                                    <template is="dom-if" if="{{showPubKey}}">
-                                        <div class="keyclose" on-click="_toggleKeys"></div>
-                                    </template>
-                                </template>
-                            </template>
-                        </div>
+                        <display-show-keys></display-show-keys>
                     </div>
                 </div>
                 <div class="btn" on-click="_next">{{localize('backup my account')}}</div>
@@ -299,7 +270,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <dom-if if="{{toggleUnlock}}">
             <template>
                 <display-unlock 
-                    color="white"
+                    color="blue"
                     toggle-unlock="{{toggleUnlock}}" 
                     private-key="{{privateKey}}" 
                     qr-code-private-key="{{qrCodePrivateKey}}"
@@ -401,28 +372,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _close() {
                 this.path = 'stop-signup/';
             }
-            /**
-            * Toggles the visibility of the full Public Key
-            */
-            _togglePubKey() {
-                this.showPubKey = !this.showPubKey;
-                this.showPrivKey = false;
-            }
-            /**
-            * Toggles the visibility of the Private Key
-            */
-            _togglePrivKey() {
-                this.toggleUnlock = !this.toggleUnlock;
-                this.showPrivKey = !this.showPrivKey;
-            }
-            /**
-            * Toggles the visibility of both keys on mobile
-            */
-            _toggleKeys() {
-                this.showPubKey = false;
-                this.showPrivKey = false;
-                this.privateKey = null;
-            }
+
             /**
             * routes to next page
             */
