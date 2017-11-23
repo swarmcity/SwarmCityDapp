@@ -47,7 +47,7 @@ Example:
                 @apply --body-bold;
                 color: var(--sc-grey4);
             }
-            
+
             .hashtag-swr {
                 margin-left: 20px;
                 @apply --body-default;
@@ -77,7 +77,19 @@ Example:
                 border-bottom: 2px dotted var(--sc-blue);
             }
 
+            .temp {
+                background-color: green;
+                width: 100%;
+                overflow: hidden;
+                height: 300px;
+                transition: max-height 1.4s cubic-bezier(0, 1, 0, 1);
+                max-height: 0;
+            }
 
+            .expand {
+                max-height: 1000px;
+                transition: max-height 1s ease-in-out;   
+            }
         </style>
         <div class="container">
             <div class="hashtag-repeaterbox">
@@ -87,8 +99,9 @@ Example:
                 </div>
                 <div class="hashtag-info">You've earned 11 SWR on #pioneer.</div>
                 <div class="hashtag-detail">(2 deals done, 1 conflict)</div>
+                <div id="temp" class="temp"></div>
                 <div class="hashtag-togglebox">
-                    <span class="hashtag-bluelink">show deals</span>
+                    <span class="hashtag-bluelink" on-click="_showDeals">show deals</span>
                 </div>
             </div>
             <div class="hashtag-repeaterbox">
@@ -126,8 +139,13 @@ Example:
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+            /**
+            * opens the list of deals on a hashtag
+            */
+            _showDeals() {
+                this.$.temp.classList.toggle('expand');
+            }
         }
-
         window.customElements
             .define(MyDisplayProfileSWR.is, MyDisplayProfileSWR);
     </script>

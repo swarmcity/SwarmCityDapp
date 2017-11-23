@@ -359,7 +359,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-click="_close"></div>
                 <div class="avatarcontainer">
                     <div class="avatar">
-                        <img src="../../images/defaultavatar.png" on-click="_toResizeAvatar">
+                        <img src="{{avatar}}" on-click="_toResizeAvatar">
                         <div class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
@@ -367,7 +367,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
                 <div class="topflex">
                     <div class="username">
-                        <paper-input label="Username" always-float-label></paper-input>
+                        <paper-input label="Username" value="{{username}}" always-float-label></paper-input>
                     </div>
                     <div class="keybox">
                         <div id="pubKey" class="pubkey truncate">
@@ -448,6 +448,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        value: 'Xavier Hendrickx',
+                    },
+                    /**
+                    * Avatar represents the users IPFS to their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        value: '../../images/defaultavatar.png',
+                    },
+                    /**
                     * Error is a string message being shown when passwords don't match
                     * @type {String}
                     */
@@ -499,9 +515,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
 
-            connectedCallback() {
-                super.connectedCallback();
+            ready() {
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                super.ready();
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
+                }
+                if (storage.user && storage.user.username) {
+                    this.username = storage.user.username;
+                    this.completeAccount = true;
+                }
             }
             /**
             * takes the user to originating page
