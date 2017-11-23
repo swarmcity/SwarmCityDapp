@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-unlock.html">
 
 <dom-module id="page-my-profile">
     <template>
@@ -384,6 +385,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 40px 12vw 85px 12vw;
             }
 
+            .blur {
+                @apply --unlock-blur;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -394,7 +399,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="close" on-click="_close"></div>
                 <div class="avatarcontainer">
@@ -410,11 +415,29 @@ This code may only be used under the license found at https://github.com/swarmci
                         <paper-input label="Username" always-float-label></paper-input>
                     </div>
                     <div class="keybox">
-                        <div class="pubkey truncate">
-                            <span class="greytext">0x339D7851463546164646546435468453546</span>
+                        <div id="pubKey" class="pubkey truncate">
+                            <span class="greytext" on-click="_togglePubKey">{{publicKey}}</span>
                         </div>
                         <div class="showkeys">
-                            <span class="bluelink">{{localize('show my keys')}}</span>
+                            <dom-if if="{{!toggleKeys}}">
+                                <template>
+                                    <span class="bluelink" on-click="_togglePubKey">{{localize('show my keys')}}</span>
+                                </template>
+                            </dom-if>
+                            <dom-if if="{{toggleKeys}}">
+                                <template>
+                                    <dom-if if="{{!showPrivKey}}">
+                                        <template>
+                                            <span class="bluelink" on-click="_togglePrivKey">{{localize('show private key')}}</span>
+                                        </template>
+                                    </dom-if>
+                                    <dom-if if="{{showPrivKey}}">
+                                        <template>
+                                            <span class="greytext">{{privateKey}}</span>
+                                        </template>
+                                    </dom-if>
+                                </template>
+                            </dom-if>
                         </div>
                     </div>
                 </div>
@@ -461,7 +484,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="delete" on-click="_delete">{{localize('delete this user')}}</div>
             </div>
         </div>
-
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    color="blue" 
+                    toggle-unlock="{{toggleUnlock}}" 
+                    private-key="{{privateKey}}" 
+                    qr-code-private-key="{{qrCodePrivateKey}}"
+                    qr-code-public-key="{{qrCodePublicKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
 
     <script>
@@ -495,6 +528,47 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: '',
                     },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_privKeyObserver',
+                    },
+                    /**
+                    * toggles the visibility of private key
+                    * @type {Boolean}
+                    */
+                    showPrivKey: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * contains the public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        value: '0x339D7851463546164646546435468453546',
+                    },
+                    /**
+                    * toggles the view to show keys
+                    * @type {Boolean}
+                    */
+                    toggleKeys: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
 
@@ -514,6 +588,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.set('route.path', 'hashtag-list');
                 }
+            }
+            /**
+            * Toggles the visibility of the full Public Key
+            */
+            _togglePubKey() {
+                this.$.pubKey.classList.toggle('truncate');
+                this.toggleKeys = !this.toggleKeys;
+            }
+            /**
+            * Toggles the password unlock display
+            */
+            _togglePrivKey() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Toggles the visibility of private key
+            */
+            _privKeyObserver() {
+                this.showPrivKey = !this.showPrivKey;
             }
             /**
             * takes the user to page-resize-avatar
@@ -564,6 +657,17 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
             }
         }
         window.customElements.define(MyProfile.is, MyProfile);
