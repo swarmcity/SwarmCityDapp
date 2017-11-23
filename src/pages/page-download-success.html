@@ -148,8 +148,14 @@ This code may only be used under the license found at https://github.com/swarmci
              * takes the user to the initiating hashtag page
              */
             _enter() {
-                this.path = sessionStorage.getItem('origin');
-                sessionStorage.clear();
+                if (typeof sessionStorage.getItem('origin') === 'string'
+                    || sessionStorage.getItem('origin') instanceof String) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
             }
             /**
              * changes the current path

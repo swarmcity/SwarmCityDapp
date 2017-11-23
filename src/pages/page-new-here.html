@@ -188,8 +188,14 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the previous page
             */
             _close() {
-                this.path = sessionStorage.getItem('origin');
-                sessionStorage.clear();
+                if (typeof sessionStorage.getItem('origin') === 'string'
+                    || sessionStorage.getItem('origin') instanceof String) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
             }
             /**
             * takes the user to the hashtag list page
