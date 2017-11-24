@@ -3,6 +3,33 @@
 <script>
 let initialState = {
     language: 'en',
+    fx: {
+        SWTUSD: 1.2,
+        SWTEUR: 3.4,
+    },
+    balance: {
+        eth: 0.002,
+        swt: 44,
+        swr: 12,
+    },
+    transactions: [{
+        timeDate: 234234234,
+        direction: 'in',
+        amount: 666,
+        symbol: 'swt',
+        from: '0x0',
+        to: '0x0',
+        confirmations: 6,
+        },
+        {
+        timeDate: 234234234,
+        direction: 'in',
+        amount: 666,
+        symbol: 'swt',
+        from: '0x0',
+        to: '0x0',
+        confirmations: 6,
+    }],
     hashtags: [{
         name: 'Pioneer',
         deals: 25,
@@ -243,7 +270,6 @@ let initialState = {
         ],
     },
     ],
-    balance: 32,
 };
 
 
@@ -252,6 +278,13 @@ let reducer = function(state, action) {
         return initialState;
     }
     switch (action.type) {
+        case 'TRANSACTIONS': {
+            let transactions = state.transactions;
+            transactions = action.transactions;
+            return Object.assign({}, state, {
+                transactions: transactions,
+            });
+        }
         case 'BALANCE': {
             let balance = state.balance;
             balance = action.balance;
