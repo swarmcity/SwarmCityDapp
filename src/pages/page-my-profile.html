@@ -175,12 +175,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 3vh 0 0 0;
             }
 
-            .pubkey {
+            .publicKey {
                 margin-top: 3vh;
                 /* max-width: 75px; */
             }
 
-            .container[wide-layout] .pubkey {
+            .container[wide-layout] .publicKey {
                 margin: 0px 10px 0 0;
             }
 
@@ -189,11 +189,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-grey3);
             }
 
-            .showkeys {
+            .showKeys {
                 margin-top: 1vh;
             }
 
-            .container[wide-layout] .showkeys {
+            .container[wide-layout] .showKeys {
                 margin-top: 0px;
             }
 
@@ -370,23 +370,23 @@ This code may only be used under the license found at https://github.com/swarmci
                         <paper-input label="Username" value="{{username}}" always-float-label></paper-input>
                     </div>
                     <div class="keybox">
-                        <div id="pubKey" class="pubkey truncate">
-                            <span class="greytext" on-click="_togglePubKey">{{publicKey}}</span>
+                        <div id="publicKey" class="publicKey truncate">
+                            <span class="greytext" on-click="_togglePublicKey">{{publicKey}}</span>
                         </div>
-                        <div class="showkeys">
+                        <div class="showKeys">
                             <dom-if if="{{!toggleKeys}}">
                                 <template>
-                                    <span class="bluelink" on-click="_togglePubKey">{{localize('show my keys')}}</span>
+                                    <span class="bluelink" on-click="_togglePublicKey">{{localize('show my keys')}}</span>
                                 </template>
                             </dom-if>
                             <dom-if if="{{toggleKeys}}">
                                 <template>
-                                    <dom-if if="{{!showPrivKey}}">
+                                    <dom-if if="{{!showPrivateKey}}">
                                         <template>
-                                            <span class="bluelink" on-click="_togglePrivKey">{{localize('show private key')}}</span>
+                                            <span class="bluelink" on-click="_togglePrivateKey">{{localize('show private key')}}</span>
                                         </template>
                                     </dom-if>
-                                    <dom-if if="{{showPrivKey}}">
+                                    <dom-if if="{{showPrivateKey}}">
                                         <template>
                                             <span class="greytext">{{privateKey}}</span>
                                         </template>
@@ -486,13 +486,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     privateKey: {
                         type: String,
-                        observer: '_privKeyObserver',
+                        observer: '_privateKeyObserver',
                     },
                     /**
                     * toggles the visibility of private key
                     * @type {Boolean}
                     */
-                    showPrivKey: {
+                    showPrivateKey: {
                         type: Boolean,
                         value: false,
                     },
@@ -542,21 +542,21 @@ This code may only be used under the license found at https://github.com/swarmci
             /**
             * Toggles the visibility of the full Public Key
             */
-            _togglePubKey() {
+            _togglePublicKey() {
                 this.$.pubKey.classList.toggle('truncate');
                 this.toggleKeys = !this.toggleKeys;
             }
             /**
             * Toggles the password unlock display
             */
-            _togglePrivKey() {
+            _togglePrivateKey() {
                 this.toggleUnlock = !this.toggleUnlock;
             }
             /**
             * Toggles the visibility of private key
             */
-            _privKeyObserver() {
-                this.showPrivKey = !this.showPrivKey;
+            _privateKeyObserver() {
+                this.showPrivateKey = !this.showPrivateKey;
             }
             /**
             * takes the user to page-resize-avatar
