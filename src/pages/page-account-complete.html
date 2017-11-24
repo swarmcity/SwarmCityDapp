@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-show-keys.html">
 
 <dom-module id="page-account-complete">
     <template>
@@ -82,6 +83,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-center-center;
                 width: 100%;
+                margin: 8vh 0px;
             }
 
             .container[wide-layout] .account {
@@ -235,7 +237,9 @@ This code may only be used under the license found at https://github.com/swarmci
             .blur {
                 @apply --unlock-blur;
             }
-
+            .flexer {
+               @apply --titlepage-flexer;
+            }
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -252,47 +256,16 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="top">
                 <div class="title">{{localize('Great!')}}</div>
                 <div class="subtitle">{{localize('You now have a Swarm City account.')}} {{localize('Lets create a backup and youre all set!')}}</div>
-            </div>
-
-            <div class="bottom">
-
                 <div class="account">
                     <img src="{{avatar}}">
                     <div class="info">
                         <div class="name">{{username}}</div>
-                        <div class="keybox">
-                            <template is="dom-if" if="{{!showPubKey}}">
-                                <div class="pubkey truncate" on-click="_togglePubKey">{{publicKey}}</div>
-                            </template>
-                            <template is="dom-if" if="{{showPubKey}}">
-                                <div class="pubkeybox">
-                                    <div class="pubkey key" title='click to select all'>{{publicKey}}</div>
-                                    <template is="dom-if" if="{{wide}}">
-                                        <template is="dom-if" if="{{!showPrivKey}}">
-                                            <div class="keyclose" on-click="_toggleKeys"></div>
-                                        </template>
-                                    </template>
-                                </div>
-                                <div class="privkeybox">
-                                    <template is="dom-if" if="{{!showPrivKey}}">
-                                        <span class="bluelink" on-click="_togglePrivKey">show my private key</span>
-                                    </template>
-                                    <template is="dom-if" if="{{showPrivKey}}">
-                                        <div class="privkey key" title='click to select all'>{{privateKey}}</div>
-                                        <template is="dom-if" if="{{wide}}">
-                                            <div class="keyclose" on-click="_toggleKeys"></div>
-                                        </template>
-                                    </template>
-                                </div>
-                                <template is="dom-if" if="{{!wide}}">
-                                    <template is="dom-if" if="{{showPubKey}}">
-                                        <div class="keyclose" on-click="_toggleKeys"></div>
-                                    </template>
-                                </template>
-                            </template>
-                        </div>
+                        <display-show-keys></display-show-keys>
                     </div>
                 </div>
+            </div>
+            <div class="flexer"></div>
+            <div class="bottom">
                 <div class="btn" on-click="_next">{{localize('backup my account')}}</div>
             </div>
         </div>
@@ -401,28 +374,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _close() {
                 this.path = 'stop-signup/';
             }
-            /**
-            * Toggles the visibility of the full Public Key
-            */
-            _togglePubKey() {
-                this.showPubKey = !this.showPubKey;
-                this.showPrivKey = false;
-            }
-            /**
-            * Toggles the visibility of the Private Key
-            */
-            _togglePrivKey() {
-                this.toggleUnlock = !this.toggleUnlock;
-                this.showPrivKey = !this.showPrivKey;
-            }
-            /**
-            * Toggles the visibility of both keys on mobile
-            */
-            _toggleKeys() {
-                this.showPubKey = false;
-                this.showPrivKey = false;
-                this.privateKey = null;
-            }
+
             /**
             * routes to next page
             */
