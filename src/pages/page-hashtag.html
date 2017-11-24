@@ -438,6 +438,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     anim: {
                         type: Object,
                     },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+
                 };
             }
 
@@ -708,6 +717,77 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                 };
             }
+
+
+
+            _loadElementAnimations() {
+                if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+
+                        if (this.routeHistory[1] == 'hashtag-list') {
+                        // Here come the Exit Animations, going to page HashtagList
+                        }
+                    } else if (this.routeHistory[1] == this.pageID) {
+                        // Here come the Entry Animations, coming from page HashtagList
+                        if (this.routeHistory[0] == 'hashtag-list') {
+
+                            this.$.fadeArea.animate(
+                                [
+                                {'transform': 'translateX(100%)'},
+                                {'transform': 'translateX(0)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(90px)'},
+                                    {'transform': 'translateY(0)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        this.$.back.animate(
+                            [
+                                {'opacity': '0'},
+                                {'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+
+
+
+                        } 
+                    }
+                }
+            }
+
+
+
+
         } window.customElements.define(NewHashtag.is, NewHashtag);
     </script>
 </dom-module>
