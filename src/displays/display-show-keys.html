@@ -226,72 +226,10 @@ Example:
 
                 };
             }
-            /**
-            * Redux action for sertting language
-            * @param {language} language
-            */
-            static get actions() {
-                return Object.assign({
-                    LANGUAGE: function(language) {
-                        return {
-                            type: 'LANGUAGE',
-                            language: language,
-                        };
-                    },
-                });
-            }
-
+  
             connectedCallback() {
                 super.connectedCallback();
-                this._showButtons();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-
-            /**
-            * If we need to show buttons,
-            * get all the languages we have translations for
-            * @param {event} event represents the button the user clicked
-            */
-            _showButtons() {
-                if (this.buttons) {
-                    this.locales = [
-                        {iso: 'en', name: 'English'},
-                        {iso: 'cn', name: '中文'},
-                        {iso: 'fr', name: 'Français'},
-                        {iso: 'nl', name: 'Nederlands'},
-                        {iso: 'ru', name: 'Английский'},
-                        {iso: 'de', name: 'Deutsch'},
-                        {iso: 'es', name: 'Espanol'},
-                        {iso: 'pl', name: 'Polski'},
-                    ];
-                }
-            }
-
-            /**
-            * The user has selected a diferent language, update local storage and redux
-            * @param {event} event represents the button the user clicked
-            */
-            _selectLanguage(event) {
-                const selectedLanguage = event.model.__data.item.iso;
-                this.dispatch('LANGUAGE', selectedLanguage);
-                if (this.path == undefined) {
-                    this.path = 'welcome/';
-                }
-                if (this.path == 'welcome/') {
-                    this.path = '/';
-                }
-                if (this.path == '/') {
-                    this.path = 'welcome/';
-                }
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                storage.user.language = selectedLanguage;
-                localStorage.setItem('SwarmCity', JSON.stringify(storage));
-            }
-            /**
-            * take the user to the language page
-            */
-            _navigateTo() {
-                this.path = 'language/';
             }
             /**
             * Toggles the visibility of the full Public Key
