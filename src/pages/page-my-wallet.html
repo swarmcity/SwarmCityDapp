@@ -178,10 +178,10 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="top">
                 <div class="close" on-click="_close"></div>
                 <div class="yellowbox">
-                    <div class="swt">44 SWT</div>
-                    <div class="fiat">= 44 USD</div>
+                    <div class="swt">{{balance.swt}} SWT</div>
+                    <div class="fiat">= {{usdBalance}} USD</div>
                 </div>
-                <div class="eth">0.0002 ETH</div>
+                <div class="eth">{{balance.eth}} ETH</div>
             </div>
             <div class="divider"></div>
                 <display-transaction-status path="{{path}}">
@@ -190,7 +190,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <display-transaction-history></display-transaction-history> 
             <div class="divider"></div>
             <div class="bottom">
-                <div class="pubkey">0x339D78...</div>
+                <div class="pubkey">{{publicKey}}</div>
                 <div class="bluetext">{{localize('show my keys')}}</div>
             </div>
         </div>
@@ -213,6 +213,24 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
+                    * fx rates
+                    * @type {String}
+                    */
+                    fx: {
+                        type: Number,
+                        statePath: 'fx',
+                        observer: '_usdBalance',
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {String}
+                    */
+                    balance: {
+                        type: Number,
+                        statePath: 'balance',
+                        observer: '_usdBalance',
+                    },
+                    /**
                     * Path is the current or requested path
                     * @type {String}
                     */
@@ -220,12 +238,28 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
+                    /**
+                    * publicKey is the users publicKey
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                    },
                 };
             }
-
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.publicKey = storage.keyStore.address;
+            }
+            /**
+            * usd balance usd value.
+            */
+            _usdBalance() {
+                if (this.balance.swt && this.fx.swtxusd) {
+                    this.usdBalance = (this.balance.swt * this.fx.swtxusd);
+                }
             }
             /**
             * takes the user to originating page

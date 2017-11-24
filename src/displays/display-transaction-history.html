@@ -119,40 +119,28 @@ Example:
 
         </style>
         <div class="container">
-            <div class="repeated">
-                <div class="timestamp">3 seconds ago</div>
-                <div class="state-box">
-                    <div class="logtext">{{localize('Receiving')}} 666 SWT {{localize('from')}} Satan</div>
-                    <div class="flex"></div>
-                    <div class="loading">
-                        <div class="smallpoint" id="point1"></div>
-                        <div class="smallpoint" id="point2"></div>
-                        <div class="smallpoint" id="point3"></div>
+            <template is="dom-repeat" items="{{transactions}}">
+                <div class="repeated">
+                    <div class="timestamp">[[item.timeDate]]</div>
+                    <div class="state-box">
+                        <div class="logtext">
+                            <template is="dom-if" if="[[_direction(item.direction)]]">{{localize('Receiving')}}</template>
+                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('Sent')}}</template>
+                            [[item.amount]] [[item.symbol]] {{localize('from')}} Satan</div>
+                        <div class="flex"></div>
+                        <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
+                            <div class="loading">
+                                <div class="smallpoint" id="point1"></div>
+                                <div class="smallpoint" id="point2"></div>
+                                <div class="smallpoint" id="point3"></div>
+                            </div>
+                        </template>
+                        <template is="dom-if" if="[[_confirmations(item.confirmations)]]">
+                            <div class="icon-complete"></div>
+                        </template>
                     </div>
                 </div>
-            </div>
-            <div class="repeated">
-                <div class="timestamp">{{localize('Yesterday')}}, 18:21</div>
-                <div class="state-box">
-                    <div class="logtext">{{localize('Received')}} 999000 SWT {{localize('from')}} Sally Singer</div>
-                    <div class="flex"></div>
-                    <div class="icon-complete"></div>
-                </div>
-            </div>
-            <div class="repeated">
-                <div class="timestamp">2 weeks ago</div>
-                <div class="state-box">
-                    <div class="logtext">{{localize('Received')}} 7 SWT {{localize('from')}} Xardas</div>
-                    <div class="flex"></div>
-                </div>
-            </div>
-            <div class="repeated">
-                <div class="timestamp">2 weeks ago</div>
-                <div class="state-box">
-                    <div class="logtext">{{localize('Sent')}} 88 SWT {{localize('to')}} Kiki Pluche</div>
-                    <div class="flex"></div>
-                </div>
-            </div>
+            </template>
         </div>
     </template>
     <script>
@@ -170,12 +158,26 @@ Example:
                         type: String,
                         statePath: 'language',
                     },
+                    transactions: {
+                        type: Array,
+                        statePath: 'transactions',
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            _direction(event) {
+                if (event == 'in') {
+                    return true;
+                }
+            }
+            _confirmations(event) {
+                if (event > 5) {
+                    return true;
+                }
             }
         }
 
