@@ -7,6 +7,127 @@
         <style>
             :host {
                 display: block;
+                width: 100%;
+                max-width: 100vw;
+                height: 100%;
+            }
+
+
+            .container {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center-center;                
+            }
+
+            .container[wide-layout] {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-start;                
+                @apply --layout-start-justified;                
+            }
+
+            .container .top {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center;                
+                @apply --layout-start-justified;                  
+                /* margin-bottom: 10vh; */
+                height: 370px;                
+                margin-bottom: 5vh;                
+
+            }
+
+            .container[wide-layout] .top {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-start;                
+                @apply --layout-start-justified;
+                margin-bottom: 7vh;                
+            }
+
+
+            .container .rotate-icon {
+                position: relative;
+                top: -54px;
+                left: 98px;
+                margin-bottom: -54px;
+                @apply --rotate-blue-normal;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .rotate-icon {
+                position: relative;
+                top: -54px;
+                left: 198px;
+                margin-bottom: -54px;
+                @apply --rotate-blue-normal;
+                cursor: pointer;
+            }
+
+            .file {
+                display: none;
+            }
+
+            .bluetext {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin: 50px 0px 0px 0px;
+            }
+
+            .blacktext {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --small-bold;
+                color: var(--sc-grey4);
+                margin: 10px 0px 0px 0px;
+            }
+
+            /* .buttons {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                margin-bottom: 100px;
+            }
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+            .round-button {
+                @apply --icon-button-big;
+            }
+            .round-button:active {
+                @apply --button-active;
+            }
+            .agree {
+                @apply --vmark-blue-normal;
+            } */
+
+
+            .container .confirmers {
+              @apply --titlepage-confirmers;
+            }
+            .container[wide-layout] .confirmers {
+              @apply --titlepage-confirmers-wide;
+            }
+            .container .confirmers>div:nth-child(1) {
+              @apply --confirmers-x;
+              @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
+            }
+
+
+
+            /* .container {
+                background-color: green;
             }
             .canvas {
                 border: 1px solid black
@@ -17,12 +138,7 @@
             .pointer {
                 cursor: pointer;
             }
-            .bluetext {
-                @apply --small-bold;
-                cursor: pointer;
-                color: var(--sc-blue);
-                border-bottom: 2px dotted var(--sc-blue);
-            }
+
             .blacktext {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
@@ -62,33 +178,50 @@
             }
             .agree {
                 @apply --vmark-blue-normal;
-            }
-        </style>
-        <div class="container">
-            <canvas id="canvas" class="canvas"
-                on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd"
-                on-touchmove="_panMove" on-touchstart="_panStart" on-touchend="_panEnd"
-            ></canvas>
-            <div class="rotate-icon" on-click="_rotate"></div>
-            <input type="file" name="file" id="file" class="file" on-change="_getFile"/>
-            <input type="hidden" name="zoom" id="zoom" value="1">
-            </br>
-            <label for="file">
-                <p class="bluetext">choose another file</p>
-            </label>
-            <div class="blacktext">scroll to zoom - drag to move</div>
+            } */
 
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .rotate-icon,
+                .disagree,
+                .agree {
+                    @apply --retina;
+                }
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                        
+                <canvas id="canvas" class="canvas"
+                    on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd"
+                    on-touchmove="_panMove" on-touchstart="_panStart" on-touchend="_panEnd"
+                ></canvas>
+                <div class="rotate-icon" on-click="_rotate"></div>
+                <input type="file" name="file" id="file" class="file" on-change="_getFile"/>
+                <input type="hidden" name="zoom" id="zoom" value="1">
+                <div class="blacktext">scroll to zoom - drag to move</div>
+                
+                <label for="file">
+                    <p class="bluetext">{{localize('choose another file')}}</p>
+                </label>
+            </div>
+        
             <div class="bottom">
-                    <div class="buttons">
-                        <div class="disagree" on-click="_reset"></div>
-                        <div class="round-button" on-click="_save">
-                            <div class="agree"></div>
-                        </div>
+                <div class="confirmers">
+                    <div class="disagree" on-click="_reset"></div>
+                    <div class="round-button" on-click="_save">
+                        <div class="agree"></div>
                     </div>
-                    <template is="dom-if" if="{{!wide}}">
-                        <span class="bluetext">{{localize('choose another file')}}</span>
-                    </template>
                 </div>
+                <!-- <template is="dom-if" if="{{!wide}}">
+                    <span class="bluetext">{{localize('choose another file')}}</span>
+                </template> -->
+            </div>
+
         </div>
     </template>
     <script>

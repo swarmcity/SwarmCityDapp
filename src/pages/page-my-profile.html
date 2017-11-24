@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-profile-swr.html">
 <link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-show-keys.html">
 
@@ -173,12 +174,42 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0 0 0 0;
             }
 
+            .keybox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 3vh 0 0 0;
+                width: 100%;
+            }
 
-            .showkeys {
+            .container[wide-layout] .keybox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 3vh 0 0 0;
+            }
+
+            .publicKey {
+                margin-top: 3vh;
+                /* max-width: 75px; */
+            }
+
+            .container[wide-layout] .publicKey {
+                margin: 0px 10px 0 0;
+            }
+
+            .greytext {
+                @apply --small-light;
+                color: var(--sc-grey3);
+            }
+
+            .showKeys {
                 margin-top: 1vh;
             }
 
-            .container[wide-layout] .showkeys {
+            .container[wide-layout] .showKeys {
                 margin-top: 0px;
             }
 
@@ -220,71 +251,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 0;
             }
 
-            .hashtagbox {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-                background-image: var(--sc-bg);
-                width: 100%;
-                box-sizing: border-box;
-                padding: 50px 14vw 50px 14vw;
-            }
-
-            .container[wide-layout] .hashtagbox {
-                @apply --layout-start;
-                box-sizing: border-box;
-                padding: 40px 12vw 70px 12vw;
-            }
-
-            .temp {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-end;
-                box-sizing: border-box;
-                padding: 2px 0 2px 0;
-                width: 100%;
-            }
-
-            .container[wide-layout] .temp {
-                max-width: 60vw;
-            }
-
-            .hashtagname {
-                @apply --body-bold;
-                box-sizing: border-box;
-                padding-right: 10px;
-            }
-
-            .deals {
-                min-width: 75px;
-            }
-
-            .ruler {
-                @apply --layout-flex;
-            }
-
-            .container[wide-layout] .ruler {
-                box-sizing: border-box;
-                margin: 0 35px 4px 35px;
-                border-bottom: 2px solid rgba(25, 25, 25, 0.1);
-            }
-
-
-            .rep-amount {
-                @apply --body-bold;
-            }
-
-            .rep {
-                @apply --small-bold;
-                margin: 0 0 0.5px 5px;
-            }
-
             .divider {
                 width: 100vw;
                 background-color: #9B9B9B;
                 opacity: 0.2;
                 height: 1px;
                 max-width: 100%;
+            }
+
+            display-profile-swr {
+                box-sizing: border-box;
+                padding: 50px 0;
+                background-image: var(--sc-bg);
+                width: 100%;
+            }
+
+            .container[wide-layout] display-profile-swr {
+                box-sizing: border-box;
+                padding: 50px 12vw;
+
             }
 
             .buttonbox {
@@ -390,7 +375,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-click="_close"></div>
                 <div class="avatarcontainer">
                     <div class="avatar">
-                        <img src="../../images/defaultavatar.png" on-click="_toResizeAvatar">
+                        <img src="{{avatar}}" on-click="_toResizeAvatar">
                         <div class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
@@ -398,7 +383,33 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
                 <div class="topflex">
                     <div class="username">
-                        <paper-input label="Username"></paper-input>
+                        <paper-input label="Username" value="{{username}}" always-float-label></paper-input>
+                    </div>
+                    <div class="keybox">
+                        <div id="publicKey" class="publicKey truncate">
+                            <span class="greytext" on-click="_togglePublicKey">{{publicKey}}</span>
+                        </div>
+                        <div class="showKeys">
+                            <dom-if if="{{!toggleKeys}}">
+                                <template>
+                                    <span class="bluelink" on-click="_togglePublicKey">{{localize('show my keys')}}</span>
+                                </template>
+                            </dom-if>
+                            <dom-if if="{{toggleKeys}}">
+                                <template>
+                                    <dom-if if="{{!showPrivateKey}}">
+                                        <template>
+                                            <span class="bluelink" on-click="_togglePrivateKey">{{localize('show private key')}}</span>
+                                        </template>
+                                    </dom-if>
+                                    <dom-if if="{{showPrivateKey}}">
+                                        <template>
+                                            <span class="greytext">{{privateKey}}</span>
+                                        </template>
+                                    </dom-if>
+                                </template>
+                            </dom-if>
+                        </div>
                     </div>
                     <display-show-keys></display-show-keys>
                 </div>
@@ -407,35 +418,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
             <div class="divider"></div>
-            <div class="hashtagbox">
-                <div class="temp">
-                    <div class="hashtagname">#pioneer</div>
-                    <div class="deals">
-                        <span class="greylink">{{localize('show deals')}}</span>
-                    </div>
-                    <div class="ruler"></div>
-                    <div class="rep-amount">16</div>
-                    <div class="rep">SWR</div>
-                </div>
-                <div class="temp">
-                    <div class="hashtagname">#needaride</div>
-                    <div class="deals">
-                        <span class="greylink">show deals</span>
-                    </div>
-                    <div class="ruler"></div>
-                    <div class="rep-amount">7</div>
-                    <div class="rep">SWR</div>
-                </div>
-                <div class="temp">
-                    <div class="hashtagname">#swarmbnb</div>
-                    <div class="deals">
-                        <span class="greylink">show deals</span>
-                    </div>
-                    <div class="ruler"></div>
-                    <div class="rep-amount">2</div>
-                    <div class="rep">SWR</div>
-                </div>
-            </div>
+            <display-profile-swr></display-profile-swr>
             <div class="divider"></div>
             <div class="buttonbox">
                 <div class="logout" on-click="_logout">{{localize('logout this user')}}</div>
@@ -482,6 +465,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        value: 'Xavier Hendrickx',
+                    },
+                    /**
+                    * Avatar represents the users IPFS to their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        value: '../../images/defaultavatar.png',
+                    },
+                    /**
                     * Error is a string message being shown when passwords don't match
                     * @type {String}
                     */
@@ -504,13 +503,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     privateKey: {
                         type: String,
-                        observer: '_privKeyObserver',
+                        observer: '_privateKeyObserver',
                     },
                     /**
                     * toggles the visibility of private key
                     * @type {Boolean}
                     */
-                    showPrivKey: {
+                    showPrivateKey: {
                         type: Boolean,
                         value: false,
                     },
@@ -526,22 +525,48 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
 
-            connectedCallback() {
-                super.connectedCallback();
+            ready() {
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                super.ready();
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
+                }
+                if (storage.user && storage.user.username) {
+                    this.username = storage.user.username;
+                    this.completeAccount = true;
+                }
             }
             /**
             * takes the user to originating page
             */
             _close() {
-                if (typeof sessionStorage.getItem('origin') === 'string'
-                    || sessionStorage.getItem('origin') instanceof String) {
+                if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
                 }
                 else {
                     this.set('route.path', 'hashtag-list');
                 }
+            }
+            /**
+            * Toggles the visibility of the full Public Key
+            */
+            _togglePublicKey() {
+                this.$.pubKey.classList.toggle('truncate');
+                this.toggleKeys = !this.toggleKeys;
+            }
+            /**
+            * Toggles the password unlock display
+            */
+            _togglePrivateKey() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Toggles the visibility of private key
+            */
+            _privateKeyObserver() {
+                this.showPrivateKey = !this.showPrivateKey;
             }
             /**
             * takes the user to page-resize-avatar
