@@ -91,6 +91,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-blue);
                 margin-top: 4vh;
             }
+            .flexer {
+               @apply --titlepage-flexer;
+            }
+
         </style>
 
         <app-location route="{{route}}"></app-location>
@@ -101,6 +105,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="subtitle">{{localize('Youve downloaded your account file.')}}</div>
                 <div class="subtitle">{{localize('Your account file combined with your password will always give you access to your SWT balance.')}}</div>
             </div>
+            <div class="flexer"></div>
             <div class="bottom">
                 <div class="button" on-click="_enter">{{localize('enter swarm.city')}}</div>
                 <!-- <div class="bluetext">{{localize('convert my ARC')}}</div> -->
@@ -148,8 +153,13 @@ This code may only be used under the license found at https://github.com/swarmci
              * takes the user to the initiating hashtag page
              */
             _enter() {
-                this.path = sessionStorage.getItem('origin');
-                sessionStorage.clear();
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
             }
             /**
              * changes the current path
