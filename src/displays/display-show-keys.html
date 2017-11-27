@@ -143,23 +143,23 @@ Example:
         
         <div id="keyBox" class="keybox" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{toggleKeys}}">
-                <div class="greylink" on-click="_togglePubKey">{{localize('show my keys')}}</div>
+                <div class="greylink" on-click="_togglePublicKey">{{localize('show my keys')}}</div>
             </template>
 
             <template is="dom-if" if="{{!toggleKeys}}">
                 <div class="txtbox">
                     <div class="subtitle" >{{localize('Your public key')}}</div>                    
                     <div class="key">{{publicKey}}</div>
-                    <template is="dom-if" if="{{!togglePK}}">          
+                    <template is="dom-if" if="{{!togglePrivateKey}}">          
                         <div class="bluelink">{{localize('show private key')}}</div>
                     </template>
-                    <template is="dom-if" if="{{togglePK}}">          
+                    <template is="dom-if" if="{{togglePrivateKey}}">          
                         <div class="subtitle extramargin">{{localize('Your private key')}}</div>                    
                         <div class="key">{{publicKey}}</div>
                     </template>
                 
                 </div>                  
-                <div class="close" on-click="_togglePubKey"></div>
+                <div class="close" on-click="_togglePublicKey"></div>
             </template>
         
         </div>
@@ -218,12 +218,18 @@ Example:
                     * toggles the view to show private key
                     * @type {Boolean}
                     */
-                    togglePK: {
+                    togglePrivateKey: {
                         type: Boolean,
                         value: false,
                     },
-
-
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
             connectedCallback() {
@@ -233,9 +239,15 @@ Example:
             /**
             * Toggles the visibility of the full Public Key
             */
-            _togglePubKey() {
+            _togglePublicKey() {
                 this.$.keyBox.classList.toggle('opened');
                 this.toggleKeys = !this.toggleKeys;
+            }
+            /**
+            * Toggles the visibility of the full Private Key
+            */
+            _togglePublicKey() {
+                this.toggleUnlock = !this.toggleUnlock;
             }
         }
         window.customElements.define(DisplayLanguage.is, DisplayLanguage);
