@@ -156,11 +156,11 @@ Example:
                     </template>
                     <template is="dom-if" if="{{togglePrivateKey}}">          
                         <div class="subtitle extramargin">{{localize('Your private key')}}</div>                    
-                        <div class="key">{{publicKey}}</div>
+                        <div class="key">{{privateKey}}</div>
                     </template>
                 
                 </div>                  
-                <div class="close" on-click="_togglePublicKey"></div>
+                <div class="close" on-click="_close"></div>
             </template>
         
         </div>
@@ -207,6 +207,14 @@ Example:
                         type: String,
                         value: '0x339D7851463546164646546435468453546',
                     },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        notify: true,
+                    },
                     /*
                     * toggles the view to show keys
                     * @type {Boolean}
@@ -216,12 +224,13 @@ Example:
                         value: true,
                     },
                     /*
-                    * toggles the view to show private key
+                    * toggles the view to show the private key
                     * @type {Boolean}
                     */
                     togglePrivateKey: {
                         type: Boolean,
                         value: false,
+                        notify: true,
                     },
                     /**
                     * toggles the unlock display
@@ -245,6 +254,15 @@ Example:
                 this.$.keyBox.classList.toggle('opened');
                 this.toggleKeys = !this.toggleKeys;
             }
+            /**
+            * toggles the keybox visibility
+            */
+            _close() {
+                this.$.keyBox.classList.toggle('opened');
+                this.toggleKeys = !this.toggleKeys;
+                this.privateKey = null;
+            }
+
             /**
             * Toggles the visibility of the full Private Key
             */
