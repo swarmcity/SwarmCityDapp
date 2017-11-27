@@ -123,6 +123,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 max-width: 320px;
             }
 
+            .flexer {
+               @apply --titlepage-flexer;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -139,6 +143,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="title">{{localize('You must be new here')}}</div>
                 <div class="subtitle">{{localize('No account was found')}}</div>
             </div>
+            <div class="flexer"></div>            
             <div class="bottom">
                 <div class="buttons">
                     <div class="create" on-click="_create">{{localize('create account')}}</div>
@@ -188,8 +193,13 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the previous page
             */
             _close() {
-                this.path = sessionStorage.getItem('origin');
-                sessionStorage.clear();
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
             }
             /**
             * takes the user to the hashtag list page

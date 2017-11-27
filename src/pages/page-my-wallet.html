@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-transaction-status.html">
 <link rel="import" href="../displays/display-transaction-history.html">
+<link rel="import" href="../displays/display-show-keys.html">
 
 <dom-module id="page-my-wallet">
     <template>
@@ -131,6 +132,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
+                padding-top: 20px;
+                padding-bottom: 10vh;
             }
 
             .container[wide-layout] .bottom {
@@ -138,28 +141,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 box-sizing: border-box;
                 padding-top: 4vh;
-            }
-
-            .pubkey {
-                @apply --small-light;
-                color: var(--sc-grey3);
-                margin: 5vh 0 0 0;
-            }
-
-            .container[wide-layout] .pubkey {
-                margin: 0 0 0 0;
-            }
-
-            .bluetext {
-                @apply --small-bold;
-                cursor: pointer;
-                color: var(--sc-blue);
-                border-bottom: 2px dotted var(--sc-blue);
-                margin: 1vh 0 50px 0;
-            }
-
-            .container[wide-layout] .bluetext {
-                margin: 0 0 75px 25px;
             }
 
 
@@ -192,6 +173,8 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="bottom">
                 <div class="pubkey">{{publicKey}}</div>
                 <div class="bluetext">{{localize('show my keys')}}</div>
+                <display-show-keys></display-show-keys>                    
+
             </div>
         </div>
 
@@ -265,8 +248,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to originating page
             */
             _close() {
-                if (typeof sessionStorage.getItem('origin') === 'string'
-                    || sessionStorage.getItem('origin') instanceof String) {
+                if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
                 }

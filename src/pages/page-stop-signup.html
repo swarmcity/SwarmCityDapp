@@ -95,6 +95,10 @@ This code may only be used under the license found at https://github.com/swarmci
             .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                 @apply --vmark-blue-normal;
             } 
+            .flexer {
+               @apply --titlepage-flexer;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -111,6 +115,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="title">{{localize('Do you want to stop creating your account?')}}</div>
                 <div class="subtitle">{{localize('This can not be undone. All progress will be lost')}}</div>
             </div>
+            <div class="flexer"></div>
             <div class="bottom">
                 <div class="confirmers">
                     <div on-click="_disagree"></div>
@@ -164,8 +169,13 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the initiating hashtag page
             */
             _agree() {
-                this.path = sessionStorage.getItem('origin');
-                sessionStorage.clear();
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
             }
 
             /**

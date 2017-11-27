@@ -1,0 +1,243 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-show-keys></display-show-keys>
+```
+
+-->
+<dom-module id="display-show-keys">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+
+            .keybox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                width: 100%;
+                transition: all 0.1s linear;
+                padding: 0px;
+            }
+
+
+            .keybox[wide-layout] {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                @apply --layout-flex;
+            }
+
+
+            .opened {
+                border: 2px solid rgba(0,0,0,0.1);
+                padding: 20px 20px 20px 20px;
+                margin-top:10px;
+
+            }
+            .keybox[wide-layout] .opened {
+                padding: 8px 8px 20px 20px;
+
+            }
+
+
+            .greylink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey3b);
+                margin-top: 10px;
+            }
+
+            .keybox[wide-layout] .greylink {
+                margin-top: 0px;
+            }
+
+            .key {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                word-break: break-all;
+                text-align: center;
+            }
+
+            .keybox[wide-layout] .key {
+                text-align: left;
+            }
+
+            .subtitle {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+                margin-top: 10px;
+            }
+
+            .keybox[wide-layout] .subtitle {
+                margin-top: 0px;                
+            }
+
+
+            .bluelink {
+                @apply --blue-link;
+                margin-top: 15px;
+            }
+
+            .keybox[wide-layout] .bluelink {
+                margin-top: 10px;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                margin: 10px 0px 0px 0px;
+            }
+
+            .keybox[wide-layout] .close {
+                @apply --xmark-grey2-small;
+                margin: 0px 0px 0px 25px;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .txtbox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+            .keybox[wide-layout] .txtbox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                box-sizing: border-box;
+            }
+
+            .extramargin {
+                margin-top: 15px;
+            }
+
+            .keybox[wide-layout] .extramargin {
+                margin-top: 10px;
+            }
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .keybox[wide-layout] .close {
+                    @apply --retina;
+                }
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        
+        <div id="keyBox" class="keybox" wide-layout$="{{wide}}">
+            <template is="dom-if" if="{{toggleKeys}}">
+                <div class="greylink" on-click="_togglePubKey">{{localize('show my keys')}}</div>
+            </template>
+
+            <template is="dom-if" if="{{!toggleKeys}}">
+                <div class="txtbox">
+                    <div class="subtitle" >{{localize('Your public key')}}</div>                    
+                    <div class="key">{{publicKey}}</div>
+                    <template is="dom-if" if="{{!togglePK}}">          
+                        <div class="bluelink">{{localize('show private key')}}</div>
+                    </template>
+                    <template is="dom-if" if="{{togglePK}}">          
+                        <div class="subtitle extramargin">{{localize('Your private key')}}</div>                    
+                        <div class="key">{{publicKey}}</div>
+                    </template>
+                
+                </div>                  
+                <div class="close" on-click="_togglePubKey"></div>
+            </template>
+        
+        </div>
+
+    </template>
+    <script>
+
+        class DisplayLanguage extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-show-keys';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    locales: {
+                        type: Array,
+                    },
+                    /**
+                    * contains the public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        value: '0x339D7851463546164646546435468453546',
+                    },
+                    /*
+                    * toggles the view to show keys
+                    * @type {Boolean}
+                    */
+                    toggleKeys: {
+                        type: Boolean,
+                        value: true,
+                    },
+                    /*
+                    * toggles the view to show private key
+                    * @type {Boolean}
+                    */
+                    togglePK: {
+                        type: Boolean,
+                        value: false,
+                    },
+
+
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Toggles the visibility of the full Public Key
+            */
+            _togglePubKey() {
+                this.$.keyBox.classList.toggle('opened');
+                this.toggleKeys = !this.toggleKeys;
+            }
+        }
+        window.customElements.define(DisplayLanguage.is, DisplayLanguage);
+    </script>
+</dom-module>
