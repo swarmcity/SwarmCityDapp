@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<script src="webpack.min.js" async></script>
+
+<dom-module id="data-time">
+
+    <template>
+        [[fromNow]]
+    </template>
+    <script>
+        class DataTime extends Polymer.Element {
+            static get is() {
+                return 'data-time';
+            }
+
+            static get properties() {
+                return {
+                    epoch: {
+                        type: Number,
+                        observer: '_fromNow',
+                    },
+                    fromNow: {
+                        type: String,
+                    },
+                };
+            }
+            /**
+             * Converts from epoch to from now.
+             */
+            _fromNow() {
+                this.fromNow = webpack.moment(this.epoch).fromNow();
+            }
+        } window.customElements.define(DataTime.is, DataTime);
+    </script>
+</dom-module>
