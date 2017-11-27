@@ -20,6 +20,7 @@ import scrypt from 'scryptsy';
 import uuid from 'uuid';
 import Buffer from 'buffer';
 import QRCode from 'qrcode';
+import moment from 'moment';
 
 export {
   sha3,
@@ -41,4 +42,5 @@ export {
   uuid,
   Buffer,
   QRCode,
+  moment,
 };
