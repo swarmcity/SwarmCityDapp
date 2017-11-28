@@ -26,7 +26,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100vw;
                 display: block;
             }
-
             .container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -37,11 +36,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 0 12vw;
             }
-
             .container[wide-layout] {
                 padding: 0 14vw;
             }
-
             .close {
                 @apply --xmark-grey4-small;
                 @apply --close;
@@ -55,7 +52,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 15vh;
                 height: 35vh;
             }
-
             .container[wide-layout] .key-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -63,7 +59,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 20vh;
                 height: 30vh;
             }
-
             .privkey-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -71,14 +66,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100%;
                 margin-top: 8vh;
             }
-
             .container[wide-layout] .privkey-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-start;
             }
-
-
             .greytext {
                 @apply --small-light;
                 color: var(--sc-grey4);
@@ -90,46 +82,38 @@ This code may only be used under the license found at https://github.com/swarmci
                 text-align: center;
                 margin: 1vh 0 3vh 0;
             }
-
             .container[wide-layout] .key {
                 text-align: left;
             }
-
             .bluetext {
                 @apply --small-bold;
                 cursor: pointer;
                 color: var(--sc-blue);
                 border-bottom: 2px dotted var(--sc-blue);
             }
-
             .qrcode {
                 margin: 4vh 0 0 0;
                 width: 70px;
                 height: 70px;
             }
-
             .divider {
                 width: 100vw;
                 background-color: #9B9B9B;
                 opacity: 0.2;
                 height: 1px;
             }
-
             .warning {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 text-align: center;
                 margin: 1vh 0 3vh 0;
             }
-
             .container[wide-layout] .warning {
                 text-align: left;
             }
-
             .blur {
                 @apply --unlock-blur;
             }
-
             .key {
                 word-break: break-all;
             }
@@ -149,7 +133,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="key-container">
                 <div class="greytext">{{localize('Your public key')}}</div>
                 <div class="key">{{publicKey}}}</div>
-                <span class="bluetext">{{localize('copy public key')}}</span>
+                <span class="bluetext" on-click="_copyPublicKey">{{localize('copy public key')}}</span>
                 <div class="qrcode">
                     <img src="../../images/qrcode.png">
                 </div>
@@ -171,6 +155,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="qrcode">
                             <img src="../../images/qrcode.png">
                         </div>
+                        <input type="text" value="Hello World" id="myInput">
                     </template>
                 </dom-if>
             </div>
@@ -225,7 +210,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     publicKey: {
                         type: String,
-                        value: '0x369D787F4EdF4a0e57cDfCFB3Dd92134e1982e06',
                     },
                     /**
                     * showPrivKey determines if the Private Key is shown or not
@@ -250,6 +234,19 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.publicKey = JSON.stringify(storage.keyStore.address).replace(/['"]+/g, '');
+            }
+            /**
+             * copies the public key to the desktop
+             */
+            _copyPublicKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.publicKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
             }
             /**
             * takes the user to page-make-backup
