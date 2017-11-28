@@ -17,6 +17,9 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-filter-list.html">
 <link rel="import" href="../displays/display-hashtag-list.html">
+<link rel="import" href="../displays/display-hashtagadd-btn.html">
+
+
 
 <dom-module id="page-hashtag-list">
     <template>
@@ -132,6 +135,23 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 100%;
             }
 
+
+            .hashtagaddbtn {
+                position: fixed;
+                bottom: 50px;
+                right: 30px;
+                z-index: 55;
+            }
+
+            .container[wide-layout] .hashtagaddbtn {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
+
+
+
+
             @keyframes slideUp {
                 0% {
                     transform: translateY(0%);
@@ -178,20 +198,30 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <div class="container" wide-layout$="{{wide}}">
-            <div class="header">
 
+
+        
+        <div class="container" wide-layout$="{{wide}}">
+
+                <div class="hashtagaddbtn">        
+                        <!-- <dom-if if="{{!faded}}">
+                            <template>  -->
+                                <display-hashtagadd-btn 
+                                    route="[[route]]" 
+                                    path="{{path}}">
+                                </display-hashtagadd-btn>
+                         <!--  </template>
+                        </dom-if> -->
+                    </div>
+            <div class="header">
                 <div class="topleft">
                     <display-my-info id="myInfo" complete-account="{{completeAccount}}" path="{{path}}" route="{{route}}">
                     </display-my-info>
                 </div>
-
                 <div class="topright">
                     <div class="back" on-click="_back" id="back"></div>
                 </div>
-
             </div>
-
             <div class$="fade [[fadeState]] fullheight" on-click="_fadeClose">
                 <display-hashtag-list id="hashtagList" path="{{path}}"></display-hashtag-list>
             </div>
