@@ -229,6 +229,7 @@ The following custom properties and mixins are available for styling:
                     privateKey: {
                         type: String,
                         notify: true,
+                        reflectToAtribute: true,
                     },
                     /**
                     * contains the public key
@@ -237,6 +238,7 @@ The following custom properties and mixins are available for styling:
                     publicKey: {
                         type: String,
                         notify: true,
+                        reflectToAtribute: true,
                     },
                     /**
                     * toggles the blue style elements
@@ -268,6 +270,7 @@ The following custom properties and mixins are available for styling:
                     qrCodePrivateKey: {
                         type: String,
                         notify: true,
+                        reflectToAtribute: true,
                     },
                     /**
                     * base 64 qr code of the PublicKey
@@ -276,6 +279,7 @@ The following custom properties and mixins are available for styling:
                     qrCodePublicKey: {
                         type: String,
                         notify: true,
+                        reflectToAtribute: true,
                     },
                     /**
                     * switches the color theme
@@ -307,6 +311,8 @@ The following custom properties and mixins are available for styling:
             * Checks for correct password, returns private key and closes this display
             */
             _getPrivKey() {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.keyStore = storage.keyStore;
                 // check password && if correct populate private key property
                 this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
                     .then((privateKey) => {
