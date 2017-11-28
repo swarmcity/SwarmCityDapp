@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-transaction-status.html">
 <link rel="import" href="../displays/display-transaction-history.html">
+<link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-show-keys.html">
 
 <dom-module id="page-my-wallet">
@@ -143,6 +144,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding-top: 4vh;
             }
 
+            .blur {
+                @apply --unlock-blur;
+            } 
+
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -155,7 +160,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="close" on-click="_close"></div>
                 <div class="yellowbox">
@@ -171,11 +176,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 <display-transaction-history></display-transaction-history> 
             <div class="divider"></div>
             <div class="bottom">
-                <display-show-keys></display-show-keys>                    
-
+                <display-show-keys
+                toggle-unlock="{{toggleUnlock}}"
+                toggle-private-key="{{togglePrivateKey}}"
+                private-key="{{privateKey}}"
+                ></display-show-keys>
             </div>
         </div>
-
+        <dom-if if="{{toggleUnlock}}">
+                <template>
+                    <display-unlock 
+                        color="blue"
+                        toggle-unlock="{{toggleUnlock}}"
+                        toggle-private-key="{{togglePrivateKey}}"
+                        private-key="{{privateKey}}" 
+                        qr-code-private-key="{{qrCodePrivateKey}}"
+                        qr-code-public-key="{{qrCodePublicKey}}">
+                    </display-unlock>
+                </template>
+            </dom-if>
     </template>
 
     <script>
@@ -226,6 +245,23 @@ This code may only be used under the license found at https://github.com/swarmci
                     publicKey: {
                         type: String,
                     },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_privateKeyObserver',
+                    },
                 };
             }
             connectedCallback() {
@@ -263,6 +299,23 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+           /**
+            * Toggles the visibility of private key
+            */
+            _privateKeyObserver() {
+                this.togglePrivateKey = !this.togglePrivateKey;
             }
         }
         window.customElements.define(MyWallet.is, MyWallet);
