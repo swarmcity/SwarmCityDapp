@@ -11,32 +11,37 @@
                 max-width: 100vw;
                 height: 100%;
             }
+
             .container {
                 width: 100%;
                 @apply --layout-vertical;
-                @apply --layout-center-center;                
+                @apply --layout-center-center;
             }
+
             .container[wide-layout] {
                 width: 100%;
                 @apply --layout-vertical;
-                @apply --layout-start;                
-                @apply --layout-start-justified;                
+                @apply --layout-start;
+                @apply --layout-start-justified;
             }
+
             .container .top {
                 width: 100%;
                 @apply --layout-vertical;
-                @apply --layout-center;                
-                @apply --layout-start-justified;                  
-                height: 370px;                
-                margin-bottom: 5vh;                
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                height: 370px;
+                margin-bottom: 5vh;
             }
+
             .container[wide-layout] .top {
                 width: 100%;
                 @apply --layout-vertical;
-                @apply --layout-start;                
+                @apply --layout-start;
                 @apply --layout-start-justified;
-                margin-bottom: 7vh;                
+                margin-bottom: 7vh;
             }
+
             .container .rotate-icon {
                 position: relative;
                 top: -54px;
@@ -45,6 +50,7 @@
                 @apply --rotate-blue-normal;
                 cursor: pointer;
             }
+
             .container[wide-layout] .rotate-icon {
                 position: relative;
                 top: -54px;
@@ -53,9 +59,11 @@
                 @apply --rotate-blue-normal;
                 cursor: pointer;
             }
+
             .file {
                 display: none;
             }
+
             .bluetext {
                 @apply --small-bold;
                 cursor: pointer;
@@ -63,6 +71,7 @@
                 border-bottom: 2px dotted var(--sc-blue);
                 margin: 50px 0px 0px 0px;
             }
+
             .blacktext {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
@@ -70,22 +79,36 @@
                 color: var(--sc-grey4);
                 margin: 10px 0px 0px 0px;
             }
+
             .container .confirmers {
                 @apply --titlepage-confirmers;
             }
+
             .container[wide-layout] .confirmers {
                 @apply --titlepage-confirmers-wide;
             }
+
             .container .confirmers>div:nth-child(1) {
                 @apply --confirmers-x;
                 @apply --xmark-grey4-normal;
             }
+
+            .container .confirmers>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
             .container .confirmers>div:nth-child(2) {
                 @apply --icon-button-big;
             }
+
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
             .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                 @apply --vmark-blue-normal;
             }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -96,29 +119,26 @@
                     @apply --retina;
                 }
             }
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                        
-                <canvas id="canvas" class="canvas"
-                    on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd"
-                    on-touchmove="_panMove" on-touchstart="_panStart" on-touchend="_panEnd"
-                ></canvas>
+
+                <canvas id="canvas" class="canvas" on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd" on-touchmove="_panMove"
+                    on-touchstart="_panStart" on-touchend="_panEnd"></canvas>
                 <div class="rotate-icon" on-click="_rotate"></div>
-                <input type="file" name="file" id="file" class="file" on-change="_getFile"/>
+                <input type="file" name="file" id="file" class="file" on-change="_getFile" />
                 <input type="hidden" name="zoom" id="zoom" value="1">
                 <div class="blacktext">scroll to zoom - drag to move</div>
-                
+
                 <label for="file">
                     <p class="bluetext">{{localize('choose another file')}}</p>
                 </label>
             </div>
-        
+
             <div class="bottom">
                 <div class="confirmers">
-                    <div class="disagree" on-click="_reset"></div>
+                    <div class="disagree" on-click="_back"></div>
                     <div class="round-button" on-click="_save">
                         <div class="agree"></div>
                     </div>
@@ -128,213 +148,209 @@
         </div>
     </template>
     <script>
-        var mathCanvas=function(){"use strict";function t(t,n,o){return Math.min(o,Math.max(n,t))}function n(n){function o(o){var a=n.canvas,i=n.size,e=n.zoomFactor,r=n.rotation,c=a.width,u=c/i.width,h=i.height*u,f=0,s=0,m=c,l=h;1!=r&&3!=r||(m=h=c*c/h,l=c),1==r?f=l*e:2==r?(f=m*e,s=l*e):3==r&&(s=m*e),n.ratio=u,n.canvasWidth=Math.round(c),n.canvasHeight=Math.round(h),n.paintWidth=Math.round(m*e),n.paintHeight=Math.round(l*e),n.noBounds||(0==r||2==r?(n.left=t(n.left,n.canvasWidth-n.paintWidth,0),n.top=t(n.top,n.canvasHeight-n.paintHeight,0)):(n.left=t(n.left,n.canvasWidth-n.paintHeight,0),n.top=t(n.top,n.canvasHeight-n.paintWidth,0))),n.tX=f,n.tY=s,o&&n.draw()}return o(),{calculateDim:o}}function o(t){function n(n,o){var a=t.canvas,i=t.viewBox,e=t.zoomFactor,r=t.left,c=t.top,u=t.rotation,h=a.getBoundingClientRect(),f=i.width/a.width,s=n-h.left,m=o-h.top,l=s,d=m;return 1!=u&&3!=u||(f=i.width/a.height),1==u?(m=a.width*e-s+r,s=d-c):2==u?(s=a.width*e-s+r,m=a.height*e-m+c):3==u?(s=a.height*e-m+c,m=l-r):(s-=r,m-=c),[Math.round(i.x+s*f/e),Math.round(i.y+m*f/e)]}function o(n,o){var a=t.canvas,i=t.size,e=t.zoomFactor,r=t.rotation,c=a.width/i.width;return 1!=r&&3!=r||(c=a.height/i.width),[n*c*e,o*c*e]}return{normalizePoint:n,normalizePointList:function(t){return t.map(function(t){return n(t[0],t[1])})},denormalizePoint:o,denormalizePointList:function(t){return t.map(function(t){return o(t[0],t[1])})}}}function a(t){return{transform:function(n){var o=t.tX,a=t.tY,i=t.left,e=t.top,r=t.rotations,c=t.rotation;n instanceof Element?n.style.transform="translate("+i+"px,"+e+"px) rotate("+r[c]+"rad)":(n.setTransform(1,0,0,1,0,0),n.translate(o+i,a+e),n.rotate(r[c]))}}}function i(t,n,o){function a(a){var i,e,c=t.zoomCenter,u=t.zoomFactor;i=n.denormalizePoint(c[0],c[1]),r=Math.min(5e3,Math.max(5,a)),t.zoomFactor=r/100,t.zoomFactor!=u&&(o.calculateDim(),e=n.denormalizePoint(c[0],c[1]),t.left-=e[0]-i[0],t.top-=e[1]-i[1]),o.calculateDim(1)}function i(n){r>120&&(n*=t.zoomFactor),a(r+n)}function e(t,n){void 0===n&&(n=1),i(n*t),f.run(20,function(n){e(t,n)})}var r=100*t.zoomFactor;return{setZoom:a,resetZoom:function(){r=100,t.zoomFactor=1,o.calculateDim(1)},changeZoom:i,startZoom:e}}function e(t,n){function o(o,a){"left"==o||"right"==o?t.left+=a*("left"==o?1:-1):t.top+=a*("up"==o?1:-1),n.calculateDim(1)}function a(t,n){o(t,n=n||1),f.run(20,function(n){a(t,n)})}return{setPan:function(n,o){t.left=n,t.top=o},changePan:o,startPan:a}}function r(t,n,o,a){return{reorient:function(){t.left=0,t.top=0,t.tX=0,t.tY=0,t.rotation=0,a.resetZoom()},rotate:function(n){var a=t.rotation,i=t.rotations;(a+=n)<0?a=i.length-1:a>=i.length&&(a=0),t.rotation=a,o.calculateDim(1)},stopAction:function(){f.stop()},setCenter:function(o,a){t.zoomCenter=n.normalizePoint(o,a)}}}var c,u=200,h=1,f={run:function(t,n){clearTimeout(c),c=setTimeout(function(){h+=.4,u=Math.max(u-50,t),n(Math.min(20,Math.round(h)))},u)},stop:function(){u=200,h=1,clearTimeout(c)}};return function(t){var c=t.canvas,u=t.size,h=t.viewBox,f={canvas:c,size:u,viewBox:h,draw:t.draw,noBounds:t.noBounds,ctx:c.getContext("2d"),rotations:[0,Math.PI/2,Math.PI,-Math.PI/2],rotation:0,zoomFactor:1,left:0,top:0,zoomCenter:[h.width/2,h.height/2]},s=o(f),m=n(f),l=a(f),d=i(f,s,m),p=e(f,m),v=r(f,s,m,d);return Object.assign(f,s,m,l,d,p,v)}}(); // eslint-disable-line
-!function(e,t){function l(t,l,r,d){t[n](o+l,"wheel"==a?r:function(t){!t&&(t=e.event);var l={originalEvent:t,target:t.target||t.srcElement,type:"wheel",deltaMode:"MozMousePixelScroll"==t.type?0:1,deltaX:0,deltaY:0,deltaZ:0,preventDefault:function(){t.preventDefault?t.preventDefault():t.returnValue=!1}};return"mousewheel"==a?(l.deltaY=-.025*t.wheelDelta,t.wheelDeltaX&&(l.deltaX=-.025*t.wheelDeltaX)):l.deltaY=t.deltaY||t.detail,r(l)},d||!1)}var n,a,o="";e.addEventListener?n="addEventListener":(n="attachEvent",o="on"),a="onwheel"in t.createElement("div")?"wheel":void 0!==t.onmousewheel?"mousewheel":"DOMMouseScroll",e.addWheelListener=function(e,t,n){l(e,a,t,n),"DOMMouseScroll"==a&&l(e,"MozMousePixelScroll",t,n)}}(window,document); // eslint-disable-line
+        var mathCanvas = function () { "use strict"; function t(t, n, o) { return Math.min(o, Math.max(n, t)) } function n(n) { function o(o) { var a = n.canvas, i = n.size, e = n.zoomFactor, r = n.rotation, c = a.width, u = c / i.width, h = i.height * u, f = 0, s = 0, m = c, l = h; 1 != r && 3 != r || (m = h = c * c / h, l = c), 1 == r ? f = l * e : 2 == r ? (f = m * e, s = l * e) : 3 == r && (s = m * e), n.ratio = u, n.canvasWidth = Math.round(c), n.canvasHeight = Math.round(h), n.paintWidth = Math.round(m * e), n.paintHeight = Math.round(l * e), n.noBounds || (0 == r || 2 == r ? (n.left = t(n.left, n.canvasWidth - n.paintWidth, 0), n.top = t(n.top, n.canvasHeight - n.paintHeight, 0)) : (n.left = t(n.left, n.canvasWidth - n.paintHeight, 0), n.top = t(n.top, n.canvasHeight - n.paintWidth, 0))), n.tX = f, n.tY = s, o && n.draw() } return o(), { calculateDim: o } } function o(t) { function n(n, o) { var a = t.canvas, i = t.viewBox, e = t.zoomFactor, r = t.left, c = t.top, u = t.rotation, h = a.getBoundingClientRect(), f = i.width / a.width, s = n - h.left, m = o - h.top, l = s, d = m; return 1 != u && 3 != u || (f = i.width / a.height), 1 == u ? (m = a.width * e - s + r, s = d - c) : 2 == u ? (s = a.width * e - s + r, m = a.height * e - m + c) : 3 == u ? (s = a.height * e - m + c, m = l - r) : (s -= r, m -= c), [Math.round(i.x + s * f / e), Math.round(i.y + m * f / e)] } function o(n, o) { var a = t.canvas, i = t.size, e = t.zoomFactor, r = t.rotation, c = a.width / i.width; return 1 != r && 3 != r || (c = a.height / i.width), [n * c * e, o * c * e] } return { normalizePoint: n, normalizePointList: function (t) { return t.map(function (t) { return n(t[0], t[1]) }) }, denormalizePoint: o, denormalizePointList: function (t) { return t.map(function (t) { return o(t[0], t[1]) }) } } } function a(t) { return { transform: function (n) { var o = t.tX, a = t.tY, i = t.left, e = t.top, r = t.rotations, c = t.rotation; n instanceof Element ? n.style.transform = "translate(" + i + "px," + e + "px) rotate(" + r[c] + "rad)" : (n.setTransform(1, 0, 0, 1, 0, 0), n.translate(o + i, a + e), n.rotate(r[c])) } } } function i(t, n, o) { function a(a) { var i, e, c = t.zoomCenter, u = t.zoomFactor; i = n.denormalizePoint(c[0], c[1]), r = Math.min(5e3, Math.max(5, a)), t.zoomFactor = r / 100, t.zoomFactor != u && (o.calculateDim(), e = n.denormalizePoint(c[0], c[1]), t.left -= e[0] - i[0], t.top -= e[1] - i[1]), o.calculateDim(1) } function i(n) { r > 120 && (n *= t.zoomFactor), a(r + n) } function e(t, n) { void 0 === n && (n = 1), i(n * t), f.run(20, function (n) { e(t, n) }) } var r = 100 * t.zoomFactor; return { setZoom: a, resetZoom: function () { r = 100, t.zoomFactor = 1, o.calculateDim(1) }, changeZoom: i, startZoom: e } } function e(t, n) { function o(o, a) { "left" == o || "right" == o ? t.left += a * ("left" == o ? 1 : -1) : t.top += a * ("up" == o ? 1 : -1), n.calculateDim(1) } function a(t, n) { o(t, n = n || 1), f.run(20, function (n) { a(t, n) }) } return { setPan: function (n, o) { t.left = n, t.top = o }, changePan: o, startPan: a } } function r(t, n, o, a) { return { reorient: function () { t.left = 0, t.top = 0, t.tX = 0, t.tY = 0, t.rotation = 0, a.resetZoom() }, rotate: function (n) { var a = t.rotation, i = t.rotations; (a += n) < 0 ? a = i.length - 1 : a >= i.length && (a = 0), t.rotation = a, o.calculateDim(1) }, stopAction: function () { f.stop() }, setCenter: function (o, a) { t.zoomCenter = n.normalizePoint(o, a) } } } var c, u = 200, h = 1, f = { run: function (t, n) { clearTimeout(c), c = setTimeout(function () { h += .4, u = Math.max(u - 50, t), n(Math.min(20, Math.round(h))) }, u) }, stop: function () { u = 200, h = 1, clearTimeout(c) } }; return function (t) { var c = t.canvas, u = t.size, h = t.viewBox, f = { canvas: c, size: u, viewBox: h, draw: t.draw, noBounds: t.noBounds, ctx: c.getContext("2d"), rotations: [0, Math.PI / 2, Math.PI, -Math.PI / 2], rotation: 0, zoomFactor: 1, left: 0, top: 0, zoomCenter: [h.width / 2, h.height / 2] }, s = o(f), m = n(f), l = a(f), d = i(f, s, m), p = e(f, m), v = r(f, s, m, d); return Object.assign(f, s, m, l, d, p, v) } }(); // eslint-disable-line
+        !function (e, t) { function l(t, l, r, d) { t[n](o + l, "wheel" == a ? r : function (t) { !t && (t = e.event); var l = { originalEvent: t, target: t.target || t.srcElement, type: "wheel", deltaMode: "MozMousePixelScroll" == t.type ? 0 : 1, deltaX: 0, deltaY: 0, deltaZ: 0, preventDefault: function () { t.preventDefault ? t.preventDefault() : t.returnValue = !1 } }; return "mousewheel" == a ? (l.deltaY = -.025 * t.wheelDelta, t.wheelDeltaX && (l.deltaX = -.025 * t.wheelDeltaX)) : l.deltaY = t.deltaY || t.detail, r(l) }, d || !1) } var n, a, o = ""; e.addEventListener ? n = "addEventListener" : (n = "attachEvent", o = "on"), a = "onwheel" in t.createElement("div") ? "wheel" : void 0 !== t.onmousewheel ? "mousewheel" : "DOMMouseScroll", e.addWheelListener = function (e, t, n) { l(e, a, t, n), "DOMMouseScroll" == a && l(e, "MozMousePixelScroll", t, n) } }(window, document); // eslint-disable-line
 
         class DisplayResizeAvatar extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
-        static get is() {
-            return 'display-resize-avatar';
-        }
-        static get properties() {
-            return {
-                /**
-                * Language is the users selected or determined language
-                * @type {String}
-                */
-                language: {
-                    type: String,
-                    statePath: 'language',
-                },
-                /**
-                * Path signlas to the parent to change the path
-                * @type {Boolean}
-                */
-                path: {
-                    type: String,
-                    reflectToAttribute: true,
-                    notify: true,
-                },
-            };
-        }
-        /**
-        * Fired when the component is connected
-        */
-        connectedCallback() {
-            super.connectedCallback();
-            this.loadResources(this.resolveUrl('../text-translations.json'));
-        }
-        /**
-        * Fired when the component is ready
-        */
-        ready() {
-            super.ready();
-            const canvas = this.$.canvas;
-            const img = new Image();
-            const draw = this._drawCanvas.bind(this);
-            img.crossOrigin = 'anonymous';
-            canvas.width = 250;
-            canvas.height = 250;
-            this.img = this.defaultImg = img;
-            img.onload = function() {
-                let nonaf = this.mathCanvas = mathCanvas({
-                    canvas,
-                    draw,
-                    noBounds: true,
-                    size: {width: img.width, height: img.height},
-                    viewBox: {x: 0, y: 0, width: img.width, height: img.height},
-                });
-                draw();
-                addWheelListener(canvas, function(e) { // eslint-disable-line
-                    e.preventDefault();
-                    nonaf.setCenter(e.clientX, e.clientY);
-                    nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
-                });
-            }.bind(this);
-            img.src = '../../images/defaultavatar.png';
-        }
-        /**
-        * Fired when the user selects a file
-        * @param {event} event The event from the on-change
-        */
-        _drawCanvas() {
-            let {canvas, ctx, tX, tY, left, top, viewBox,
-                rotations, rotation, paintWidth, paintHeight} = this.mathCanvas;
-            let img = this.img || this.defaultImg;
-            let width = canvas.width;
-            let height = canvas.height;
-            ctx.fillStyle = '#333333';
-            ctx.fillRect(0, 0, width, height);
-            ctx.beginPath();
-            ctx.arc(width/2, height/2, Math.min(100, 100)/2 - 0, 0, 2 * Math.PI);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#24B1FF';
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(width/2, height/2, Math.min(100, 100)/2 - 0, 0, 2 * Math.PI);
-            ctx.save();
-            ctx.clip();
-            ctx.translate(tX + left, tY + top);
-            ctx.rotate(rotations[rotation]);
-            ctx.drawImage(
-                img,
-                viewBox.x,
-                viewBox.y,
-                viewBox.width,
-                viewBox.height,
-                0,
-                0,
-                paintWidth,
-                paintHeight
-            );
-            ctx.restore();
-        }
-        /**
-        * Fired when the user is clicking
-        * @param {event} e The event from the on-change
-        */
-        _panStart(e) {
-            this.isDown = true;
-            this.startX = e.clientX;
-            this.startY = e.clientY;
-        }
-        /**
-        * Fired when the user is not clicking
-        * @param {event} event The event from the on-change
-        */
-        _panEnd() {
-            this.isDown = false;
-        }
-        /**
-        * Fired when the user pans
-        * @param {event} e The event from the on-change
-        */
-        _panMove(e) {
-            if (this.isDown) {
-                let diffX = e.clientX - this.startX;
-                let diffY = e.clientY - this.startY;
-                this.mathCanvas.left += diffX;
-                this.mathCanvas.top += diffY;
+            static get is() {
+                return 'display-resize-avatar';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Fired when the component is ready
+            */
+            ready() {
+                super.ready();
+                const canvas = this.$.canvas;
+                const img = new Image();
+                const draw = this._drawCanvas.bind(this);
+                img.crossOrigin = 'anonymous';
+                canvas.width = 250;
+                canvas.height = 250;
+                this.img = this.defaultImg = img;
+                img.onload = function() {
+                    let nonaf = this.mathCanvas = mathCanvas({
+                        canvas,
+                        draw,
+                        noBounds: true,
+                        size: {width: img.width, height: img.height},
+                        viewBox: {x: 0, y: 0, width: img.width, height: img.height},
+                    });
+                    draw();
+                    addWheelListener(canvas, function (e) { // eslint-disable-line
+                        e.preventDefault();
+                        nonaf.setCenter(e.clientX, e.clientY);
+                        nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
+                    });
+                }.bind(this);
+                img.src = '../../images/defaultavatar.png';
+            }
+            /**
+            * Fired when the user selects a file
+            * @param {event} event The event from the on-change
+            */
+            _drawCanvas() {
+                let {canvas, ctx, tX, tY, left, top, viewBox,
+                    rotations, rotation, paintWidth, paintHeight} = this.mathCanvas;
+                let img = this.img || this.defaultImg;
+                let width = canvas.width;
+                let height = canvas.height;
+                ctx.fillStyle = '#333333';
+                ctx.fillRect(0, 0, width, height);
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#24B1FF';
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI);
+                ctx.save();
+                ctx.clip();
+                ctx.translate(tX + left, tY + top);
+                ctx.rotate(rotations[rotation]);
+                ctx.drawImage(
+                    img,
+                    viewBox.x,
+                    viewBox.y,
+                    viewBox.width,
+                    viewBox.height,
+                    0,
+                    0,
+                    paintWidth,
+                    paintHeight
+                );
+                ctx.restore();
+            }
+            /**
+            * Fired when the user is clicking
+            * @param {event} e The event from the on-change
+            */
+            _panStart(e) {
+                this.isDown = true;
                 this.startX = e.clientX;
                 this.startY = e.clientY;
-                this._drawCanvas();
             }
-        }
-        /**
-        * Fired when the user selects a file
-        * @param {event} event The event from the on-change
-        */
-        _getFile(event) {
-            let image = event.target.files[0];
-            event.stopPropagation();
-            event.preventDefault();
-            let img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                this.img = img;
-                this.mathCanvas.size.width = this.mathCanvas.viewBox.width = img.width;
-                this.mathCanvas.size.height = this.mathCanvas.viewBox.height = img.height;
-                this.mathCanvas.reorient();
-            }.bind(this);
-            img.src = URL.createObjectURL(image);
-        }
-        /**
-        * Fired when the user selects reset
-        * @param {event} event The event from the on-change
-        */
-        _reset() {
-            this.img = null;
-            this.mathCanvas.size.width = this.mathCanvas.viewBox.width = this.defaultImg.width;
-            this.mathCanvas.size.height = this.mathCanvas.viewBox.height = this.defaultImg.height;
-            this.mathCanvas.reorient();
-        }
-        /**
-        * Fired when the user selects save
-        * @param {event} event The event from the on-change
-        */
-        _save() {
-            const canvas = this.$.canvas;
-            const jpegUrl = canvas.toDataURL('image/jpeg');
-            // make a new canvas
-            let newCanvas = document.createElement('canvas');
-            newCanvas.width = 95;
-            newCanvas.height = 95;
-            let ctx = newCanvas.getContext('2d');
-            let image = new Image();
-            image.onload = () => {
-                ctx.drawImage(image, -77, -77);
-                const avatarUrl = newCanvas.toDataURL('image/jpeg');
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                storage.user.avatar = avatarUrl;
-                localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                this.path = 'choose-avatar-and-username/';
-            };
-            image.src = jpegUrl;
-        }
-        /**
-        * Fired when the user selects a rotate
-        * @param {event} event The event from the on-change
-        */
-        _rotate() {
-            this.mathCanvas.rotate(1);
-        }
-        /**
-        * Fired when the user selects a zoom in
-        * @param {event} event The event from the on-change
-        */
-        _zoomin() {
-            this.mathCanvas.changeZoom(4);
-        }
-        /**
-        * Fired when the user selects a zoom out
-        * @param {event} event The event from the on-change
-        */
-        _zoomout() {
-            this.mathCanvas.changeZoom(-4);
-        }
+            /**
+            * Fired when the user is not clicking
+            * @param {event} event The event from the on-change
+            */
+            _panEnd() {
+                this.isDown = false;
+            }
+            /**
+            * Fired when the user pans
+            * @param {event} e The event from the on-change
+            */
+            _panMove(e) {
+                if (this.isDown) {
+                    let diffX = e.clientX - this.startX;
+                    let diffY = e.clientY - this.startY;
+                    this.mathCanvas.left += diffX;
+                    this.mathCanvas.top += diffY;
+                    this.startX = e.clientX;
+                    this.startY = e.clientY;
+                    this._drawCanvas();
+                }
+            }
+            /**
+            * Fired when the user selects a file
+            * @param {event} event The event from the on-change
+            */
+            _getFile(event) {
+                let image = event.target.files[0];
+                event.stopPropagation();
+                event.preventDefault();
+                let img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    this.img = img;
+                    this.mathCanvas.size.width = this.mathCanvas.viewBox.width = img.width;
+                    this.mathCanvas.size.height = this.mathCanvas.viewBox.height = img.height;
+                    this.mathCanvas.reorient();
+                }.bind(this);
+                img.src = URL.createObjectURL(image);
+            }
+            /**
+            * Fired when user selects the X back button, routs to previous page
+            */
+            _back() {
+                window.history.back();
+            }
+            /**
+            * Fired when the user selects save
+            * @param {event} event The event from the on-change
+            */
+            _save() {
+                const canvas = this.$.canvas;
+                const jpegUrl = canvas.toDataURL('image/jpeg');
+                // make a new canvas
+                let newCanvas = document.createElement('canvas');
+                newCanvas.width = 95;
+                newCanvas.height = 95;
+                let ctx = newCanvas.getContext('2d');
+                let image = new Image();
+                image.onload = () => {
+                    ctx.drawImage(image, -77, -77);
+                    const avatarUrl = newCanvas.toDataURL('image/jpeg');
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    storage.user.avatar = avatarUrl;
+                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                    window.history.back();
+                };
+                image.src = jpegUrl;
+            }
+            /**
+            * Fired when the user selects a rotate
+            * @param {event} event The event from the on-change
+            */
+            _rotate() {
+                this.mathCanvas.rotate(1);
+            }
+            /**
+            * Fired when the user selects a zoom in
+            * @param {event} event The event from the on-change
+            */
+            _zoomin() {
+                this.mathCanvas.changeZoom(4);
+            }
+            /**
+            * Fired when the user selects a zoom out
+            * @param {event} event The event from the on-change
+            */
+            _zoomout() {
+                this.mathCanvas.changeZoom(-4);
+            }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
     </script>
 </dom-module>

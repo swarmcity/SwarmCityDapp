@@ -260,20 +260,25 @@ This code may only be used under the license found at https://github.com/swarmci
                     <img src="{{avatar}}">
                     <div class="info">
                         <div class="name">{{username}}</div>
-                        <display-show-keys></display-show-keys>
+                        <display-show-keys
+                        toggle-unlock="{{toggleUnlock}}"
+                        toggle-private-key="{{togglePrivateKey}}" 
+                        private-key="{{privateKey}}" 
+                        ></display-show-keys>
                     </div>
                 </div>
             </div>
             <div class="flexer"></div>
             <div class="bottom">
-                <div class="btn" on-click="_next">{{localize('backup my account')}}</div>
+                <div class="btn" on-click= "_next">{{localize('backup my account')}}</div>
             </div>
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
                 <display-unlock 
                     color="blue"
-                    toggle-unlock="{{toggleUnlock}}" 
+                    toggle-unlock="{{toggleUnlock}}"
+                    toggle-private-key="{{togglePrivateKey}}"
                     private-key="{{privateKey}}" 
                     qr-code-private-key="{{qrCodePrivateKey}}"
                     qr-code-public-key="{{qrCodePublicKey}}">
@@ -344,6 +349,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     privateKey: {
                         type: String,
+                        observer: '_privateKeyObserver',
                     },
                     /**
                     * contains the public key
@@ -400,6 +406,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.$.container.classList.remove('blur');
                 }
+            }
+           /**
+            * Toggles the visibility of private key
+            */
+            _privateKeyObserver() {
+                this.togglePrivateKey = !this.togglePrivateKey;
             }
         }
         window.customElements.define(MyAccountComplete.is, MyAccountComplete);
