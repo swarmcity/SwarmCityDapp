@@ -69,6 +69,15 @@
             }
             ready() {
                 super.ready();
+
+                // get the list of hashtags 
+                socket.emit('subscribe', {
+                    channel: 'hashtags',
+                }, (reply) => {
+                    this.hashtags = reply.data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });  
+                              
                 socket.on('balanceChanged', (data) => {
                     this.balance = data;
                     this.dispatch('BALANCE', this.balance);
