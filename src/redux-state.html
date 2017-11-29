@@ -1,6 +1,8 @@
 <script src="../node_modules/redux/dist/redux.min.js"></script>
 <link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
 <script>
+let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+let publicKey = storage.keyStore.address;
 let initialState = {
     language: 'en',
     hashtags: [{
@@ -244,6 +246,7 @@ let initialState = {
     },
     ],
     balance: 32,
+    publickey: publicKey,
 };
 
 
@@ -292,6 +295,13 @@ let reducer = function(state, action) {
             location = action.location;
             return Object.assign({}, state, {
                 location: location,
+            });
+        }
+        case 'PUBLICKEY': {
+            let publickey = state.publickey;
+            publickey = action.publickey;
+            return Object.assign({}, state, {
+                publickey: publickey,
             });
         }
     }
