@@ -330,8 +330,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     </display-hashtag-about>
                 </template>
             </dom-if>
-
-            <display-items-involved></display-items-involved>
+            
+            <dom-if if="{{completeAccount}}">
+                <template>
+                    <display-items-involved></display-items-involved>
+                </template>
+            </dom-if>
 
             <div class="scrollbar">
                 <div class="buttonbar" >
@@ -459,6 +463,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     anim: {
                         type: Object,
                     },
+                    /**
+                    * completeAccount represents true of the user
+                    * has a username, avatar and address
+                    * @type {Boolean}
+                    */
+                    completeAccount: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
 
@@ -467,6 +480,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 window.onscroll = this._scrollHandler.bind(this);
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
+                }
+                if (storage.user && storage.user.username) {
+                    this.username = storage.user.username;
+                    this.completeAccount = true;
+                }
             }
             /**
             * find the selected hashtag
