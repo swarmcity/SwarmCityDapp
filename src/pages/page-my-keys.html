@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-qr-code.html">
 
 <dom-module id="page-my-keys">
     <template>
@@ -132,10 +133,10 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="close" on-click="_close"></div>
             <div class="key-container">
                 <div class="greytext">{{localize('Your public key')}}</div>
-                <div class="key">{{publicKey}}}</div>
+                <div class="key">{{publicKey}}</div>
                 <span class="bluetext" on-click="_copyPublicKey">{{localize('copy public key')}}</span>
                 <div class="qrcode">
-                    <img src="../../images/qrcode.png">
+                    <display-qr-code data="{{publicKey}}"></display-qr-code>
                 </div>
             </div>
             <div class="divider"></div>
@@ -151,11 +152,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
                         <div class="key">{{privateKey}}</div>
-                        <span class="bluetext">{{localize('copy private key')}}</span>
+                        <span class="bluetext" on-click="_copyPrivateKey">{{localize('copy private key')}}</span>
                         <div class="qrcode">
-                            <img src="../../images/qrcode.png">
+                                <img src="{{qrCodePrivateKey}}">
                         </div>
-                        <input type="text" value="Hello World" id="myInput">
                     </template>
                 </dom-if>
             </div>
@@ -243,6 +243,18 @@ This code may only be used under the license found at https://github.com/swarmci
             _copyPublicKey() {
                 let textArea = document.createElement('textarea');
                 textArea.value = this.publicKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            /**
+             * copies the private key to the desktop
+             * TODO: make this and the above function into one function
+             */
+            _copyPrivateKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.privateKey;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
