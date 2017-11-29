@@ -323,9 +323,10 @@ This code may only be used under the license found at https://github.com/swarmci
             <dom-if if="{{showInfo}}">
                 <template>
                     <display-hashtag-about 
-                        id="about" class="info" 
+                        id="about" 
+                        class="info" 
                         hashtag-info="[[hashtag]]" 
-                        show-info="{{showInfo}}">
+                        close-info="{{closeInfo}}">
                     </display-hashtag-about>
                 </template>
             </dom-if>
@@ -393,7 +394,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                     },
                     /**
-                    * closeSlider allows us to close from within display
+                    * closeSlider allows us to close sliderbox from within display
                     * @type {Boolean}
                     */
                     closeSlider: {
@@ -408,6 +409,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     showInfo: {
                         type: Boolean,
                         value: false,
+                    },
+                    /**
+                    * closeInfo allows us to close infobox from within display
+                    * @type {Boolean}
+                    */
+                    closeInfo: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_infoObserver',
                     },
                     /**
                     * faded indicates if the dealsarea is faded or not
@@ -549,6 +559,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         this._fadeInOut();
                         this._toggleSlider().then(() => {
                             this.showInfo = true;
+                            this.closeInfo = false;
                             setTimeout(() => {
                                 let animation = this.shadowRoot
                                     .querySelector('#about').animate(
@@ -563,6 +574,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.$.infolink.classList.add('highlight-info');
                         this._fadeInOut();
                         this.showInfo = true;
+                        this.closeInfo = false;
                         setTimeout(() => {
                             let animation = this.shadowRoot
                                 .querySelector('#about').animate(
@@ -615,6 +627,14 @@ This code may only be used under the license found at https://github.com/swarmci
             _sliderObserver() {
                 if (this.closeSlider) {
                     this._toggleSlider();
+                }
+            }
+            /**
+            * signals infobox to close from within
+            */
+            _infoObserver() {
+                if (this.closeInfo) {
+                    this._toggleInfo();
                 }
             }
             /**
