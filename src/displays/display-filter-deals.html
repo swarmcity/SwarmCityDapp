@@ -191,7 +191,7 @@ The following custom properties and mixins are available for styling:
                     * showSlider determines of the slider is show or not
                     * @type {Boolean}
                     */
-                    showSlider: {
+                    closeSlider: {
                         type: Boolean,
                         notify: true,
                         reflectToAttribute: true,
@@ -222,7 +222,7 @@ The following custom properties and mixins are available for styling:
             * Closes the slider
             */
             _closeSlider() {
-                this.showSlider = (new Date).getTime();
+                this.closeSlider = !this.closeSlider;
             }
             /**
             * When the slider is shown se the default description
@@ -231,7 +231,6 @@ The following custom properties and mixins are available for styling:
                 this.rangeDescription = this.localize('world wide');
                 this.value = 1;
             }
-
             /**
             * Determine what the selected range is
             */
@@ -267,24 +266,6 @@ The following custom properties and mixins are available for styling:
                             this.localize('within +/- 0.5km from your location');
                         this.range = 500;
                 }
-            }
-
-            /**
-            * Show and hide the slider or redirect to location
-            */
-            _toggleSlider() {
-                this.$.storage.accountExists()
-                    .then((account) => {
-                        if (!account.location) {
-                            sessionStorage.setItem('origin', this.route.path);
-                            this.set('route.path', 'location/');
-                        } else {
-                            if (this.showInfo) {
-                                this.showInfo = !this.showInfo;
-                            }
-                            this.showSlider = !this.showSlider;
-                        }
-                    });
             }
         }
         window.customElements.define(MyFilterDeals.is, MyFilterDeals);

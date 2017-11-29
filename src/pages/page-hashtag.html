@@ -341,8 +341,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 <dom-if if="{{showSlider}}">
                     <template>
                         <display-filter-deals 
-                            id="slider" class="slider" 
-                            show-slider="{{showSlider}}" 
+                            id="slider" 
+                            class="slider" 
+                            close-slider="{{closeSlider}}" 
                             range="{{range}}">
                         </display-filter-deals>
                     </template>
@@ -390,6 +391,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     showSlider: {
                         type: Boolean,
                         value: false,
+                    },
+                    /**
+                    * closeSlider allows us to close from within display
+                    * @type {Boolean}
+                    */
+                    closeSlider: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_sliderObserver',
                     },
                     /**
                     * showInfo indicates if the hashtag info panel is open or not
@@ -484,6 +494,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             this._fadeInOut();
                             this._toggleInfo().then(() => {
                                 this.showSlider = true;
+                                this.closeSlider = false;
                                 setTimeout(() => {
                                     let animation = this.shadowRoot
                                         .querySelector('#slider').animate(
@@ -498,6 +509,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.$.filtertoggle.classList.add('highlight-filter');
                             this._fadeInOut();
                             this.showSlider = true;
+                            this.closeSlider = false;
                             setTimeout(() => {
                                 let animation = this.shadowRoot
                                     .querySelector('#slider').animate(
@@ -595,6 +607,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.anim.fadeIn.arr,
                         this.anim.fadeIn.obj
                     );
+                }
+            }
+            /**
+            * signals filter to close from within
+            */
+            _sliderObserver() {
+                if (this.closeSlider) {
+                    this._toggleSlider();
                 }
             }
             /**
