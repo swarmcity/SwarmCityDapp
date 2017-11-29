@@ -70,14 +70,32 @@
             ready() {
                 super.ready();
 
-                // get the list of hashtags 
+                const socket = io.connect('http://localhost:8011', {query: 'apiUser=swarmCity'}); // eslint-disable-line
+
+
+                // get the list of hashtags
                 socket.emit('subscribe', {
                     channel: 'hashtags',
                 }, (reply) => {
                     this.hashtags = reply.data;
                     this.dispatch('HASHTAGS', this.hashtags);
-                });  
-                              
+                });
+
+                socket.on('hashtagsChanged', (data) => {
+                    this.hashtags = data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+
+                socket.emit('subscribe', {
+                    channel: 'balance',
+                    args: {
+                        address: '0x7018d8f698bfa076e1bdc916e2c64caddc750944',
+                    },
+                }, (reply) => {
+                    this.hashtags = reply.data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+
                 socket.on('balanceChanged', (data) => {
                     this.balance = data;
                     this.dispatch('BALANCE', this.balance);
@@ -86,11 +104,8 @@
                     this.fx = data;
                     this.dispatch('FX', this.fx);
                 });
-                socket.on('hashtagsChanged', (data) => {
-                    this.hashtags = data;
-                    this.dispatch('HASHTAGS', this.hashtags);
-                });
             }
+
             _locationChanged() {
                 switch (this.location) {
                     case '/hashtag/1c9v87bc98v7a/':
