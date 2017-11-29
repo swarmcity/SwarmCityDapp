@@ -38,7 +38,7 @@ The following custom properties and mixins are available for styling:
             .container {
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
-                @apply --layout-center;
+                @apply --layout-start;
             }
 
             .container>img {
@@ -46,15 +46,21 @@ The following custom properties and mixins are available for styling:
                 height: 40px;
                 cursor: pointer;
                 border-radius: 50%;
-                margin-right: 10px;
                 background-size: 40px;
             }
 
             .container[wide-layout]>img {
                 width: 50px;
                 height: 50px;
-                margin-right: 20px;
                 background-size: 50px;
+            }
+
+            .totalbox {
+                margin-left: 10px;
+            }
+
+            .container[wide-layout] .totalbox {
+                margin-left: 20px;
             }
 
             .container div:nth-child(2)>div:nth-child(1) {
@@ -73,10 +79,9 @@ The following custom properties and mixins are available for styling:
         
         <template is="dom-if" if="{{completeAccount}}">
             <div class="container" wide-layout$="{{wide}}">
+                <img id="image" on-click="_toProfile" src="{{avatar}}">
 
-                <img on-click="_toProfile" src="{{avatar}}">
-
-                <div>
+                <div class="totalbox">
                     <div on-click="_toProfile">{{username}}</div>
                     <div on-click="_toWallet">{{balance.swt}} SWT</div>
                 </div>
@@ -104,6 +109,14 @@ The following custom properties and mixins are available for styling:
                         reflectToAttribute: true,
                         notify: true,
                     },
+                    // /**
+                    // * routeHistory is an array that contains the current and previous page
+                    // * @type {Array}
+                    // */
+                    // routeHistory: {
+                    //     type: Array,
+                    // },
+
                     /**
                     * Username represents the users username
                     * @type {String}
@@ -168,6 +181,41 @@ The following custom properties and mixins are available for styling:
             _toProfile() {
                 sessionStorage.setItem('origin', this.route.path);
                 this.path = 'my-profile/';
+                var middleCalc = (window.innerWidth/2)-60+"px";
+                if(this.wide){
+                        Polymer.dom(this.root).querySelector('#image').animate(
+                            [
+                                {'transform': 'translateY(0)'},
+                                {'transform': 'translateY(100%)'},
+                            ],
+                            {
+                                fill: 'backwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                } else {
+                    Polymer.dom(this.root).querySelector('#image').animate(
+                            [
+                                {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                {'transform': 'translate('+middleCalc+',85px) scale(2.25, 2.25)'},
+                            ],
+                            {
+                                fill: 'backwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );                    
+                }
+
             }
             /**
             * takes the user to the my-wallet page
