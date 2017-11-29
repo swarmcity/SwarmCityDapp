@@ -3,6 +3,8 @@
 <dom-module id="socket-redux">
 
     <script>
+        let socket;
+
         class SocketRedux extends new ReduxMixin(Polymer.Element) {
             static get is() {
                 return 'socket-redux';
@@ -39,6 +41,11 @@
                         statePath: 'location',
                         observer: '_locationChanged',
                     },
+                    publickey: {
+                        type: String,
+                        statePath: 'publickey',
+                        observer: '_publickeyChanged',
+                    },
                 };
             }
             /**
@@ -67,12 +74,12 @@
                     },
                 });
             }
+
             ready() {
                 super.ready();
-
-                const socket = io.connect('http://localhost:8011', {query: 'apiUser=swarmCity'}); // eslint-disable-line
-
-
+                
+                socket = io.connect('http://localhost:8011', {query: 'apiUser=swarmCity'}); // eslint-disable-line
+                
                 // get the list of hashtags
                 socket.emit('subscribe', {
                     channel: 'hashtags',
@@ -86,16 +93,6 @@
                     this.dispatch('HASHTAGS', this.hashtags);
                 });
 
-                socket.emit('subscribe', {
-                    channel: 'balance',
-                    args: {
-                        address: '0x7018d8f698bfa076e1bdc916e2c64caddc750944',
-                    },
-                }, (reply) => {
-                    this.hashtags = reply.data;
-                    this.dispatch('HASHTAGS', this.hashtags);
-                });
-
                 socket.on('balanceChanged', (data) => {
                     this.balance = data;
                     this.dispatch('BALANCE', this.balance);
@@ -103,6 +100,19 @@
                 socket.on('fxChanged', (data) => {
                     this.fx = data;
                     this.dispatch('FX', this.fx);
+                });
+            }
+
+            _publickeyChanged() {
+                debugger;
+                socket.emit('subscribe', {
+                    channel: 'balance',
+                    args: {
+                        address: this.publickey,
+                    },
+                }, (reply) => {
+                    this.balance = reply.data;
+                    this.dispatch('BALANCE', this.balance);
                 });
             }
 
