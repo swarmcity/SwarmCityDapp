@@ -89,7 +89,7 @@ The following custom properties and mixins are available for styling:
                 }
             }
 
-            .blue {
+            .input-blue {
                 --paper-checkbox-unchecked-color: var(--sc-grey4);
                 --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
                 --paper-checkbox-checkmark-color: var(--sc-white);
@@ -99,7 +99,7 @@ The following custom properties and mixins are available for styling:
                 --paper-input-container-focus-color: var(--sc-blue);
             }
 
-            .white {
+            .input-white {
                 --paper-checkbox-unchecked-color: var(--sc-grey4);
                 --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
                 --paper-checkbox-checkmark-color: var(--sc-white);
@@ -107,16 +107,6 @@ The following custom properties and mixins are available for styling:
                 --paper-checkbox-checked-ink-color: var(--sc-blue);
                 --paper-input-container-color: var(--sc-grey4);
                 --paper-input-container-focus-color: var(--sc-white);
-            }
-
-            .red {
-                --paper-checkbox-unchecked-color: var(--sc-grey4);
-                --paper-checkbox-unchecked-ink-color: var(--sc-grey4);
-                --paper-checkbox-checkmark-color: var(--sc-white);
-                --paper-checkbox-checked-color: var(--sc-blue);
-                --paper-checkbox-checked-ink-color: var(--sc-blue);
-                --paper-input-container-color: var(--sc-grey4);
-                --paper-input-container-focus-color: var(--sc-red);
             }
 
             .container[wide-layout] paper-input {
@@ -176,13 +166,33 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <img src="{{avatar}}">
-            <paper-input class="blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
+                <dom-if if="{{blue}}">
+                    <template>
+                        <paper-input class="input-blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
+                    </template>
+                </dom-if>
+                <dom-if if="{{white}}">
+                    <template>
+                        <paper-input class="input-white" label="{{localize('password?')}}" autofocus type="password" value="{{password}}"></paper-input>
+                    </template>
+                </dom-if>
             {{error}}
             <div class="buttonbox">
                 <div class="disagree" on-click="_disagree"></div>
-                <div class="submit submit-blue" on-click="_getPrivKey">
-                    <div class="icon-submit-blue"></div>
-                </div>
+                <dom-if if="{{blue}}">
+                    <template>
+                        <div class="submit submit-blue" on-click="_getPrivKey">
+                            <div class="icon-submit-blue"></div>
+                        </div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{white}}">
+                    <template>
+                        <div class="submit submit-white" on-click="_getPrivKey">
+                            <div class="icon-submit-white"></div>
+                        </div>
+                    </template>
+                </dom-if>
             </div>
         </div>
 
@@ -306,7 +316,9 @@ The following custom properties and mixins are available for styling:
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                this.avatar = storage.user.avatar;
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
+                }
                 this.keyStore = storage.keyStore;
                 this.publicKey = storage.keyStore.address;
             }
