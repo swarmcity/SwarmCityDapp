@@ -515,15 +515,12 @@ Example:
                 if (this.sendDestination) {
                     const length = this.sendDestination.length;
                     if (length == 4) {
-                        console.log('length 4');
                         this.sendToShortcode = this.sendDestination;
                         this._gettingPublicKey();
                     } else if (length == 42) {
-                        console.log('length 42');
                         this.sendToPublicKey = this.sendDestination;
                         this._enterPassword();
                     } else if (length != 4 || length != 64) {
-                        console.log('error');
                         this.error = 'Error';
                     }
                 }
@@ -543,13 +540,12 @@ Example:
             * switches to state found
             */
             _enterPassword() {
-                this.start = false;
-                this.shortcode = false;
-                this.send = false;
-                this.found = true;
-                this.updateStyles({
-                    '--container-height': '210px',
-                });
+                let txData = {
+                    amount: this.sendAmount,
+                    to: this.sendToPublicKey,
+                };
+                sessionStorage.setItem('tx', txData);
+                this.path = 'confirm-sending/';
             }
 
             /**

@@ -1,0 +1,70 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<script src="webpack.min.js" async></script>
+
+<dom-module id="data-transaction">
+    <script>
+        class DataTransaction extends Polymer.Element {
+            static get is() {
+                return 'data-transaction';
+            }
+            /**
+            * to hex
+            * @param {string} dec - The data to convert
+            * @return {object} 
+            */
+            toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x'+ result;
+            }
+            /**
+            * to wei
+            * @param {string} ethAmount - Ether to conver to wei
+            * @return {object} 
+            */
+            toWei(ethAmount) {
+                return webpack.convert(ethAmount, 'eth', 'wei');
+            }
+            /**
+            * create transaction
+            * @param {string} address - The address
+            * @param {string} toAddress - The address
+            * @param {string} amountToSend - The address
+            * @param {string} gasLimit - The address
+            * @param {string} data - The address
+            * @return {object} - raw and signed transactions
+            */
+            generateTransaction(address, toAddress, amountToSend, gasLimit, data) {
+                return new Promise((resolve, reject) => {
+                    Promise.all([
+                        this.ethBalance(address),
+                        this.getNonce(address),
+                        this.getGasPrice(),
+                        ])
+                    .then((res) => {
+                        const ethBalance = res[0];
+                        const nonce = res[1];
+                        const gasPrice = res[2];
+                        const data = data || '';
+                        const rawTx = {
+                            nonce: this.toHex(nonce),
+                            to: toAddress,
+                            gasPrice: this.toHex(gasPrice),
+                            gasLimit: this.toHex(gasLimit),
+                            value: this.toHex(this.toWei(amountToSend)), // find another toWei or make one
+                            data: this.toHex(data),
+                            chainId: 1,
+                        };
+                        if (gasPrice * gasLimit < ethBalance) {
+                            return rawTx;
+                        } else {
+                            reject(new Error('Not Enough Ether'));
+                        }
+                    }).then((rawTx) => {
+                        // Sign tx and return raw and signed for confirmation
+                    });
+                });
+            }
+        } window.customElements.define(DataTransaction.is, DataTransaction);
+    </script>
+</dom-module>
