@@ -303,11 +303,15 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
-                    <display-my-info 
-                        path="{{path}}" 
-                        route="{{route}}"
-                        route-history="[[routeHistory]]">
-                    </display-my-info>
+                    <dom-if if="{{completeAccount}}">
+                        <template>
+                                <display-my-info 
+                                    path="{{path}}" 
+                                    route="{{route}}"
+                                    route-history="[[routeHistory]]">
+                                </display-my-info>
+                        </template>
+                    </dom-if>
                     <div id="back" class="back" on-click="_back"></div>
                 </div>
                 <div class="bottom">
@@ -332,7 +336,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     </display-hashtag-about>
                 </template>
             </dom-if>
-            <display-items-involved id="itemsInvolved"></display-items-involved>
+            <dom-if if="{{completeAccount}}">
+                <template>
+                    <display-items-involved 
+                        id="itemsInvolved">
+                    </display-items-involved>
+                </template>
+            </dom-if>
             <div class="scrollbar">
                 <div class="buttonbar">
                     <div id="filtertoggle" class="filter-toggle" on-click="_toggleSlider">filter deals</div>
@@ -803,21 +813,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.itemsInvolved.animate(
-                                [
-                                    {'transform': 'translateX(0)'},
-                                    {'transform': 'translateX(100%)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
+                            if (this.completeAccount) {
+                                this.$$('#itemsInvolved').animate(
+                                    [
+                                        {'transform': 'translateX(0)'},
+                                        {'transform': 'translateX(100%)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
                             this.$.hashtagHeader.animate(
                                 [
                                     {'transform': 'translateX(0)'},
@@ -898,21 +910,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.itemsInvolved.animate(
-                                [
-                                    {'transform': 'translateX(50px)', 'opacity': '0'},
-                                    {'transform': 'translateX(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 300,
-                                    endDelay: 0,
-                                }
-                            );
+                            if (this.completeAccount) {
+                                this.$$('#itemsInvolved').animate(
+                                    [
+                                        {'transform': 'translateX(50px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 300,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
                             this.$.hashtagHeader.animate(
                                 [
                                     {'transform': 'translateX(50px)', 'opacity': '0'},

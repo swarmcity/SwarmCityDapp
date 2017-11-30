@@ -77,7 +77,6 @@ The following custom properties and mixins are available for styling:
 
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         
-        <template is="dom-if" if="{{completeAccount}}">
             <div class="container" wide-layout$="{{wide}}">
                 <img id="image" on-click="_toProfile" src="{{avatar}}">
 
@@ -86,8 +85,6 @@ The following custom properties and mixins are available for styling:
                     <div on-click="_toWallet">{{balance.swt}} SWT</div>
                 </div>
             </div>
-        </template>
-
     </template>
     <script>
         class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -142,15 +139,6 @@ The following custom properties and mixins are available for styling:
                         statePath: 'balance',
                     },
                     /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
-                    */
-                    completeAccount: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
                     * route data represents the current route
                     * @type {Object}
                     */
@@ -172,7 +160,6 @@ The following custom properties and mixins are available for styling:
                 }
                 if (storage.user && storage.user.username) {
                     this.username = storage.user.username;
-                    this.completeAccount = true;
                 }
             }
             /**
@@ -184,7 +171,7 @@ The following custom properties and mixins are available for styling:
                 let middleCalc = (window.innerWidth/2)-60+'px';
                 let wideCalc = ((window.innerWidth/100)*12)-73+'px';
                 if (this.wide) {
-                        Polymer.dom(this.root).querySelector('#image').animate(
+                        this.$.image.animate(
                             [
                                 {'transform': 'translate(0px,0px) scale(1, 1)'},
                                 {'transform': 'translate('+wideCalc+',50px) scale(1.8, 1.8)'},
@@ -200,7 +187,7 @@ The following custom properties and mixins are available for styling:
                             }
                         );
                 } else {
-                    Polymer.dom(this.root).querySelector('#image').animate(
+                    this.$.image.animate(
                             [
                                 {'transform': 'translate(0px,0px) scale(1, 1)'},
                                 {'transform': 'translate('+middleCalc+',85px) scale(2.25, 2.25)'},
