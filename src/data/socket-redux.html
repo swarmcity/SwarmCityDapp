@@ -78,7 +78,7 @@
                     },
                     /**
                     * This is the signed transaction to be broadcast
-                    * @type {Number}
+                    * @type {String}
                     */
                     broadcast: {
                         type: String,
@@ -205,10 +205,27 @@
             _reqToKey() {
                 // send this.reqtokey, which is the shortcode, to the api
                 // once we get the public key back do... this.dispatch('TOKEY', this.tokey);
+                socket.emit('subscribe', {
+                        channel: 'shhsubscribe',
+                        args: {
+                            mode: 'shortcode',
+                            value: this.reqtokey,
+                        },
+                    }, (reply) => {
+                       // this reply can be ignored for now.
+                    });
+                socket.on('sshMessage', (data) => {
+                    this.dispatch('TOKEY', data.pubkey);
+                });
             }
 
             _broadcast() {
                 // send this.broadcast to the api, this.broadcast is the signed tx
+                socket.emit('sendRawTx', {
+                    tx: this.broadcast,
+                }, (data) => {
+                    // does anything need to happen here ?
+                });
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
