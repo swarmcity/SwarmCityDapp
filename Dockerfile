@@ -12,5 +12,5 @@ RUN npm install
 RUN bower --allow-root install
 RUN polymer build
 
-EXPOSE 8080
+EXPOSE 8088
 CMD [ "node", "server.js" ]
