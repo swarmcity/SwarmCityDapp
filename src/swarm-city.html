@@ -132,6 +132,10 @@
           hashtags: {
             type: Array,
           },
+          route: {
+            type: Object,
+            observer: '_routeChange',
+          },
           routeHistory: {
             type: Array,
             observer: '_loadAnimations',
@@ -300,6 +304,35 @@
       }
       _showPage404() {
         this.page = 'view404';
+      }
+
+      _routeChange() {
+        this._ifAccountAvoidEntryFlow();
+      }
+
+      _ifAccountAvoidEntryFlow() {
+        let entryFlowPages = [
+          'new-here',
+          'choose-avatar-and-username',
+          'choose-password',
+          'password-warning',
+        ];
+        if (entryFlowPages.includes(this.routeHistory[1])) {
+          if (this.routeHistory[0] != this.routeHistory[1]) {
+            if (entryFlowPages.indexOf(this.routeHistory[1])
+            - entryFlowPages.indexOf(this.routeHistory[0]) == 1) {
+              let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+              if (storage.user && storage.user.username) {
+                this.set('route.path', 'hashtag-list');
+              }
+            }
+          } else {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.username) {
+                  this.set('route.path', 'hashtag-list');
+            }
+          }
+        }
       }
 
       _loadAnimations() {
