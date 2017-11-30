@@ -1,12 +1,16 @@
-FROM node:6
+FROM node
+
 WORKDIR /root
-RUN apt-get update && \
-    apt-get install git
-ENV HOME /root  
+RUN apt-get update
+ENV HOME /root
 
-COPY server.js /root/
-COPY build /root/build
-COPY node_modules /root/node_modules
+#Copy the repo inside
+COPY . .
+RUN npm install -g bower polymer-cli --unsafe-perm
 
-EXPOSE 8080
+RUN npm install
+RUN bower --allow-root install
+RUN polymer build
+
+EXPOSE 8088
 CMD [ "node", "server.js" ]
