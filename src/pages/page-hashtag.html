@@ -111,7 +111,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .hashtag {
                 @apply --main-title2;
-                    font-size: 30px;
+                font-size: 30px;
 
                 color: var(--sc-grey4);
                 transition: font-size 0.10s;
@@ -184,7 +184,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 0px 10vw 10px;
                 margin: 0px 10px 0px 10px;
                 /*background-image: none;*/
-            }            
+            }
 
             .filter-toggle {
                 @apply --small-bold;
@@ -270,7 +270,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 50px 40px 2vh 40px;
                 background-color: var(--sc-white);
             }
-            
+
             .container[wide-layout] display-filter-deals {
                 width: calc(100% - 20vw);
                 max-width: 68vw;
@@ -289,37 +289,39 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-
         <div class="container" wide-layout$="{{wide}}">
-
-            <dom-if if="{{!faded}}">
-                <template>
-                    <div class="dealbtn">
+            <div class="dealbtn" id="dealButton">
+                <dom-if if="{{!faded}}">
+                    <template>
                         <display-deal-btn 
                             route="[[route]]" 
                             path="{{path}}">
                         </display-deal-btn>
-                    </div>
-                </template>
-            </dom-if>
-
+                    </template>
+                </dom-if>
+            </div>
             <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
                     <display-my-info 
                         path="{{path}}" 
-                        route="{{route}}">
+                        route="{{route}}"
+                        route-history="[[routeHistory]]">
                     </display-my-info>
-                    <div class="back" on-click="_back"></div>
+                    <div id="back" class="back" on-click="_back"></div>
                 </div>
                 <div class="bottom">
-                    <div class="leftbottom">
-                        <div id="hashtag" class="hashtag">#{{hashtag.name}}</div>
-                        <div id="infolink" class="info-toggle" on-click="_toggleInfo">i</div>
+                    <div class="leftbottom" id="hashtagHeader">
+                        <div 
+                            id="hashtag" 
+                            class="hashtag">#{{hashtag.name}}</div>
+                        <div 
+                            id="infolink" 
+                            class="info-toggle" 
+                            on-click="_toggleInfo">i</div>
                     </div>
                 </div>
             </div>
-
             <dom-if if="{{showInfo}}">
                 <template>
                     <display-hashtag-about 
@@ -329,16 +331,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         close-info="{{closeInfo}}">
                     </display-hashtag-about>
                 </template>
-            </dom-if>
-            
+            </dom-if>            
             <dom-if if="{{completeAccount}}">
                 <template>
-                    <display-items-involved></display-items-involved>
+                    <display-items-involved id="itemsInvolved"></display-items-involved>
                 </template>
             </dom-if>
-
             <div class="scrollbar">
-                <div class="buttonbar" >
+                <div class="buttonbar">
                     <div id="filtertoggle" class="filter-toggle" on-click="_toggleSlider">filter deals</div>
                     <!-- <div class="flex"></div>
                     <div class="involved-toggle" on-click="_backToTop">1 request</div> -->
@@ -354,7 +354,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     </template>
                 </dom-if>
             </div>
-
             <div id="fadeArea" on-click="_fadeClose">
                 <display-hashtag-items 
                     range="{{range}}" 
@@ -365,9 +364,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     show-info="{{showInfo}}">
                 </display-hashtag-items>
             </div>
-
         </div>
-
     </template>
 
     <script>
@@ -389,6 +386,24 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'hashtag',
+                    },
+
                     /**
                     * showSlider determines of the slider is show or not
                     * @type {Boolean}
@@ -494,10 +509,11 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _filterHashtags() {
                 if (!this.hashtag) {
-                let selectedHashtag = this.hashtags.filter((hashtag) => {
-                    return hashtag.id == this.route.path.split('/')[2];
-                });
-                this.hashtag = selectedHashtag[0];}
+                    let selectedHashtag = this.hashtags.filter((hashtag) => {
+                        return hashtag.id == this.route.path.split('/')[2];
+                    });
+                    this.hashtag = selectedHashtag[0];
+                }
             }
             /**
             * the pages route has changed
@@ -665,12 +681,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 let scrollDuration = 500;
                 let scrollStep = -window.scrollY / (scrollDuration / 15);
                 let scrollInterval = setInterval(function() {
-                        if (window.scrollY != 0) {
-                            window.scrollBy(0, scrollStep);
-                        }
-                        else clearInterval(scrollInterval);
-                    },
-                15);
+                    if (window.scrollY != 0) {
+                        window.scrollBy(0, scrollStep);
+                    }
+                    else clearInterval(scrollInterval);
+                },
+                    15);
             }
             /**
             * takes the user to the hashtag list page
@@ -692,15 +708,15 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _scrollHandler() {
                 if (!this.wide && window.scrollY != 0) {
-                        if (!this.$.hashtag.classList.contains('hashtag-scroll')) {
-                            this.$.hashtag.classList.add('hashtag-scroll');
-                        }
-                        if (!this.$.hashtag.classList.contains('info-toggle-scroll')) {
-                            this.$.infolink.classList.add('info-toggle-scroll');
-                        }
+                    if (!this.$.hashtag.classList.contains('hashtag-scroll')) {
+                        this.$.hashtag.classList.add('hashtag-scroll');
+                    }
+                    if (!this.$.hashtag.classList.contains('info-toggle-scroll')) {
+                        this.$.infolink.classList.add('info-toggle-scroll');
+                    }
                 } else {
-                        this.$.hashtag.classList.remove('hashtag-scroll');
-                        this.$.infolink.classList.remove('info-toggle-scroll');
+                    this.$.hashtag.classList.remove('hashtag-scroll');
+                    this.$.infolink.classList.remove('info-toggle-scroll');
                 }
             }
             /**
@@ -769,6 +785,201 @@ This code may only be used under the license found at https://github.com/swarmci
                         },
                     },
                 };
+            }
+            _loadElementAnimations() {
+                if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'hashtag-list') {
+                            // Here come the Exit Animations, going to page HashtagList
+                            this.$.fadeArea.animate(
+                                [
+                                    {'transform': 'translateX(0)'},
+                                    {'transform': 'translateX(100%)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.itemsInvolved.animate(
+                                [
+                                    {'transform': 'translateX(0)'},
+                                    {'transform': 'translateX(100%)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagHeader.animate(
+                                [
+                                    {'transform': 'translateX(0)'},
+                                    {'transform': 'translateX(100%)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                    {'transform': 'translateX(20px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.dealButton.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.filtertoggle.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    } else if (this.routeHistory[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        if (this.routeHistory[0] == 'hashtag-list') {
+                            // Here come the Entry Animations, coming from page hashtag-list
+                            this.$.fadeArea.animate(
+                                [
+                                    {'transform': 'translateX(50px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.itemsInvolved.animate(
+                                [
+                                    {'transform': 'translateX(50px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagHeader.animate(
+                                [
+                                    {'transform': 'translateX(50px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateX(20px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 450,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.dealButton.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.filtertoggle.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
             }
         } window.customElements.define(NewHashtag.is, NewHashtag);
     </script>
