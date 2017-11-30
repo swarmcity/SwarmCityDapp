@@ -15,7 +15,6 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
-<link rel="import" href="../displays/display-filter-list.html">
 <link rel="import" href="../displays/display-hashtag-list.html">
 
 <dom-module id="page-hashtag-list">
@@ -71,55 +70,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --logout-grey3-small;
             }
 
-            .slider {
-                border-bottom: 2px solid black;
-                position: fixed;
-                top: 152px;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0 40px 2vh 40px;
-                background-image: var(--sc-bg);
-                z-index: 1;
-            }
-
-            .container[wide-layout] .slider {
-                padding: 0 40px 2vh 40px;
-                padding: 0 10vw 2vh 10vw;
-                top: 190px;
-            }
-
-            .slider-hidden {
-                display: none;
-            }
-
-            .slider-hidden-visible {
-                animation: slideDown 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .slider-visible-hidden {
-                animation: slideUp 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .fade-hidden {
-                opacity: 1;
-            }
-
-            .fade-hidden-visible {
-                animation: fadeIn 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            .fade-visible-hidden {
-                animation: fadeOut 0.2s cubic-bezier(0.42, 0, 0.177, 0.751) forwards;
-            }
-
-            [highlight-filter] {
-                color: white;
-                background-color: var(--sc-grey4);
-                border-bottom: 0;
-                padding: 0 40px 2vh 40px;
-                padding: 1px 2px;
-            }
-
             display-hashtag-list {
                 margin-top: 110px;
             }
@@ -130,42 +80,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .fullheight {
                 height: 100%;
-            }
-
-            @keyframes slideUp {
-                0% {
-                    transform: translateY(0%);
-                }
-                100% {
-                    transform: translateY(-110%);
-                }
-            }
-
-            @keyframes slideDown {
-                0% {
-                    transform: translateY(-80%);
-                }
-                100% {
-                    transform: translateY(0%);
-                }
-            }
-
-            @keyframes fadeIn {
-                0% {
-                    opacity: 0.2;
-                }
-                100% {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes fadeOut {
-                0% {
-                    opacity: 1;
-                }
-                100% {
-                    opacity: 0.2;
-                }
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -180,22 +94,22 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <div class="container" wide-layout$="{{wide}}">
             <div class="header">
-
                 <div class="topleft">
-                    <display-my-info id="myInfo" complete-account="{{completeAccount}}" path="{{path}}" route="{{route}}">
+                    <display-my-info 
+                        id="myInfo" 
+                        complete-account="{{completeAccount}}" 
+                        path="{{path}}" 
+                        route="{{route}}">
                     </display-my-info>
                 </div>
-
                 <div class="topright">
                     <div class="back" on-click="_back" id="back"></div>
                 </div>
-
             </div>
-
-            <div class$="fade [[fadeState]] fullheight" on-click="_fadeClose">
-                <display-hashtag-list id="hashtagList" path="{{path}}"></display-hashtag-list>
-            </div>
-            
+            <display-hashtag-list 
+                id="hashtagList" 
+                path="{{path}}">
+            </display-hashtag-list>
         </div>
     </template>
 
@@ -221,12 +135,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         reflectToAttribute: true,
                         notify: true,
-                    },
-                    /**
-                    * The entry animation for this page
-                    */
-                    entryAnimation: {
-                        type: Object,
                     },
                     /**
                     * Location is the page path the user is on
@@ -261,14 +169,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: 'hashtag-list',
                     },
                     /**
-                    * sliderState represents style state of the slider
-                    * @type {String}
-                    */
-                    sliderState: {
-                        type: String,
-                        value: 'slider-hidden',
-                    },
-                    /**
                     * completeAccount determines if an account is present
                     * in localstorage or not
                     * @type {Boolean}
@@ -276,52 +176,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     completeAccount: {
                         type: Boolean,
                     },
-                    /**
-                    * fadeState represents the state of hashtaglist container
-                    * @type {String}
-                    */
-                    fadeState: {
-                        type: String,
-                        value: 'fade-hidden',
-                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-            * determines the state of the slider and the fade
-            */
-            _toggleSlider() {
-                switch (this.sliderState) {
-                    case 'slider-hidden':
-                        this.sliderState = 'slider-hidden-visible';
-                        this.fadeState = 'fade-visible-hidden';
-                        this.highlightFilterToggle = true;
-                        break;
-                    case 'slider-hidden-visible':
-                        this.sliderState = 'slider-visible-hidden';
-                        this.fadeState = 'fade-hidden-visible';
-                        this.highlightFilterToggle = false;
-                        setTimeout(() => {
-                            this.sliderState = 'slider-hidden';
-                        }, 300);
-                        break;
-                    case 'slider-visible-hidden':
-                        this.sliderState = 'slider-hidden-visible';
-                        this.fadeState = 'fade-visible-hidden';
-                        this.highlightFilterToggle = true;
-                }
-            }
-            /**
-            * closes open slider box
-            */
-            _fadeClose() {
-                if (this.showSlider) {
-                    this.showSlider = !this.showSlider;
-                }
             }
             /**
             * takes the user to the welcome page
@@ -344,14 +204,27 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.routeHistory[0] != this.routeHistory[1]) {
                     if (this.routeHistory[0] == this.pageID) {
                         // Here come the Exit Animations
-
                         if (this.routeHistory[1] == 'welcome') {
-                        // Here come the Exit Animations, going to page Welcome
-
+                            // Going to page Welcome
                             this.$.hashtagList.animate(
                                 [
-                                    {'transform': 'translateY(0px)'},
-                                    {'transform': 'translateY(50px)'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagList.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
                                 ],
                                 {
                                     fill: 'forwards',
@@ -379,9 +252,8 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-
                         if (this.routeHistory[1] == 'hashtag') {
-                        // Here come the Exit Animations, going to page Hashtag
+                            // Going to page Hashtag
                             this.$.hashtagList.animate(
                                 [
                                     {'transform': 'translateX(0)'},
@@ -389,7 +261,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 ],
                                 {
                                     fill: 'forwards',
-                                    duration: 500,
+                                    duration: 300,
                                     iterations: 1,
                                     iterationStart: 0,
                                     easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -397,29 +269,14 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            // this.$.back.animate(
-                            //     [
-                            //         {'opacity': '1'},
-                            //         {'opacity': '0'}
-                            //     ],
-                            //     {
-                            //         fill: 'forwards',
-                            //         duration: 100,
-                            //         iterations: 1,
-                            //         iterationStart: 0,
-                            //         easing: 'cubic-bezier(0.42,0,0.58,1)',
-                            //         delay: 0,
-                            //         endDelay: 0,
-                            //     }
-                            // )
                             this.$.back.animate(
                                 [
-                                    {'transform': 'translateY(0)'},
-                                    {'transform': 'translateY(-30px)'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
                                 ],
                                 {
                                     fill: 'forwards',
-                                    duration: 1000,
+                                    duration: 300,
                                     iterations: 1,
                                     iterationStart: 0,
                                     easing: 'cubic-bezier(0.42,0,0.58,1)',
@@ -430,36 +287,72 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     } else if (this.routeHistory[1] == this.pageID) {
                         // Here come the Entry Animations
-                        this.$.hashtagList.animate(
-                            [
-                                {'transform': 'translateY(50px)'},
-                                {'transform': 'translateY(0)'},
-                            ],
-                            {
-                                fill: 'forwards',
-                                duration: 200,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                delay: 300,
-                                endDelay: 0,
-                            }
-                        );
-                        this.$.back.animate(
-                            [
-                                {'opacity': '0'},
-                                {'opacity': '1'},
-                            ],
-                            {
-                                fill: 'forwards',
-                                duration: 200,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                delay: 300,
-                                endDelay: 0,
-                            }
-                        );
+                        if (this.routeHistory[0] == 'welcome') {
+                            // Coming from page Welcome
+                            this.$.hashtagList.animate(
+                                [
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeHistory[0] == 'hashtag') {
+                            // Coming from page Hashtag
+                            this.$.hashtagList.animate(
+                                [
+                                    {'transform': 'translateX(-50px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
                     }
                 }
             }
