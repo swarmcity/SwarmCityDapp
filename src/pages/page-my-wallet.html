@@ -71,10 +71,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .divider {
-                width: 100vw;
-                background-color: #9B9B9B;
-                opacity: 0.2;
-                height: 1px;
+                @apply --general-divider;
             }
 
             .yellowbox {
@@ -165,20 +162,20 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="close" on-click="_close"></div>
+                <div id="closebtn" class="close" on-click="_close"></div>
                 <div class="yellowbox">
-                    <div class="swt">{{balance.swt}} SWT</div>
-                    <div class="fiat">= {{usdBalance}} USD</div>
+                    <div id="swtbalance" class="swt">{{balance.swt}} SWT</div>
+                    <div id="fiatbalance" class="fiat">= {{usdBalance}} USD</div>
                 </div>
-                <div class="eth">{{balance.eth}} ETH</div>
+                <div id="ethbalance" class="eth">{{balance.eth}} ETH</div>
             </div>
-            <div class="divider"></div>
-                <display-transaction-status path="{{path}}">
+            <div id="divider1" class="divider"></div>
+                <display-transaction-status id="txstatus" path="{{path}}">
                 </display-transaction-status>
-            <div class="divider"></div>
-                <display-transaction-history></display-transaction-history> 
-            <div class="divider"></div>
-            <div class="bottom">
+            <div id="divider2" class="divider"></div>
+                <display-transaction-history id="txhistory"></display-transaction-history> 
+            <div id="divider3" class="divider"></div>
+            <div class="bottom" id="bottom">
                 <display-show-keys
                 toggle-unlock="{{toggleUnlock}}"
                 toggle-private-key="{{togglePrivateKey}}"
@@ -240,6 +237,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'my-wallet',
                     },
                     /**
                     * publicKey is the users publicKey
@@ -320,6 +333,764 @@ This code may only be used under the license found at https://github.com/swarmci
             _privateKeyObserver() {
                 this.togglePrivateKey = !this.togglePrivateKey;
             }
+
+            _loadElementAnimations() {
+                if (this.routeHistory[0] != this.routeHistory[1]) {
+                    let balanceSize = ((Polymer.dom(this.root).querySelector('#swtbalance').offsetWidth)/2);
+                    let middleCalc = (((window.innerWidth/2)-40)-balanceSize)+'px';
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'hashtag-list') {
+                            // Going to page Hashtag-List
+                            if(this.wide){
+                                this.$.swtbalance.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(48px,-35px) scale(0.62,0.62)'},
+                                    ],
+                                    {
+                                        fill: 'backwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.closebtn.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.fiatbalance.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.ethbalance.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.txstatus.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.txhistory.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider3.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.bottom.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                this.$.swtbalance.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(-'+middleCalc+',-44px) scale(0.62,0.62)'},
+                                    ],
+                                    {
+                                        fill: 'backwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.closebtn.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.fiatbalance.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.ethbalance.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.txstatus.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.txhistory.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider3.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.bottom.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+
+
+
+
+                            }
+                        }
+                        if (this.routeHistory[1] == 'hashtag') {
+                            // Going to page Hashtag
+                                this.$.swtbalance.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(48px,-35px) scale(0.62,0.62)'},
+                                    ],
+                                    {
+                                        fill: 'backwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.closebtn.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.fiatbalance.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.ethbalance.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.txstatus.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.txhistory.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider3.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.bottom.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                        }
+
+
+
+                    } else if (this.routeHistory[1] == this.pageID) {
+                        // Here come the Entry Animations
+
+                        if (this.routeHistory[0] == 'hashtag-list') {
+                            // Coming from page Hashtag-List
+                            this.$.closebtn.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.fiatbalance.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.ethbalance.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.txstatus.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.txhistory.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider2.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider3.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.bottom.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeHistory[0] == 'hashtag') {
+                            // Coming from page Hashtag
+                            this.$.closebtn.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.fiatbalance.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.ethbalance.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.txstatus.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.txhistory.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider2.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider3.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.bottom.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+
+
+                    }
+                }
+            }
+
         }
         window.customElements.define(MyWallet.is, MyWallet);
     </script>
