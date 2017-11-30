@@ -66,6 +66,16 @@
                     nonce: {
                         type: Number,
                     },
+                    /**
+                    * This is the shortcode we want a public key for
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    reqtokey: {
+                        type: Number,
+                        statePath: 'reqtokey',
+                        observer: '_reqToKey',
+                    },
                 };
             }
             /**
@@ -102,6 +112,12 @@
                         return {
                             type: 'NONCE',
                             nonce: nonce,
+                        };
+                    },
+                    TOKEY: function(tokey) {
+                        return {
+                            type: 'TOKEY',
+                            tokey: tokey,
                         };
                     },
                 });
@@ -172,6 +188,10 @@
                     case '/hashtag/7c9v87bc98v7b/':
                         // emit
                 }
+            }
+            _reqToKey() {
+                // send this.reqtokey which is the shortcode to the api
+                // once we get the public key back this.dispatch('TOKEY', this.tokey);
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
