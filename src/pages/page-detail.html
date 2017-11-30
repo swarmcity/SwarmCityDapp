@@ -14,9 +14,9 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
-<!-- <link rel="import" href="../displays/display-my-info.html">
+<link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-dealstate-detail.html">
-<link rel="import" href="../displays/display-dealstate-mydetail.html"> -->
+<link rel="import" href="../displays/display-dealstate-mydetail.html">
 
 <dom-module id="page-detail">
     <template>
@@ -215,12 +215,17 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="tempswitch" on-click="_switch"> “( ͡° ͜ʖ ͡°)”</div>
-            <template is="dom-if" if="{{completeAccount}}">
-                <display-my-info></display-my-info>
-            </template>
-            <template is="dom-if" if="{{!completeAccount}}">
-                <div class="top-margin"></div>
-            </template>
+            <dom-if if="{{completeAccount}}">
+                <template>
+                    <display-my-info></display-my-info>
+                </template>
+            </dom-if>
+            <dom-if if="{{!completeAccount}}">
+                <template>
+                        <div class="top-margin"></div>
+                </template>
+            </dom-if>
+            
             <div class="closebox">
                 <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
             </div>
@@ -299,12 +304,29 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * completeAccount determines if an account is present
+                    * in localstorage or not
+                    * @type {Boolean}
+                    */
+                    completeAccount: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
+                }
+                if (storage.user && storage.user.username) {
+                    this.username = storage.user.username;
+                    this.completeAccount = true;
+                }
             }
             /**
             * takes the user to originating page
