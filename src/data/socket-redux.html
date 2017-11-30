@@ -41,11 +41,23 @@
                         statePath: 'location',
                         observer: '_locationChanged',
                     },
+                    /**
+                    * publickey is the wallet pubkey
+                    * @type {String}
+                    */                    
                     publickey: {
                         type: String,
                         statePath: 'publickey',
                         observer: '_publickeyChanged',
                     },
+                    /**
+                    * gasprice is the recommended gasprice
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    gasprice: {
+                        type: Number,
+                    },                    
                 };
             }
             /**
@@ -70,6 +82,12 @@
                         return {
                             type: 'HASHTAGS',
                             hashtags: hashtags,
+                        };
+                    },
+                    GASPRICE: function(gasprice) {
+                        return {
+                            type: 'GASPRICE',
+                            gasprice: gasprice,
                         };
                     },
                 });
@@ -100,6 +118,10 @@
                 socket.on('fxChanged', (data) => {
                     this.fx = data;
                     this.dispatch('FX', this.fx);
+                });
+                socket.on('gasPriceChanged', (data) => {
+                    this.gasprice = data;
+                    this.dispatch('GASPRICE', this.gasprice);
                 });
             }
 
