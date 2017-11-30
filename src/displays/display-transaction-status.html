@@ -316,6 +316,7 @@ Example:
                 }
             }
         </style>
+        <p>{{error}}</p>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{start}}">
@@ -337,8 +338,8 @@ Example:
 
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
-                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt"></paper-input>
-                    <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt"></paper-input>
+                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{sendAmount}}"></paper-input>
+                    <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="send-buttonbox">
                         <div class="disagree" on-click="_start"></div>
                         <div class="round-button" on-click="_looking">
@@ -375,10 +376,12 @@ Example:
                         </div>
                     </div>
                     <div class="found-buttonbox">
-                        <div class="disagree" on-click="_send"></div>
+                        <p> enter password</p>
+                        <!-- <div class="disagree" on-click="_send"></div>
                         <div class="round-button" on-click="_confirm">
                             <div class="agree"></div>
-                        </div>
+                        </div> -->
+                        <!-- Xardas here I need the user to enter a password -->
                     </div>
                 </div>
             </template>
@@ -474,6 +477,13 @@ Example:
                         type: String,
                         statePath: 'shortcode',
                     },
+                    /**
+                    * The user error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                    },
                 };
             }
 
@@ -496,7 +506,34 @@ Example:
             /**
             * switches to state shortcode
             */
+            _looking() {
+                if (this.sendDestination) {
+                    const length = this.sendDestination.length;
+                    if (length == 4) {
+                        this.sendToShortcode = this.sendDestination;
+                    } else if (length == 42) {
+                        this.sendToPublicKey = this.sendDestination;
+                    } else if (length != 4 || length != 64) {
+                        this.error = 'Error';
+                    }
+                }
+                if (this.sendToShortcode || this.sendToPublicKey) {
+                    this.send = false;
+                    this.looking = true;
+                    this.updateStyles({
+                        '--container-height': '80px',
+                    });
+                }
+            }
+            /**
+            * switches to state looking
+            */
             _shortcode() {
+                if (this.sendToShortcode) {
+                    // send msg to redux asking for the given shortcodes public key
+                } else {
+                    this._found();
+                }
                 this.start = false;
                 this.shortcode = true;
                 this.updateStyles({
@@ -504,14 +541,16 @@ Example:
                 });
             }
             /**
-            * switches to state looking
+            * switches to state looking when we get a public key for a given shortcode
             */
-            _looking() {
-                this.send = false;
-                this.looking = true;
-                this.updateStyles({
-                    '--container-height': '80px',
-                });
+            _keyFromShortcode() {
+                if (this.keyFromShortcode) {
+                    this.start = false;
+                    this.shortcode = true;
+                    this.updateStyles({
+                        '--container-height': '85px',
+                    });
+                }
             }
             /**
             * switches to state found
