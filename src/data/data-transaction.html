@@ -18,9 +18,9 @@
             sign(address, toAddress, amountToSend, send) {
                 return new Promise((resolve, reject) => {
                     if (send == 'SWT') {
-                        this.prepareData('SWT')
+                        this._prepareData('SWT')
                         .then((data)=>{
-                            return this.generateTransaction(
+                            return this._generateTransaction(
                                 address,
                                 toAddress,
                                 amountToSend,
@@ -34,7 +34,7 @@
                         });
                     }
                     if (send == 'ETH') {
-                        this.generateTransaction(address, toAddress, amountToSend, '21000', null)
+                        this._generateTransaction(address, toAddress, amountToSend, '21000', null)
                         .then((data)=>{
                             resolve(data);
                         }).catch((err)=>{
@@ -48,7 +48,7 @@
             * @param {string} token - The type of token to send
             * @return {object} - the data to be signed
             */
-            prepareData(token) {
+            _prepareData(token) {
                 return new Promise((resolve, reject) => {
                     // if the token is SWT prepare the data to bue added to to the signed transaction
                     const abi = '';
@@ -65,7 +65,7 @@
             * @param {string} data - The address
             * @return {object} - raw and signed transactions
             */
-            generateTransaction(address, toAddress, amountToSend, gasLimit, data) {
+            _generateTransaction(address, toAddress, amountToSend, gasLimit, data) {
                 return new Promise((resolve, reject) => {
                     Promise.all([
                         this.ethBalance(address),
@@ -78,12 +78,12 @@
                         const gasPrice = res[2];
                         const data = data || '';
                         const rawTx = {
-                            nonce: this.toHex(nonce),
+                            nonce: this._toHex(nonce),
                             to: toAddress,
-                            gasPrice: this.toHex(gasPrice),
-                            gasLimit: this.toHex(gasLimit),
-                            value: this.toHex(this.toWei(amountToSend)),
-                            data: this.toHex(data),
+                            gasPrice: this._toHex(gasPrice),
+                            gasLimit: this._toHex(gasLimit),
+                            value: this._toHex(this._toWei(amountToSend)),
+                            data: this._toHex(data),
                             chainId: 1,
                         };
                         if (gasPrice * gasLimit < ethBalance) {
@@ -107,7 +107,7 @@
             * @param {string} dec - The data to convert
             * @return {object}
             */
-            toHex(dec) {
+            _toHex(dec) {
                 let hex = Number(dec).toString(16);
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
                 return '0x'+ result;
@@ -117,7 +117,7 @@
             * @param {string} ethAmount - Ether to conver to wei
             * @return {object}
             */
-            toWei(ethAmount) {
+            _toWei(ethAmount) {
                 return webpack.convert(ethAmount, 'eth', 'wei');
             }
         } window.customElements.define(DataTransaction.is, DataTransaction);
