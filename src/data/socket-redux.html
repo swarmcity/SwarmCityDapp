@@ -92,7 +92,7 @@
                     shortcode: {
                         type: String,
                         statePath: 'shortcode',
-                    },                    
+                    },
                 };
             }
             /**
@@ -149,9 +149,10 @@
             ready() {
                 super.ready();
 
-                socket = io.connect('localhost:8011', {query: 'apiUser=swarmCity'}); 
+                socket = io.connect('localhost:8011', {query: 'apiUser=swarmCity'});
 
-                //socket = io.connect('https://swarmdev.city/api/', {query: 'apiUser=swarmCity'}); // eslint-disable-line
+                // socket = io.connect('https://swarmdev.city/api/'
+                // , {query: 'apiUser=swarmCity'}); // eslint-disable-line
 
                 // get the list of hashtags
                 socket.emit('subscribe', {
@@ -174,11 +175,9 @@
                     this.gasprice = reply.data;
                     this.dispatch('GASPRICE', this.gasprice);
                 });
-
             }
 
             _publickeyChanged() {
-
                 // subscribe to updates of the balance of this publickey
                 socket.emit('subscribe', {
                     channel: 'balance',
@@ -189,12 +188,10 @@
                     this.balance = reply.data;
                     this.dispatch('BALANCE', this.balance);
                 });
-                
                 socket.on('balanceChanged', (reply) => {
                     this.balance = reply.data;
                     this.dispatch('BALANCE', this.balance);
-                });                
-
+                });
                 // subscribe to updates of the nonce of this publickey
                 socket.emit('subscribe', {
                     channel: 'nonce',
@@ -205,12 +202,10 @@
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
-                
                 socket.on('nonceChanged', (reply) => {
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
-
                 // subscribe to updates of the shortcode => publickey
                 socket.emit('subscribe', {
                     channel: 'shortcode',
@@ -224,20 +219,18 @@
                     this.shortcode = reply.data;
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
-
                 socket.on('shortcodeChanged', (reply) => {
                     // note to Will : this reply contains
-                    // { 
+                    // {
                     //   shortcode: 12345,
                     //   validity: 60000,
                     // }
-                    // so you can use the 'validity' to create a 
+                    // so you can use the 'validity' to create a
                     // countdown till the next code.
                     // but I'm not storing it yet in redux...
                     this.shortcode = reply.data.shortcode;
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
-
             }
 
             _locationChanged() {
@@ -254,15 +247,13 @@
                 }
             }
             _reqToKey() {
-                debugger;
                 socket.emit('readShortCode', {
                     shortcode: this.reqtokey,
                 }, (reply) => {
                     if (reply.response === 200) {
                         this.tokey = reply.data.payload.publickey;
-                        this.dispatch('TOKEY', this.tokey)
+                        this.dispatch('TOKEY', this.tokey);
                     }
-
                 });
             }
             _broadcast() {
