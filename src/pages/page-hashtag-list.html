@@ -119,18 +119,20 @@ This code may only be used under the license found at https://github.com/swarmci
                                     route="[[route]]" 
                                     path="{{path}}">
                                 </display-hashtagadd-btn>
-                         <!--  </template>
+                            <!--  </template>
                         </dom-if> -->
                     </div>
 
             <div class="header">
                 <div class="topleft">
-                    <display-my-info 
-                        id="myInfo" 
-                        complete-account="{{completeAccount}}" 
-                        path="{{path}}" 
-                        route="{{route}}">
-                    </display-my-info>
+                    <dom-if if="{{completeAccount}}">
+                        <template>
+                            <display-my-info
+                                path="{{path}}" 
+                                route="{{route}}">
+                            </display-my-info>
+                        </template>
+                    </dom-if>
                 </div>
                 <div class="topright">
                     <div class="back" on-click="_back" id="back"></div>
@@ -205,6 +207,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     completeAccount: {
                         type: Boolean,
+                        value: false,
                     },
                 };
             }
@@ -212,6 +215,14 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.avatar) {
+                    this.avatar = storage.user.avatar;
+                }
+                if (storage.user && storage.user.username) {
+                    this.username = storage.user.username;
+                    this.completeAccount = true;
+                }
             }
             /**
             * takes the user to the welcome page
