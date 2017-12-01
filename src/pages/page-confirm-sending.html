@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-complete-transaction.html">
 
 <dom-module id="page-confirm-sending">
     <template>
@@ -21,7 +22,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-             :host {
+            :host {
                 background-color: var(--sc-blue);
                 height: 100vh;
                 width: 100vw;
@@ -131,15 +132,28 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div>
-                <div>{{localize('Youre about to send')}} 999000 SWT {{localize('to')}} Sally Singer.</div>
+                <div>{{localize('Youre about to send')}} [[amountToSend]] SWT {{localize('to')}} [[toAddress]]</div>
                 <div>{{localize('This can not be undone.')}}</div>
             </div>
             <div>
                 <div>
                     <div on-click="_disagree"></div>
                     <div on-click="_unlock">
+                        <!-- TODO: why is there and empty div below this comment ?? -->
                         <div></div>
                     </div>
+                </div>
+                <div>
+                    <display-complete-transaction
+                        debug
+                        send="SWT"
+                        address="{{address}}"
+                        to-address="{{toAddress}}"
+                        amount-to-send="{{amountToSend}}"
+                        nonce="{{nonce}}"
+                        gas-price="{{gasPrice}}"
+                        private-key="{{privateKey}}">
+                    </display-complete-transaction>
                 </div>
             </div>
         </div>
@@ -194,12 +208,41 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_sign',
                     },
+                    /**
+                    * the current gas price
+                    * @type {Number}
+                    */
+                    gasPrice: {
+                        type: Number,
+                        statePath: 'gasprice',
+                    },
+                    /**
+                    * the current nonce
+                    * @type {Number}
+                    */
+                    nonce: {
+                        type: Number,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * status of the transaction sent or unsent
+                    * @type {Number}
+                    */
+                    status: {
+                        type: Text,
+                        value: 'UNSENT',
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                const data = JSON.parse(sessionStorage.getItem('tx'));
+                this.amountToSend = data.amountToSend;
+                this.toAddress = data.toAddress;
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.address = storage.keyStore.address;
             }
 
             /**
