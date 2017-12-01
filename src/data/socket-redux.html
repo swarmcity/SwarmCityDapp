@@ -3,6 +3,8 @@
 <dom-module id="socket-redux">
 
     <script>
+        let socket;
+
         class SocketRedux extends new ReduxMixin(Polymer.Element) {
             static get is() {
                 return 'socket-redux';
@@ -39,6 +41,50 @@
                         statePath: 'location',
                         observer: '_locationChanged',
                     },
+                    /**
+                    * publickey is the wallet pubkey
+                    * @type {String}
+                    */
+                    publickey: {
+                        type: String,
+                        statePath: 'publickey',
+                        observer: '_publickeyChanged',
+                    },
+                    /**
+                    * gasprice is the recommended gasprice
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    gasprice: {
+                        type: Number,
+                    },
+                    /**
+                    * nonce is the current nonce for the wallet's pubkey
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    nonce: {
+                        type: Number,
+                    },
+                    /**
+                    * This is the shortcode we want a public key for
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    reqtokey: {
+                        type: Number,
+                        statePath: 'reqtokey',
+                        observer: '_reqToKey',
+                    },
+                    /**
+                    * This is the signed transaction to be broadcast
+                    * @type {String}
+                    */
+                    broadcast: {
+                        type: String,
+                        statePath: 'broadcast',
+                        observer: '_broadcast',
+                    },
                 };
             }
             /**
@@ -65,10 +111,45 @@
                             hashtags: hashtags,
                         };
                     },
+                    GASPRICE: function(gasprice) {
+                        return {
+                            type: 'GASPRICE',
+                            gasprice: gasprice,
+                        };
+                    },
+                    NONCE: function(nonce) {
+                        return {
+                            type: 'NONCE',
+                            nonce: nonce,
+                        };
+                    },
+                    TOKEY: function(tokey) {
+                        return {
+                            type: 'TOKEY',
+                            tokey: tokey,
+                        };
+                    },
                 });
             }
+
             ready() {
                 super.ready();
+
+                socket = io.connect('http://localhost:8011', {query: 'apiUser=swarmCity'}); // eslint-disable-line
+
+                // get the list of hashtags
+                socket.emit('subscribe', {
+                    channel: 'hashtags',
+                }, (reply) => {
+                    this.hashtags = reply.data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+
+                socket.on('hashtagsChanged', (data) => {
+                    this.hashtags = data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+
                 socket.on('balanceChanged', (data) => {
                     this.balance = data;
                     this.dispatch('BALANCE', this.balance);
@@ -77,19 +158,74 @@
                     this.fx = data;
                     this.dispatch('FX', this.fx);
                 });
-                socket.on('hashtagsChanged', (data) => {
-                    this.hashtags = data;
-                    this.dispatch('HASHTAGS', this.hashtags);
+                socket.on('gasPriceChanged', (data) => {
+                    this.gasprice = data;
+                    this.dispatch('GASPRICE', this.gasprice);
+                });
+                socket.on('nonceChanged', (data) => {
+                    this.nonce = data.nonce;
+                    this.dispatch('NONCE', this.nonce);
                 });
             }
+
+            _publickeyChanged() {
+                socket.emit('subscribe', {
+                    channel: 'balance',
+                    args: {
+                        address: this.publickey,
+                    },
+                }, (reply) => {
+                    this.balance = reply.data;
+                    this.dispatch('BALANCE', this.balance);
+                });
+                socket.emit('subscribe', {
+                    channel: 'nonce',
+                    args: {
+                        address: this.publickey,
+                    },
+                }, (reply) => {
+                    this.nonce = reply.data.nonce;
+                    this.dispatch('NONCE', this.nonce);
+                });
+            }
+
             _locationChanged() {
                 switch (this.location) {
                     case '/hashtag/1c9v87bc98v7a/':
-                        // emit
+                        // the number here '1c9v87bc98v7a'is the hashtag id
+                        // now we know which page the user is on request the collection...
+                        // of items and save them to redux in ITEMCOLLECTION
                         break;
                     case '/hashtag/7c9v87bc98v7b/':
-                        // emit
+                    // the number here '7c9v87bc98v7b'is the hashtag id
+                        // now we know which page the user is on request the collection...
+                        // of items and save them to redux in ITEMCOLLECTION
                 }
+            }
+            _reqToKey() {
+                // send this.reqtokey, which is the shortcode, to the api
+                // once we get the public key back do... this.dispatch('TOKEY', this.tokey);
+                socket.emit('subscribe', {
+                        channel: 'shhsubscribe',
+                        args: {
+                            mode: 'shortcode',
+                            value: this.reqtokey,
+                        },
+                    }, (reply) => {
+                       // this reply can be ignored for now.
+                    });
+                socket.on('sshMessage', (data) => {
+                    this.dispatch('TOKEY', data.pubkey);
+                });
+            }
+
+            _broadcast() {
+                // send this.broadcast to the api, this.broadcast is the signed tx
+                socket.emit('sendRawTx', {
+                    tx: this.broadcast,
+                }, (data) => {
+                    // does anything need to happen here ?
+                });
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
