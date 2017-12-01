@@ -379,6 +379,20 @@ Example:
             static get is() {
                 return 'display-transaction-status';
             }
+            /**
+            * Redux action for sertting balance
+            * @param {balance} balance
+            */
+            static get actions() {
+                return Object.assign({
+                    REQTOKEY: function(reqtokey) {
+                        return {
+                            type: 'REQTOKEY',
+                            reqtokey: reqtokey,
+                        };
+                    },
+                });
+            }
             static get properties() {
                 return {
                     language: {
@@ -465,6 +479,15 @@ Example:
                     error: {
                         type: String,
                     },
+                    /**
+                    * the public key for the given shortcode
+                    * @type {String}
+                    */
+                    tokey: {
+                        type: String,
+                        statePath: 'tokey',
+                        observer: '_'
+                    },
                 };
             }
 
@@ -514,8 +537,9 @@ Example:
             _checkPublicKey() {
                 if (this.sendDestination) {
                     const length = this.sendDestination.length;
-                    if (length == 4) {
+                    if (length == 5) {
                         this.sendToShortcode = this.sendDestination;
+                        this.dispatch('REQTOKEY', this.sendToShortcode);
                         this._gettingPublicKey();
                     } else if (length == 42) {
                         this.sendToPublicKey = this.sendDestination;
@@ -537,6 +561,13 @@ Example:
                     });
             }
             /**
+            * Firted once the API returns the public key for the supplied shortcode
+            */
+            _gotKey() {
+                this.sendToPublicKey = this.tokey;
+                this._enterPassword();
+            }
+            /**
             * switches to state found
             */
             _enterPassword() {
@@ -544,14 +575,7 @@ Example:
                     amount: this.sendAmount,
                     to: this.sendToPublicKey,
                 };
-                sessionStorage.setItem('tx', txData);
-                this.path = 'confirm-sending/';
-            }
-
-            /**
-            * changes the current path to page-confirm-sending
-            */
-            _confirm() {
+                sessionStorage.setItem('tx', JSON.stringify(txData));
                 this.path = 'confirm-sending/';
             }
         }
