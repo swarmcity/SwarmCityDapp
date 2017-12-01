@@ -135,7 +135,9 @@
             ready() {
                 super.ready();
 
-                socket = io.connect('https://swarmdev.city/api/', {query: 'apiUser=swarmCity'}); // eslint-disable-line
+                socket = io.connect('localhost:8011', {query: 'apiUser=swarmCity'}); 
+
+                //socket = io.connect('https://swarmdev.city/api/', {query: 'apiUser=swarmCity'}); // eslint-disable-line
 
                 // get the list of hashtags
                 socket.emit('subscribe', {
@@ -145,25 +147,25 @@
                     this.dispatch('HASHTAGS', this.hashtags);
                 });
 
-                socket.on('hashtagsChanged', (data) => {
-                    this.hashtags = data;
+                socket.on('hashtagsChanged', (reply) => {
+                    this.hashtags = reply.data;
                     this.dispatch('HASHTAGS', this.hashtags);
                 });
 
-                socket.on('balanceChanged', (data) => {
-                    this.balance = data;
+                socket.on('balanceChanged', (reply) => {
+                    this.balance = reply.data;
                     this.dispatch('BALANCE', this.balance);
                 });
-                socket.on('fxChanged', (data) => {
-                    this.fx = data;
+                socket.on('fxChanged', (reply) => {
+                    this.fx = reply.data;
                     this.dispatch('FX', this.fx);
                 });
-                socket.on('gasPriceChanged', (data) => {
-                    this.gasprice = data;
+                socket.on('gasPriceChanged', (reply) => {
+                    this.gasprice = reply.data;
                     this.dispatch('GASPRICE', this.gasprice);
                 });
-                socket.on('nonceChanged', (data) => {
-                    this.nonce = data.nonce;
+                socket.on('nonceChanged', (reply) => {
+                    this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
             }
