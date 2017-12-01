@@ -338,7 +338,7 @@ Example:
 
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
-                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{sendAmount}}"></paper-input>
+                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{sendAmount}}" on-keyup="_checkBalance"></paper-input>
                     <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="send-buttonbox">
                         <div class="disagree" on-click="_start"></div>
@@ -352,7 +352,7 @@ Example:
             <template is="dom-if" if="{{looking}}">
                 <div class="looking-box">
                     <div class="looking-textbox">
-                        <div class="looking-greytext" on-click="_enterPassword">{{localize('Looking for receiver')}}</div>
+                        <div class="looking-greytext" on-click="_goToConfirm">{{localize('Looking for receiver')}}</div>
                         <div class="looking-loading">
                             <div class="smallpoint" id="point1"></div>
                             <div class="smallpoint" id="point2"></div>
@@ -486,7 +486,18 @@ Example:
                     tokey: {
                         type: String,
                         statePath: 'tokey',
-                        observer: '_'
+                        observer: '_totKey',
+                    },
+                    /**
+                    * the users balances
+                    * @type {String}
+                    */
+                    balance: {
+                        type: Object,
+                        statePath: 'balance',
+                    },
+                    sendAmount: {
+                        type: String,
                     },
                 };
             }
@@ -543,15 +554,15 @@ Example:
                         this._gettingPublicKey();
                     } else if (length == 42) {
                         this.sendToPublicKey = this.sendDestination;
-                        this._enterPassword();
-                    } else if (length != 4 || length != 64) {
-                        this.error = 'Error';
+                        this._goToConfirm();
+                    } else {
+                        this.error = 'Error, shortcode or address is the wrong length';
                     }
                 }
             }
 
             /**
-            * switches to state found
+            * shows waiting animation while we get the publick key for the given shortcode
             */
             _gettingPublicKey() {
                     this.send = false;
@@ -563,20 +574,30 @@ Example:
             /**
             * Firted once the API returns the public key for the supplied shortcode
             */
-            _gotKey() {
+            _totKey() {
                 this.sendToPublicKey = this.tokey;
-                this._enterPassword();
+                this._goToConfirm();
             }
             /**
-            * switches to state found
+            * takes the user to the confirm page
             */
-            _enterPassword() {
+            _goToConfirm() {
                 let txData = {
                     amount: this.sendAmount,
                     to: this.sendToPublicKey,
                 };
                 sessionStorage.setItem('tx', JSON.stringify(txData));
                 this.path = 'confirm-sending/';
+            }
+            /**
+            * Fires when the user enters each number into amaount
+            */
+            _checkBalance() {
+                if (this.sendAmount >= this.balance.swt) {
+                    this.error = 'Not enough SWT!!';
+                } else {
+                    this.error = null;
+                }
             }
         }
         window.customElements
