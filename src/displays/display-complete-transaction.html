@@ -1,0 +1,201 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+
+<link rel="import" href="../data/data-transaction.html">
+<!--
+
+Example:
+```
+<display-complete-transaction></display-complete-transaction>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-transaction` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-transaction">
+    <template>
+<data-transaction id="transaction"></data-transaction>
+<template is="dom-if" if="{{debug}}">
+    <p style="margin-top:100px">
+        <pre style="background-color:black; color:lime">
+            
+            ==========================================================================  
+            Test DIV To show all TX values (this is for testing only)   
+            ==========================================================================  
+
+            ADDRESS: {{address}}
+            TO ADDRESS: {{toAddress}}  
+            AMOUNT TO SEND : {{amountToSend}} SWT
+            NONCE: {{nonce}}
+            GAS PRICE: {{gasPrice}}
+
+            -------------------------------------------------------------------------       
+            PRIVATE KEY: {{privateKey}}  
+            -------------------------------------------------------------------------       
+            RAW TX: {{rawtx}}
+            -------------------------------------------------------------------------       
+            SIGNED TX: {{signedtx}}
+            -------------------------------------------------------------------------       
+            STATUS: {{status}}
+            -------------------------------------------------------------------------       
+            ERROR: {{error}}
+        
+        </pre>
+    </p>
+</template>
+
+    </template>
+    <script>
+        class DisplayCompleteTransaction extends Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        ) {
+            static get is() {
+                return 'display-complete-transaction';
+            }
+            /**
+            * Redux action for broadcasting a transaction
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    BROADCAST: function(broadcast) {
+                        return {
+                            type: 'BROADCAST',
+                            broadcast: broadcast,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Debug either shows or hides all the transaction data for debuging
+                    * @type {Boolean}
+                    */
+                    debug: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Send indicates the type of coin to send limited to ETH or SWT
+                    * @type {String}
+                    */
+                    send: {
+                        type: String,
+                    },
+                    /**
+                    * Address is the ethereum address the transaction is to be sent from
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                    },
+                    /**
+                    * to is the address to send the transaction to
+                    * @type {String}
+                    */
+                    toAddress: {
+                        type: String,
+                    },
+                    /**
+                    * amount is the amount of SWT tot send
+                    * @type {String}
+                    */
+                    amountToSend: {
+                        type: Number,
+                    },
+                    /**
+                    * nonce is the count of transactions this address has made so far
+                    * @type {Number}
+                    */
+                    nonce: {
+                        type: Number,
+                    },
+                    /**
+                    * gas price is the curent price of gas
+                    * @type {Number}
+                    */
+                    gasPriced: {
+                        type: Number,
+                    },
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_sign',
+                    },
+                    /**
+                    * Raw transaction for checking the values
+                    * @type {String}
+                    */
+                    rawTx: {
+                        type: String,
+                        notify: true,
+                        reflectToAtribute: true,
+                    },
+                    /**
+                    * Signed transaction for checking the value
+                    * @type {String}
+                    */
+                    signedTx: {
+                        type: String,
+                        notify: true,
+                        reflectToAtribute: true,
+                    },
+                    /**
+                    * status has iut been broadcast or not?
+                    * @type {String}
+                    */
+                    status: {
+                        type: String,
+                        value: 'UNSENT',
+                        notify: true,
+                        reflectToAtribute: true,
+                    },
+                    /**
+                    * any transaction error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        notify: true,
+                        reflectToAtribute: true,
+                    },
+
+                };
+            }
+            _sign() {
+                this.$.transaction.sign(
+                    this.address,
+                    this.toAddress,
+                    this.amountToSend,
+                    this.send,
+                )
+                .then((transactions)=>{
+                    this.rawTx = transactions.rawTx;
+                    this.signedTx = transactions.SignedTx;
+                    this.dispatch('BROADCAST', transactions.SignedTx);
+                    this.status = 'SENT';
+                }).catch((err)=>{
+                    this.error = err;
+                });
+            }
+        } window.customElements.define(DisplayCompleteTransaction.is, DisplayCompleteTransaction);
+    </script>
+</dom-module>
