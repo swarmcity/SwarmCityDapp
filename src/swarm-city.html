@@ -37,6 +37,7 @@
 <link rel="lazy-import" href="pages/page-transaction-processing.html">
 <link rel="lazy-import" href="pages/page-new-request.html">
 <link rel="lazy-import" href="pages/page-new-request-processing.html">
+<link rel="lazy-import" href="pages/page-new-hashtag.html">
 <link rel="lazy-import" href="pages/page-cancel-request.html">
 <link rel="lazy-import" href="pages/page-detail.html">
 <link rel="lazy-import" href="pages/page-confirm-payout.html">
@@ -97,6 +98,7 @@
       <page-transaction-processing id="transaction-processing" route-history="{{routeHistory}}"></page-transaction-processing>
       <page-new-request id="new-request" route-history="{{routeHistory}}"></page-new-request>
       <page-new-request-processing id="new-request-processing" route-history="{{routeHistory}}"></page-new-request-processing>
+      <page-new-hashtag id="new-hashtag" route-history="{{routeHistory}}"></page-new-hashtag>      
       <page-cancel-request id="cancel-request" route-history="{{routeHistory}}"></page-cancel-request>
       <page-detail id="detail" route-history="{{routeHistory}}"></page-detail>
       <page-confirm-payout id="confirm-payout" route-history="{{routeHistory}}"></page-confirm-payout>
@@ -139,6 +141,10 @@
           },
           hashtags: {
             type: Array,
+          },
+          route: {
+            type: Object,
+            observer: '_routeChange',
           },
           routeHistory: {
             type: Array,
@@ -265,6 +271,35 @@
       }
       _showPage404() {
         this.page = 'view404';
+      }
+
+      _routeChange() {
+        this._ifAccountAvoidEntryFlow();
+      }
+
+      _ifAccountAvoidEntryFlow() {
+        let entryFlowPages = [
+          'new-here',
+          'choose-avatar-and-username',
+          'choose-password',
+          'password-warning',
+        ];
+        if (entryFlowPages.includes(this.routeHistory[1])) {
+          if (this.routeHistory[0] != this.routeHistory[1]) {
+            if (entryFlowPages.indexOf(this.routeHistory[1])
+            - entryFlowPages.indexOf(this.routeHistory[0]) == 1) {
+              let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+              if (storage.user && storage.user.username) {
+                this.set('route.path', 'hashtag-list');
+              }
+            }
+          } else {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.user && storage.user.username) {
+                  this.set('route.path', 'hashtag-list');
+            }
+          }
+        }
       }
 
       _loadAnimations() {
