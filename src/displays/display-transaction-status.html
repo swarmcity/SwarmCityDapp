@@ -316,12 +316,13 @@ Example:
                 }
             }
         </style>
+        <p>{{error}}</p>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{start}}">
                 <div class="start-buttonbox">
-                    <div class="start-button" on-click="_send">{{localize('send SWT')}}</div>
-                    <div class="start-button" on-click="_shortcode">{{localize('shortcode')}}</div>
+                    <div class="start-button" on-click="_sendSwt">{{localize('send SWT')}}</div>
+                    <div class="start-button" on-click="_showShortcode">{{localize('shortcode')}}</div>
                 </div>
             </template>
 
@@ -337,11 +338,11 @@ Example:
 
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
-                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt"></paper-input>
-                    <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt"></paper-input>
+                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
+                    <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="send-buttonbox">
                         <div class="disagree" on-click="_start"></div>
-                        <div class="round-button" on-click="_looking">
+                        <div class="round-button" on-click="_checkPublicKey">
                             <div class="agree"></div>
                         </div>
                     </div>
@@ -351,36 +352,19 @@ Example:
             <template is="dom-if" if="{{looking}}">
                 <div class="looking-box">
                     <div class="looking-textbox">
-                        <div class="looking-greytext" on-click="_found">{{localize('Looking for receiver')}}</div>
+                        <div class="looking-greytext" on-click="_goToConfirm">{{localize('Looking for receiver')}}</div>
                         <div class="looking-loading">
                             <div class="smallpoint" id="point1"></div>
                             <div class="smallpoint" id="point2"></div>
                             <div class="smallpoint" id="point3"></div>
                         </div>
                     </div>
-                    <div class="looking-close" on-click="_send"></div>
+                    <div class="looking-close" on-click="_sendSwt"></div>
                 </div>
             </template>
 
             <template is="dom-if" if="{{found}}">
-                <div class="found-box">
-                    <div class="found-greytext">{{localize('Receiver found!')}}</div>
-                    <div class="found-avatarbox">
-                        <div class="found-avatar">
-                            <img src="[[importPath]]../../images/defaultavatar.png">
-                        </div>
-                        <div class="found-infobox">
-                            <div class="found-name">Sally Singer</div>
-                            <div class="found-pubkey truncate">0x50281a1E4a65e2384389483b1E566d2c977a4daC</div>
-                        </div>
-                    </div>
-                    <div class="found-buttonbox">
-                        <div class="disagree" on-click="_send"></div>
-                        <div class="round-button" on-click="_confirm">
-                            <div class="agree"></div>
-                        </div>
-                    </div>
-                </div>
+                    <p> enter password</p>
             </template>
 
         </div>
@@ -394,6 +378,20 @@ Example:
         )) {
             static get is() {
                 return 'display-transaction-status';
+            }
+            /**
+            * Redux action for sertting balance
+            * @param {balance} balance
+            */
+            static get actions() {
+                return Object.assign({
+                    REQTOKEY: function(reqtokey) {
+                        return {
+                            type: 'REQTOKEY',
+                            reqtokey: reqtokey,
+                        };
+                    },
+                });
             }
             static get properties() {
                 return {
@@ -474,6 +472,33 @@ Example:
                         type: String,
                         statePath: 'shortcode',
                     },
+                    /**
+                    * The user error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                    },
+                    /**
+                    * the public key for the given shortcode
+                    * @type {String}
+                    */
+                    tokey: {
+                        type: String,
+                        statePath: 'tokey',
+                        observer: '_totKey',
+                    },
+                    /**
+                    * the users balances
+                    * @type {String}
+                    */
+                    balance: {
+                        type: Object,
+                        statePath: 'balance',
+                    },
+                    amountToSend: {
+                        type: String,
+                    },
                 };
             }
 
@@ -482,11 +507,35 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * switches to state send
+            * asks the user to select show shortcode to send swt
             */
-            _send() {
+            _start() {
+                this.start = true;
+                this.looking = false;
+                this.shortcode = false;
+                this.send = false;
+                this.found = false;
+                this.updateStyles({
+                    '--container-height': '184px',
+                });
+            }
+            /**
+            * Shows the user their shortcode
+            */
+            _showShortcode() {
+                this.start = false;
+                this.shortcode = true;
+                this.updateStyles({
+                    '--container-height': '85px',
+                });
+            }
+            /**
+            * User can enter amount and public key or shortcode
+            */
+            _sendSwt() {
                 this.start = false;
                 this.looking = false;
+                this.shortcode = false;
                 this.found = false;
                 this.send = true;
                 this.updateStyles({
@@ -496,50 +545,59 @@ Example:
             /**
             * switches to state shortcode
             */
-            _shortcode() {
-                this.start = false;
-                this.shortcode = true;
-                this.updateStyles({
-                    '--container-height': '85px',
-                });
+            _checkPublicKey() {
+                if (this.sendDestination) {
+                    const length = this.sendDestination.length;
+                    if (length == 5) {
+                        this.sendToShortcode = this.sendDestination;
+                        this.dispatch('REQTOKEY', this.sendToShortcode);
+                        this._gettingPublicKey();
+                    } else if (length == 42) {
+                        this.sendToPublicKey = this.sendDestination;
+                        this._goToConfirm();
+                    } else {
+                        this.error = 'Error, shortcode or address is the wrong length';
+                    }
+                }
+            }
+
+            /**
+            * shows waiting animation while we get the publick key for the given shortcode
+            */
+            _gettingPublicKey() {
+                    this.send = false;
+                    this.looking = true;
+                    this.updateStyles({
+                        '--container-height': '80px',
+                    });
             }
             /**
-            * switches to state looking
+            * Firted once the API returns the public key for the supplied shortcode
             */
-            _looking() {
-                this.send = false;
-                this.looking = true;
-                this.updateStyles({
-                    '--container-height': '80px',
-                });
+            _totKey() {
+                this.sendToPublicKey = this.tokey;
+                this._goToConfirm();
             }
             /**
-            * switches to state found
+            * takes the user to the confirm page
             */
-            _found() {
-                this.looking = false;
-                this.found = true;
-                this.updateStyles({
-                    '--container-height': '210px',
-                });
-            }
-            /**
-            * switches to state send
-            */
-            _start() {
-                this.shortcode = false;
-                this.send = false;
-                this.found = false;
-                this.start = true;
-                this.updateStyles({
-                    '--container-height': '184px',
-                });
-            }
-            /**
-            * changes the current path to page-confirm-sending
-            */
-            _confirm() {
+            _goToConfirm() {
+                let txData = {
+                    amountToSend: this.amountToSend,
+                    toAddress: this.sendToPublicKey,
+                };
+                sessionStorage.setItem('tx', JSON.stringify(txData));
                 this.path = 'confirm-sending/';
+            }
+            /**
+            * Fires when the user enters each number into amaount
+            */
+            _checkBalance() {
+                if (this.amountToSend >= this.balance.swt) {
+                    this.error = 'Not enough SWT!!';
+                } else {
+                    this.error = null;
+                }
             }
         }
         window.customElements

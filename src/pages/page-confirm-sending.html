@@ -13,6 +13,8 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-complete-transaction.html">
 
 <dom-module id="page-confirm-sending">
     <template>
@@ -20,7 +22,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-             :host {
+            :host {
                 background-color: var(--sc-blue);
                 height: 100vh;
                 width: 100vw;
@@ -112,6 +114,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --button-active;
             }
 
+            .blur {
+                @apply --unlock-blur;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -124,20 +130,43 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
 
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <div>
-                <div>{{localize('Youre about to send')}} 999000 SWT {{localize('to')}} Sally Singer.</div>
+                <div>{{localize('Youre about to send')}} [[amountToSend]] SWT {{localize('to')}} [[toAddress]]</div>
                 <div>{{localize('This can not be undone.')}}</div>
             </div>
             <div>
                 <div>
                     <div on-click="_disagree"></div>
-                    <div on-click="_agree">
+                    <div on-click="_unlock">
+                        <!-- TODO: why is there and empty div below this comment ?? -->
                         <div></div>
                     </div>
                 </div>
+                <div>
+                    <display-complete-transaction
+                        debug
+                        send="SWT"
+                        address="{{address}}"
+                        to-address="{{toAddress}}"
+                        amount-to-send="{{amountToSend}}"
+                        nonce="{{nonce}}"
+                        gas-price="{{gasPrice}}"
+                        private-key="{{privateKey}}"
+                        status="{{status}}">
+                    </display-complete-transaction>
+                </div>
             </div>
         </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    white
+                    toggle-unlock="{{toggleUnlock}}" 
+                    private-key="{{privateKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
 
     <script>
@@ -163,12 +192,58 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                    },
+                    /**
+                    * the current gas price
+                    * @type {Number}
+                    */
+                    gasPrice: {
+                        type: Number,
+                        statePath: 'gasprice',
+                    },
+                    /**
+                    * the current nonce
+                    * @type {Number}
+                    */
+                    nonce: {
+                        type: Number,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * status of the transaction sent or unsent
+                    * @type {Number}
+                    */
+                    status: {
+                        type: Text,
+                        value: 'UNSENT',
+                        observer: '_sent',
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                const data = JSON.parse(sessionStorage.getItem('tx'));
+                this.amountToSend = data.amountToSend;
+                this.toAddress = data.toAddress;
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.address = storage.keyStore.address;
             }
 
             /**
@@ -193,6 +268,29 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * toggles the password unlock display
+            */
+            _unlock() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * the transaction has been broadcast
+            */
+            _sent() {
+                this.path = 'page-transaction-processing/';
             }
         }
         window.customElements.define(MyConfirmSending.is, MyConfirmSending);
