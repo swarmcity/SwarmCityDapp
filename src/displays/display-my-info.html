@@ -38,7 +38,7 @@ The following custom properties and mixins are available for styling:
             .container {
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
-                @apply --layout-center;
+                @apply --layout-start;
             }
 
             .container>img {
@@ -46,15 +46,21 @@ The following custom properties and mixins are available for styling:
                 height: 40px;
                 cursor: pointer;
                 border-radius: 50%;
-                margin-right: 10px;
                 background-size: 40px;
             }
 
             .container[wide-layout]>img {
                 width: 50px;
                 height: 50px;
-                margin-right: 20px;
                 background-size: 50px;
+            }
+
+            .totalbox {
+                margin-left: 10px;
+            }
+
+            .container[wide-layout] .totalbox {
+                margin-left: 20px;
             }
 
             .container div:nth-child(2)>div:nth-child(1) {
@@ -71,18 +77,14 @@ The following custom properties and mixins are available for styling:
 
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         
-        <template is="dom-if" if="{{completeAccount}}">
             <div class="container" wide-layout$="{{wide}}">
+                <img id="image" on-click="_toProfile" src="{{avatar}}">
 
-                <img on-click="_toProfile" src="{{avatar}}">
-
-                <div>
+                <div class="totalbox">
                     <div on-click="_toProfile">{{username}}</div>
                     <div on-click="_toWallet">{{balance.swt}} SWT</div>
                 </div>
             </div>
-        </template>
-
     </template>
     <script>
         class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -104,13 +106,21 @@ The following custom properties and mixins are available for styling:
                         reflectToAttribute: true,
                         notify: true,
                     },
+                    // /**
+                    // * routeHistory is an array that contains the current and previous page
+                    // * @type {Array}
+                    // */
+                    // routeHistory: {
+                    //     type: Array,
+                    // },
+
                     /**
                     * Username represents the users username
                     * @type {String}
                     */
                     username: {
                         type: String,
-                        value: 'Xavier Hendrickx',
+                        value: 'username',
                     },
                     /**
                     * Avatar represents the users IPFS to their avatar image
@@ -127,15 +137,6 @@ The following custom properties and mixins are available for styling:
                     balance: {
                         type: Number,
                         statePath: 'balance',
-                    },
-                    /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
-                    */
-                    completeAccount: {
-                        type: Boolean,
-                        value: false,
                     },
                     /**
                     * route data represents the current route
@@ -159,7 +160,6 @@ The following custom properties and mixins are available for styling:
                 }
                 if (storage.user && storage.user.username) {
                     this.username = storage.user.username;
-                    this.completeAccount = true;
                 }
             }
             /**
@@ -168,6 +168,41 @@ The following custom properties and mixins are available for styling:
             _toProfile() {
                 sessionStorage.setItem('origin', this.route.path);
                 this.path = 'my-profile/';
+                let middleCalc = (window.innerWidth/2)-60+'px';
+                let wideCalc = ((window.innerWidth/100)*12)-73+'px';
+                if (this.wide) {
+                        this.$.image.animate(
+                            [
+                                {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                {'transform': 'translate('+wideCalc+',50px) scale(1.8, 1.8)'},
+                            ],
+                            {
+                                fill: 'backwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                } else {
+                    this.$.image.animate(
+                            [
+                                {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                {'transform': 'translate('+middleCalc+',85px) scale(2.25, 2.25)'},
+                            ],
+                            {
+                                fill: 'backwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                }
             }
             /**
             * takes the user to the my-wallet page
