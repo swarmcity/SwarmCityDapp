@@ -21,7 +21,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-             :host {
+            :host {
                 background-color: var(--sc-blue);
                 height: 100vh;
                 width: 100vw;
@@ -131,7 +131,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div>
-                <div>{{localize('Youre about to send')}} 999000 SWT {{localize('to')}} Sally Singer.</div>
+                <div>{{localize('Youre about to send')}} [[amount]] SWT {{localize('to')}} [[to]]</div>
                 <div>{{localize('This can not be undone.')}}</div>
             </div>
             <div>
@@ -200,6 +200,10 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                const data = JSON.parse(sessionStorage.getItem('tx'));
+                this.amount = data.amount;
+                this.to = data.to;
+                // get from session
             }
 
             /**
