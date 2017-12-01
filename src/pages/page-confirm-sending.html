@@ -152,7 +152,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         amount-to-send="{{amountToSend}}"
                         nonce="{{nonce}}"
                         gas-price="{{gasPrice}}"
-                        private-key="{{privateKey}}">
+                        private-key="{{privateKey}}"
+                        status="{{status}}">
                     </display-complete-transaction>
                 </div>
             </div>
@@ -206,7 +207,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     privateKey: {
                         type: String,
-                        observer: '_sign',
                     },
                     /**
                     * the current gas price
@@ -231,6 +231,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     status: {
                         type: Text,
                         value: 'UNSENT',
+                        observer: '_sent',
                     },
                 };
             }
@@ -286,9 +287,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * signs the transaction, after success routs to transaction-processing
+            * the transaction has been broadcast
             */
-            _sign() {
+            _sent() {
+                this.path = 'page-transaction-processing/';
             }
         }
         window.customElements.define(MyConfirmSending.is, MyConfirmSending);
