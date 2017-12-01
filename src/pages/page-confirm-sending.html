@@ -13,6 +13,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-unlock.html">
 
 <dom-module id="page-confirm-sending">
     <template>
@@ -112,6 +113,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --button-active;
             }
 
+            .blur {
+                @apply --unlock-blur;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -124,7 +129,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
 
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <div>
                 <div>{{localize('Youre about to send')}} 999000 SWT {{localize('to')}} Sally Singer.</div>
                 <div>{{localize('This can not be undone.')}}</div>
@@ -132,12 +137,21 @@ This code may only be used under the license found at https://github.com/swarmci
             <div>
                 <div>
                     <div on-click="_disagree"></div>
-                    <div on-click="_agree">
+                    <div on-click="_unlock">
                         <div></div>
                     </div>
                 </div>
             </div>
         </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    white
+                    toggle-unlock="{{toggleUnlock}}" 
+                    private-key="{{privateKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
 
     <script>
@@ -162,6 +176,23 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_sign',
                     },
                 };
             }
@@ -193,6 +224,28 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * toggles the password unlock display
+            */
+            _unlock() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * signs the transaction, after success routs to transaction-processing
+            */
+            _sign() {
             }
         }
         window.customElements.define(MyConfirmSending.is, MyConfirmSending);
