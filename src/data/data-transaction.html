@@ -8,22 +8,53 @@
                 return 'data-transaction';
             }
             /**
-            * to hex
-            * @param {string} dec - The data to convert
-            * @return {object}
+            * sign transaction
+            * @param {string} address - The address
+            * @param {string} toAddress - The address
+            * @param {string} amountToSend - The address
+            * @param {string} send - The type of token to send
+            * @return {object} - raw and signed transactions
             */
-            toHex(dec) {
-                let hex = Number(dec).toString(16);
-                let result = '000000'.substr(0, 6 - hex.length) + hex;
-                return '0x'+ result;
+            sign(address, toAddress, amountToSend, send) {
+                return new Promise((resolve, reject) => {
+                    if (send == 'SWT') {
+                        this.prepareData('SWT')
+                        .then((data)=>{
+                            return this.generateTransaction(
+                                address,
+                                toAddress,
+                                amountToSend,
+                                data.gasLimit,
+                                data.abi
+                            );
+                        }).then((data)=>{
+                            resolve(data);
+                        }).catch((err)=>{
+                            reject(Error(err));
+                        });
+                    }
+                    if (send == 'ETH') {
+                        this.generateTransaction(address, toAddress, amountToSend, '21000', null)
+                        .then((data)=>{
+                            resolve(data);
+                        }).catch((err)=>{
+                            reject(Error(err));
+                        });
+                    }
+                });
             }
             /**
-            * to wei
-            * @param {string} ethAmount - Ether to conver to wei
-            * @return {object}
+            * prepare data
+            * @param {string} token - The type of token to send
+            * @return {object} - the data to be signed
             */
-            toWei(ethAmount) {
-                return webpack.convert(ethAmount, 'eth', 'wei');
+            prepareData(token) {
+                return new Promise((resolve, reject) => {
+                    // if the token is SWT prepare the data to bue added to to the signed transaction
+                    const abi = '';
+                    const gasAndAbi = {gasLimit: '21000', abi: abi};
+                    resolve(gasAndAbi);
+                });
             }
             /**
             * create transaction
@@ -51,7 +82,7 @@
                             to: toAddress,
                             gasPrice: this.toHex(gasPrice),
                             gasLimit: this.toHex(gasLimit),
-                            value: this.toHex(this.toWei(amountToSend)), // find another toWei or make one
+                            value: this.toHex(this.toWei(amountToSend)),
                             data: this.toHex(data),
                             chainId: 1,
                         };
@@ -61,9 +92,33 @@
                             reject(new Error('Not Enough Ether'));
                         }
                     }).then((rawTx) => {
+                        // TODO: Sign transaction
                         // Sign tx and return raw and signed for confirmation
+                        const SignedTx = '';
+                        const transactions = {rawTx: rawTx, SignedTx: SignedTx};
+                        resolve(transactions);
+                    }).catch((err)=>{
+                        reject(Error(err));
                     });
                 });
+            }
+            /**
+            * to hex
+            * @param {string} dec - The data to convert
+            * @return {object}
+            */
+            toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x'+ result;
+            }
+            /**
+            * to wei
+            * @param {string} ethAmount - Ether to conver to wei
+            * @return {object}
+            */
+            toWei(ethAmount) {
+                return webpack.convert(ethAmount, 'eth', 'wei');
             }
         } window.customElements.define(DataTransaction.is, DataTransaction);
     </script>
