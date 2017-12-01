@@ -338,7 +338,7 @@ Example:
 
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
-                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{sendAmount}}" on-keyup="_checkBalance"></paper-input>
+                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
                     <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="send-buttonbox">
                         <div class="disagree" on-click="_start"></div>
@@ -496,7 +496,7 @@ Example:
                         type: Object,
                         statePath: 'balance',
                     },
-                    sendAmount: {
+                    amountToSend: {
                         type: String,
                     },
                 };
@@ -583,8 +583,8 @@ Example:
             */
             _goToConfirm() {
                 let txData = {
-                    amount: this.sendAmount,
-                    to: this.sendToPublicKey,
+                    amountToSend: this.amountToSend,
+                    toAddress: this.sendToPublicKey,
                 };
                 sessionStorage.setItem('tx', JSON.stringify(txData));
                 this.path = 'confirm-sending/';
@@ -593,7 +593,7 @@ Example:
             * Fires when the user enters each number into amaount
             */
             _checkBalance() {
-                if (this.sendAmount >= this.balance.swt) {
+                if (this.amountToSend >= this.balance.swt) {
                     this.error = 'Not enough SWT!!';
                 } else {
                     this.error = null;
