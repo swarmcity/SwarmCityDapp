@@ -93,6 +93,14 @@
                         type: String,
                         statePath: 'shortcode',
                     },
+                    /**
+                    * Historic transactions for publickey
+                    * @type {Array}
+                    */
+                    transactions: {
+                        type: Array,
+                        statePath: 'transactions',
+                    },
                 };
             }
             /**
@@ -141,6 +149,12 @@
                         return {
                             type: 'SHORTCODE',
                             shortcode: shortcode,
+                        };
+                    },
+                    TRANSACTIONS: function(transactions) {
+                        return {
+                            type: 'TRANSACTIONS',
+                            transactions: transactions,
                         };
                     },
                 });
@@ -230,6 +244,20 @@
                     // but I'm not storing it yet in redux...
                     this.shortcode = reply.data.shortcode;
                     this.dispatch('SHORTCODE', this.shortcode);
+                });
+                // subscribe to updates of the tx history
+                socket.emit('subscribe', {
+                    channel: 'txhistory',
+                    args: {
+                        publickey: this.publickey,
+                    },
+                }, (reply) => {
+                    this.transactions = reply.data;
+                    this.dispatch('TRANSACTIONS', this.transactions);
+                });
+                socket.on('txhistoryChanged', (reply) => {
+                    this.transactions = reply.data;
+                    this.dispatch('TRANSACTIONS', this.transactions);
                 });
             }
 
