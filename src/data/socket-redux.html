@@ -93,6 +93,14 @@
                         type: String,
                         statePath: 'shortcode',
                     },
+                    /**
+                    * Historic transactions for publickey
+                    * @type {Array}
+                    */
+                    transactions: {
+                        type: Array,
+                        statePath: 'transactions',
+                    },                    
                 };
             }
             /**
@@ -143,6 +151,12 @@
                             shortcode: shortcode,
                         };
                     },
+                    TRANSACTIONS: function(transactions) {
+                        return {
+                            type: 'TRANSACTIONS',
+                            transactions: transactions,
+                        };
+                    },                    
                 });
             }
 
@@ -231,6 +245,22 @@
                     this.shortcode = reply.data.shortcode;
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
+                // subscribe to updates of the tx history
+                socket.emit('subscribe', {
+                    channel: 'txhistory',
+                    args: {
+                        publickey: this.publickey,
+                    },
+                }, (reply) => {
+                    this.transactions = reply.data;
+                    this.dispatch('TRANSACTIONS', this.transactions);
+                });
+                socket.on('txhistoryChanged', (reply) => {
+                    this.transactions = reply.data;
+                    this.dispatch('TRANSACTIONS', this.transactions);
+                });
+
+
             }
 
             _locationChanged() {
