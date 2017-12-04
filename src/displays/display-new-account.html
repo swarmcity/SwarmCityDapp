@@ -36,14 +36,14 @@ The following custom properties and mixins are available for styling:
 
             .container {
                 @apply --layout-vertical;
-                @apply --layout-center-center;               
+                @apply --layout-center-center;
             }
 
 
             .container[wide-layout] {
                 @apply --layout-vertical;
                 @apply --layout-start;
-                @apply --layout-start-justified;               
+                @apply --layout-start-justified;
             }
 
             paper-input {
@@ -67,18 +67,21 @@ The following custom properties and mixins are available for styling:
                     @apply --body-default;
                 }
             }
-            
+
             .container[wide-layout] paper-input {
                 text-align: left;
                 max-width: 400px;
             }
+
             .container .errorcontainer {
                 min-height: 15vh;
             }
+
             .container[wide-layout] .errorcontainer {
                 text-align: left;
                 min-height: 8vh;
             }
+
             #error {
                 margin: 20px 0px;
                 @apply --body-bold;
@@ -88,6 +91,7 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center-justified;
                 text-align: center;
             }
+
             .container[wide-layout] #error {
                 margin: 20px 0px 30px 0px;
                 @apply --body-bold;
@@ -96,15 +100,25 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-start;
                 @apply --layout-start-justified;
             }
+
             .btn {
                 @apply --icon-button-big;
             }
-            .btn:active {
+
+            .agree {
+                @apply --next-grey4-normal;
+                opacity: 0.4;
+            }
+
+            .enabled {
+                @apply --next-blue-normal;
+                opacity: 1;
+            }
+
+            .enabled:active {
                 @apply --button-active;
             }
-            .agree {
-                @apply --next-blue-normal;
-            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -113,18 +127,17 @@ The following custom properties and mixins are available for styling:
                     @apply --retina;
                 }
             }
-
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+            <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_equals" value="{{password}}"></paper-input>
             <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals" value="{{confirmPassword}}"></paper-input>
             <div class="errorcontainer">
                 <span id="error">{{error}}</span>
             </div>
             <div class="btn">
-                <div class="agree" on-click="_agree"></div>
+                <div id="agree" class="agree" on-click="_agree"></div>
             </div>
         </div>
 
@@ -154,6 +167,7 @@ The following custom properties and mixins are available for styling:
                     */
                     password: {
                         type: String,
+                        observer: '_checkPassword',
                     },
                     /**
                     * Confirm Password
@@ -188,18 +202,22 @@ The following custom properties and mixins are available for styling:
             * takes the user to the next page in user creation
             */
             _agree() {
-                if (this.password == this.confirmPassword) {
+                if (this.password == this.confirmPassword && this.password.length > 4) {
                     this.$.wallet.createKey(this.password)
-                    .then((keyStore) => {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.keyStore = keyStore.utcKeystore;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                        this.path = 'account-complete/';
-                    });
+                        .then((keyStore) => {
+                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                            storage.keyStore = keyStore.utcKeystore;
+                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                            this.path = 'account-complete/';
+                        });
+                }
+                else if (this.password == this.confirmPassword && this.password.length <= 4) {
+                    this.error = this.localize('The password must be at least 5 characters long.');
                 }
             }
             /**
             * compares written passwords and updates label with it
+            * and checks if password is longer than 5 characters
             */
             _equals() {
                 if (this.password == this.confirmPassword || this.confirmPassword == '') {
@@ -207,6 +225,10 @@ The following custom properties and mixins are available for styling:
                 } else {
                     this.error = this.localize('The passwords dont match.');
                 }
+                if (this.confirmPassword.length > 4 && this.password == this.confirmPassword) {
+                        this.$.agree.classList.add('enabled');
+                    }
+                else (this.$.agree.classList.remove('enabled'));
             }
         }
         window.customElements.define(DisplayNewAccount.is, DisplayNewAccount);
