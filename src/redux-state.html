@@ -2,12 +2,26 @@
 <link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
 <script>
 let publicKey;
+let avatar;
+let username;
 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
 if (storage && storage.keyStore && storage.keyStore.address) {
     publicKey = storage.keyStore.address;
 }
+if (storage && storage.user && storage.user.username) {
+    username = storage.user.username;
+} else {
+    username = '';
+}
+if (storage && storage.user && storage.user.avatar) {
+    avatar = storage.user.avatar;
+} else {
+    avatar = '[[importHref]]../../images/defaultavatar.png';
+}
 let initialState = {
     gasprice: 0,
+    username: username,
+    avatar: avatar,
     shortcode: null,
     language: 'en',
     fx: {

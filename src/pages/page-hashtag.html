@@ -494,6 +494,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                        observer: '_changeUsername',
+                    },
                 };
             }
 
@@ -502,12 +511,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 window.onscroll = this._scrollHandler.bind(this);
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
+                if (this.username != undefined) {
                     this.completeAccount = true;
                 }
             }
@@ -725,6 +729,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.$.hashtag.classList.remove('hashtag-scroll');
                     this.$.infolink.classList.remove('info-toggle-scroll');
                 }
+            }
+            /**
+            * Will notify page of username change
+            */
+            _changeUsername() {
+                this.completeAccount = true;
             }
             /**
             * All animations this page needs

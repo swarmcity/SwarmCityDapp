@@ -184,7 +184,7 @@
                     */
                     avatar: {
                         type: String,
-                        value: '[[importPath]]../../images/defaultavatar.png',
+                        statePath: 'avatar',
                     },
                     /**
                     * routeSwitch changes the exact moment pages change when routing
@@ -195,6 +195,20 @@
                         observer: '_reset',
                     },
                 };
+            }
+            /**
+            * Redux action for setting avatar
+            * @param {String} avatar
+            */
+            static get actions() {
+                return Object.assign({
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
+                });
             }
             /**
             * Fired when the component is connected
@@ -340,6 +354,7 @@
                     ctx.drawImage(image, -77, -77);
                     const avatarUrl = newCanvas.toDataURL('image/jpeg');
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    this.dispatch('AVATAR', avatarUrl);
                     storage.user.avatar = avatarUrl;
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
                     window.history.back();
