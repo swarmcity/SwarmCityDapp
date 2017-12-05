@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../redux-state.html">
 
 <!--
 
@@ -121,14 +122,13 @@ The following custom properties and mixins are available for styling:
                     // routeHistory: {
                     //     type: Array,
                     // },
-
                     /**
                     * Username represents the users username
                     * @type {String}
                     */
                     username: {
                         type: String,
-                        value: 'username',
+                        statePath: 'username',
                     },
                     /**
                     * Avatar represents the users IPFS to their avatar image
@@ -136,7 +136,7 @@ The following custom properties and mixins are available for styling:
                     */
                     avatar: {
                         type: String,
-                        value: '[[importPath]]../../images/defaultavatar.png',
+                        statePath: 'avatar',
                     },
                     /**
                     * Balance represents the users SWT balance
@@ -162,15 +162,8 @@ The following custom properties and mixins are available for styling:
 
             ready() {
                 super.ready();
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 this.importHref('src/pages/page-my-profile.html');
                 this.importHref('src/pages/page-my-wallet.html');
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                }
             }
             /**
             * takes the user to the my-profile page
