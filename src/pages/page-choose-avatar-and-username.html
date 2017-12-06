@@ -168,7 +168,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="inputcontainer">
-                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}">{{username}}</paper-input>
+                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}"></paper-input>
                     </div>
                 </div>
 
@@ -232,15 +232,32 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: '[[importPath]]../../images/defaultavatar.png',
                     },
                     /**
-                    * The users username
+                    * Username represents the users username
                     * @type {String}
                     */
                     username: {
                         type: String,
+                        statePath: 'username',
                     },
                 };
             }
-
+            /**
+            * Redux action for setting username
+            * @param {String} username
+            */
+            static get actions() {
+                return Object.assign({
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
+            /**
+            * Fired when the component is connected
+            */
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -250,15 +267,6 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             ready() {
                 super.ready();
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                } else {
-                    this.username = 'username';
-                }
             }
             /**
             * takes the user to page-stop-signup
@@ -276,6 +284,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * The user selected the next button
             */
             _agree() {
+                this.dispatch('USERNAME', this.username);
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
