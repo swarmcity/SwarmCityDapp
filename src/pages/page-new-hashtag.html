@@ -1,0 +1,205 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-new-hashtag">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+    -->
+        <style include="shared-styles">
+            :host {
+                @apply --titlepage-open;
+            }
+
+            .container {
+                background-image: var(--sc-background);
+                @apply --titlepage-open-container;
+            }
+
+            .container .top {
+                @apply --titlepage-open-container-top;
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+            }
+
+            .container .bottom {
+                @apply --titlepage-open-container-bottom;
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+            }
+
+            .container .title {
+                @apply --titlepage-title;
+                color: var(--sc-grey3b);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-grey4);
+            }
+
+            .container[wide-layout] {
+                @apply --titlepage-open-wide-container;
+            }
+
+            .container[wide-layout] .top {
+                @apply --titlepage-open-wide-container-top;
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-open-wide-container-bottom;
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+            .centerpiece {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                background-color: rgba(0,0,0,0.05);
+                width: 100%;
+                max-width: 750px;
+                box-sizing:border-box;
+                padding: 40px;
+                @apply --body-default;
+                margin: 5vh 0px;
+                text-align: center;
+            }
+
+            .container[wide-layout] .centerpiece {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                width: 100%;
+                text-align: left;
+                margin-top: 10vh;
+                padding: 40px;
+                text-align: left;
+            }
+
+            .button {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --text-button-big;
+                color: var(--sc-grey4);
+                white-space: nowrap;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .container[wide-layout] .button {
+                margin-top: 0px;
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+
+
+            .bluelink {
+                @apply --blue-link;
+                margin-top: 20px;
+                @apply --body-bold;
+                white-space: nowrap;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+
+
+
+        </style>
+
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="title">{{localize('Create a new hashtag')}}</div>
+                <div class="centerpiece">
+                    <div>{{localize('Hashtags are marketplaces.')}}</div>
+                    <div class="bluelink">{{localize('Hashtags revisited')}}</div>     
+                </div>                               
+            </div>
+            <div class="flexer"></div>
+            <div class="bottom">
+                <div class="button" on-click="_toHashtagList">{{localize('back to hashtag list')}}</div>
+                <!-- <div class="bluetext">{{localize('convert my ARC')}}</div> -->
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class MyPageNewHashtag extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-new-hashtag';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                     * Path is the current or requested path
+                     * @type {String}
+                     */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+             * takes the user to the initiating hashtag page
+             */
+            _toHashtagList() {
+                this.path = 'hashtag-list/';
+            }
+            /**
+             * changes the current path
+             */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyPageNewHashtag.is, MyPageNewHashtag);
+    </script>
+</dom-module>

@@ -17,7 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
 <dom-module id="page-resize-avatar">
     <template>
-    <!--
+        <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
     -->
         <style include="shared-styles">
@@ -94,12 +94,11 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] .bluetext {
                 margin-top: 40px;
             }
-
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <display-resize-avatar path="{{path}}"></display-resize-avatar>
+            <display-resize-avatar path="{{path}}" route-switch="{{routeSwitch}}"></display-resize-avatar>
         </div>
     </template>
     <script>
@@ -113,6 +112,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * language is the current user language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -124,6 +127,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * routeSwitch changes the exact moment pages change when routing
+                    * @type {Array}
+                    */
+                    routeSwitch: {
+                        type: Array,
                     },
                 };
             }

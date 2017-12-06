@@ -1,0 +1,117 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<!--
+
+Example:
+```
+<display-hashtagadd-btn></display-hashtagadd-btn>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-hashtagadd-btn` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-hashtagadd-btn">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .hashtaggadd {
+                @apply --icon-button-big;
+                cursor: pointer;
+                background-color: rgba(255, 255, 255, 0.25);
+            }
+
+            .hashtaggadd:active {
+                @apply --button-active;
+            }
+
+            .icon {
+                @apply --plus-grey4-normal;
+            }
+
+        </style>
+
+        <div class="hashtaggadd" on-click="_newhashtag">
+            <div class="icon"></div>
+        </div>
+
+    </template>
+    <script>
+        class MyDisplayHashtagAddBtn extends Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        ) {
+            static get is() {
+                return 'display-hashtagadd-btn';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Loading indicates if the component is loading
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * route data represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * completeAccount represents true of the user
+                    * has a username, avatar and address
+                    * @type {Boolean}
+                    */
+                    completeAccount: {
+                        type: Boolean,
+                        value: true,
+                    },
+                };
+            }
+
+            /**
+            * Either go to the new here or new deal page depending if the user has a
+            * complete acocunt.
+            */
+            _newhashtag() {
+                sessionStorage.setItem('origin', this.route.path);
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                if (storage.keyStore && storage.keyStore.Crypto) {
+                    this.path = 'new-hashtag/';
+                } else {
+                    this.path = 'new-hashtag/';
+                }
+            }
+        }
+        window.customElements.define(MyDisplayHashtagAddBtn.is, MyDisplayHashtagAddBtn);
+    </script>
+</dom-module>

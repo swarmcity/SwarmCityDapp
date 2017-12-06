@@ -178,6 +178,22 @@
                         reflectToAttribute: true,
                         notify: true,
                     },
+                    /**
+                    * Avatar represents the users IPFS to their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        value: '[[importPath]]../../images/defaultavatar.png',
+                    },
+                    /**
+                    * routeSwitch changes the exact moment pages change when routing
+                    * @type {Array}
+                    */
+                    routeSwitch: {
+                        type: Array,
+                        observer: '_reset',
+                    },
                 };
             }
             /**
@@ -214,7 +230,7 @@
                         nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
                     });
                 }.bind(this);
-                img.src = '../../images/defaultavatar.png';
+                img.src = this.avatar;
             }
             /**
             * Fired when the user selects a file
@@ -329,6 +345,37 @@
                     window.history.back();
                 };
                 image.src = jpegUrl;
+            }
+            /**
+            * Fired when the page routes away, all image values are reset
+            * @param {event} event The event from the on-change
+            */
+            _reset() {
+                if (this.routeSwitch.includes('resize-avatar')) {
+                    const canvas = this.$.canvas;
+                    const img = new Image();
+                    const draw = this._drawCanvas.bind(this);
+                    img.crossOrigin = 'anonymous';
+                    canvas.width = 250;
+                    canvas.height = 250;
+                    this.img = this.defaultImg = img;
+                    img.onload = function() {
+                        let nonaf = this.mathCanvas = mathCanvas({
+                            canvas,
+                            draw,
+                            noBounds: true,
+                            size: {width: img.width, height: img.height},
+                            viewBox: {x: 0, y: 0, width: img.width, height: img.height},
+                        });
+                        draw();
+                        addWheelListener(canvas, function (e) { // eslint-disable-line
+                            e.preventDefault();
+                            nonaf.setCenter(e.clientX, e.clientY);
+                            nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
+                        });
+                    }.bind(this);
+                    img.src = this.avatar;
+                }
             }
             /**
             * Fired when the user selects a rotate

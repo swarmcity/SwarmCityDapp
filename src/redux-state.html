@@ -1,8 +1,37 @@
 <script src="../node_modules/redux/dist/redux.min.js"></script>
 <link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
 <script>
+let publicKey;
+let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+if (storage && storage.keyStore && storage.keyStore.address) {
+    publicKey = storage.keyStore.address;
+}
 let initialState = {
+    gasprice: 0,
+    shortcode: null,
     language: 'en',
+    fx: {
+        swtxusd: 1.6,
+        swtxeur: 3.4,
+    },
+    balance: {
+        eth: 0.002,
+        swt: 2,
+        arc: 20,
+    },
+    reputation: [{
+        hashtag: 'Pioneer',
+        swr: 11,
+        dealsDone: 2,
+        dealsConflicted: 1,
+    },
+    {
+        hashtag: 'NeedARide',
+        swr: 12,
+        dealsDone: 3,
+        dealsConflicted: 0,
+    }],
+    transactions: [],
     hashtags: [{
         name: 'Pioneer',
         deals: 25,
@@ -243,7 +272,8 @@ let initialState = {
         ],
     },
     ],
-    balance: 32,
+    publickey: publicKey,
+    nonce: 1,
 };
 
 
@@ -252,9 +282,26 @@ let reducer = function(state, action) {
         return initialState;
     }
     switch (action.type) {
+        case 'SHORTCODE': {
+            let shortcode = state.shortcode;
+            shortcode = action.shortcode;
+            return Object.assign({}, state, {
+                shortcode: shortcode,
+            });
+        }
+        case 'TRANSACTIONS': {
+            let transactions = state.transactions;
+            transactions = action.transactions;
+            return Object.assign({}, state, {
+                transactions: transactions,
+            });
+        }
         case 'BALANCE': {
             let balance = state.balance;
-            balance = action.balance;
+            balance = action.balance.reduce((accumulator, currentValue) => {
+                accumulator[currentValue.tokenSymbol.toLowerCase()] = currentValue.balance;
+                return accumulator;
+            }, {});
             return Object.assign({}, state, {
                 balance: balance,
             });
@@ -292,6 +339,59 @@ let reducer = function(state, action) {
             location = action.location;
             return Object.assign({}, state, {
                 location: location,
+            });
+        }
+        case 'PUBLICKEY': {
+            let publickey = state.publickey;
+            publickey = action.publickey;
+            return Object.assign({}, state, {
+                publickey: publickey,
+            });
+        }
+        case 'GASPRICE': {
+            let gasprice = state.gasprice;
+            gasprice = action.gasprice;
+            return Object.assign({}, state, {
+                gasprice: gasprice,
+            });
+        }
+        case 'NONCE': {
+            let nonce = state.nonce;
+            nonce = action.nonce;
+            return Object.assign({}, state, {
+                nonce: nonce,
+            });
+        }
+        // This is the shortcode we want a public key for
+        case 'REQTOKEY': {
+            let reqtokey = state.reqtokey;
+            reqtokey = action.reqtokey;
+            return Object.assign({}, state, {
+                reqtokey: reqtokey,
+            });
+        }
+        // This is the translation of the shortcode to a public key
+        case 'TOKEY': {
+            let tokey = state.tokey;
+            tokey = action.tokey;
+            return Object.assign({}, state, {
+                tokey: tokey,
+            });
+        }
+        // This is the signed transaction to broadcast
+        case 'BROADCAST': {
+            let broadcast = state.broadcast;
+            broadcast = action.broadcast;
+            return Object.assign({}, state, {
+                broadcast: broadcast,
+            });
+        }
+        // An array containing all reputation erned
+        case 'REPUTATION': {
+            let reputation = state.reputation;
+            reputation = action.reputation;
+            return Object.assign({}, state, {
+                reputation: reputation,
             });
         }
     }

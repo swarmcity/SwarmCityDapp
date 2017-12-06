@@ -3,6 +3,8 @@
 <dom-module id="socket-redux">
 
     <script>
+        let socket;
+
         class SocketRedux extends new ReduxMixin(Polymer.Element) {
             static get is() {
                 return 'socket-redux';
@@ -14,7 +16,7 @@
                     * @type {Array}
                     */
                     balance: {
-                        type: Array,
+                        type: Object,
                     },
                     /**
                     * fx is the SWT exchange rates
@@ -38,6 +40,66 @@
                         type: String,
                         statePath: 'location',
                         observer: '_locationChanged',
+                    },
+                    /**
+                    * publickey is the wallet pubkey
+                    * @type {String}
+                    */
+                    publickey: {
+                        type: String,
+                        statePath: 'publickey',
+                        observer: '_publickeyChanged',
+                    },
+                    /**
+                    * gasprice is the recommended gasprice
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    gasprice: {
+                        type: Number,
+                    },
+                    /**
+                    * nonce is the current nonce for the wallet's pubkey
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    nonce: {
+                        type: Number,
+                    },
+                    /**
+                    * This is the shortcode we want a public key for
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    reqtokey: {
+                        type: Number,
+                        statePath: 'reqtokey',
+                        observer: '_reqToKey',
+                    },
+                    /**
+                    * This is the signed transaction to be broadcast
+                    * @type {String}
+                    */
+                    broadcast: {
+                        type: String,
+                        statePath: 'broadcast',
+                        observer: '_broadcast',
+                    },
+                    /**
+                    * This is a generated shortcode
+                    * @type {String}
+                    */
+                    shortcode: {
+                        type: String,
+                        statePath: 'shortcode',
+                    },
+                    /**
+                    * Historic transactions for publickey
+                    * @type {Array}
+                    */
+                    transactions: {
+                        type: Array,
+                        statePath: 'transactions',
                     },
                 };
             }
@@ -65,31 +127,169 @@
                             hashtags: hashtags,
                         };
                     },
+                    GASPRICE: function(gasprice) {
+                        return {
+                            type: 'GASPRICE',
+                            gasprice: gasprice,
+                        };
+                    },
+                    NONCE: function(nonce) {
+                        return {
+                            type: 'NONCE',
+                            nonce: nonce,
+                        };
+                    },
+                    TOKEY: function(tokey) {
+                        return {
+                            type: 'TOKEY',
+                            tokey: tokey,
+                        };
+                    },
+                    SHORTCODE: function(shortcode) {
+                        return {
+                            type: 'SHORTCODE',
+                            shortcode: shortcode,
+                        };
+                    },
+                    TRANSACTIONS: function(transactions) {
+                        return {
+                            type: 'TRANSACTIONS',
+                            transactions: transactions,
+                        };
+                    },
                 });
             }
+
             ready() {
                 super.ready();
-                socket.on('balanceChanged', (data) => {
-                    this.balance = data;
-                    this.dispatch('BALANCE', this.balance);
-                });
-                socket.on('fxChanged', (data) => {
-                    this.fx = data;
-                    this.dispatch('FX', this.fx);
-                });
-                socket.on('hashtagsChanged', (data) => {
-                    this.hashtags = data;
+
+                // socket = io.connect('localhost:8011', {query: 'apiUser=swarmCity'});
+
+                socket = io.connect('https://www.swarmdev.city/api/', {query: 'apiUser=swarmCity'}); // eslint-disable-line
+
+                // get the list of hashtags
+                socket.emit('subscribe', {
+                    channel: 'hashtags',
+                }, (reply) => {
+                    this.hashtags = reply.data;
                     this.dispatch('HASHTAGS', this.hashtags);
                 });
+
+                socket.on('hashtagsChanged', (reply) => {
+                    this.hashtags = reply.data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+
+                socket.on('fxChanged', (reply) => {
+                    this.fx = reply.data;
+                    this.dispatch('FX', this.fx);
+                });
+                socket.on('gasPriceChanged', (reply) => {
+                    this.gasprice = reply.data;
+                    this.dispatch('GASPRICE', this.gasprice);
+                });
             }
+
+            _publickeyChanged() {
+                // subscribe to updates of the balance of this publickey
+                socket.emit('subscribe', {
+                    channel: 'balance',
+                    args: {
+                        address: this.publickey,
+                    },
+                }, (reply) => {
+                    this.balance = reply.data;
+                    this.dispatch('BALANCE', this.balance);
+                });
+                socket.on('balanceChanged', (reply) => {
+                    this.balance = reply.data;
+                    this.dispatch('BALANCE', this.balance);
+                });
+                // subscribe to updates of the nonce of this publickey
+                socket.emit('subscribe', {
+                    channel: 'nonce',
+                    args: {
+                        address: this.publickey,
+                    },
+                }, (reply) => {
+                    this.nonce = reply.data.nonce;
+                    this.dispatch('NONCE', this.nonce);
+                });
+                socket.on('nonceChanged', (reply) => {
+                    this.nonce = reply.data.nonce;
+                    this.dispatch('NONCE', this.nonce);
+                });
+                // subscribe to updates of the shortcode => publickey
+                socket.emit('subscribe', {
+                    channel: 'shortcode',
+                    args: {
+                        validity: 60*1000,
+                        payload: {
+                            publickey: this.publickey,
+                        },
+                    },
+                }, (reply) => {
+                    this.shortcode = reply.data;
+                    this.dispatch('SHORTCODE', this.shortcode);
+                });
+                socket.on('shortcodeChanged', (reply) => {
+                    // note to Will : this reply contains
+                    // {
+                    //   shortcode: 12345,
+                    //   validity: 60000,
+                    // }
+                    // so you can use the 'validity' to create a
+                    // countdown till the next code.
+                    // but I'm not storing it yet in redux...
+                    this.shortcode = reply.data.shortcode;
+                    this.dispatch('SHORTCODE', this.shortcode);
+                });
+                // subscribe to updates of the tx history
+                socket.emit('subscribe', {
+                    channel: 'txhistory',
+                    args: {
+                        publickey: this.publickey,
+                    },
+                }, (reply) => {
+                    this.transactions = reply.data;
+                    this.dispatch('TRANSACTIONS', this.transactions);
+                });
+                socket.on('txhistoryChanged', (reply) => {
+                    this.transactions = reply.data;
+                    this.dispatch('TRANSACTIONS', this.transactions);
+                });
+            }
+
             _locationChanged() {
                 switch (this.location) {
                     case '/hashtag/1c9v87bc98v7a/':
-                        // emit
+                        // the number here '1c9v87bc98v7a'is the hashtag id
+                        // now we know which page the user is on request the collection...
+                        // of items and save them to redux in ITEMCOLLECTION
                         break;
                     case '/hashtag/7c9v87bc98v7b/':
-                        // emit
+                    // the number here '7c9v87bc98v7b'is the hashtag id
+                        // now we know which page the user is on request the collection...
+                        // of items and save them to redux in ITEMCOLLECTION
                 }
+            }
+            _reqToKey() {
+                socket.emit('readShortCode', {
+                    shortcode: this.reqtokey,
+                }, (reply) => {
+                    if (reply.response === 200) {
+                        this.tokey = reply.data.payload.publickey;
+                        this.dispatch('TOKEY', this.tokey);
+                    }
+                });
+            }
+            _broadcast() {
+                // send this.broadcast to the api, this.broadcast is the signed tx
+                socket.emit('sendRawTx', {
+                    tx: this.broadcast,
+                }, (data) => {
+                    // does anything need to happen here ?
+                });
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>

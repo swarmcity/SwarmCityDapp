@@ -29,6 +29,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 100%;
                 width: 100vw;
                 max-width: 100%;
+                min-height: 100vh;
+                background-image: var(--sc-bg);
                 display: block;
             }
 
@@ -36,7 +38,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
-                background-color: #DADADA;
+                background-image: var(--sc-bg);
                 width: 100%;
                 min-height: 100vh;
                 max-width: 100%;
@@ -56,7 +58,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 width: 100%;
                 box-sizing: border-box;
-                padding: 0 14vw 10vh 14vw;
+                padding: 0px 14vw 10vh 14vw;
                 max-width: 100%;
             }
 
@@ -65,7 +67,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-start;
                 box-sizing: border-box;
-                padding: 16vh 12vw 10vh 12vw;
+                padding: 80px 10vw 60px 10vw;
                 max-width: 100%;
             }
 
@@ -89,22 +91,29 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .avatarcontainer {
                 @apply --layout-horizontal;
-                @apply --layout-center-justified;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+                margin-top: 100px;
+            }
+
+            .container[wide-layout] .avatarcontainer {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+                margin-top: 0px;
             }
 
             .avatar {
                 @apply --layout-horizontal;
-                @apply --layout-center-justified;
+                @apply --layout-end-justified;
                 @apply --layout-end;
-                margin-left: 40px;
-                margin-top: 12vh;
             }
 
             .container[wide-layout] .avatar {
                 @apply --layout-horizontal;
-                @apply --layout-center-justified;
+                @apply --layout-end-justified;
                 @apply --layout-end;
-                margin: 0 0 0 0;
+                margin: 0 30px 0 0;
             }
 
             .arrowcontainer {
@@ -116,9 +125,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 @apply --layout-center;
-                position: relative;
-                right: 25px;
+                position: absolute;
                 cursor: pointer;
+                margin: 0px 0px 0px 5px;
             }
 
             .arrowup {
@@ -252,10 +261,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .divider {
-                width: 100vw;
-                background-color: #9B9B9B;
-                opacity: 0.2;
-                height: 1px;
+                @apply --general-divider;
                 max-width: 100%;
             }
 
@@ -268,7 +274,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] display-profile-swr {
                 box-sizing: border-box;
-                padding: 50px 12vw;
+                padding: 50px 0;
 
             }
 
@@ -279,7 +285,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 width: 100%;
                 box-sizing: border-box;
-                padding: 50px 14vw;
+                padding: 5vh 14vw 10vh 14vw;
                 max-width: 100%;
             }
 
@@ -294,20 +300,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-            }
-
-            .logout {
-                @apply --layout-vertical;
-                @apply --layout-center-center;
-                @apply --text-button-big-fullwhite;
-                box-sizing: border-box;
-                width: 100%;
-                margin: 0 0 10px 0;
-                max-width: 320px;
-            }
-
-            .logout:active {
-                @apply --button-active;
             }
 
             .backup {
@@ -333,27 +325,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 width: 100%;
                 max-width: 320px;
+                margin-top: 10px;
             }
 
             .delete:active {
                 @apply --button-active;
-            }
-
-            .bottom {
-                @apply --layout-vertical;
-                @apply --layout-end-justified;
-                @apply --layout-center;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 45px 14vw 35px 14vw;
-                max-width: 100%;
-            }
-
-            .container[wide-layout] .bottom {
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                box-sizing: border-box;
-                padding: 40px 12vw 85px 12vw;
             }
 
             .blur {
@@ -363,6 +339,7 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
+                .arrowup,
                 .close {
                     @apply --retina;
                 }
@@ -375,15 +352,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-click="_close"></div>
                 <div class="avatarcontainer">
                     <div class="avatar">
-                        <img src="{{avatar}}" on-click="_toResizeAvatar">
-                        <div class="arrowcontainer" on-click="_toResizeAvatar">
+                        <img id="avatarimg" src="{{avatar}}" on-click="_toResizeAvatar">
+                        <div id="arrowcontainer" class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
                     </div>
                 </div>
-                <div class="topflex">
+                <div class="topflex" id="topFlex">
                     <div class="username">
-                        <paper-input label="Username" value="{{username}}" always-float-label></paper-input>
+                        <paper-input label="Username" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
                     </div>
                     <display-show-keys
                         toggle-unlock="{{toggleUnlock}}"
@@ -392,25 +369,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     ></display-show-keys>
 
                 </div>
-                <div class="topright">
+                <div class="topright" id="notifications">
                     <div class="notifications" on-click="_toNotifications">{{localize('no new notifications')}}</div>
                 </div>
             </div>
-            <div class="divider"></div>
-            <display-profile-swr></display-profile-swr>
-            <div class="divider"></div>
-            <div class="buttonbox">
-                <div class="logout" on-click="_logout">{{localize('logout this user')}}</div>
+            <div class="divider" id="divider1"></div>
+            <display-profile-swr id="displayProfileSWR"></display-profile-swr>
+            <div class="divider" id="divider2"></div>
+            <div class="buttonbox" id="buttonBox">
                 <div class="backup" on-click="_backup">{{localize('backup this user')}}</div>
-            </div>
-            <div class="bottom">
                 <div class="delete" on-click="_delete">{{localize('delete this user')}}</div>
             </div>
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
                 <display-unlock 
-                    color="blue" 
+                    blue
                     toggle-unlock="{{toggleUnlock}}"
                     toggle-private-key="{{togglePrivateKey}}" 
                     private-key="{{privateKey}}" 
@@ -445,6 +419,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'my-profile',
+                    },
+                    /**
                     * Username represents the users username
                     * @type {String}
                     */
@@ -458,7 +448,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     avatar: {
                         type: String,
-                        value: '../../images/defaultavatar.png',
+                        value: '[[importPath]]../../images/defaultavatar.png',
                     },
                     /**
                     * Error is a string message being shown when passwords don't match
@@ -560,12 +550,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _toNotifications() {
                 this.path = 'notifications/';
             }
-            /**
-            * lgout the user and take him/her to make-backup-profile
-            */
-            _logout() {
-                this.path = 'welcome/';
-            }
+
             /**
             * takes the user to make-backup-profile
             */
@@ -607,6 +592,855 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 else {
                     this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * save username
+            */
+            _saveUsername() {
+                // save this.username
+            }
+            /**
+            * load animations
+            */
+            _loadElementAnimations() {
+                if (this.routeHistory[0] != this.routeHistory[1]) {
+                    let middleCalc = (window.innerWidth/2)-60+'px';
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'hashtag-list') {
+                            // Going to page Hashtag-List
+                            if (this.wide) {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(-20px,-50px) scale(0.555, 0.555)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.displayProfileSWR.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform':
+                                            'translate(-'+middleCalc+',-85px) scale(0.444, 0.444)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.displayProfileSWR.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                        }
+                        if (this.routeHistory[1] == 'hashtag') {
+                            // Going to page Hashtag
+                            if (this.wide) {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(-20px,-50px) scale(0.555, 0.555)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.displayProfileSWR.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform':
+                                            'translate(-'+middleCalc+',-85px) scale(0.444, 0.444)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.displayProfileSWR.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                        }
+                    } else if (this.routeHistory[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        if (this.routeHistory[0] == 'hashtag-list') {
+                            // Coming from page Hashtag-List
+                            this.$.avatarimg.animate(
+                                [
+                                    {'transform': 'translateY(0px)'},
+                                    {'transform': 'translateY(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.arrowcontainer.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.topFlex.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.notifications.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.displayProfileSWR.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider2.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeHistory[0] == 'hashtag') {
+                            // Coming from page Hashtag
+                            this.$.avatarimg.animate(
+                                [
+                                    {'transform': 'translateY(0px)'},
+                                    {'transform': 'translateY(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.arrowcontainer.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.topFlex.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.notifications.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.displayProfileSWR.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider2.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
                 }
             }
         }
