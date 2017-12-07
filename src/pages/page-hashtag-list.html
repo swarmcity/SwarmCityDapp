@@ -125,7 +125,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             <div class="header">
                 <div class="topleft">
-                    <dom-if if="{{completeAccount}}">
+                    <dom-if if="{{publicKey}}">
                         <template>
                             <display-my-info
                                 path="{{path}}" 
@@ -201,13 +201,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: 'hashtag-list',
                     },
                     /**
-                    * completeAccount determines if an account is present
-                    * in localstorage or not
-                    * @type {Boolean}
+                    * PublicKey represents the user's public key
+                    * @type {String}
                     */
-                    completeAccount: {
-                        type: Boolean,
-                        value: false,
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
                     },
                 };
             }
@@ -216,9 +215,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 this.importHref('src/pages/page-hashtag.html');
-                if (typeof(this.username) == 'string') {
-                    this.completeAccount = true;
-                }
             }
             /**
             * takes the user to the welcome page

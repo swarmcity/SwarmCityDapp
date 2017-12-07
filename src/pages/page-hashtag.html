@@ -304,7 +304,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
-                    <dom-if if="{{completeAccount}}">
+                    <dom-if if="{{publicKey}}">
                         <template>
                                 <display-my-info 
                                     path="{{path}}" 
@@ -337,7 +337,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </display-hashtag-about>
                 </template>
             </dom-if>
-            <dom-if if="{{completeAccount}}">
+            <dom-if if="{{publicKey}}">
                 <template>
                     <display-items-involved 
                         id="itemsInvolved">
@@ -486,22 +486,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                     },
                     /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
-                    */
-                    completeAccount: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * Username represents the users username
+                    * PublicKey represents the user's public key
                     * @type {String}
                     */
-                    username: {
+                    publicKey: {
                         type: String,
-                        statePath: 'username',
-                        observer: '_changeUsername',
+                        statePath: 'publicKey',
                     },
                 };
             }
@@ -511,9 +501,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 window.onscroll = this._scrollHandler.bind(this);
-                if (this.username != undefined) {
-                    this.completeAccount = true;
-                }
             }
             /**
             * find the selected hashtag
@@ -729,12 +716,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.$.hashtag.classList.remove('hashtag-scroll');
                     this.$.infolink.classList.remove('info-toggle-scroll');
                 }
-            }
-            /**
-            * Will notify page of username change
-            */
-            _changeUsername() {
-                this.completeAccount = true;
             }
             /**
             * All animations this page needs
