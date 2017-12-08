@@ -242,9 +242,9 @@ This code may only be used under the license found at https://github.com/swarmci
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="close" on-click="_close"></div>
             <div class="top">
-                <div class="title">{{localize('Great!')}}</div>
-                <div class="subtitle">{{localize('You now have a Swarm City account.')}} {{localize('Lets create a backup and youre all set!')}}</div>
-                <div class="account">
+                <div class="title" id="title">{{localize('Great!')}}</div>
+                <div class="subtitle" id="subtitle">{{localize('You now have a Swarm City account.')}} {{localize('Lets create a backup and youre all set!')}}</div>
+                <div class="account" id="content">
                     <img src="{{avatar}}">
                     <div class="info">
                         <div class="name">{{username}}</div>
@@ -258,7 +258,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="flexer"></div>
             <div class="bottom">
-                <div class="btn" on-click= "_next">{{localize('backup my account')}}</div>
+                <div class="btn" on-click= "_next" id="buttons">{{localize('backup my account')}}</div>
             </div>
         </div>
         <dom-if if="{{toggleUnlock}}">
@@ -297,6 +297,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'account-complete',
                     },
                     /**
                     * showPubKey determines if the Public Key is fully shown or not
@@ -401,6 +417,267 @@ This code may only be used under the license found at https://github.com/swarmci
             _privateKeyObserver() {
                 this.togglePrivateKey = !this.togglePrivateKey;
             }
+            _loadElementAnimations() {
+            if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'choose-password') {
+                            // Here come the Exit Animations, going to page choose-password
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.subtitle.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeHistory[1] == 'make-backup') {
+                            // Here come the Exit Animations, going to page make-backup
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.subtitle.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeHistory[0] == 'choose-password') {
+                        // Coming from page choose-password
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                    if (this.routeHistory[0] == 'make-backup') {
+                        // Coming from page make-backup
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements.define(MyAccountComplete.is, MyAccountComplete);
     </script>

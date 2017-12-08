@@ -2,12 +2,29 @@
 <link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
 <script>
 let publicKey;
+let avatar;
+let username;
 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+if (storage && storage.keyStore && storage.keyStore.address) {
+    publicKey = storage.keyStore.address;
+}
+if (storage && storage.user && storage.user.username) {
+    username = storage.user.username;
+} else {
+    username = '';
+}
+if (storage && storage.user && storage.user.avatar) {
+    avatar = storage.user.avatar;
+} else {
+    avatar = '[[importHref]]../../images/defaultavatar.png';
+}
 if (storage && storage.keyStore && storage.keyStore.address) {
     publicKey = storage.keyStore.address;
 }
 let initialState = {
     gasprice: 0,
+    username: username,
+    avatar: avatar,
     shortcode: null,
     language: 'en',
     fx: {
@@ -272,7 +289,7 @@ let initialState = {
         ],
     },
     ],
-    publickey: publicKey,
+    publicKey: publicKey,
     nonce: 1,
 };
 
@@ -342,10 +359,10 @@ let reducer = function(state, action) {
             });
         }
         case 'PUBLICKEY': {
-            let publickey = state.publickey;
-            publickey = action.publickey;
+            let publicKey = state.publicKey;
+            publicKey = action.publicKey;
             return Object.assign({}, state, {
-                publickey: publickey,
+                publicKey: publicKey,
             });
         }
         case 'GASPRICE': {
@@ -386,12 +403,28 @@ let reducer = function(state, action) {
                 broadcast: broadcast,
             });
         }
-        // An array containing all reputation erned
+        // An array containing all reputation earned
         case 'REPUTATION': {
             let reputation = state.reputation;
             reputation = action.reputation;
             return Object.assign({}, state, {
                 reputation: reputation,
+            });
+        }
+        // A base64 string containing the user avatar
+        case 'AVATAR': {
+            let avatar = state.avatar;
+            avatar = action.avatar;
+            return Object.assign({}, state, {
+                avatar: avatar,
+            });
+        }
+        // A string containing the username
+        case 'USERNAME': {
+            let username = state.username;
+            username = action.username;
+            return Object.assign({}, state, {
+                username: username,
             });
         }
     }

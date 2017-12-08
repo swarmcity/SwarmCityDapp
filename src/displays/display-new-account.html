@@ -36,14 +36,13 @@ The following custom properties and mixins are available for styling:
 
             .container {
                 @apply --layout-vertical;
-                @apply --layout-center-center;               
+                @apply --layout-center-center;
             }
-
 
             .container[wide-layout] {
                 @apply --layout-vertical;
                 @apply --layout-start;
-                @apply --layout-start-justified;               
+                @apply --layout-start-justified;
             }
 
             paper-input {
@@ -67,18 +66,21 @@ The following custom properties and mixins are available for styling:
                     @apply --body-default;
                 }
             }
-            
+
             .container[wide-layout] paper-input {
                 text-align: left;
                 max-width: 400px;
             }
+
             .container .errorcontainer {
                 min-height: 15vh;
             }
+
             .container[wide-layout] .errorcontainer {
                 text-align: left;
                 min-height: 8vh;
             }
+
             #error {
                 margin: 20px 0px;
                 @apply --body-bold;
@@ -88,6 +90,7 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center-justified;
                 text-align: center;
             }
+
             .container[wide-layout] #error {
                 margin: 20px 0px 30px 0px;
                 @apply --body-bold;
@@ -96,15 +99,25 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-start;
                 @apply --layout-start-justified;
             }
+
             .btn {
                 @apply --icon-button-big;
             }
-            .btn:active {
+
+            .agree {
+                @apply --next-grey4-normal;
+                opacity: 0.4;
+            }
+
+            .enabled {
+                @apply --next-blue-normal;
+                opacity: 1;
+            }
+
+            .enabled:active {
                 @apply --button-active;
             }
-            .agree {
-                @apply --next-blue-normal;
-            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -113,18 +126,17 @@ The following custom properties and mixins are available for styling:
                     @apply --retina;
                 }
             }
-
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
-            <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
-            <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals" value="{{confirmPassword}}"></paper-input>
+        <div class="container" on-click="_equals" wide-layout$="{{wide}}">
+            <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}" autofocus></paper-input>
+            <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" value="{{confirmPassword}}"></paper-input>
             <div class="errorcontainer">
                 <span id="error">{{error}}</span>
             </div>
             <div class="btn">
-                <div class="agree" on-click="_agree"></div>
+                <div id="agree" class="agree" on-click="_agree"></div>
             </div>
         </div>
 
@@ -163,6 +175,14 @@ The following custom properties and mixins are available for styling:
                         type: String,
                     },
                     /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
                     * Error
                     * @type {String}
                     */
@@ -180,6 +200,20 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -188,25 +222,38 @@ The following custom properties and mixins are available for styling:
             * takes the user to the next page in user creation
             */
             _agree() {
-                if (this.password == this.confirmPassword) {
+                if (this.password.length >= 1 && this.password == this.confirmPassword) {
                     this.$.wallet.createKey(this.password)
-                    .then((keyStore) => {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.keyStore = keyStore.utcKeystore;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                        this.path = 'account-complete/';
-                    });
+                        .then((keyStore) => {
+                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                            storage.keyStore = keyStore.utcKeystore;
+                            this.dispatch('PUBLICKEY', storage.keyStore.address);
+                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                            this.path = 'account-complete/';
+                        });
                 }
             }
             /**
-            * compares written passwords and updates label with it
+            * Displays error message when click on page and unequal input
             */
             _equals() {
-                if (this.password == this.confirmPassword || this.confirmPassword == '') {
-                    this.error = '';
-                } else {
-                    this.error = this.localize('The passwords dont match.');
+                if (this.password && this.password.length >= 1 && this.confirmPassword.length >= 1) {
+                    if (this.password == this.confirmPassword || this.confirmPassword == '') {
+                        this.error = '';
+                    } else {
+                        this.error = this.localize('The passwords dont match.');
+                    }
                 }
+            }
+            /**
+            * Compares input realtime and enables/disables enabled button layout
+            */
+            _checkInput() {
+                this.error = '';
+                if (this.password.length >= 1 && this.password == this.confirmPassword) {
+                    this.$.agree.classList.add('enabled');
+                }
+                else (this.$.agree.classList.remove('enabled'));
             }
         }
         window.customElements.define(DisplayNewAccount.is, DisplayNewAccount);

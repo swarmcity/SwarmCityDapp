@@ -112,10 +112,10 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title">{{localize('Do you want to delete this account from this device?')}}</div>
-                <div class="subtitle">{{localize('You can restore this account with your backup.')}}</div>
+                <div class="title" id="title">{{localize('Do you want to delete this account from this device?')}}</div>
+                <div class="subtitle" id="subtitle">{{localize('You can restore this account with your backup.')}}</div>
             </div>
-            <div class="bottom">
+            <div class="bottom" id="buttons">
                 <div class="confirmers">
                     <div on-click="_disagree"></div>
                     <div on-click="_deleteProfile">
@@ -149,6 +149,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'warning-delete',
+                    },
                 };
             }
 
@@ -179,6 +195,75 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            _loadElementAnimations() {
+            if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateY(0px)'},
+                                    {'transform': 'translateY(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.subtitle.animate(
+                                [
+                                    {'transform': 'translateY(0px)'},
+                                    {'transform': 'translateY(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateY(50px)'},
+                                {'transform': 'translateY(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateY(50px)'},
+                                {'transform': 'translateY(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
             }
         }
         window.customElements.define(MyWarningDelete.is, MyWarningDelete);

@@ -279,6 +279,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 150px 40px 0 40px;
 
             }
+            .stop-scrolling {
+                height: 100%;
+                overflow: hidden;
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -290,7 +294,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="dealbtn" id="dealButton">
                 <dom-if if="{{!faded}}">
                     <template>
@@ -304,12 +308,13 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
-                    <dom-if if="{{completeAccount}}">
+                    <dom-if if="{{publicKey}}">
                         <template>
                                 <display-my-info 
                                     path="{{path}}" 
                                     route="{{route}}"
-                                    route-history="[[routeHistory]]">
+                                    route-history="[[routeHistory]]"
+                                    id="displaymyinfo">
                                 </display-my-info>
                         </template>
                     </dom-if>
@@ -337,7 +342,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </display-hashtag-about>
                 </template>
             </dom-if>
-            <dom-if if="{{completeAccount}}">
+            <dom-if if="{{publicKey}}">
                 <template>
                     <display-items-involved 
                         id="itemsInvolved">
@@ -486,13 +491,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                     },
                     /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
+                    * PublicKey represents the user's public key
+                    * @type {String}
                     */
-                    completeAccount: {
-                        type: Boolean,
-                        value: false,
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
                     },
                 };
             }
@@ -502,14 +506,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 window.onscroll = this._scrollHandler.bind(this);
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                    this.completeAccount = true;
-                }
             }
             /**
             * find the selected hashtag
@@ -651,6 +647,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _fadeInOut() {
                 if (!this.faded) {
+                    this.$.container.classList.add('stop-scrolling');
                     this.faded = !this.faded;
                     this.$.fadeArea.animate(
                         this.anim.fadeOut.arr,
@@ -658,6 +655,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     );
                 }
                 else {
+                    this.$.container.classList.remove('stop-scrolling');
                     this.faded = !this.faded;
                     this.$.fadeArea.animate(
                         this.anim.fadeIn.arr,
@@ -1334,6 +1332,120 @@ This code may only be used under the license found at https://github.com/swarmci
                                 [
                                     {'transform': 'translateY(0px)', 'opacity': '0'},
                                     {'transform': 'translateY(20px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.filtertoggle.animate(
+                                [
+                                    {'opacity': '0'},
+                                    {'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeHistory[0] == 'download-success' ||
+                            this.routeHistory[0] == 'print-success') {
+                            // Coming from page download-success or print-success
+                            this.$.fadeArea.animate(
+                                [
+                                    {'transform': 'translateY(300px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            // PLEASE LEAVE THIS CODE COMMENTED.
+                            // I NEED THIS WHEN THE DISPLAY-MY-INFO
+                            // IS VISIBLE WITHOUT RELOAD (redux-issue)
+                            //     this.$$('#displaymyinfo').animate(
+                            //         [
+                            //             {'transform': 'translateY(-30px)', 'opacity': '0'},
+                            //             {'transform': 'translateY(0px)', 'opacity': '1'},
+                            //         ],
+                            //         {
+                            //             fill: 'forwards',
+                            //             duration: 300,
+                            //             iterations: 1,
+                            //             iterationStart: 0,
+                            //             easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            //             delay: 300,
+                            //             endDelay: 0,
+                            //         }
+                            //     );
+                            if (this.completeAccount) {
+                                this.$$('#itemsInvolved').animate(
+                                    [
+                                        {'transform': 'translateY(300px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 300,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            this.$.hashtagHeader.animate(
+                                [
+                                    {'transform': 'translateY(300px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateX(200px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.dealButton.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                    {'transform': 'translateY(200px)', 'opacity': '1'},
                                 ],
                                 {
                                     fill: 'forwards',

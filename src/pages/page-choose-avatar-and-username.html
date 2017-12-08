@@ -65,7 +65,8 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             .container[wide-layout] .avatarandinput {
                 @apply --layout-horizontal;
-                @apply --layout-center-center;
+                @apply --layout-start-justified;
+                @apply --layout-center;
             }
             .container .avatar {
                 @apply --layout-horizontal;
@@ -144,9 +145,9 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close,
-                .arrowup,
-                .agree {
+                .container .close,
+                .container .arrowup,
+                .container .agree {
                     @apply --retina;
                 }
             }
@@ -156,22 +157,22 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="close" on-click="_close"></div>
-                <div class="title">{{localize('Choose an avatar and a username.')}}</div>
+                <div class="title" id="title">{{localize('Choose an avatar and a username.')}}</div>
             </div>
             <div class="flexer"></div>
             <div class="bottom">
-                <div class="avatarandinput">
+                <div class="avatarandinput" id="content">
                     <div class="avatar"><img src="{{avatar}}">
                         <div class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
                     </div>
                     <div class="inputcontainer">
-                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}">{{username}}</paper-input>
+                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}"></paper-input>
                     </div>
                 </div>
 
-                <div class="btn">
+                <div class="btn" id="buttons">
                     <div class="agree" on-click="_agree"></div>
                 </div>
             </div>
@@ -207,23 +208,56 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'choose-avatar-and-username',
+                    },
+                    /**
                     * The base 64 image of the users avatar or default file path
                     * @type {String}
                     */
                     avatar: {
                         type: String,
-                        value: '[[importPath]]../../images/defaultavatar.png',
+                        statePath: 'avatar',
                     },
                     /**
-                    * The users username
+                    * Username represents the users username
                     * @type {String}
                     */
                     username: {
                         type: String,
+                        statePath: 'username',
                     },
                 };
             }
-
+            /**
+            * Redux action for setting username
+            * @param {String} username
+            */
+            static get actions() {
+                return Object.assign({
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
+            /**
+            * Fired when the component is connected
+            */
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -233,15 +267,6 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             ready() {
                 super.ready();
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                } else {
-                    this.username = 'username';
-                }
             }
             /**
             * takes the user to page-stop-signup
@@ -259,6 +284,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * The user selected the next button
             */
             _agree() {
+                this.dispatch('USERNAME', this.username);
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
@@ -273,6 +299,111 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
+            _loadElementAnimations() {
+            if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'password-warning') {
+                            // Here come the Exit Animations, going to page password-warning
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeHistory[0] == 'password-warning') {
+                        // Coming from page password-warning
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements
             .define(MyChooseAvatarAndUsername.is, MyChooseAvatarAndUsername);

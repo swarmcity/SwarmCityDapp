@@ -255,14 +255,14 @@
 
             display-profile-swr {
                 box-sizing: border-box;
-                padding: 50px 14vw;
+                padding: 50px 0;
                 background-image: var(--sc-bg);
                 width: 100%;
             }
 
             .container[wide-layout] display-profile-swr {
                 box-sizing: border-box;
-                padding: 50px 12vw;
+                padding: 50px 0;
 
             }
 
@@ -348,7 +348,7 @@
                 </div>
                 <div class="topflex" id="topFlex">
                     <div class="username">
-                        <paper-input label="Username" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
+                        <paper-input label="{{localize('Username')}}" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
                     </div>
                     <display-show-keys
                         toggle-unlock="{{toggleUnlock}}"
@@ -428,7 +428,7 @@
                     */
                     username: {
                         type: String,
-                        value: 'Xavier Hendrickx',
+                        statePath: 'username',
                     },
                     /**
                     * Avatar represents the users IPFS to their avatar image
@@ -436,7 +436,7 @@
                     */
                     avatar: {
                         type: String,
-                        value: '[[importPath]]../../images/defaultavatar.png',
+                        statePath: 'avatar',
                     },
                     /**
                     * Error is a string message being shown when passwords don't match
@@ -479,21 +479,25 @@
                         type: String,
                         value: '0x339D7851463546164646546435468453546',
                     },
-
                 };
             }
-
+            /**
+            * Redux action for setting username
+            * @param {String} username
+            */
+            static get actions() {
+                return Object.assign({
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
             ready() {
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 super.ready();
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                    this.completeAccount = true;
-                }
             }
             /**
             * takes the user to originating page
@@ -586,7 +590,10 @@
             * save username
             */
             _saveUsername() {
-                // save this.username
+                this.dispatch('USERNAME', this.username);
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                storage.user.username = this.username;
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
             }
             /**
             * load animations

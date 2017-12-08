@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-qr-code.html">
 
 <dom-module id="page-my-keys">
     <template>
@@ -22,19 +23,16 @@ This code may only be used under the license found at https://github.com/swarmci
     -->
         <style include="shared-styles">
             :host {
-                height: 100vh;
                 width: 100vw;
+                min-height: 100vh;
                 display: block;
+                background-image: var(--sc-bg);
             }
             .container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
-                background-image: var(--sc-bg);
-                height: 100%;
                 width: 100%;
-                box-sizing: border-box;
-                padding: 0 12vw;
             }
             .container[wide-layout] {
                 padding: 0 14vw;
@@ -49,22 +47,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
-                margin-top: 15vh;
-                height: 35vh;
+                margin: 15vh 0px 8vh 0px;
+                box-sizing: border-box;
+                padding: 0 12vw;
             }
             .container[wide-layout] .key-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-start;
                 margin-top: 20vh;
-                height: 30vh;
             }
             .privkey-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
-                margin-top: 8vh;
+                margin: 8vh 0px;
+                box-sizing: border-box;
+                padding: 0 12vw;
+                background-image: var(--sc-bg);
             }
             .container[wide-layout] .privkey-container {
                 @apply --layout-vertical;
@@ -93,8 +94,17 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             .qrcode {
                 margin: 4vh 0 0 0;
-                width: 70px;
-                height: 70px;
+                width: 148px;
+                height: 148px;
+                min-width: 148px;
+                min-height: 148px;
+            }
+            .qrcodeprivate {
+                margin: 4vh 0 0 0;
+                width: 180px;
+                height: 180px;
+                min-width: 180px;
+                min-height: 180px;
             }
             .divider {
                 width: 100vw;
@@ -134,16 +144,16 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="close" on-click="_close"></div>
-            <div class="key-container">
+            <div class="key-container" id="keycontainer">
                 <div class="greytext">{{localize('Your public key')}}</div>
                 <div class="key">{{publicKey}}</div>
                 <span class="bluetext" on-click="_copyPublicKey">{{localize('copy public key')}}</span>
                 <div class="qrcode">
-                    <img src="../../images/qrcode.png">
+                    <display-qr-code data="{{publicKey}}"></display-qr-code>
                 </div>
             </div>
-            <div class="divider"></div>
-            <div class="privkey-container">
+            <div class="divider" id="divider"></div>
+            <div class="privkey-container" id="privkeycontainer">
                 <dom-if if="{{!showPrivKey}}">
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
@@ -155,11 +165,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
                         <div class="key">{{privateKey}}</div>
-                        <span class="bluetext">{{localize('copy private key')}}</span>
-                        <div class="qrcode">
-                            <img src="../../images/qrcode.png">
+                        <span class="bluetext" on-click="_copyPrivateKey">{{localize('copy private key')}}</span>
+                        <div class="qrcodeprivate">
+                                <img src="{{qrCodePrivateKey}}">
                         </div>
-                        <input type="text" value="Hello World" id="myInput">
                     </template>
                 </dom-if>
             </div>
@@ -199,6 +208,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'my-keys',
                     },
                     /**
                     * contains the private key
@@ -253,6 +278,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 document.body.removeChild(textArea);
             }
             /**
+             * copies the private key to the desktop
+             * TODO: make this and the above function into one function
+             */
+            _copyPrivateKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.privateKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            /**
             * takes the user to page-make-backup
             */
             _close() {
@@ -292,6 +329,111 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.showPrivKey = !this.showPrivKey;
                 }
             }
+            _loadElementAnimations() {
+            if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'make-backup') {
+                            // Here come the Exit Animations, going to page make-backup
+                            this.$.keycontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.privkeycontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeHistory[0] == 'make-backup') {
+                        // Coming from page make-backup
+                        this.$.keycontainer.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 300,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.privkeycontainer.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.divider.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements.define(MyKeys.is, MyKeys);
     </script>
