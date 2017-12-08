@@ -123,11 +123,11 @@ This code may only be used under the license found at https://github.com/swarmci
             <div on-click="_close"></div>
             <div class="top">
                 <div class="close" on-click="_close"></div>
-                <div class="title">{{localize('Upload and unlock your account file.')}}</div>
+                <div class="title" id="title">{{localize('Upload and unlock your account file.')}}</div>
             </div>
             <div class="flexer"></div>
             <div class="bottom">
-                <display-restore-json-file path="{{path}}"></display-restore-json-file>
+                <display-restore-json-file path="{{path}}" id="content"></display-restore-json-file>
             </div>
         </div>
     </template>
@@ -154,6 +154,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'json-file',
                     },
                 };
             }
@@ -190,6 +206,81 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
+            _loadElementAnimations() {
+            if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'restore-account') {
+                            // Here come the Exit Animations, going to page restore-account
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeHistory[0] == 'restore-account') {
+                        // Coming from page restore-account
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 300,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements.define(MyJSONFile.is, MyJSONFile);
     </script>

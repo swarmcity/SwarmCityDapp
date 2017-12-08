@@ -144,7 +144,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="close" on-click="_close"></div>
-            <div class="key-container">
+            <div class="key-container" id="keycontainer">
                 <div class="greytext">{{localize('Your public key')}}</div>
                 <div class="key">{{publicKey}}</div>
                 <span class="bluetext" on-click="_copyPublicKey">{{localize('copy public key')}}</span>
@@ -152,8 +152,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     <display-qr-code data="{{publicKey}}"></display-qr-code>
                 </div>
             </div>
-            <div class="divider"></div>
-            <div class="privkey-container">
+            <div class="divider" id="divider"></div>
+            <div class="privkey-container" id="privkeycontainer">
                 <dom-if if="{{!showPrivKey}}">
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
@@ -208,6 +208,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    /**
+                    * routeHistory is an array that contains the current and previous page
+                    * @type {Array}
+                    */
+                    routeHistory: {
+                        type: Array,
+                        observer: '_loadElementAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'my-keys',
                     },
                     /**
                     * contains the private key
@@ -313,6 +329,111 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.showPrivKey = !this.showPrivKey;
                 }
             }
+            _loadElementAnimations() {
+            if (this.routeHistory[0] != this.routeHistory[1]) {
+                    if (this.routeHistory[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeHistory[1] == 'make-backup') {
+                            // Here come the Exit Animations, going to page make-backup
+                            this.$.keycontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.privkeycontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                } else if (this.routeHistory[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeHistory[0] == 'make-backup') {
+                        // Coming from page make-backup
+                        this.$.keycontainer.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 300,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.privkeycontainer.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.divider.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 300,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 200,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements.define(MyKeys.is, MyKeys);
     </script>
