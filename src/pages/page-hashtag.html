@@ -279,6 +279,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 150px 40px 0 40px;
 
             }
+            .stop-scrolling {
+                height: 100%;
+                overflow: hidden;
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -290,7 +294,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="dealbtn" id="dealButton">
                 <dom-if if="{{!faded}}">
                     <template>
@@ -643,6 +647,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _fadeInOut() {
                 if (!this.faded) {
+                    this.$.container.classList.add('stop-scrolling');
                     this.faded = !this.faded;
                     this.$.fadeArea.animate(
                         this.anim.fadeOut.arr,
@@ -650,6 +655,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     );
                 }
                 else {
+                    this.$.container.classList.remove('stop-scrolling');
                     this.faded = !this.faded;
                     this.$.fadeArea.animate(
                         this.anim.fadeIn.arr,
