@@ -360,7 +360,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
                 <div class="topflex" id="topFlex">
                     <div class="username">
-                        <paper-input label="Username" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
+                        <paper-input label="{{localize('Username')}}" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
                     </div>
                     <display-show-keys
                         toggle-unlock="{{toggleUnlock}}"
@@ -440,7 +440,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     username: {
                         type: String,
-                        value: 'Xavier Hendrickx',
+                        statePath: 'username',
                     },
                     /**
                     * Avatar represents the users IPFS to their avatar image
@@ -448,7 +448,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     avatar: {
                         type: String,
-                        value: '[[importPath]]../../images/defaultavatar.png',
+                        statePath: 'avatar',
                     },
                     /**
                     * Error is a string message being shown when passwords don't match
@@ -491,21 +491,25 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: '0x339D7851463546164646546435468453546',
                     },
-
                 };
             }
-
+            /**
+            * Redux action for setting username
+            * @param {String} username
+            */
+            static get actions() {
+                return Object.assign({
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
             ready() {
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 super.ready();
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                    this.completeAccount = true;
-                }
             }
             /**
             * takes the user to originating page
@@ -598,7 +602,10 @@ This code may only be used under the license found at https://github.com/swarmci
             * save username
             */
             _saveUsername() {
-                // save this.username
+                this.dispatch('USERNAME', this.username);
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                storage.user.username = this.username;
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
             }
             /**
             * load animations

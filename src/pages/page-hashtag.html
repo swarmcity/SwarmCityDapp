@@ -304,7 +304,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="pushdown"></div>
             <div class="header">
                 <div class="top">
-                    <dom-if if="{{completeAccount}}">
+                    <dom-if if="{{publicKey}}">
                         <template>
                                 <display-my-info 
                                     path="{{path}}" 
@@ -338,7 +338,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </display-hashtag-about>
                 </template>
             </dom-if>
-            <dom-if if="{{completeAccount}}">
+            <dom-if if="{{publicKey}}">
                 <template>
                     <display-items-involved 
                         id="itemsInvolved">
@@ -487,13 +487,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                     },
                     /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
+                    * PublicKey represents the user's public key
+                    * @type {String}
                     */
-                    completeAccount: {
-                        type: Boolean,
-                        value: false,
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
                     },
                 };
             }
@@ -503,14 +502,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 window.onscroll = this._scrollHandler.bind(this);
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.user && storage.user.avatar) {
-                    this.avatar = storage.user.avatar;
-                }
-                if (storage.user && storage.user.username) {
-                    this.username = storage.user.username;
-                    this.completeAccount = true;
-                }
             }
             /**
             * find the selected hashtag

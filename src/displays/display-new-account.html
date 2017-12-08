@@ -175,6 +175,14 @@ The following custom properties and mixins are available for styling:
                         type: String,
                     },
                     /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
                     * Error
                     * @type {String}
                     */
@@ -192,6 +200,20 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -205,6 +227,7 @@ The following custom properties and mixins are available for styling:
                         .then((keyStore) => {
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                             storage.keyStore = keyStore.utcKeystore;
+                            this.dispatch('PUBLICKEY', storage.keyStore.address);
                             localStorage.setItem('SwarmCity', JSON.stringify(storage));
                             this.path = 'account-complete/';
                         });
@@ -214,7 +237,7 @@ The following custom properties and mixins are available for styling:
             * Displays error message when click on page and unequal input
             */
             _equals() {
-                if (this.password.length >= 1 && this.confirmPassword.length >= 1) {
+                if (this.password && this.password.length >= 1 && this.confirmPassword.length >= 1) {
                     if (this.password == this.confirmPassword || this.confirmPassword == '') {
                         this.error = '';
                     } else {

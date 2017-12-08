@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
 <!--
 
 Example:
@@ -49,11 +50,11 @@ The following custom properties and mixins are available for styling:
 
     </template>
     <script>
-        class DisplayDealBtn extends Polymer.mixinBehaviors([
+        class MyDisplayDealBtn extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
-        ) {
+        )) {
             static get is() {
                 return 'display-deal-btn';
             }
@@ -85,13 +86,12 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                     },
                     /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
+                    * PublicKey represents the user's public key
+                    * @type {String}
                     */
-                    completeAccount: {
-                        type: Boolean,
-                        value: true,
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
                     },
                 };
             }
@@ -102,14 +102,13 @@ The following custom properties and mixins are available for styling:
             */
             _next() {
                 sessionStorage.setItem('origin', this.route.path);
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.keyStore && storage.keyStore.Crypto) {
+                if (this.publicKey) {
                     this.path = 'new-request/';
                 } else {
                     this.path = 'new-here/';
                 }
             }
         }
-        window.customElements.define(DisplayDealBtn.is, DisplayDealBtn);
+        window.customElements.define(MyDisplayDealBtn.is, MyDisplayDealBtn);
     </script>
 </dom-module>
