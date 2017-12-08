@@ -280,7 +280,13 @@ The following custom properties and mixins are available for styling:
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     storage.keyStore = this.wallet;
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    this.path = '/choose-avatar-and-username';
+                    if (sessionStorage.getItem('origin')) {
+                        this.path = sessionStorage.getItem('origin');
+                        sessionStorage.removeItem('origin');
+                    }
+                    else {
+                        this.set('route.path', 'hashtag-list');
+                    }
                 } else {
                     const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
                     keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
@@ -292,7 +298,13 @@ The following custom properties and mixins are available for styling:
                                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                 storage.keyStore = KeyStore;
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                                this.path = '/choose-avatar-and-username';
+                                if (sessionStorage.getItem('origin')) {
+                                    this.path = sessionStorage.getItem('origin');
+                                    sessionStorage.removeItem('origin');
+                                }
+                                else {
+                                    this.set('route.path', 'hashtag-list');
+                                }
                             });
                         }
                     });
