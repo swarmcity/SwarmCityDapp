@@ -45,10 +45,10 @@
                     * publickey is the wallet pubkey
                     * @type {String}
                     */
-                    publickey: {
+                    publicKey: {
                         type: String,
-                        statePath: 'publickey',
-                        observer: '_publickeyChanged',
+                        statePath: 'publicKey',
+                        observer: '_publicKeyChanged',
                     },
                     /**
                     * gasprice is the recommended gasprice
@@ -184,40 +184,50 @@
                 });
 
                 socket.on('fxChanged', (reply) => {
-                    this.fx = reply.data;
+                    console.log("====5656=====")
+                    console.log(reply)
+                    this.fx = reply;
                     this.dispatch('FX', this.fx);
                 });
+
                 socket.on('gasPriceChanged', (reply) => {
-                    this.gasprice = reply.data;
+                    this.gasprice = reply;
                     this.dispatch('GASPRICE', this.gasprice);
+                });
+
+                socket.on('nonceChanged', (reply) => {
+                    this.nonce = reply;
+                    this.dispatch('NONCE', this.nonce);
                 });
             }
 
-            _publickeyChanged() {
+            _publicKeyChanged() {
                 // subscribe to updates of the balance of this publickey
                 socket.emit('subscribe', {
                     channel: 'balance',
                     args: {
-                        address: this.publickey,
+                        address: this.publicKey,
                     },
                 }, (reply) => {
-                    this.balance = reply.data;
+                    this.balance = reply;
                     this.dispatch('BALANCE', this.balance);
                 });
                 socket.on('balanceChanged', (reply) => {
-                    this.balance = reply.data;
+                    this.balance = reply;
                     this.dispatch('BALANCE', this.balance);
                 });
                 // subscribe to updates of the nonce of this publickey
                 socket.emit('subscribe', {
                     channel: 'nonce',
                     args: {
-                        address: this.publickey,
+                        address: this.publicKey,
                     },
                 }, (reply) => {
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
+
+                // Fired when the users nonce changes
                 socket.on('nonceChanged', (reply) => {
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
@@ -228,7 +238,7 @@
                     args: {
                         validity: 60*1000,
                         payload: {
-                            publickey: this.publickey,
+                            publickey: this.publicKey,
                         },
                     },
                 }, (reply) => {
@@ -236,17 +246,10 @@
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
                 socket.on('shortcodeChanged', (reply) => {
-                    // note to Will : this reply contains
-                    // {
-                    //   shortcode: 12345,
-                    //   validity: 60000,
-                    // }
-                    // so you can use the 'validity' to create a
-                    // countdown till the next code.
-                    // but I'm not storing it yet in redux...
                     this.shortcode = reply.data.shortcode;
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
+
                 // subscribe to updates of the tx history
                 socket.emit('subscribe', {
                     channel: 'txhistory',
@@ -277,9 +280,11 @@
                 }
             }
             _reqToKey() {
+                console.log('I am requesting the key: '+this.reqtokey);
                 socket.emit('readShortCode', {
                     shortcode: this.reqtokey,
                 }, (reply) => {
+                    console.log(reply);
                     if (reply.response === 200) {
                         this.tokey = reply.data.payload.publickey;
                         this.dispatch('TOKEY', this.tokey);
