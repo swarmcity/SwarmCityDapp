@@ -22,8 +22,12 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
         <style include="shared-styles">
             :host {
+                height: 100%;
+                width: 100vw;
+                max-width: 100%;
+                min-height: 100vh;
+                background-image: var(--sc-bg);
                 display: block;
-                max-height: 100vh;
             }
 
             .close {
@@ -39,7 +43,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-center;
                 background-image: var(--sc-bg);
-                height: 100%;
+                width: 100%;
+                min-height: 100vh;
+                max-width: 100%;
+                position: fixed;
             }
 
             .title {
@@ -85,6 +92,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-left: 10vw;
             }
 
+            #fix {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                overflow-x: hidden
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -95,7 +109,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="fix" class="container" wide-layout$="{{wide}}">
             <div class="header">
                 <div class="close" on-click="_changePage"></div>
                 <div class="title">{{localize('Choose a language')}}</div>
@@ -108,8 +122,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
     <script>
         class MyLanguage extends new ReduxMixin(Polymer.mixinBehaviors([
-                Polymer.AppLocalizeBehavior,
-            ],
+            Polymer.AppLocalizeBehavior,
+        ],
             Polymer.Element
         )) {
             static get is() {
@@ -120,15 +134,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     route: {
                         type: Object,
                         notify: true,
-                    },
-                    /**
-                    * Location is the page path the user is on
-                    * @type {String}
-                    */
-                    location: {
-                        type: String,
-                        statePath: 'location',
-                        observer: '_entryAnimation',
                     },
                     language: {
                         type: String,
@@ -144,21 +149,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                 };
             }
-
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * location checks if the user is on this page and fires the entry animation
+            * routes back to page welcome
             */
-            _entryAnimation() {
-            }
-            /**
-            * changes the current path to welcome-page when X is seclected
-            */
-            _exitAnimation() {
-            }
             _changePage() {
                 this.set('route.path', 'welcome/');
             }
