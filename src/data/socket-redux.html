@@ -45,9 +45,9 @@
                     * publickey is the wallet pubkey
                     * @type {String}
                     */
-                    publickey: {
+                    publicKey: {
                         type: String,
-                        statePath: 'publickey',
+                        statePath: 'publicKey',
                         observer: '_publickeyChanged',
                     },
                     /**
@@ -163,6 +163,7 @@
             ready() {
                 super.ready();
 
+                // Connect to websocket
                 socket = io.connect('https://www.swarmdev.city',
                 {
                     query: 'apiUser=swarmCity',
@@ -170,39 +171,56 @@
                     transports: ['websocket', 'xhr-polling'],
                 }); // eslint-disable-line
 
-                // get the list of hashtags
+                // Subscribe to hashtags
                 socket.emit('subscribe', {
                     channel: 'hashtags',
                 }, (reply) => {
-                    this.hashtags = reply.data;
-                    this.dispatch('HASHTAGS', this.hashtags);
+                    if (reply.response == 200) {
+                        this.hashtags = reply.data;
+                        this.dispatch('HASHTAGS', this.hashtags);
+                    }
                 });
 
+                // Listen for changes on 'hashtagsChanged'
                 socket.on('hashtagsChanged', (reply) => {
-                    this.hashtags = reply.data;
-                    this.dispatch('HASHTAGS', this.hashtags);
+                    if (reply.response == 200) {
+                        this.hashtags = reply.data;
+                        this.dispatch('HASHTAGS', this.hashtags);
+                    }
                 });
 
+                // Listen for changes on 'fxChanged'
                 socket.on('fxChanged', (reply) => {
+                    console.log('=====4====');
+                    console.log('No response');
+                    console.log(reply);
                     this.fx = reply.data;
                     this.dispatch('FX', this.fx);
                 });
+
+                // Listen for changes on 'gasPriceChanged'
                 socket.on('gasPriceChanged', (reply) => {
+                    console.log('=====5====');
+                    console.log('No response');
+                    console.log(reply);
                     this.gasprice = reply.data;
                     this.dispatch('GASPRICE', this.gasprice);
                 });
             }
 
             _publickeyChanged() {
+                console.log('===== KEY CHANGED ====');
                 // subscribe to updates of the balance of this publickey
                 socket.emit('subscribe', {
                     channel: 'balance',
                     args: {
-                        address: this.publickey,
+                        address: this.publicKey,
                     },
                 }, (reply) => {
-                    this.balance = reply.data;
-                    this.dispatch('BALANCE', this.balance);
+                    if (reply.response == 200) {
+                        this.balance = reply.data;
+                        this.dispatch('BALANCE', this.balance);
+                    }
                 });
                 socket.on('balanceChanged', (reply) => {
                     this.balance = reply.data;
@@ -215,6 +233,9 @@
                         address: this.publickey,
                     },
                 }, (reply) => {
+                    console.log('=====6====');
+                    console.log('No response');
+                    console.log(reply);
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
@@ -232,18 +253,12 @@
                         },
                     },
                 }, (reply) => {
-                    this.shortcode = reply.data;
-                    this.dispatch('SHORTCODE', this.shortcode);
+                    if (reply.response == 200) {
+                        this.shortcode = reply.data;
+                        this.dispatch('SHORTCODE', this.shortcode);
+                    }
                 });
                 socket.on('shortcodeChanged', (reply) => {
-                    // note to Will : this reply contains
-                    // {
-                    //   shortcode: 12345,
-                    //   validity: 60000,
-                    // }
-                    // so you can use the 'validity' to create a
-                    // countdown till the next code.
-                    // but I'm not storing it yet in redux...
                     this.shortcode = reply.data.shortcode;
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
@@ -254,12 +269,16 @@
                         publickey: this.publickey,
                     },
                 }, (reply) => {
-                    this.transactions = reply.data;
-                    this.dispatch('TRANSACTIONS', this.transactions);
+                    if (reply.response == 200) {
+                        this.transactions = reply.data;
+                        this.dispatch('TRANSACTIONS', this.transactions);
+                    }
                 });
                 socket.on('txhistoryChanged', (reply) => {
-                    this.transactions = reply.data;
-                    this.dispatch('TRANSACTIONS', this.transactions);
+                    if (reply.response == 200) {
+                        this.transactions = reply.data;
+                        this.dispatch('TRANSACTIONS', this.transactions);
+                    }
                 });
             }
 
@@ -292,6 +311,7 @@
                     tx: this.broadcast,
                 }, (data) => {
                     // does anything need to happen here ?
+                    // may as well send me a transaction id
                 });
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
