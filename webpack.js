@@ -21,7 +21,7 @@ import uuid from 'uuid';
 import Buffer from 'buffer';
 import QRCode from 'qrcode';
 import moment from 'moment';
-
+import ethereumTx from 'ethereumjs-tx';
 export {
   sha3,
   privateToAddress,
@@ -43,4 +43,5 @@ export {
   Buffer,
   QRCode,
   moment,
+  ethereumTx,
 };
