@@ -206,6 +206,11 @@
                     this.gasprice = reply.data;
                     this.dispatch('GASPRICE', this.gasprice);
                 });
+
+                socket.on('nonceChanged', (reply) => {
+                    this.nonce = reply;
+                    this.dispatch('NONCE', this.nonce);
+                });
             }
 
             _publickeyChanged() {
@@ -223,14 +228,14 @@
                     }
                 });
                 socket.on('balanceChanged', (reply) => {
-                    this.balance = reply.data;
+                    this.balance = reply;
                     this.dispatch('BALANCE', this.balance);
                 });
                 // subscribe to updates of the nonce of this publickey
                 socket.emit('subscribe', {
                     channel: 'nonce',
                     args: {
-                        address: this.publickey,
+                        address: this.publicKey,
                     },
                 }, (reply) => {
                     console.log('=====6====');
@@ -239,6 +244,8 @@
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
+
+                // Fired when the users nonce changes
                 socket.on('nonceChanged', (reply) => {
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
@@ -249,7 +256,7 @@
                     args: {
                         validity: 60*1000,
                         payload: {
-                            publickey: this.publickey,
+                            publickey: this.publicKey,
                         },
                     },
                 }, (reply) => {
@@ -262,6 +269,7 @@
                     this.shortcode = reply.data.shortcode;
                     this.dispatch('SHORTCODE', this.shortcode);
                 });
+
                 // subscribe to updates of the tx history
                 socket.emit('subscribe', {
                     channel: 'txhistory',
@@ -296,9 +304,11 @@
                 }
             }
             _reqToKey() {
+                console.log('I am requesting the key: '+this.reqtokey);
                 socket.emit('readShortCode', {
                     shortcode: this.reqtokey,
                 }, (reply) => {
+                    console.log(reply);
                     if (reply.response === 200) {
                         this.tokey = reply.data.payload.publickey;
                         this.dispatch('TOKEY', this.tokey);
