@@ -5,6 +5,7 @@ let publicKey;
 let avatar;
 let username;
 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+
 if (storage && storage.keyStore && storage.keyStore.address) {
     publicKey = storage.keyStore.address;
 }
@@ -22,19 +23,20 @@ if (storage && storage.keyStore && storage.keyStore.address) {
     publicKey = storage.keyStore.address;
 }
 let initialState = {
-    gasprice: 0,
+    gasprice: 99,
     username: username,
     avatar: avatar,
     shortcode: null,
     language: 'en',
     fx: {
-        swtxusd: 1.6,
-        swtxeur: 3.4,
+        price_btc: 99,
+        price_eur: 99,
+        price_usd: 99,
     },
     balance: {
-        eth: 0.002,
-        swt: 2,
-        arc: 20,
+        eth: 99,
+        swt: 98,
+        arc: 97,
     },
     reputation: [{
         hashtag: 'Pioneer',
@@ -290,7 +292,7 @@ let initialState = {
     },
     ],
     publicKey: publicKey,
-    nonce: 1,
+    nonce: 99,
 };
 
 
@@ -313,12 +315,19 @@ let reducer = function(state, action) {
                 transactions: transactions,
             });
         }
+        // case 'BALANCE': {
+        //     let balance = state.balance;
+        //     balance = action.balance.reduce((accumulator, currentValue) => {
+        //         accumulator[currentValue.tokenSymbol.toLowerCase()] = currentValue.balance;
+        //         return accumulator;
+        //     }, {});
+        //     return Object.assign({}, state, {
+        //         balance: balance,
+        //     });
+        // }
         case 'BALANCE': {
             let balance = state.balance;
-            balance = action.balance.reduce((accumulator, currentValue) => {
-                accumulator[currentValue.tokenSymbol.toLowerCase()] = currentValue.balance;
-                return accumulator;
-            }, {});
+            balance = action.balance;
             return Object.assign({}, state, {
                 balance: balance,
             });
