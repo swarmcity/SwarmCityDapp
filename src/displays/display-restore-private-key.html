@@ -33,6 +33,7 @@ The following custom properties and mixins are available for styling:
                 display: block;
                 width: 100%;
             }
+
             .middle {
                 width: 100%;
                 @apply --layout-flex;
@@ -46,22 +47,18 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-start;               
             }
 
-
             .bottom {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 background-color: rgba(0,0,0,0.05);
-
                 width: 100%;
                 max-width: 750px;
-
                 box-sizing:border-box;
                 padding: 40px;
                 @apply --small-light;
                 color: var(--sc-grey4);
                 text-align: center;
-
                 margin-top: 10vh;
             }
 
@@ -73,9 +70,7 @@ The following custom properties and mixins are available for styling:
                 text-align: left;
                 margin-top: 10vh;
                 padding: 40px;
-
             }
-
 
             .btn {
                 @apply --layout-vertical;
@@ -90,7 +85,6 @@ The following custom properties and mixins are available for styling:
             .btn:active {
                 @apply --button-active;
             }
-
 
             paper-input {
                 width: 100%;
@@ -113,12 +107,26 @@ The following custom properties and mixins are available for styling:
                 }
             }
 
-
             .container[wide-layout] paper-input {
                 text-align: left;
                 max-width: 400px;
             }
 
+            .container .errorcontainer {
+                @apply --error-container;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+            }
 
             .messagebox {
                 margin-top: 2vh;
@@ -127,7 +135,6 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
             }
-
 
             .showfullkey {
                 margin-top: 2vh;
@@ -156,22 +163,18 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center;
                 @apply --layout-center-justified;
                 margin: 0px 10px 20px 10px;
-
             }
 
             .container[wide-layout] .trianglecontainer {
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
                 @apply --layout-start;
-/*                top: -9px;
-                left: -15px;*/
                 width: 54px;
             }
 
             .triangle {
                 @apply --alert-blue-normal;
                 position: relative;
-
             }
 
             .textbox {
@@ -181,7 +184,6 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center-justified;
                 text-align: center;
                 margin: 0px 0px 20px 0px;
-
             }
 
             .container[wide-layout] .textbox {
@@ -194,6 +196,22 @@ The following custom properties and mixins are available for styling:
             }
 
             .iconbtn:active {
+                @apply --button-active;
+            }
+
+            .disabled {
+                @apply --icon-button-big;
+                margin: 0 0px 10px;
+                opacity: 0.2;
+            }
+
+            .enabled {
+                @apply --icon-button-big;
+                margin: 0 0px 10px;
+                opacity: 1;
+            }
+
+            .enabled:active {
                 @apply --button-active;
             }
 
@@ -236,24 +254,20 @@ The following custom properties and mixins are available for styling:
                 </div>
             </template>
 
-
             <template is="dom-if" if="{{passwordSubmit}}">
-                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
-                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_equals" value="{{confirmPassword}}"></paper-input>
+                <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}"></paper-input>
+                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" value="{{confirmPassword}}"></paper-input>
                 <div class="errorcontainer">
                     <span id="error">{{error}}</span>
                 </div>
-                <div class="iconbtn"> 
-                    <div class="agree" on-click="_passwordAndKeyEntered"></div> 
+                <div class="disabled"> 
+                    <div class="agree" on-click="_submit"></div> 
                 </div>
-
             </template>
-
 
             <template is="dom-if" if="{{passwordSet}}">
                 <div class="passset">{{localize('the password is set')}}</div>
             </template>
-
 
             </div>
             <template is="dom-if" if="{{passwordSet}}">
@@ -261,7 +275,6 @@ The following custom properties and mixins are available for styling:
                     <div class="agree" on-click=""></div> 
                 </div>
             </template>
-
 
         </div>
     </template>
@@ -318,7 +331,7 @@ The following custom properties and mixins are available for styling:
                     },
 
                     /**
-                    * passwordSubmit if true shows that passw is set
+                    * passwordSet if true shows that passw is set
                     * @type {Boolean}
                     */
                     passwordSet: {
@@ -354,6 +367,13 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
             * The user agrees to enter a password
             */
             _agreeToEnterPassword() {
@@ -377,11 +397,29 @@ The following custom properties and mixins are available for styling:
                     this.error = this.localize('The passwords dont match.');
                 }
             }
+
+            /**
+            * Compares input realtime and enables/disables enabled button layout
+            */
+            _checkInput() {
+                this.error = '';
+                if (this.password &&
+                this.confirmPassword &&
+                this.password.length >= 1 &&
+                this.password == this.confirmPassword) {
+                    this.$.agree.classList.remove('disabled');
+                    this.$.agree.classList.add('enabled');
+                }
+                else {
+                    this.$.agree.classList.add('disabled');
+                    this.$.agree.classList.remove('enabled');
+                };
+            }
+
             /**
             * The password and key have been entered
             */
-            _passwordAndKeyEntered() {
-                this.error = '';
+            _submit() {
                 if (this.password === this.confirmPassword) {
                     if (this.privateKey && this.privateKey.length === 64) {
                         this.$.wallet.restoreKey(this.privateKey, this.password)
@@ -397,13 +435,6 @@ The following custom properties and mixins are available for styling:
                 } else {
                     this.error = 'The passwords dont match';
                 }
-            }
-            /**
-            * Fired when the component first loads
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
             }
         } window.customElements.define(DisplayMyInfo.is, DisplayMyInfo);
     </script>
