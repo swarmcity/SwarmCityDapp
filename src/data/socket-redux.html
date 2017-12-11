@@ -191,18 +191,12 @@
 
                 // Listen for changes on 'fxChanged'
                 socket.on('fxChanged', (reply) => {
-                    console.log('=====4====');
-                    console.log('No response');
-                    console.log(reply);
                     this.fx = reply.data;
                     this.dispatch('FX', this.fx);
                 });
 
                 // Listen for changes on 'gasPriceChanged'
                 socket.on('gasPriceChanged', (reply) => {
-                    console.log('=====5====');
-                    console.log('No response');
-                    console.log(reply);
                     this.gasprice = reply.data;
                     this.dispatch('GASPRICE', this.gasprice);
                 });
@@ -214,7 +208,6 @@
             }
 
             _publickeyChanged() {
-                console.log('===== KEY CHANGED ====');
                 // subscribe to updates of the balance of this publickey
                 socket.emit('subscribe', {
                     channel: 'balance',
@@ -238,9 +231,6 @@
                         address: this.publicKey,
                     },
                 }, (reply) => {
-                    console.log('=====6====');
-                    console.log('No response');
-                    console.log(reply);
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
@@ -304,11 +294,9 @@
                 }
             }
             _reqToKey() {
-                console.log('I am requesting the key: '+this.reqtokey);
                 socket.emit('readShortCode', {
                     shortcode: this.reqtokey,
                 }, (reply) => {
-                    console.log(reply);
                     if (reply.response === 200) {
                         this.tokey = reply.data.payload.publickey;
                         this.dispatch('TOKEY', this.tokey);
