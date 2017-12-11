@@ -116,7 +116,7 @@ The following custom properties and mixins are available for styling:
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" on-click="_equals" wide-layout$="{{wide}}">
+        <div class="container" wide-layout$="{{wide}}">
             <paper-input 
                 id="password" 
                 label="{{localize('password?')}}" 
@@ -221,7 +221,10 @@ The following custom properties and mixins are available for styling:
             * takes the user to the next page in user creation
             */
             _agree() {
-                if (this.password.length >= 1 && this.password == this.confirmPassword) {
+                if (this.password &&
+                this.password.length >= 1 &&
+                this.confirmPassword &&
+                this.password == this.confirmPassword) {
                     this.$.wallet.createKey(this.password)
                         .then((keyStore) => {
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
@@ -233,26 +236,28 @@ The following custom properties and mixins are available for styling:
                 }
             }
             /**
-            * Displays error message when click on page and unequal input
+            * Compares input realtime and toggles button and error message
             */
-            _equals() {
+            _checkInput() {
+                this.error = '';
                 if (this.password &&
-                this.password.length &&
-                this.password.length >= 1 &&
-                this.confirmPassword.length >= 1) {
-                    if (this.password == this.confirmPassword || this.confirmPassword == '') {
-                        this.error = '';
+                this.confirmPassword &&
+                this.password.length >=1 &&
+                this.confirmPassword.length >=1) {
+                    if (this.confirmPassword.length <= this.password.length) {
+                        for (let i = 0; i < this.confirmPassword.length; i++) {
+                            if (this.confirmPassword[i] != this.password[i]) {
+                            this.error = this.localize('The passwords dont match.');
+                        }
+                    }
                     } else {
                         this.error = this.localize('The passwords dont match.');
                     }
                 }
-            }
-            /**
-            * Compares input realtime and enables/disables enabled button layout
-            */
-            _checkInput() {
-                this.error = '';
-                if (this.password.length >= 1 && this.password == this.confirmPassword) {
+                if (this.password &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
                     this.$.agree.classList.add('enabled');
                 }
                 else (this.$.agree.classList.remove('enabled'));
