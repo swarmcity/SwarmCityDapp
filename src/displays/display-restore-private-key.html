@@ -260,7 +260,7 @@ The following custom properties and mixins are available for styling:
                 <div class="errorcontainer">
                     <span id="error">{{error}}</span>
                 </div>
-                <div class="disabled"> 
+                <div id="agree" class="disabled"> 
                     <div class="agree" on-click="_submit"></div> 
                 </div>
             </template>
@@ -387,40 +387,46 @@ The following custom properties and mixins are available for styling:
                 this.passwordWarning = false;
                 this.passwordSubmit = true;
             }
-            /**
-            * compares written passwords and updates label with it
-            */
-            _equals() {
-                if (this.password == this.confirmPassword || this.confirmPassword == '') {
-                    this.error = '';
-                } else {
-                    this.error = this.localize('The passwords dont match.');
-                }
-            }
 
             /**
-            * Compares input realtime and enables/disables enabled button layout
+            * Compares input realtime and toggles button and error message
             */
             _checkInput() {
                 this.error = '';
                 if (this.password &&
                 this.confirmPassword &&
-                this.password.length >= 1 &&
-                this.password == this.confirmPassword) {
-                    this.$.agree.classList.remove('disabled');
-                    this.$.agree.classList.add('enabled');
+                this.password.length >=1 &&
+                this.confirmPassword.length >=1) {
+                    if (this.confirmPassword.length <= this.password.length) {
+                        for (let i = 0; i < this.confirmPassword.length; i++) {
+                            if (this.confirmPassword[i] != this.password[i]) {
+                            this.error = this.localize('The passwords dont match.');
+                        }
+                    }
+                    } else {
+                        this.error = this.localize('The passwords dont match.');
+                    }
                 }
-                else {
-                    this.$.agree.classList.add('disabled');
-                    this.$.agree.classList.remove('enabled');
-                };
+                if (this.password &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
+                        this.$$('#agree').classList.remove('disabled');
+                        this.$$('#agree').classList.add('enabled');
+                } else {
+                    this.$$('#agree').classList.add('disabled');
+                    this.$$('#agree').classList.remove('enabled');
+                }
             }
 
             /**
             * The password and key have been entered
             */
             _submit() {
-                if (this.password === this.confirmPassword) {
+                if (this.password &&
+                this.password.length >= 1 &&
+                this.confirmPassword &&
+                this.password == this.confirmPassword) {
                     if (this.privateKey && this.privateKey.length === 64) {
                         this.$.wallet.restoreKey(this.privateKey, this.password)
                         .then((KeyStore) => {
@@ -429,11 +435,12 @@ The following custom properties and mixins are available for styling:
                             localStorage.setItem('SwarmCity', JSON.stringify(storage));
                             this.path = '/';
                         });
-                    } else {
-                        this.error = 'The key is the wrong length';
+                    } else if (this.privateKey && this.privateKey.length >= 1) {
+                        this.error = this.localize('The key is the wrong length.');
                     }
-                } else {
-                    this.error = 'The passwords dont match';
+                    else {
+                        this.error = this.localize('Please enter a key.');
+                    }
                 }
             }
         } window.customElements.define(DisplayMyInfo.is, DisplayMyInfo);
