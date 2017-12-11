@@ -168,6 +168,31 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
 
+            /**
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -184,6 +209,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * deletes the profile
             */
             _deleteProfile() {
+                this.dispatch('PUBLICKEY', null);
+                this.dispatch('AVATAR', null);
+                this.dispatch('USERNAME', null);
                 localStorage.clear();
                 this.path = '/';
             }
