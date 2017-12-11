@@ -164,22 +164,31 @@
                 super.ready();
 
                 // Connect to websocket
-                socket = io.connect('https://www.swarmdev.city',
+                socket = io('https://www.swarmdev.city',
                 {
                     query: 'apiUser=swarmCity',
                     path: '/api',
                     transports: ['websocket', 'xhr-polling'],
+                    autoConnect: false,
                 }); // eslint-disable-line
 
-                // Subscribe to hashtags
-                socket.emit('subscribe', {
-                    channel: 'hashtags',
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.hashtags = reply.data;
-                        this.dispatch('HASHTAGS', this.hashtags);
-                    }
+                // Listen for changes on 'fxChanged'
+                socket.on('fxChanged', (reply) => {
+                    this.fx = reply;
+                    this.dispatch('FX', this.fx);
                 });
+
+                // Listen for changes on 'gasPriceChanged'
+                socket.on('gasPriceChanged', (reply) => {
+                    this.gasprice = reply;
+                    this.dispatch('GASPRICE', this.gasprice);
+                });
+
+                socket.on('nonceChanged', (reply) => {
+                    this.nonce = reply;
+                    this.dispatch('NONCE', this.nonce);
+                });
+
 
                 // Listen for changes on 'hashtagsChanged'
                 socket.on('hashtagsChanged', (reply) => {
@@ -189,22 +198,20 @@
                     }
                 });
 
-                // Listen for changes on 'fxChanged'
-                socket.on('fxChanged', (reply) => {
-                    this.fx = reply.data;
-                    this.dispatch('FX', this.fx);
+                socket.on('connect', () => {
+                    // Subscribe to hashtags
+                    socket.emit('subscribe', {
+                        channel: 'hashtags',
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this.hashtags = reply.data;
+                            this.dispatch('HASHTAGS', this.hashtags);
+                        }
+                    });
                 });
 
-                // Listen for changes on 'gasPriceChanged'
-                socket.on('gasPriceChanged', (reply) => {
-                    this.gasprice = reply.data;
-                    this.dispatch('GASPRICE', this.gasprice);
-                });
-
-                socket.on('nonceChanged', (reply) => {
-                    this.nonce = reply;
-                    this.dispatch('NONCE', this.nonce);
-                });
+                // All handlers attached - please connect..
+                socket.connect();
             }
 
             _publickeyChanged() {
