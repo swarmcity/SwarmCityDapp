@@ -21,13 +21,14 @@ Example:
             :host {
                 display: block;
                 --container-height: 184px;
+                --minheight-errorcontainer: 0px;
             }
 
             .container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
-                transition: height 0.3s ease-in-out;
+                transition: all 0.3s ease-in-out;
                 height: var(--container-height);
                 width: 100%;
             }
@@ -118,6 +119,24 @@ Example:
                 --paper-input-suffix: {
                     @apply --body-default;
                 }
+            }
+
+            .totalamountinput {
+                width: 100%;
+                max-width: 400px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                @apply --layout-start-justified;
+            }
+
+            .totalamountinput paper-input {
+                @apply --layout-flex;
+            }
+
+            .totalamountinput .SWT {
+                @apply --small-bold;
+                box-sizing: border-box;
+                padding: 5px 0px 5px 5px;
             }
 
             .send-buttonbox {
@@ -305,6 +324,26 @@ Example:
                 background-size: 50px;
             }
 
+            .container .errorcontainer {
+                /* @apply --error-container; */
+                min-height: var(--minheight-errorcontainer);
+                transition: all 0.3s ease-in-out;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                /* @apply --error-container-wide; */
+                text-align: left;
+                min-height: var(--minheight-errorcontainer);
+            }
+
+            #error {
+                @apply --error-msg;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -316,7 +355,6 @@ Example:
                 }
             }
         </style>
-        <p>{{error}}</p>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{start}}">
@@ -338,8 +376,14 @@ Example:
 
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
-                    <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
+                    <div class="totalamountinput">
+                        <paper-input class="send-amount" label="{{localize('Amount')}}" type="txt" value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
+                        <div class="SWT">SWT</div>
+                    </div>
                     <paper-input class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
+                    <div class="errorcontainer">
+                        <span id="error">{{error}}</span>
+                    </div>                  
                     <div class="send-buttonbox">
                         <div class="disagree" on-click="_start"></div>
                         <div class="round-button" on-click="_checkPublicKey">
@@ -478,6 +522,7 @@ Example:
                     */
                     error: {
                         type: String,
+                        observer: '_error',
                     },
                     /**
                     * the public key for the given shortcode
@@ -539,7 +584,7 @@ Example:
                 this.found = false;
                 this.send = true;
                 this.updateStyles({
-                    '--container-height': '225px',
+                    '--container-height': '268px',
                 });
             }
             /**
@@ -593,10 +638,26 @@ Example:
             * Fires when the user enters each number into amaount
             */
             _checkBalance() {
-                if (this.amountToSend >= this.balance.swt) {
-                    this.error = 'Not enough SWT!!';
+                if (isNaN(this.amountToSend)) {
+                    this.error = 'You didn\'t enter a number.';
                 } else {
-                    this.error = null;
+                    if (this.amountToSend >= this.balance.swt) {
+                        this.error = 'Your balance is to low.';
+                    } else {
+                        this.error = null;
+                    }
+                }
+            }
+
+            _error() {
+                if (this.send) {
+                    if (!this.error) {
+                        this.updateStyles({'--container-height': '268px',
+                        '--minheight-errorcontainer': '0px'});
+                    } else {
+                        this.updateStyles({'--container-height': '288px',
+                        '--minheight-errorcontainer': '20px'});
+                    }
                 }
             }
         }

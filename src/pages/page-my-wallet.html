@@ -122,7 +122,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
                 box-sizing: border-box;
-                padding: 5vh 0;
+                /* padding: 5vh 0; */
                 width: 100%;
                 height: 100%;
             }
@@ -172,8 +172,10 @@ This code may only be used under the license found at https://github.com/swarmci
             <div id="divider1" class="divider"></div>
                 <display-transaction-status id="txstatus" path="{{path}}">
                 </display-transaction-status>
-            <div id="divider2" class="divider"></div>
-                <display-transaction-history id="txhistory"></display-transaction-history> 
+                <template is="dom-if" if="{{showDivider}}">
+                    <div id="divider2" class="divider"></div>
+                </template>
+                <display-transaction-history id="txhistory" tx-array-length="{{txArrayLength}}"></display-transaction-history> 
             <div id="divider3" class="divider"></div>
             <div class="bottom" id="bottom">
                 <display-show-keys
@@ -278,6 +280,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_privateKeyObserver',
                     },
+                    /**
+                    * is the length of the transaction-array in display-transaction-history
+                    * @type {Number}
+                    */
+                    txArrayLength: {
+                        type: Number,
+                        observer: '_getTXarrayLength',
+                    },
+                    /**
+                    * shows the divider or not
+                    * @type {Boolean}
+                    */
+                    showDivider: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
             connectedCallback() {
@@ -332,6 +350,16 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _privateKeyObserver() {
                 this.togglePrivateKey = !this.togglePrivateKey;
+            }
+           /**
+            * Checks length of tx-array and sets boolean accordingly
+            */
+            _getTXarrayLength() {
+                if (this.txArrayLength === 0) {
+                    this.showDivider = false;
+                } else {
+                    this.showDivider = true;
+                }
             }
 
             _loadElementAnimations() {
