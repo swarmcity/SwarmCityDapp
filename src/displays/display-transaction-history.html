@@ -23,9 +23,12 @@ Example:
         <style include="shared-styles">
             :host {
                 display: block;
+                --intern-padding: 5vh 0px;
             }
 
             .container {
+                box-sizing:border-box;
+                padding: var(--intern-padding);
                 @apply --layout-vertical;
                 @apply --start-justified;
             }
@@ -166,6 +169,11 @@ Example:
                     transactions: {
                         type: Array,
                         statePath: 'transactions',
+                        observer: '_getLength',
+                    },
+                    txArrayLength: {
+                        type: Number,
+                        notify: true,
                     },
                 };
             }
@@ -182,6 +190,14 @@ Example:
             _confirmations(event) {
                 if (event > 5) {
                     return true;
+                }
+            }
+            _getLength(event) {
+                this.txArrayLength = this.transactions.length;
+                if (this.txArrayLength === 0) {
+                    this.updateStyles({'--intern-padding': '0px'});
+                } else {
+                    this.updateStyles({'--intern-padding': '5vh 0px'});
                 }
             }
         }
