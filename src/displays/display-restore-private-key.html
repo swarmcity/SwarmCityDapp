@@ -120,14 +120,23 @@ The following custom properties and mixins are available for styling:
                 @apply --error-container-wide;
             }
 
-            #error {
+            .error {
                 @apply --error-msg;
             }
 
-            .container[wide-layout] #error {
+            .container[wide-layout] .error {
                 @apply --error-msg-wide;
             }
 
+            .error-key {
+                @apply --error-msg;
+                margin: 10px 0 0 0;
+            }
+
+            .container[wide-layout] .error-key {
+                @apply --error-msg-wide;
+                margin: 10px 0 0 0;
+            }
             .messagebox {
                 margin-top: 2vh;
                 height: 4vh;
@@ -229,9 +238,10 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="middle">
-                <paper-input label="{{localize('Private key?')}}" type="txt" value="{{privateKey}}"></paper-input>
-                <!-- <div class="messagebox"></div> -->
-                <!-- <div class="showfullkey">{{localize('show full keys')}}</div> -->
+                <paper-input label="{{localize('Private key?')}}" type="txt" on-input="_checkKey" value="{{privateKey}}"></paper-input>
+                <div class="errorcontainer">
+                    <span id="privateKeyError" class="error-key">{{privateKeyError}}</span>
+                </div>
             </div>
             <div class="bottom">
             <template is="dom-if" if="{{choosePassword}}">
@@ -258,7 +268,7 @@ The following custom properties and mixins are available for styling:
                 <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}"></paper-input>
                 <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" value="{{confirmPassword}}"></paper-input>
                 <div class="errorcontainer">
-                    <span id="error">{{error}}</span>
+                    <span id="passwordError" class="error">{{passwordError}}</span>
                 </div>
                 <div id="agree" class="disabled"> 
                     <div class="agree" on-click="_submit"></div> 
@@ -356,10 +366,19 @@ The following custom properties and mixins are available for styling:
                     },
 
                     /**
-                    * User input error prompt
+                    * User input error prompt on password input
                     * @type {String}
                     */
-                    error: {
+                    passwordError: {
+                        type: String,
+                        value: '',
+                    },
+
+                    /**
+                    * User input error prompt on private key input
+                    * @type {String}
+                    */
+                    privateKeyError: {
                         type: String,
                         value: '',
                     },
@@ -392,7 +411,7 @@ The following custom properties and mixins are available for styling:
             * Compares input realtime and toggles button and error message
             */
             _checkInput() {
-                this.error = '';
+                this.passwordError = '';
                 if (this.password &&
                 this.confirmPassword &&
                 this.password.length >=1 &&
@@ -400,11 +419,11 @@ The following custom properties and mixins are available for styling:
                     if (this.confirmPassword.length <= this.password.length) {
                         for (let i = 0; i < this.confirmPassword.length; i++) {
                             if (this.confirmPassword[i] != this.password[i]) {
-                            this.error = this.localize('The passwords dont match.');
+                            this.passwordError = this.localize('The passwords dont match.');
                         }
                     }
                     } else {
-                        this.error = this.localize('The passwords dont match.');
+                        this.passwordError = this.localize('The passwords dont match.');
                     }
                 }
                 if (this.password &&
@@ -416,6 +435,21 @@ The following custom properties and mixins are available for styling:
                 } else {
                     this.$$('#agree').classList.add('disabled');
                     this.$$('#agree').classList.remove('enabled');
+                }
+            }
+
+            _checkKey() {
+                this.privateKeyError = '';
+                if (this.privateKey && this.privateKey. length >= 1) {
+                    if (this. privateKey.length != 64) {
+                        if (this.privateKey.length < 64) {
+                            this.privateKeyError =
+                                this.localize('The private key you entered is too short.');
+                        } else {
+                            this.privateKeyError =
+                                this.localize('The private key you entered is too long.');
+                        }
+                    }
                 }
             }
 
@@ -435,11 +469,9 @@ The following custom properties and mixins are available for styling:
                             localStorage.setItem('SwarmCity', JSON.stringify(storage));
                             this.path = '/';
                         });
-                    } else if (this.privateKey && this.privateKey.length >= 1) {
-                        this.error = this.localize('The key is the wrong length.');
                     }
                     else {
-                        this.error = this.localize('Please enter a key.');
+                        this.privateKeyError = this.localize('Please enter a key.');
                     }
                 }
             }
