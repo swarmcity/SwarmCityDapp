@@ -165,6 +165,53 @@ let initialState = {
     nonce: 99,
 };
 
+/**
+ * Recalculate balances & formatting of
+ *
+ * @param      {<type>}  balance  The balance
+ * @param      {<type>}  fx       The effects
+ * @return     {<type>}  { description_of_the_return_value }
+ */
+function updateBalance(balance, fx) {
+    //debugger;
+    if (balance &&
+        balance.swt &&
+        balance.swt.balance &&
+        fx &&
+        fx.priceEur &&
+        fx.priceBtc &&
+        fx.priceUsd) {
+
+        balance.swt.balanceSwt = (balance.swt.balance / 1e18).toFixed(2);
+        balance.swt.balanceEur = (balance.swt.balance / 1e18 * fx.priceEur).toFixed(2);
+        balance.swt.balanceBtc = (balance.swt.balance / 1e18 * fx.priceBtc).toFixed(2);
+        balance.swt.balanceUsd = (balance.swt.balance / 1e18 * fx.priceUsd).toFixed(2);
+    }
+    if (balance &&
+        balance.eth &&
+        balance.eth.balance) {
+        balance.eth.balanceEth = (balance.eth.balance / 1e18).toFixed(2);
+    }
+    return balance;
+}
+
+/**
+ * safely parse a string to Number. Independent of locale ( , or . )
+ *
+ * @param      {string}  input   The input
+ * @return     {Number}  The floating point value - or 0 if cannot parse
+ */
+function _parseFloat(input) {
+    if (input && typeof input === 'string') {
+        let parsed = Number.parseFloat(input.replace(',', '.'));
+        if (Number.isNaN(parsed)){
+            return 0;
+        }
+        return parsed;
+    } else {
+        return 0;
+    }
+}
 
 let reducer = function(state, action) {
     if (!state) {
@@ -189,14 +236,21 @@ let reducer = function(state, action) {
             let balance = state.balance;
             balance = action.balance;
             return Object.assign({}, state, {
-                balance: balance,
+                balance: updateBalance(balance,state.fx),
             });
         }
         case 'FX': {
             let fx = state.fx;
             fx = action.fx;
+
+            // convert strings to Float
+            if (fx.priceBtc) fx.priceBtc = _parseFloat(fx.priceBtc);
+            if (fx.priceEur) fx.priceEur = _parseFloat(fx.priceEur);
+            if (fx.priceUsd) fx.priceUsd = _parseFloat(fx.priceUsd);
+
             return Object.assign({}, state, {
                 fx: fx,
+                balance: updateBalance(state.balance,fx),
             });
         }
         case 'HASHTAGS': {
@@ -236,7 +290,7 @@ let reducer = function(state, action) {
         }
         case 'GASPRICE': {
             let gasprice = state.gasprice;
-            gasprice = action.gasprice;
+            gasprice = _parseFloat(action.gasprice);
             return Object.assign({}, state, {
                 gasprice: gasprice,
             });

@@ -164,10 +164,10 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="top">
                 <div id="closebtn" class="close" on-click="_close"></div>
                 <div class="yellowbox">
-                    <div id="swtbalance" class="swt">{{balance.swt.balance}} SWT</div>
-                    <div id="fiatbalance" class="fiat">= {{usdBalance}} USD</div>
+                    <div id="swtbalance" class="swt">{{balance.swt.balanceSwt}} SWT</div>
+                    <div id="fiatbalance" class="fiat">= {{balance.swt.balanceUsd}} USD</div>
                 </div>
-                <div id="ethbalance" class="eth">{{balance.eth.balance}} ETH</div>
+                <div id="ethbalance" class="eth">{{balance.eth.balanceEth}} ETH</div>
             </div>
             <div id="divider1" class="divider"></div>
                 <display-transaction-status id="txstatus" path="{{path}}">
@@ -221,7 +221,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     fx: {
                         type: Number,
                         statePath: 'fx',
-                        observer: '_usdBalance',
                     },
                     /**
                     * Balance is the users current balance
@@ -230,7 +229,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     balance: {
                         type: Number,
                         statePath: 'balance',
-                        observer: '_usdBalance',
                     },
                     /**
                     * Path is the current or requested path
@@ -304,14 +302,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 this.publicKey = storage.keyStore.address;
             }
-            /**
-            * usd balance usd value.
-            */
-            _usdBalance() {
-                if (this.balance && this.balance.swt && this.fx && this.fx.swtxusd) {
-                    this.usdBalance = (this.balance.swt.balance * this.fx.priceUsd);
-                }
-            }
+    
             /**
             * takes the user to originating page
             */
@@ -360,6 +351,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 } else {
                     this.showDivider = true;
                 }
+            }
+
+            _formatBalance(amount,decimals) {
+                return (amount / 1e18).toFixed(decimals);
             }
 
             _loadElementAnimations() {
