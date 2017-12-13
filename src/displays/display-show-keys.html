@@ -39,11 +39,12 @@ Example:
             }
 
             .opened {
-                border: 2px solid rgba(0,0,0,0.1);
+                border: 2px solid rgba(0, 0, 0, 0.1);
                 padding: 20px 20px 20px 20px;
-                margin-top:10px;
+                margin-top: 10px;
 
             }
+
             .keybox[wide-layout] .opened {
                 padding: 8px 8px 20px 20px;
 
@@ -84,7 +85,7 @@ Example:
             }
 
             .keybox[wide-layout] .subtitle {
-                margin-top: 0px;                
+                margin-top: 0px;
             }
 
             .bluelink {
@@ -118,6 +119,7 @@ Example:
                 @apply --layout-start-justified;
                 @apply --layout-center;
             }
+
             .keybox[wide-layout] .txtbox {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -132,6 +134,7 @@ Example:
             .keybox[wide-layout] .extramargin {
                 margin-top: 10px;
             }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -140,31 +143,40 @@ Example:
                     @apply --retina;
                 }
             }
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        
         <div id="keyBox" class="keybox" wide-layout$="{{wide}}">
-            <template is="dom-if" if="{{toggleKeys}}">
-                <div class="greylink" on-click="_togglePublicKey">{{localize('show my keys')}}</div>
-            </template>
 
-            <template is="dom-if" if="{{!toggleKeys}}">
-                <div class="txtbox">
-                    <div class="subtitle" >{{localize('Your public key')}}</div>                    
-                    <div class="key">{{publicKey}}</div>
-                    <template is="dom-if" if="{{!togglePrivateKey}}">          
-                        <div class="bluelink" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
-                    </template>
-                    <template is="dom-if" if="{{togglePrivateKey}}">          
-                        <div class="subtitle extramargin">{{localize('Your private key')}}</div>                    
-                        <div class="key">{{privateKey}}</div>
-                    </template>
-                
-                </div>                  
-                <div class="close" on-click="_close"></div>
-            </template>
-        
+            <dom-if if="{{toggleKeys}}">
+                <template>
+                        <div class="greylink" on-click="_togglePublicKey">{{localize('show my keys')}}</div>
+                </template>
+            </dom-if>
+
+            <dom-if if="{{!toggleKeys}}">
+                <template>
+                    <div class="txtbox">
+                        <div class="subtitle">{{localize('Your public key')}}</div>
+                        <div class="key">{{publicKey}}</div>
+
+                        <dom-if if="{{!togglePrivateKey}}">
+                            <template>
+                                <div class="bluelink" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
+                            </template>
+                        </dom-if>
+
+                        <dom-if if="{{togglePrivateKey}}">
+                            <template>
+                                <div class="subtitle extramargin">{{localize('Your private key')}}</div>
+                                <div class="key">{{privateKey}}</div>
+                            </template>
+                        </dom-if>
+
+                    </div>
+                    <div class="close" on-click="_close"></div>
+                </template>
+            </dom-if>
+
         </div>
 
     </template>
@@ -188,7 +200,6 @@ Example:
                         type: String,
                         statePath: 'language',
                     },
-
                     /**
                     * Path signlas to the parent to change the path
                     * @type {Boolean}
@@ -224,6 +235,7 @@ Example:
                     toggleKeys: {
                         type: Boolean,
                         value: true,
+                        observer: '_toggleKeys',
                     },
                     /*
                     * toggles the view to show the private key
@@ -264,7 +276,13 @@ Example:
                 this.toggleKeys = !this.toggleKeys;
                 this.privateKey = null;
             }
-
+            /**
+            * resets the private key visibility when keybox closes
+            */
+            _toggleKeys() {
+                this.togglePrivateKey = false;
+                this.privateKey = null;
+            }
             /**
             * Toggles the visibility of the full Private Key
             */
