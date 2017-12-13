@@ -168,12 +168,11 @@ let initialState = {
 /**
  * Recalculate balances & formatting of
  *
- * @param      {<type>}  balance  The balance
- * @param      {<type>}  fx       The effects
- * @return     {<type>}  { description_of_the_return_value }
+ * @param      {Object}  balance  The balance object
+ * @param      {Object}  fx       The fx object ( exchange rates )
+ * @return     {Object}  decorated balance object
  */
 function updateBalance(balance, fx) {
-    //debugger;
     if (balance &&
         balance.swt &&
         balance.swt.balance &&
@@ -181,7 +180,6 @@ function updateBalance(balance, fx) {
         fx.priceEur &&
         fx.priceBtc &&
         fx.priceUsd) {
-
         balance.swt.balanceSwt = (balance.swt.balance / 1e18).toFixed(2);
         balance.swt.balanceEur = (balance.swt.balance / 1e18 * fx.priceEur).toFixed(2);
         balance.swt.balanceBtc = (balance.swt.balance / 1e18 * fx.priceBtc).toFixed(2);
@@ -204,7 +202,7 @@ function updateBalance(balance, fx) {
 function _parseFloat(input) {
     if (input && typeof input === 'string') {
         let parsed = Number.parseFloat(input.replace(',', '.'));
-        if (Number.isNaN(parsed)){
+        if (Number.isNaN(parsed)) {
             return 0;
         }
         return parsed;
@@ -236,7 +234,7 @@ let reducer = function(state, action) {
             let balance = state.balance;
             balance = action.balance;
             return Object.assign({}, state, {
-                balance: updateBalance(balance,state.fx),
+                balance: updateBalance(balance, state.fx),
             });
         }
         case 'FX': {
@@ -250,7 +248,7 @@ let reducer = function(state, action) {
 
             return Object.assign({}, state, {
                 fx: fx,
-                balance: updateBalance(state.balance,fx),
+                balance: updateBalance(state.balance, fx),
             });
         }
         case 'HASHTAGS': {
