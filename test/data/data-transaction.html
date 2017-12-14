@@ -32,39 +32,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
       suite('data-transaction', function() {
-        
-        const myDataTransaction = fixture('BasicView');        
+        const myDataTransaction = fixture('BasicView');
         const senderPubKey = '0x589b09ffb50fe49eac3227e1f9c4055cb9d85050';
         const senderPrivateKey = '59b1679c41f3121edbda6e2afa449f52918af27e234f14f0f1d38163e4f4ae79';
         const receiverPubKey = '0x610f8e968f3979dbc4602a6a9dcdd326623aeb16';
 
         test('transferSWT tx generation + signing', function(done) {
           myDataTransaction.makeTransferTx(receiverPubKey, 666).then((data) => {
-            var decoded = webpack.simpleDecode("balanceOf(address):(uint256)", data)
             const txData = data.toString('hex');
-            var txParams = {
+            const txParams = {
               nonce: 666,
               gasPrice: 21e9,
               gasLimit: 50000,
               to: '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607',
               from: senderPubKey,
               data: txData,
-              chainId: 1
+              chainId: 1,
             };
             myDataTransaction.signRawTx(txParams, senderPrivateKey).then((serializedTx) => {
-              let verifyTx = new webpack.ethereumTx(serializedTx);
+              const verifyTx = new webpack.ethereumTx(serializedTx);  // eslint-disable-line
               // verify if the decoded TX matches the given parameters
-              assert.equal(parseInt(verifyTx.nonce.toString('hex'),16),666);
-              assert.equal(parseInt(verifyTx.gasPrice.toString('hex'),16),21e9);
-              assert.equal(parseInt(verifyTx.gasLimit.toString('hex'),16),50000);
-              assert.equal(parseInt(verifyTx.to.toString('hex'),16),'0xb9e7f8568e08d5659f5d29c4997173d84cdf2607');
-              assert.equal(parseInt(verifyTx.from.toString('hex'),16),senderPubKey);
+              assert.equal(parseInt(verifyTx.nonce.toString('hex'), 16), 666);
+              assert.equal(parseInt(verifyTx.gasPrice.toString('hex'), 16), 21e9);
+              assert.equal(parseInt(verifyTx.gasLimit.toString('hex'), 16), 50000);
+              assert.equal(
+                parseInt(verifyTx.to.toString('hex'), 16),
+                '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607');
+              assert.equal(parseInt(verifyTx.from.toString('hex'), 16), senderPubKey);
               done();
             }).catch(done);
           }).catch(done);
-
-    // const circle = myView.shadowRoot.querySelector('#test');
-  });
+        });
       });
     </script>
   </body>
