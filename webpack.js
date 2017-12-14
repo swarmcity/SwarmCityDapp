@@ -22,7 +22,10 @@ import Buffer from 'buffer';
 import QRCode from 'qrcode';
 import moment from 'moment';
 import ethereumTx from 'ethereumjs-tx';
+import {simpleEncode,simpleDecode} from 'ethereumjs-abi';
 export {
+  simpleEncode,
+  simpleDecode,
   sha3,
   privateToAddress,
   privateToPublic,

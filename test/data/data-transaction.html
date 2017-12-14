@@ -1,0 +1,71 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>data-transaction</title>
+
+    <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../bower_components/web-component-tester/browser.js"></script>
+    <script src="../../data/webpack.min.js" async></script>
+
+    <!-- Import the element to test -->
+    <link rel="import" href="../../src/data/data-transaction.html">
+  </head>
+  <body>
+    <test-fixture id="BasicView">
+      <template>
+        <data-transaction></data-transaction>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('data-transaction', function() {
+        
+        const myDataTransaction = fixture('BasicView');        
+        const senderPubKey = '0x589b09ffb50fe49eac3227e1f9c4055cb9d85050';
+        const senderPrivateKey = '59b1679c41f3121edbda6e2afa449f52918af27e234f14f0f1d38163e4f4ae79';
+        const receiverPubKey = '0x610f8e968f3979dbc4602a6a9dcdd326623aeb16';
+
+        test('transferSWT tx generation + signing', function(done) {
+          myDataTransaction.makeTransferTx(receiverPubKey, 666).then((data) => {
+            var decoded = webpack.simpleDecode("balanceOf(address):(uint256)", data)
+            const txData = data.toString('hex');
+            var txParams = {
+              nonce: 666,
+              gasPrice: 21e9,
+              gasLimit: 50000,
+              to: '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607',
+              from: senderPubKey,
+              data: txData,
+              chainId: 1
+            };
+            myDataTransaction.signRawTx(txParams, senderPrivateKey).then((serializedTx) => {
+              let verifyTx = new webpack.ethereumTx(serializedTx);
+              // verify if the decoded TX matches the given parameters
+              assert.equal(parseInt(verifyTx.nonce.toString('hex'),16),666);
+              assert.equal(parseInt(verifyTx.gasPrice.toString('hex'),16),21e9);
+              assert.equal(parseInt(verifyTx.gasLimit.toString('hex'),16),50000);
+              assert.equal(parseInt(verifyTx.to.toString('hex'),16),'0xb9e7f8568e08d5659f5d29c4997173d84cdf2607');
+              assert.equal(parseInt(verifyTx.from.toString('hex'),16),senderPubKey);
+              done();
+            }).catch(done);
+          }).catch(done);
+
+    // const circle = myView.shadowRoot.querySelector('#test');
+  });
+      });
+    </script>
+  </body>
+</html>
