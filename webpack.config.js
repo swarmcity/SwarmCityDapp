@@ -1,6 +1,5 @@
 const path = require('path')
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
-const webpack = require('webpack');
 
 module.exports = {
   context: __dirname,
@@ -34,9 +33,6 @@ module.exports = {
           comments: false,
         },
       },
-    }),
-    new webpack.DefinePlugin({
-      ___SOCKETURL___ : 'http://localhost:8011',
     }),
   ],
   devtool: 'source-map',
