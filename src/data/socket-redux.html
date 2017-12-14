@@ -160,17 +160,21 @@
                 });
             }
 
-            ready() {
-                super.ready();
+            constructor() {
+                super();
 
-                // Connect to websocket
-                socket = io('https://www.swarmdev.city',
+                // Create websocket
+                socket = io('http://localhost:8011',
                 {
                     query: 'apiUser=swarmCity',
                     path: '/api',
                     transports: ['websocket', 'xhr-polling'],
                     autoConnect: false,
                 }); // eslint-disable-line
+            }
+
+            ready() {
+                super.ready();
 
                 // Listen for changes on 'fxChanged'
                 socket.on('fxChanged', (reply) => {
