@@ -185,18 +185,18 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * routeHistory is an array that contains the current and previous page
+                    * routeExit triggers the exit animations
                     * @type {Array}
                     */
-                    routeHistory: {
+                    routeExit: {
                         type: Array,
-                        observer: '_loadElementAnimations',
+                        observer: '_loadExitAnimations',
                     },
                     /**
-                    * routeHistory is an array that contains the current and previous page
+                    * routeEntry triggers the entry animations
                     * @type {Array}
                     */
-                    routeSwitch: {
+                    routeEntry: {
                         type: Array,
                         observer: '_loadEntryAnimations',
                     },
@@ -241,11 +241,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-            _loadElementAnimations() {
-                if (this.routeHistory[0] != this.routeHistory[1]) {
-                    if (this.routeHistory[0] == this.pageID) {
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
-                        if (this.routeHistory[1] == 'welcome') {
+                        if (this.routeExit[1] == 'welcome') {
                             // Going to page Welcome
                             this.$.hashtagList.animate(
                                 [
@@ -325,7 +325,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[1] == 'my-profile') {
+                        if (this.routeExit[1] == 'my-profile') {
                             // Going to page My Profile
                             this.$.hashtagList.animate(
                                 [
@@ -373,7 +373,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[1] == 'my-wallet') {
+                        if (this.routeExit[1] == 'my-wallet') {
                             // Going to page My Wallet
                             this.$.hashtagList.animate(
                                 [
@@ -421,7 +421,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[1] == 'hashtag') {
+                        if (this.routeExit[1] == 'hashtag') {
                             // Going to page Hashtag
                             this.$.hashtagList.animate(
                                 [
@@ -469,7 +469,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[1] == 'new-hashtag') {
+                        if (this.routeExit[1] == 'new-hashtag') {
                             // Going to page new-Hashtag
                             this.$.hashtagList.animate(
                                 [
@@ -539,27 +539,92 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _loadEntryAnimations() {
-                if (this.routeHistory[1] == this.pageID) {
-                        // Here come the Entry Animations
-                        if (this.routeHistory[0] == 'welcome') {
-                            // Coming from page Welcome
-                            this.$.hashtagList.animate(
-                                [
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                            // Here come the Entry Animations
+                            if (this.routeExit[0] == 'welcome') {
+                                // Coming from page Welcome
+                                this.$.hashtagList.animate(
+                                    [
+                                        {'transform': 'translateY(50px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                if (this.publicKey) {
+                                        this.$$('#displaymyinfo').animate(
+                                            [
+                                                {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                                {'transform': 'translateY(0px)', 'opacity': '1'},
+                                            ],
+                                            {
+                                                fill: 'forwards',
+                                                duration: 300,
+                                                iterations: 1,
+                                                iterationStart: 0,
+                                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
                                 }
-                            );
-                            if (this.publicKey) {
-                            console.log(this.$$('#displaymyinfo'));
+                                this.$.hashtagaddbtn.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.back.animate(
+                                    [
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            if (this.routeExit[0] == 'my-profile') {
+                                // Coming from page My Profile
+                                this.$.hashtagList.animate(
+                                    [
+                                        {'transform': 'translateX(0px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                if (this.publicKey) {
                                     this.$$('#displaymyinfo').animate(
                                         [
                                             {'transform': 'translateY(-30px)', 'opacity': '0'},
@@ -571,64 +636,48 @@ This code may only be used under the license found at https://github.com/swarmci
                                             iterations: 1,
                                             iterationStart: 0,
                                             easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
+                                this.$.hashtagaddbtn.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.back.animate(
+                                    [
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
                                         delay: 0,
                                         endDelay: 0,
                                     }
                                 );
                             }
-                            this.$.hashtagaddbtn.animate(
-                                [
-                                    {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    {'transform': 'translateY(20px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeHistory[0] == 'my-profile') {
-                            // Coming from page My Profile
-                            this.$.hashtagList.animate(
-                                [
-                                    {'transform': 'translateX(0px)', 'opacity': '0'},
-                                    {'transform': 'translateX(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            if (this.publicKey) {
-                                this.$$('#displaymyinfo').animate(
+                            if (this.routeExit[0] == 'my-wallet') {
+                                // Coming from page My Wallet
+                                this.$.hashtagList.animate(
                                     [
-                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateX(0px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -640,60 +689,60 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                            }
-                            this.$.hashtagaddbtn.animate(
-                                [
-                                    {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    {'transform': 'translateY(20px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
+                                if (this.publicKey) {
+                                    this.$$('#displaymyinfo').animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
                                 }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeHistory[0] == 'my-wallet') {
-                            // Coming from page My Wallet
-                            this.$.hashtagList.animate(
-                                [
-                                    {'transform': 'translateX(0px)', 'opacity': '0'},
-                                    {'transform': 'translateX(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            if (this.publicKey) {
-                                this.$$('#displaymyinfo').animate(
+                                this.$.hashtagaddbtn.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.back.animate(
                                     [
                                         {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            if (this.routeExit[0] == 'hashtag') {
+                                // Coming from page Hashtag
+                                this.$.hashtagList.animate(
+                                    [
+                                        {'transform': 'translateX(-50px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -705,109 +754,44 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                            }
-                            this.$.hashtagaddbtn.animate(
-                                [
-                                    {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    {'transform': 'translateY(20px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeHistory[0] == 'hashtag') {
-                            // Coming from page Hashtag
-                            this.$.hashtagList.animate(
-                                [
-                                    {'transform': 'translateX(-50px)', 'opacity': '0'},
-                                    {'transform': 'translateX(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.hashtagaddbtn.animate(
-                                [
-                                    {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    {'transform': 'translateY(20px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeHistory[0] == 'download-success' ||
-                            this.routeHistory[0] == 'print-success') {
-                            // Coming from page download-success or print-success
-                            this.$.hashtagList.animate(
-                                [
-                                    {'transform': 'translateY(250px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            if (this.publicKey) {
-                                this.$$('#displaymyinfo').animate(
+                                this.$.hashtagaddbtn.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.back.animate(
                                     [
                                         {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            if (this.routeExit[0] == 'download-success' ||
+                                this.routeExit[0] == 'print-success') {
+                                // Coming from page download-success or print-success
+                                this.$.hashtagList.animate(
+                                    [
+                                        {'transform': 'translateY(250px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -819,60 +803,60 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                            }
-                            this.$.hashtagaddbtn.animate(
-                                [
-                                    {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    {'transform': 'translateY(20px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
+                                if (this.publicKey) {
+                                    this.$$('#displaymyinfo').animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
                                 }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeHistory[0] == 'new-hashtag') {
-                            // Coming from page new-hashtag
-                            this.$.hashtagList.animate(
-                                [
-                                    {'transform': 'translateX(-50px)', 'opacity': '0'},
-                                    {'transform': 'translateX(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            if (this.publicKey) {
-                                this.$$('#displaymyinfo').animate(
+                                this.$.hashtagaddbtn.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.back.animate(
                                     [
                                         {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            if (this.routeExit[0] == 'new-hashtag') {
+                                // Coming from page new-hashtag
+                                this.$.hashtagList.animate(
+                                    [
+                                        {'transform': 'translateX(-50px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -884,39 +868,56 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
+                                if (this.publicKey) {
+                                    this.$$('#displaymyinfo').animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
+                                this.$.hashtagaddbtn.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.back.animate(
+                                    [
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
                             }
-                            this.$.hashtagaddbtn.animate(
-                                [
-                                    {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    {'transform': 'translateY(20px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
                         }
-                    }
+                }
             }
         }
         window.customElements.define(HashtagList.is, HashtagList);
