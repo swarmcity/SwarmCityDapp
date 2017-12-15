@@ -27,12 +27,12 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
         <style include="shared-styles">
             :host {
-                height: 100%;
                 display: block;
             }
 
             .container {
                 width: 100vw;
+                height: 100%;
                 background-image: var(--sc-bg);
             }
 
@@ -319,7 +319,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <display-my-info 
                                     path="{{path}}" 
                                     route="{{route}}"
-                                    route-history="[[routeHistory]]"
+                                    route-exit="[[routeExit]]"
                                     id="displaymyinfo">
                                 </display-my-info>
                         </template>
@@ -416,10 +416,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * routeHistory is an array that contains the current and previous page
+                    * routeExit is an array that contains the current and previous page
                     * @type {Array}
                     */
-                    routeHistory: {
+                    routeExit: {
                         type: Array,
                         observer: '_loadElementAnimations',
                     },
@@ -808,10 +808,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             _loadElementAnimations() {
-                if (this.routeHistory[0] != this.routeHistory[1]) {
-                    if (this.routeHistory[0] == this.pageID) {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
-                        if (this.routeHistory[1] == 'hashtag-list') {
+                        if (this.routeExit[1] == 'hashtag-list') {
                             // Here come the Exit Animations, going to page HashtagList
                             this.$.fadeArea.animate(
                                 [
@@ -906,7 +906,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[1] == 'my-profile') {
+                        if (this.routeExit[1] == 'my-profile') {
                             // Here come the Exit Animations, going to page My Profile
                             this.$.fadeArea.animate(
                                 [
@@ -999,7 +999,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[1] == 'my-wallet') {
+                        if (this.routeExit[1] == 'my-wallet') {
                             // Here come the Exit Animations, going to page My Wallet
                             this.$.fadeArea.animate(
                                 [
@@ -1092,9 +1092,9 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                    } else if (this.routeHistory[1] == this.pageID) {
+                    } else if (this.routeExit[1] == this.pageID) {
                         // Here come the Entry Animations
-                        if (this.routeHistory[0] == 'hashtag-list') {
+                        if (this.routeExit[0] == 'hashtag-list') {
                             // Here come the Entry Animations, coming from page hashtag-list
                             this.$.fadeArea.animate(
                                 [
@@ -1189,7 +1189,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[0] == 'my-profile') {
+                        if (this.routeExit[0] == 'my-profile') {
                             // Here come the Entry Animations, coming from page My Profile
                             this.$.fadeArea.animate(
                                 [
@@ -1282,7 +1282,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[0] == 'my-wallet') {
+                        if (this.routeExit[0] == 'my-wallet') {
                             // Here come the Entry Animations, coming from page My Wallet
                             this.$.fadeArea.animate(
                                 [
@@ -1375,8 +1375,8 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeHistory[0] == 'download-success' ||
-                            this.routeHistory[0] == 'print-success') {
+                        if (this.routeExit[0] == 'download-success' ||
+                            this.routeExit[0] == 'print-success') {
                             // Coming from page download-success or print-success
                             this.$.fadeArea.animate(
                                 [
