@@ -591,7 +591,7 @@ Example:
             * switches to state shortcode
             */
             _checkPublicKey() {
-                if (this.sendDestination) {
+                if (this.sendDestination && this.amountToSend <= this.balance.swt.balanceSwt) {
                     const length = this.sendDestination.length;
                     if (length == 5) {
                         this.sendToShortcode = this.sendDestination;
@@ -605,7 +605,6 @@ Example:
                     }
                 }
             }
-
             /**
             * shows waiting animation while we get the publick key for the given shortcode
             */
@@ -641,7 +640,7 @@ Example:
                 if (isNaN(this.amountToSend)) {
                     this.error = this.localize('You didnt enter a number.');
                 } else {
-                    if (this.amountToSend >= this.balance.swt) {
+                    if (this.amountToSend > this.balance.swt.balanceSwt) {
                         this.error = this.localize('Your balance is too low.');
                     } else {
                         this.error = null;
