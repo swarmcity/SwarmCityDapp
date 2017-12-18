@@ -239,12 +239,20 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * routeExit is an array that contains the current and previous page
+                    * routeExit triggers the exit animations
                     * @type {Array}
                     */
                     routeExit: {
                         type: Array,
-                        observer: '_loadElementAnimations',
+                        observer: '_loadExitAnimations',
+                    },
+                    /**
+                    * routeEntry triggers the entry animations
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * pageID is an id givven to every page specific
@@ -357,7 +365,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 return (amount / 1e18).toFixed(decimals);
             }
 
-            _loadElementAnimations() {
+            _loadExitAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     let balanceSize = ((Polymer.dom(this.root).querySelector('#swtbalance').offsetWidth)/2);
                     let middleCalc = ((window.innerWidth/2)-balanceSize)-70+'px';
@@ -828,9 +836,14 @@ This code may only be used under the license found at https://github.com/swarmci
                                     }
                                 );
                         }
-                    } else if (this.routeExit[1] == this.pageID) {
-                        // Here come the Entry Animations
+                    }
+                }
+            }
 
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
                         if (this.routeExit[0] == 'hashtag-list') {
                             // Coming from page Hashtag-List
                             this.$.closebtn.animate(
