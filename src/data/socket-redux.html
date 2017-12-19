@@ -1,17 +1,18 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
-<script src="environment.min.js" async></script>
+<script src="environment.min.js"></script>
 <dom-module id="socket-redux">
 
     <script>
-        let socket;
-
         class SocketRedux extends new ReduxMixin(Polymer.Element) {
             static get is() {
                 return 'socket-redux';
             }
             static get properties() {
                 return {
+                    socket: {
+                        type: Object,
+                    },
                     /**
                     * balance represnts the users balance
                     * @type {Array}
@@ -164,7 +165,7 @@
             constructor() {
                 super();
                 // Create websocket
-                socket = io(environment.socketurl, // eslint-disable-line
+                this.socket = io(environment.socketurl, // eslint-disable-line
 
                 {
                     query: 'apiUser=swarmCity',
@@ -178,34 +179,34 @@
                 super.ready();
 
                 // Listen for changes on 'fxChanged'
-                socket.on('fxChanged', (reply) => {
+                this.socket.on('fxChanged', (reply) => {
                     this.fx = reply;
                     this.dispatch('FX', this.fx);
                 });
 
                 // Listen for changes on 'gasPriceChanged'
-                socket.on('gasPriceChanged', (reply) => {
+                this.socket.on('gasPriceChanged', (reply) => {
                     this.gasprice = reply;
                     this.dispatch('GASPRICE', this.gasprice);
                 });
 
-                socket.on('nonceChanged', (reply) => {
+                this.socket.on('nonceChanged', (reply) => {
                     this.nonce = reply;
                     this.dispatch('NONCE', this.nonce);
                 });
 
 
                 // Listen for changes on 'hashtagsChanged'
-                socket.on('hashtagsChanged', (reply) => {
+                this.socket.on('hashtagsChanged', (reply) => {
                     if (reply.response == 200) {
                         this.hashtags = reply.data;
                         this.dispatch('HASHTAGS', this.hashtags);
                     }
                 });
 
-                socket.on('connect', () => {
+                this.socket.on('connect', () => {
                     // Subscribe to hashtags
-                    socket.emit('subscribe', {
+                    this.socket.emit('subscribe', {
                         channel: 'hashtags',
                     }, (reply) => {
                         if (reply.response == 200) {
@@ -216,12 +217,12 @@
                 });
 
                 // All handlers attached - please connect..
-                socket.connect();
+                this.socket.connect();
             }
 
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
-                socket.emit('subscribe', {
+                this.socket.emit('subscribe', {
                     channel: 'balance',
                     args: {
                         address: this.publicKey,
@@ -232,28 +233,34 @@
                         this.dispatch('BALANCE', this.balance);
                     }
                 });
-                socket.on('balanceChanged', (reply) => {
-                    this.balance = reply;
-                    this.dispatch('BALANCE', this.balance);
+                this.socket.on('balanceChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.balance = reply;
+                        this.dispatch('BALANCE', this.balance);
+                    }
                 });
                 // subscribe to updates of the nonce of this publickey
-                socket.emit('subscribe', {
+                this.socket.emit('subscribe', {
                     channel: 'nonce',
                     args: {
                         address: this.publicKey,
                     },
                 }, (reply) => {
-                    this.nonce = reply.data.nonce;
-                    this.dispatch('NONCE', this.nonce);
+                    if (reply.response == 200) {
+                        this.nonce = reply.data.nonce;
+                        this.dispatch('NONCE', this.nonce);
+                    }
                 });
 
                 // Fired when the users nonce changes
-                socket.on('nonceChanged', (reply) => {
-                    this.nonce = reply.data.nonce;
-                    this.dispatch('NONCE', this.nonce);
+                this.socket.on('nonceChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.nonce = reply.data.nonce;
+                        this.dispatch('NONCE', this.nonce);
+                    }
                 });
                 // subscribe to updates of the shortcode => publickey
-                socket.emit('subscribe', {
+                this.socket.emit('subscribe', {
                     channel: 'shortcode',
                     args: {
                         validity: 60*1000,
@@ -267,13 +274,15 @@
                         this.dispatch('SHORTCODE', this.shortcode);
                     }
                 });
-                socket.on('shortcodeChanged', (reply) => {
-                    this.shortcode = reply.data.shortcode;
-                    this.dispatch('SHORTCODE', this.shortcode);
+                this.socket.on('shortcodeChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.shortcode = reply.data.shortcode;
+                        this.dispatch('SHORTCODE', this.shortcode);
+                    }
                 });
 
                 // subscribe to updates of the tx history
-                socket.emit('subscribe', {
+                this.socket.emit('subscribe', {
                     channel: 'txhistory',
                     args: {
                         publickey: this.publickey,
@@ -284,7 +293,7 @@
                         this.dispatch('TRANSACTIONS', this.transactions);
                     }
                 });
-                socket.on('txhistoryChanged', (reply) => {
+                this.socket.on('txhistoryChanged', (reply) => {
                     if (reply.response == 200) {
                         this.transactions = reply.data;
                         this.dispatch('TRANSACTIONS', this.transactions);
@@ -306,7 +315,7 @@
                 }
             }
             _reqToKey() {
-                socket.emit('readShortCode', {
+                this.socket.emit('readShortCode', {
                     shortcode: this.reqtokey,
                 }, (reply) => {
                     if (reply.response === 200) {
@@ -317,7 +326,7 @@
             }
             _broadcast() {
                 // send this.broadcast to the api, this.broadcast is the signed tx
-                socket.emit('sendRawTx', {
+                this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
                 }, (data) => {
                     // does anything need to happen here ?
