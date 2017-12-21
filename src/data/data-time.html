@@ -20,6 +20,10 @@
                     },
                     fromNow: {
                         type: String,
+                        value: 10,
+                    },
+                    countdown: {
+                        type: Number,
                     },
                 };
             }
@@ -27,7 +31,13 @@
              * Converts from epoch to from now.
              */
             _fromNow() {
-                this.fromNow = webpack.moment(this.epoch).fromNow();
+                if (!this.countdown) {
+                    this.fromNow = webpack.moment(this.epoch).fromNow();
+                } else {
+                    setInterval(()=> {
+                        this.fromNow = Math.round((this.countdown - ((new Date).getTime() - this.epoch))/60000);
+                    }, 1000);
+                }
             }
         } window.customElements.define(DataTime.is, DataTime);
     </script>
