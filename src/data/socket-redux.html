@@ -271,12 +271,14 @@
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.shortcode = reply.data;
+                        this.shortcode.received = (new Date).getTime();
                         this.dispatch('SHORTCODE', this.shortcode);
                     }
                 });
                 this.socket.on('shortcodeChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.shortcode = reply.data.shortcode;
+                        this.shortcode = reply.data;
+                        this.shortcode.received = (new Date).getTime();
                         this.dispatch('SHORTCODE', this.shortcode);
                     }
                 });
