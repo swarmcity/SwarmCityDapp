@@ -20,7 +20,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
     -->
-        <style include="shared-styles">
+    <style include="shared-styles">
             :host {
                 height: 100vh;
                 width: 100vw;
@@ -39,7 +39,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] {
                 box-sizing: border-box;
-                padding: 100px 10vw 20vh 10vw;
+                padding: 80px 10vw 20vh 10vw;
             }
 
             .avatarcontainer {
@@ -97,7 +97,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div class="container" wide-layout$="{{wide}}" id="container">
             <display-resize-avatar path="{{path}}" route-entry="{{routeEntry}}"></display-resize-avatar>
         </div>
     </template>
@@ -178,6 +178,51 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        this.$.container.animate(
+                            [
+                                {'opacity': '1'},
+                                {'opacity': '0'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 100,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        this.$.container.animate(
+                            [
+                                {'opacity': '0'},
+                                {'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 100,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
             }
         }
         window.customElements.define(MyResizeAvatar.is, MyResizeAvatar);
