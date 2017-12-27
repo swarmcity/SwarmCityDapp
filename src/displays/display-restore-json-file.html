@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-wallet.html">
 <script src="../data/lightwallet.min.js"></script>
 <!--
@@ -192,7 +193,7 @@ The following custom properties and mixins are available for styling:
         </div>
     </template>
     <script>
-        class DisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
@@ -202,6 +203,10 @@ The following custom properties and mixins are available for styling:
             }
             static get properties() {
                 return {
+                    /**
+                    * The users selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -251,7 +256,36 @@ The following custom properties and mixins are available for styling:
                     password: {
                         type: String,
                     },
+                    /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
                 };
+            }
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
             * Fired when the user selects a file
@@ -279,6 +313,7 @@ The following custom properties and mixins are available for styling:
                 if (this.wallet.Crypto) {
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     storage.keyStore = this.wallet;
+                    this.dispatch('PUBLICKEY', storage.keyStore.address);
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
                     if (sessionStorage.getItem('origin')) {
                         this.path = sessionStorage.getItem('origin');
@@ -297,6 +332,7 @@ The following custom properties and mixins are available for styling:
                             .then((KeyStore) => {
                                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                 storage.keyStore = KeyStore;
+                                this.dispatch('PUBLICKEY', storage.keyStore.address);
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                                 if (sessionStorage.getItem('origin')) {
                                     this.path = sessionStorage.getItem('origin');
@@ -317,13 +353,6 @@ The following custom properties and mixins are available for styling:
                 this.askPassword = false;
                 this.error = null;
             }
-            /**
-            * Fired when the component first loads
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-        } window.customElements.define(DisplayRestoreJsonFile.is, DisplayRestoreJsonFile);
+        } window.customElements.define(MyDisplayRestoreJsonFile.is, MyDisplayRestoreJsonFile);
     </script>
 </dom-module>
