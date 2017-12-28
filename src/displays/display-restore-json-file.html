@@ -343,8 +343,9 @@ The following custom properties and mixins are available for styling:
                             .then((KeyStore) => {
                                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                 storage.keyStore = KeyStore;
-                                storage.user.avatar = this.wallet.avatar;
-                                storage.user.username = this.wallet.username;
+                                // TODO: This avatarhash will need to be converted to a base 64 via the API
+                                storage.user.avatar = this.wallet.identity.avatarhash;
+                                storage.user.username = this.wallet.identity.username;
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                                 this.dispatch('PUBLICKEY', storage.keyStore.address);
                                 this.dispatch('AVATAR', storage.user.avatar);
