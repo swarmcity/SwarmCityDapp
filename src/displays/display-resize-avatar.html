@@ -39,7 +39,7 @@
                 @apply --layout-vertical;
                 @apply --layout-start;
                 @apply --layout-start-justified;
-                margin-bottom: 3vh;
+                margin-bottom: 7vh;
             }
 
             .container .rotate-icon {
@@ -72,16 +72,11 @@
                 margin: 50px 0px 0px 0px;
             }
 
-
-            .container[wide-layout] .bluetext {
-                margin: 20px 0px 0px 0px;
-            }
-
             .blacktext {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
-                @apply --small-light;
-                color: var(--sc-grey3);
+                @apply --small-bold;
+                color: var(--sc-grey4);
                 margin: 10px 0px 0px 0px;
             }
 
@@ -117,12 +112,10 @@
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .container .rotate-icon,
-                .container[wide-layout] .rotate-icon,
-                .container .disagree,
-                .container[wide-layout] .disagree,
-                .container .agree,
-                .container[wide-layout] .agree {
+                .close,
+                .rotate-icon,
+                .disagree,
+                .agree {
                     @apply --retina;
                 }
             }
@@ -155,13 +148,12 @@
         </div>
     </template>
     <script>
+
         const mathCanvas = function() {
         'use strict';
-
     function t(t, n, o) {
         return Math.min(o, Math.max(n, t));
     }
-
     function n(n) {
         function o(o) {
             let a = n.canvas;
@@ -191,7 +183,6 @@
         calculateDim: o,
     };
 }
-
 function o(t) {
     function n(n, o) {
         let a = t.canvas;
@@ -212,7 +203,6 @@ function o(t) {
         3 == u ? (s = a.height * e - m + c, m = l - r) : (s -= r, m -= c),
         [Math.round(i.x + s * f / e), Math.round(i.y + m * f / e)];
     }
-
     function o(n, o) {
         let a = t.canvas;
         let i = t.size;
@@ -236,7 +226,6 @@ function o(t) {
         },
     };
 }
-
 function a(t) {
     return {
         transform: function(n) {
@@ -253,7 +242,6 @@ function a(t) {
         },
     };
 }
-
 function i(t, n, o) {
     function a(a) {
         let i;
@@ -267,11 +255,9 @@ function i(t, n, o) {
         e = n.denormalizePoint(c[0], c[1]), t.left -= e[0] - i[0],
         t.top -= e[1] - i[1]), o.calculateDim(1);
     }
-
     function i(n) {
         r > 120 && (n *= t.zoomFactor), a(r + n);
     }
-
     function e(t, n) {
         void 0 === n && (n = 1), i(n * t), f.run(20, function(n) {
             e(t, n);
@@ -287,13 +273,11 @@ function i(t, n, o) {
         startZoom: e,
     };
 }
-
 function e(t, n) {
     function o(o, a) {
         'left' == o || 'right' == o ? t.left += a * ('left' == o ? 1 : -1) :
         t.top += a * ('up' == o ? 1 : -1), n.calculateDim(1);
     }
-
     function a(t, n) {
         o(t, n = n || 1), f.run(20, function(n) {
             a(t, n);
@@ -308,7 +292,6 @@ function e(t, n) {
         startPan: a,
     };
 }
-
 function r(t, n, o, a) {
     return {
         reorient: function() {
@@ -368,9 +351,7 @@ return function(t) {
     return Object.assign(f, s, m, l, d, p, v);
 };
 }();
-
 // eslint-disable-line
-
 ! function(e, t) {
 function l(t, l, r, d) {
     t[n](o + l, 'wheel' == a ? r : function(t) {
@@ -396,13 +377,12 @@ let n;
 let a;
 let o = '';
 e.addEventListener ? n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
-a = 'onwheel' in t.createElement('div') ? 'wheel' :
-void 0 !== t.onmousewheel ? 'mousewheel' : 'DOMMouseScroll',
-e.addWheelListener = function(e, t, n) {
-    l(e, a, t, n), 'DOMMouseScroll' == a && l(e, 'MozMousePixelScroll', t, n);
-};
+        a = 'onwheel' in t.createElement('div') ? 'wheel' :
+        void 0 !== t.onmousewheel ? 'mousewheel' : 'DOMMouseScroll',
+        e.addWheelListener = function(e, t, n) {
+            l(e, a, t, n), 'DOMMouseScroll' == a && l(e, 'MozMousePixelScroll', t, n);
+        };
 }(window, document);
-
 
         class DisplayResizeAvatar extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -481,12 +461,41 @@ e.addWheelListener = function(e, t, n) {
                 img.crossOrigin = 'anonymous';
                 canvas.width = 250;
                 canvas.height = 250;
+
                 this.img = this.defaultImg = img;
-                img.onload = () => {
+
+                img.onload = function() {
+                    let nonaf = this.mathCanvas = mathCanvas({
+                        canvas,
+                        draw,
+                        noBounds: true,
+                        size: {width: img.width, height: img.height},
+                        viewBox: {x: 0, y: 0, width: img.width, height: img.height},
+                    });
+
+                    if (img) {
+                        nonaf.changeZoom(-60);
+                    }
+
                     draw();
-                };
+                    addWheelListener(canvas, function (e) { // eslint-disable-line
+                        e.preventDefault();
+
+                        // tc 12-15-2017
+                        nonaf.setCenter(-window.pageXOffset + canvas.offsetLeft + canvas.width/2,
+                                        -window.pageYOffset + canvas.offsetTop + canvas.height/2);
+                        if (nonaf.zoomFactor > .25 && e.deltaY > 0) {
+                            nonaf.changeZoom(-5);
+                        }
+                        if (nonaf.zoomFactor < 1.75 && e.deltaY < 0) {
+                            nonaf.changeZoom(5);
+                        }
+                        // nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
+                    });
+                }.bind(this);
                 img.src = this.avatar;
             }
+
             /**
             * Fired when the user selects a file
             * @param {event} event The event from the on-change
@@ -497,19 +506,18 @@ e.addWheelListener = function(e, t, n) {
                 let img = this.img || this.defaultImg;
                 let width = canvas.width;
                 let height = canvas.height;
-                ctx.fillStyle = 'rgba(0,0,0,0.05)';
-                ctx.fillRect(0, 0, width, height);
-                ctx.beginPath();
-                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI);
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = '#24B1FF';
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI);
+
+                ctx.fillStyle = '#333333';
+
+                ctx.clearRect(0, 0, width, height);
+
                 ctx.save();
-                ctx.clip();
+
+                // Tom C - Dec 28 2017 - Draw image with pan, zoom, and rotation
                 ctx.translate(tX + left, tY + top);
                 ctx.rotate(rotations[rotation]);
+
+                ctx.globalAlpha = 1;
                 ctx.drawImage(
                     img,
                     viewBox.x,
@@ -521,6 +529,53 @@ e.addWheelListener = function(e, t, n) {
                     paintWidth,
                     paintHeight
                 );
+
+                ctx.restore();
+                ctx.save();
+
+                // Fill with destination composite outside circle
+                ctx.globalAlpha = 0.82;
+
+                // Translucent overlay
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.restore();
+                ctx.save();
+
+                // Redraw image opaque inside of circle
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
+                ctx.clip();
+
+                ctx.globalAlpha = 1;
+                ctx.translate(tX + left, tY + top);
+                ctx.rotate(rotations[rotation]);
+
+                ctx.drawImage(
+                    img,
+                    viewBox.x,
+                    viewBox.y,
+                    viewBox.width,
+                    viewBox.height,
+                    0,
+                    0,
+                    paintWidth,
+                    paintHeight
+                );
+
+                ctx.restore();
+                ctx.save();
+
+                // Blue circle
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
+                ctx.closePath();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#24B1FF';
+                // Blue box around perimeter
+                ctx.rect(0, 0, width, height);
+                ctx.stroke();
+
                 ctx.restore();
             }
             /**
@@ -538,6 +593,7 @@ e.addWheelListener = function(e, t, n) {
             */
             _panEnd() {
                 this.isDown = false;
+                this._drawCanvas();
             }
             /**
             * Fired when the user pans
@@ -626,14 +682,19 @@ e.addWheelListener = function(e, t, n) {
                         draw();
                         addWheelListener(canvas, function (e) { // eslint-disable-line
                             e.preventDefault();
+
+                            // tc 12-15-2017
                             nonaf.setCenter(-window.pageXOffset + canvas.offsetLeft + canvas.width/2,
-                            -window.pageYOffset + canvas.offsetTop + canvas.height/2);
+                                            -window.pageYOffset + canvas.offsetTop + canvas.height/2);
                             if (nonaf.zoomFactor > .25 && e.deltaY > 0) {
                                 nonaf.changeZoom(-5);
                             }
+
                             if (nonaf.zoomFactor < 1.75 && e.deltaY < 0) {
                                 nonaf.changeZoom(5);
                             }
+
+                            // nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
                         });
                     }.bind(this);
                     img.src = this.avatar;
