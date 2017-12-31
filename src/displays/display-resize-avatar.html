@@ -39,7 +39,7 @@
                 @apply --layout-vertical;
                 @apply --layout-start;
                 @apply --layout-start-justified;
-                margin-bottom: 3vh;
+                margin-bottom: 7vh;
             }
 
             .container .rotate-icon {
@@ -72,16 +72,11 @@
                 margin: 50px 0px 0px 0px;
             }
 
-
-            .container[wide-layout] .bluetext {
-                margin: 20px 0px 0px 0px;
-            }
-
             .blacktext {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
-                @apply --small-light;
-                color: var(--sc-grey3);
+                @apply --small-bold;
+                color: var(--sc-grey4);
                 margin: 10px 0px 0px 0px;
             }
 
@@ -117,12 +112,10 @@
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .container .rotate-icon,
-                .container[wide-layout] .rotate-icon,
-                .container .disagree,
-                .container[wide-layout] .disagree,
-                .container .agree,
-                .container[wide-layout] .agree {
+                .close,
+                .rotate-icon,
+                .disagree,
+                .agree {
                     @apply --retina;
                 }
             }
@@ -156,253 +149,262 @@
     </template>
     <script>
         const mathCanvas = function() {
-        'use strict';
+            'use strict';
+            function t(t, n, o) {
+                return Math.min(o, Math.max(n, t));
+            }
 
-    function t(t, n, o) {
-        return Math.min(o, Math.max(n, t));
-    }
+            // calculateDim
+            function n(n) {
+                function o(o) {
+                    let a = n.canvas;
+                    let i = n.size;
+                    let e = n.zoomFactor;
+                    let r = n.rotation;
+                    let c = a.width;
+                    let u = c / i.width;
+                    let h = i.height * u;
+                    let f = 0;
+                    let s = 0;
+                    let m = c;
+                    let l = h;
+                    1 != r && 3 != r || (m = h = c * c / h, l = c),
+                        1 == r ? f = l * e :
+                        2 == r ? (f = m * e, s = l * e) :
+                        3 == r && (s = m * e),
+                    n.ratio = u,
+                    n.canvasWidth = Math.round(c),
+                    n.canvasHeight = Math.round(h),
+                    n.paintWidth = Math.round(m * e),
+                    n.paintHeight = Math.round(l * e),
+                    n.noBounds || (0 == r || 2 == r ? (n.left = t(n.left, n.canvasWidth - n.paintWidth, 0),
+                    n.top = t(n.top, n.canvasHeight - n.paintHeight, 0)) :
+                    (n.left = t(n.left, n.canvasWidth - n.paintHeight, 0),
+                    n.top = t(n.top, n.canvasHeight - n.paintWidth, 0))), n.tX = f, n.tY = s, o && n.draw();
+                }
+                return o(), {
+                    calculateDim: o,
+                };
+            }
 
-    function n(n) {
-        function o(o) {
-            let a = n.canvas;
-            let i = n.size;
-            let e = n.zoomFactor;
-            let r = n.rotation;
-            let c = a.width;
-            let u = c / i.width;
-            let h = i.height * u;
-            let f = 0;
-            let s = 0;
-            let m = c;
-            let l = h;
-            1 != r && 3 != r || (m = h = c * c / h, l = c),
-            1 == r ? f = l * e : 2 == r ? (f = m * e, s = l * e) : 3 == r && (s = m * e),
-            n.ratio = u,
-            n.canvasWidth = Math.round(c),
-            n.canvasHeight = Math.round(h),
-            n.paintWidth = Math.round(m * e),
-            n.paintHeight = Math.round(l * e),
-            n.noBounds || (0 == r || 2 == r ? (n.left = t(n.left, n.canvasWidth - n.paintWidth, 0),
-            n.top = t(n.top, n.canvasHeight - n.paintHeight, 0)) :
-            (n.left = t(n.left, n.canvasWidth - n.paintHeight, 0),
-            n.top = t(n.top, n.canvasHeight - n.paintWidth, 0))), n.tX = f, n.tY = s, o && n.draw();
-        }
-    return o(), {
-        calculateDim: o,
-    };
-}
+            // (de)normalizePoint
+            // (de)normalizePointList
+            function o(t) {
+                function n(n, o) {
+                    let a = t.canvas;
+                    let i = t.viewBox;
+                    let e = t.zoomFactor;
+                    let r = t.left;
+                    let c = t.top;
+                    let u = t.rotation;
+                    let h = a.getBoundingClientRect();
+                    let f = i.width / a.width;
+                    let s = n - h.left;
+                    let m = o - h.top;
+                    let l = s;
+                    let d = m;
+                    return 1 != u && 3 != u || (f = i.width / a.height),
+                        1 == u ? (m = a.width * e - s + r, s = d - c) :
+                        2 == u ? (s = a.width * e - s + r, m = a.height * e - m + c) :
+                        3 == u ? (s = a.height * e - m + c, m = l - r) : (s -= r, m -= c),
+                        [Math.round(i.x + s * f / e), Math.round(i.y + m * f / e)];
+                }
+                function o(n, o) {
+                    let a = t.canvas;
+                    let i = t.size;
+                    let e = t.zoomFactor;
+                    let r = t.rotation;
+                    let c = a.width / i.width;
+                    return 1 != r && 3 != r || (c = a.height / i.width), [n * c * e, o * c * e];
+                }
+                return {
+                    normalizePoint: n,
+                    normalizePointList: function(t) {
+                        return t.map(function(t) {
+                            return n(t[0], t[1]);
+                        });
+                    },
+                    denormalizePoint: o,
+                    denormalizePointList: function(t) {
+                        return t.map(function(t) {
+                            return o(t[0], t[1]);
+                        });
+                    },
+                };
+            }
 
-function o(t) {
-    function n(n, o) {
-        let a = t.canvas;
-        let i = t.viewBox;
-        let e = t.zoomFactor;
-        let r = t.left;
-        let c = t.top;
-        let u = t.rotation;
-        let h = a.getBoundingClientRect();
-        let f = i.width / a.width;
-        let s = n - h.left;
-        let m = o - h.top;
-        let l = s;
-        let d = m;
-        return 1 != u && 3 != u || (f = i.width / a.height),
-        1 == u ? (m = a.width * e - s + r, s = d - c) :
-        2 == u ? (s = a.width * e - s + r, m = a.height * e - m + c) :
-        3 == u ? (s = a.height * e - m + c, m = l - r) : (s -= r, m -= c),
-        [Math.round(i.x + s * f / e), Math.round(i.y + m * f / e)];
-    }
+            // * transform
+            // * Sets the transformation matrix for rotation
+            function a(t) {
+                return {
+                    transform: function(n) {
+                        let o = t.tX;
+                        let a = t.tY;
+                        let i = t.left;
+                        let e = t.top;
+                        let r = t.rotations;
+                        let c = t.rotation;
+                        n instanceof Element ?
+                        n.style.transform = 'translate(' + i + 'px,' + e + 'px) rotate(' + r[c] + 'rad)' :
+                        (n.setTransform(1, 0, 0, 1, 0, 0),
+                        n.translate(o + i, a + e), n.rotate(r[c]));
+                    },
+                };
+            }
 
-    function o(n, o) {
-        let a = t.canvas;
-        let i = t.size;
-        let e = t.zoomFactor;
-        let r = t.rotation;
-        let c = a.width / i.width;
-        return 1 != r && 3 != r || (c = a.height / i.width), [n * c * e, o * c * e];
-    }
-    return {
-        normalizePoint: n,
-        normalizePointList: function(t) {
-            return t.map(function(t) {
-                return n(t[0], t[1]);
-            });
-        },
-        denormalizePoint: o,
-        denormalizePointList: function(t) {
-            return t.map(function(t) {
-                return o(t[0], t[1]);
-            });
-        },
-    };
-}
+            // * Zoom methods
+            function i(t, n, o) {
+                function a(a) {
+                    let i;
+                    let e;
+                    let c = t.zoomCenter;
+                    let u = t.zoomFactor;
+                    i = n.denormalizePoint(c[0], c[1]),
+                    r = Math.min(5e3, Math.max(5, a)),
+                    t.zoomFactor = r / 100,
+                    t.zoomFactor != u && (o.calculateDim(),
+                    e = n.denormalizePoint(c[0], c[1]), t.left -= e[0] - i[0],
+                    t.top -= e[1] - i[1]), o.calculateDim(1);
+                }
+                function i(n) {
+                    r > 120 && (n *= t.zoomFactor), a(r + n);
+                }
+                function e(t, n) {
+                    void 0 === n && (n = 1), i(n * t), f.run(20, function(n) {
+                        e(t, n);
+                    });
+                }
+                let r = 100 * t.zoomFactor;
+                return {
+                    setZoom: a,
+                    resetZoom: function() {
+                        r = 100, t.zoomFactor = 1, o.calculateDim(1);
+                    },
+                    changeZoom: i,
+                    startZoom: e,
+                };
+            }
 
-function a(t) {
-    return {
-        transform: function(n) {
-            let o = t.tX;
-            let a = t.tY;
-            let i = t.left;
-            let e = t.top;
-            let r = t.rotations;
-            let c = t.rotation;
-            n instanceof Element ?
-            n.style.transform = 'translate(' + i + 'px,' + e + 'px) rotate(' + r[c] + 'rad)' :
-            (n.setTransform(1, 0, 0, 1, 0, 0),
-            n.translate(o + i, a + e), n.rotate(r[c]));
-        },
-    };
-}
+            // * Pan methods
+            function e(t, n) {
+                function o(o, a) {
+                    'left' == o || 'right' == o ? t.left += a * ('left' == o ? 1 : -1) :
+                    t.top += a * ('up' == o ? 1 : -1), n.calculateDim(1);
+                }
+                function a(t, n) {
+                    o(t, n = n || 1), f.run(20, function(n) {
+                        a(t, n);
+                    });
+                }
+                return {
+                    setPan: function(n, o) {
+                        t.left = n,
+                        t.top = o;
+                    },
+                    changePan: o,
+                    startPan: a,
+                };
+            }
 
-function i(t, n, o) {
-    function a(a) {
-        let i;
-        let e;
-        let c = t.zoomCenter;
-        let u = t.zoomFactor;
-        i = n.denormalizePoint(c[0], c[1]),
-        r = Math.min(5e3, Math.max(5, a)),
-        t.zoomFactor = r / 100,
-        t.zoomFactor != u && (o.calculateDim(),
-        e = n.denormalizePoint(c[0], c[1]), t.left -= e[0] - i[0],
-        t.top -= e[1] - i[1]), o.calculateDim(1);
-    }
+            function r(t, n, o, a) {
+                return {
+                    reorient: function() {
+                        t.left = 0, t.top = 0, t.tX = 0, t.tY = 0, t.rotation = 0, a.resetZoom();
+                    },
+                    rotate: function(n) {
+                        let a = t.rotation;
+                        let i = t.rotations;
+                        (a += n) < 0 ? a = i.length - 1 : a >= i.length && (a = 0),
+                        t.rotation = a, o.calculateDim(1);
+                    },
+                    stopAction: function() {
+                        f.stop();
+                    },
+                    setCenter: function(o, a) {
+                        t.zoomCenter = n.normalizePoint(o, a);
+                    },
+                };
+            }
 
-    function i(n) {
-        r > 120 && (n *= t.zoomFactor), a(r + n);
-    }
+            let c = 200;
+            let u = 200;
+            let h = 1;
+            let f = {
+                run: function(t, n) {
+                    clearTimeout(c), c = setTimeout(function() {
+                        h += .4, u = Math.max(u - 50, t), n(Math.min(20, Math.round(h)));
+                    }, u);
+                },
+                stop: function() {
+                    u = 200, h = 1, clearTimeout(c);
+                },
+            };
 
-    function e(t, n) {
-        void 0 === n && (n = 1), i(n * t), f.run(20, function(n) {
-            e(t, n);
-        });
-    }
-    let r = 100 * t.zoomFactor;
-    return {
-        setZoom: a,
-        resetZoom: function() {
-            r = 100, t.zoomFactor = 1, o.calculateDim(1);
-        },
-        changeZoom: i,
-        startZoom: e,
-    };
-}
+            return function(t) {
+                let c = t.canvas;
+                let u = t.size;
+                let h = t.viewBox;
+                let f = {
+                        canvas: c,
+                        size: u,
+                        viewBox: h,
+                        draw: t.draw,
+                        noBounds: t.noBounds,
+                        ctx: c.getContext('2d'),
+                        rotations: [0, Math.PI / 2, Math.PI, -Math.PI / 2],
+                        rotation: 0,
+                        zoomFactor: 1,
+                        left: 0,
+                        top: 0,
+                        zoomCenter: [h.width / 2, h.height / 2],
+                    };
+                    let s = o(f);
+                    let m = n(f);
+                    let l = a(f);
+                    let d = i(f, s, m);
+                    let p = e(f, m);
+                    let v = r(f, s, m, d);
+                return Object.assign(f, s, m, l, d, p, v);
+            };
+        }();
 
-function e(t, n) {
-    function o(o, a) {
-        'left' == o || 'right' == o ? t.left += a * ('left' == o ? 1 : -1) :
-        t.top += a * ('up' == o ? 1 : -1), n.calculateDim(1);
-    }
+        // Mousewheel listener.  May be redundant.
+        ! function(e, t) {
+            function l(t, l, r, d) {
+                t[n](o + l, 'wheel' == a ? r : function(t) {
+                    !t && (t = e.event);
+                    let l = {
+                        originalEvent: t,
+                        target: t.target || t.srcElement,
+                        type: 'wheel',
+                        deltaMode: 'MozMousePixelScroll' == t.type ? 0 : 1,
+                        deltaX: 0,
+                        deltaY: 0,
+                        deltaZ: 0,
+                        preventDefault: function() {
+                            t.preventDefault ? t.preventDefault() : t.returnValue = !1;
+                        },
+                    };
+                    return 'mousewheel' == a ? (l.deltaY = -.025 * t.wheelDelta,
+                    t.wheelDeltaX && (l.deltaX = -.025 * t.wheelDeltaX)) : l.deltaY = t.deltaY || t.detail,
+                    r(l);
+                }, d || !1);
+            }
 
-    function a(t, n) {
-        o(t, n = n || 1), f.run(20, function(n) {
-            a(t, n);
-        });
-    }
-    return {
-        setPan: function(n, o) {
-            t.left = n,
-            t.top = o;
-        },
-        changePan: o,
-        startPan: a,
-    };
-}
+            let n;
+            let a;
+            let o = '';
+            e.addEventListener ? n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
+                    a = 'onwheel' in t.createElement('div') ? 'wheel' :
+                    void 0 !== t.onmousewheel ? 'mousewheel' : 'DOMMouseScroll',
+                    e.addWheelListener = function(e, t, n) {
+                        l(e, a, t, n), 'DOMMouseScroll' == a && l(e, 'MozMousePixelScroll', t, n);
+                    };
+        }(window, document);
 
-function r(t, n, o, a) {
-    return {
-        reorient: function() {
-            t.left = 0, t.top = 0, t.tX = 0, t.tY = 0, t.rotation = 0, a.resetZoom();
-        },
-        rotate: function(n) {
-            let a = t.rotation;
-            let i = t.rotations;
-            (a += n) < 0 ? a = i.length - 1 : a >= i.length && (a = 0),
-            t.rotation = a, o.calculateDim(1);
-        },
-        stopAction: function() {
-            f.stop();
-        },
-        setCenter: function(o, a) {
-            t.zoomCenter = n.normalizePoint(o, a);
-        },
-    };
-}
-let c = 200;
-let u = 200;
-let h = 1;
-let f = {
-        run: function(t, n) {
-            clearTimeout(c), c = setTimeout(function() {
-                h += .4, u = Math.max(u - 50, t), n(Math.min(20, Math.round(h)));
-            }, u);
-        },
-        stop: function() {
-            u = 200, h = 1, clearTimeout(c);
-        },
-    };
-return function(t) {
-    let c = t.canvas;
-    let u = t.size;
-    let h = t.viewBox;
-    let f = {
-            canvas: c,
-            size: u,
-            viewBox: h,
-            draw: t.draw,
-            noBounds: t.noBounds,
-            ctx: c.getContext('2d'),
-            rotations: [0, Math.PI / 2, Math.PI, -Math.PI / 2],
-            rotation: 0,
-            zoomFactor: 1,
-            left: 0,
-            top: 0,
-            zoomCenter: [h.width / 2, h.height / 2],
-        };
-        let s = o(f);
-        let m = n(f);
-        let l = a(f);
-        let d = i(f, s, m);
-        let p = e(f, m);
-        let v = r(f, s, m, d);
-    return Object.assign(f, s, m, l, d, p, v);
-};
-}();
-
-// eslint-disable-line
-
-! function(e, t) {
-function l(t, l, r, d) {
-    t[n](o + l, 'wheel' == a ? r : function(t) {
-        !t && (t = e.event);
-        let l = {
-            originalEvent: t,
-            target: t.target || t.srcElement,
-            type: 'wheel',
-            deltaMode: 'MozMousePixelScroll' == t.type ? 0 : 1,
-            deltaX: 0,
-            deltaY: 0,
-            deltaZ: 0,
-            preventDefault: function() {
-                t.preventDefault ? t.preventDefault() : t.returnValue = !1;
-            },
-        };
-        return 'mousewheel' == a ? (l.deltaY = -.025 * t.wheelDelta,
-        t.wheelDeltaX && (l.deltaX = -.025 * t.wheelDeltaX)) : l.deltaY = t.deltaY || t.detail,
-        r(l);
-    }, d || !1);
-}
-let n;
-let a;
-let o = '';
-e.addEventListener ? n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
-a = 'onwheel' in t.createElement('div') ? 'wheel' :
-void 0 !== t.onmousewheel ? 'mousewheel' : 'DOMMouseScroll',
-e.addWheelListener = function(e, t, n) {
-    l(e, a, t, n), 'DOMMouseScroll' == a && l(e, 'MozMousePixelScroll', t, n);
-};
-}(window, document);
-
+        //
+        // End of mathCanvas
+        //
 
         class DisplayResizeAvatar extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -481,12 +483,41 @@ e.addWheelListener = function(e, t, n) {
                 img.crossOrigin = 'anonymous';
                 canvas.width = 250;
                 canvas.height = 250;
+
                 this.img = this.defaultImg = img;
-                img.onload = () => {
+
+                img.onload = function() {
+                    let nonaf = this.mathCanvas = mathCanvas({
+                        canvas,
+                        draw,
+                        noBounds: true,
+                        size: {width: img.width, height: img.height},
+                        viewBox: {x: 0, y: 0, width: img.width, height: img.height},
+                    });
+
+                    if (img) {
+                        nonaf.changeZoom(-60);
+                    }
+
                     draw();
-                };
+                    addWheelListener(canvas, function (e) { // eslint-disable-line
+                        e.preventDefault();
+
+                        // tc 12-15-2017
+                        nonaf.setCenter(-window.pageXOffset + canvas.offsetLeft + canvas.width/2,
+                                        -window.pageYOffset + canvas.offsetTop + canvas.height/2);
+                        if (nonaf.zoomFactor > .25 && e.deltaY > 0) {
+                            nonaf.changeZoom(-5);
+                        }
+                        if (nonaf.zoomFactor < 1.75 && e.deltaY < 0) {
+                            nonaf.changeZoom(5);
+                        }
+                        // nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
+                    });
+                }.bind(this);
                 img.src = this.avatar;
             }
+
             /**
             * Fired when the user selects a file
             * @param {event} event The event from the on-change
@@ -497,19 +528,18 @@ e.addWheelListener = function(e, t, n) {
                 let img = this.img || this.defaultImg;
                 let width = canvas.width;
                 let height = canvas.height;
-                ctx.fillStyle = 'rgba(0,0,0,0.05)';
-                ctx.fillRect(0, 0, width, height);
-                ctx.beginPath();
-                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI);
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = '#24B1FF';
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI);
+
+                ctx.fillStyle = '#333333';
+
+                ctx.clearRect(0, 0, width, height);
+
                 ctx.save();
-                ctx.clip();
+
+                // Tom C - Dec 28 2017 - Draw image with pan, zoom, and rotation
                 ctx.translate(tX + left, tY + top);
                 ctx.rotate(rotations[rotation]);
+
+                ctx.globalAlpha = 1;
                 ctx.drawImage(
                     img,
                     viewBox.x,
@@ -521,6 +551,53 @@ e.addWheelListener = function(e, t, n) {
                     paintWidth,
                     paintHeight
                 );
+
+                ctx.restore();
+                ctx.save();
+
+                // Fill with destination composite outside circle
+                ctx.globalAlpha = 0.82;
+
+                // Translucent overlay
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.restore();
+                ctx.save();
+
+                // Redraw image opaque inside of circle
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
+                ctx.clip();
+
+                ctx.globalAlpha = 1;
+                ctx.translate(tX + left, tY + top);
+                ctx.rotate(rotations[rotation]);
+
+                ctx.drawImage(
+                    img,
+                    viewBox.x,
+                    viewBox.y,
+                    viewBox.width,
+                    viewBox.height,
+                    0,
+                    0,
+                    paintWidth,
+                    paintHeight
+                );
+
+                ctx.restore();
+                ctx.save();
+
+                // Blue circle
+                ctx.beginPath();
+                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
+                ctx.closePath();
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#24B1FF';
+                // Blue box around perimeter
+                ctx.rect(0, 0, width, height);
+                ctx.stroke();
+
                 ctx.restore();
             }
             /**
@@ -538,6 +615,7 @@ e.addWheelListener = function(e, t, n) {
             */
             _panEnd() {
                 this.isDown = false;
+                this._drawCanvas();
             }
             /**
             * Fired when the user pans
@@ -626,14 +704,19 @@ e.addWheelListener = function(e, t, n) {
                         draw();
                         addWheelListener(canvas, function (e) { // eslint-disable-line
                             e.preventDefault();
+
+                            // tc 12-15-2017
                             nonaf.setCenter(-window.pageXOffset + canvas.offsetLeft + canvas.width/2,
-                            -window.pageYOffset + canvas.offsetTop + canvas.height/2);
+                                            -window.pageYOffset + canvas.offsetTop + canvas.height/2);
                             if (nonaf.zoomFactor > .25 && e.deltaY > 0) {
                                 nonaf.changeZoom(-5);
                             }
+
                             if (nonaf.zoomFactor < 1.75 && e.deltaY < 0) {
                                 nonaf.changeZoom(5);
                             }
+
+                            // nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
                         });
                     }.bind(this);
                     img.src = this.avatar;
