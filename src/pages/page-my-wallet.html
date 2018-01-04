@@ -167,10 +167,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div id="swtbalance" class="swt">{{balance.swt.balanceSwt}} SWT</div>
                     <div id="fiatbalance" class="fiat">= {{balance.swt.balanceUsd}} USD</div>
                 </div>
-                <div id="ethbalance" class="eth">{{balance.eth.balanceEth}} ETH</div>
+                <div id="ethbalance" class="eth">{{balance.eth.balanceEth}}</div>
             </div>
             <div id="divider1" class="divider"></div>
-            <display-transaction-status id="txstatus" path="{{path}}"></display-transaction-status>
+            <display-transaction-status id="txstatus" path="{{path}}" shortcode="{{shortcode}}" send="{{send}}" start="{{start}}"></display-transaction-status>
             <template is="dom-if" if="{{showDivider}}">
                 <div id="divider2" class="divider"></div>
             </template>
@@ -301,6 +301,30 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * Shortcode if true shows the shortcode
+                    * @type {Boolean}
+                    */
+                    shortcode: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Send if true shows the send settings
+                    * @type {Boolean}
+                    */
+                    send: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Start if true shows the buttons choice
+                    * @type {Boolean}
+                    */
+                    start: {
+                        type: Boolean,
+                        value: true,
+                    },
                 };
             }
             connectedCallback() {
@@ -314,6 +338,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to originating page
             */
             _close() {
+                this.shortcode = false;
+                this.send = false;
+                this.start = true;
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
