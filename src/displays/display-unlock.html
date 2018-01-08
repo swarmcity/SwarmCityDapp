@@ -168,12 +168,10 @@ The following custom properties and mixins are available for styling:
             <img src="{{avatar}}">
                 <dom-if if="{{blue}}">
                     <template>
-                        <paper-input autofocus class="input-blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}" on-click="_changeInput"></paper-input>
                     </template>
                 </dom-if>
                 <dom-if if="{{white}}">
                     <template>
-                        <paper-input autofocus class="input-white" label="{{localize('password?')}}" autofocus type="password" value="{{password}}" on-click="_changeInput"></paper-input>
                     </template>
                 </dom-if>
             {{error}}
@@ -231,6 +229,7 @@ The following custom properties and mixins are available for styling:
                     toggleUnlock: {
                         type: Boolean,
                         notify: true,
+                        observer: '_openDisplay',
                     },
                     /*
                     * toggles the view to show private key
@@ -321,6 +320,11 @@ The following custom properties and mixins are available for styling:
                 }
                 this.keyStore = storage.keyStore;
                 this.publicKey = storage.keyStore.address;
+            }
+
+            _openDisplay() {
+                window.scrollTo(0, 0);
+                
             }
             /**
             * Toggles the visibility of this display
