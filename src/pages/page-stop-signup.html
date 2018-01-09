@@ -94,9 +94,10 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                 @apply --vmark-blue-normal;
-            } 
+            }
+
             .flexer {
-               @apply --titlepage-flexer;
+                @apply --titlepage-flexer;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -177,6 +178,32 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
 
+            /**
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
+
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -193,6 +220,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the initiating hashtag page
             */
             _agree() {
+                this._deleteProfile();
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
@@ -200,6 +228,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.set('route.path', 'hashtag-list');
                 }
+            }
+
+            /**
+            * deletes the profile
+            */
+            _deleteProfile() {
+                this.dispatch('PUBLICKEY', null);
+                this.dispatch('AVATAR', '[[importHref]]../../images/defaultavatar.png');
+                this.dispatch('USERNAME', null);
+                localStorage.clear();
+                let storage = {
+                    user: {
+                        language: 'en',
+                        username: '',
+                        location: '',
+                        avatar: '',
+                    },
+                    keyStore: {},
+                };
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
             }
 
             /**
@@ -213,7 +261,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _loadExitAnimations() {
-            if (this.routeExit[0] != this.routeExit[1]) {
+                if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
                         this.$.title.animate(
