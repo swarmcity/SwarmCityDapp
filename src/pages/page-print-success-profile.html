@@ -14,7 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 
-<dom-module id="page-download-success-profile">
+<dom-module id="page-print-success-profile">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -91,10 +91,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-blue);
                 margin-top: 4vh;
             }
-
             .flexer {
-                @apply --titlepage-flexer;
+               @apply --titlepage-flexer;
             }
+
         </style>
 
         <app-location route="{{route}}"></app-location>
@@ -102,25 +102,25 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title" id="title">{{localize('Success!')}}</div>
-                <div class="subtitle" id="subtitle2">{{localize('Youve downloaded your account file.')}}</div>
-                <div class="subtitle" id="subtitle3">{{localize('Your account file combined with your password will always give you access to your SWT balance.')}}</div>
+                <div class="subtitle" id="subtitle2">{{localize('Youve successfully printed your paper wallet. This contains your private key which will always give you access to your SWT balance.')}}</div>
+                <div class="subtitle" id="subtitle3">{{localize('Warning! Always keep your private key secure. If anyone were to get ahold of it they would gain access to your SWT balance.')}}</div>
             </div>
             <div class="flexer"></div>
-            <div class="bottom" id="buttons">
-                <div class="button" on-click="_backtoprofile">{{localize('back to profile')}}</div>
+            <div class="bottom">
+                <div class="button" on-click="_backtoprofile" id="buttons">{{localize('back to profile')}}</div>
                 <!-- <div class="bluetext">{{localize('convert my ARC')}}</div> -->
             </div>
         </div>
     </template>
 
     <script>
-        class MyDownloadSuccessProfile extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyPrintSuccess extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-download-success-profile';
+                return 'page-print-success-profile';
             }
             static get properties() {
                 return {
@@ -129,9 +129,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
+                     * Path is the current or requested path
+                     * @type {String}
+                     */
                     path: {
                         type: String,
                         observer: '_path',
@@ -158,7 +158,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     pageID: {
                         type: String,
-                        value: 'download-success-profile',
+                        value: 'print-success-profile',
                     },
                 };
             }
@@ -168,9 +168,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
+             * takes the user to page-my-profile
+             */
+            _close() {
+                this.path = 'my-profile/';
+            }
+            /**
              * takes the user to his profile page
              */
-             _backtoprofile() {
+            _backtoprofile() {
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
@@ -180,8 +186,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * changes the current path
-            */
+             * changes the current path
+             */
             _path() {
                 if (this.path != null) {
                     this.set('route.path', this.path);
@@ -330,9 +336,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 }
             }
-
         }
-        window.customElements
-            .define(MyDownloadSuccessProfile.is, MyDownloadSuccessProfile);
+        window.customElements.define(MyPrintSuccess.is, MyPrintSuccess);
     </script>
 </dom-module>
