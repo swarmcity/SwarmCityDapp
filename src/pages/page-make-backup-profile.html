@@ -82,7 +82,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-            .container .emailbtn {
+            .container .printbtn {
                 @apply --text-button-big-fullwhite;
                 color: var(--sc-blue);
                 box-sizing: border-box;
@@ -90,11 +90,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0 0 14px 0;
             }
 
-            .container .emailbtn:active {
+            .container .printbtn:active {
                 @apply --button-active;
             }
 
-            .container[wide-layout] .emailbtn {
+            .container[wide-layout] .printbtn {
                 margin: 0 0 14px 0;
                 max-width: 320px;
             }
@@ -205,7 +205,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="bottom">
                 <div class="buttons">
-                    <div class="emailbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
+                    <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </div>
                 <div class="bluetext-margins">
@@ -216,7 +216,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <dom-if if="{{toggleUnlock}}">
             <template>
                 <display-unlock 
-                    color="white"
+                    blue
                     toggle-unlock="{{toggleUnlock}}" 
                     private-key="{{privateKey}}" 
                     qr-code-private-key="{{qrCodePrivateKey}}"
@@ -259,12 +259,45 @@ This code may only be used under the license found at https://github.com/swarmci
                         // observer: '_loadExitAnimations',
                     },
                     /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_print',
+                    },
+                    /**
                     * routeEntry triggers the entry animations
                     * @type {Array}
                     */
                     routeEntry: {
                         type: Array,
                         // observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the qrCodePrivateKey
+                    * @type {String}
+                    */
+                    qrCodePrivateKey: {
+                        type: String,
+                        observer: '_print',
+                    },
+                    /**
+                    * contains the qrCodePublicKey
+                    * @type {String}
+                    */
+                    qrCodePublicKey: {
+                        type: String,
+                        observer: '_print',
                     },
                 };
             }
@@ -285,11 +318,126 @@ This code may only be used under the license found at https://github.com/swarmci
             _mail() {
                 this.path = 'email-success-profile/';
             }
-
+            _unlock() {
+                this.qrCodePublicKey = null;
+                this.qrCodePrivateKey = null;
+                window.scrollTo(0, 0);
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * Prints the paper wallet
+            */
+            _print() {
+                if (this.qrCodePublicKey && this.qrCodePrivateKey) {
+                    let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
+                    /* eslint-disable */
+                    let html = ''+
+                    '<body>'+
+                        '<title>Swarm Paper Wallet</title>'+
+                        '<style>'+
+                            '@import url("https://fonts.googleapis.com/css?family=Montserrat:200,300,700");'+
+                            '.font { font-family: "Montserrat", sans-serif;}'+
+                            'h1 { font-size:32px;font-weight:700;line-height:32px;}'+
+                            'p { font-size:20px;font-weight:300;line-height:20px;}'+
+                            'small { font-size:12px;font-weight:700;line-height:16px;}'+
+                            'img { width:120px; height: 120px;}'+
+                            '.total { display: flex; flex-direction: row; justify-content:flex-start; align-items: stretch;}'+
+                            '.total2 { box-sizing:border-box; padding:0px; width: 96vw; border:3px solid black; outline: 12px solid #F2F2F2;}'+
+                            '.logobox { display: flex; flex-direction: column; justify-content:flex-start; align-items: flex-end;}'+
+                            '.logobox2 { box-sizing:border-box; padding:30px 30px;}'+
+                            '.boxes { display: flex; flex-direction: column; align-items: center; border-left:1px solid black;}'+
+                            '.boxes2 { box-sizing:border-box; padding:0px;}'+                            
+                            '.box { display: flex; flex-direction: row; align-items: center; width:100%;}'+
+                            '.box2 { box-sizing:border-box; padding:20px;}'+
+                            '.key {font-size:20px;font-weight:300;line-height:24px;word-break:break-all;}'+
+                            '.paperwallet {font-weight:300;}'+
+                            '.title {padding:20px 0px 15px 0px;}'+
+                            '.nomarge {margin:0px}'+
+                            '.topborder { border-top:1px solid black;}'+
+                            'svg {width:80px;height:32px;margin:12px 20px 0px 0px;}'+
+                        '</style>'+
+                        '<div class="total total2">'+
+                            '<div class="logobox logobox2">'+
+                                '<svg x="0px" y="0px" viewBox="0 0 80 32">'+
+                                    '<g id="Thanks_to_Pieter_Boels_x21__2_">'+
+                                        '<g>'+
+                                            '<g>'+
+                                                '<path d="M60.9,0C49,0,39,9.4,30.2,17.2c-2.6-2.3-5.4-5-7.7-7.6'+
+                                                'c-0.2-0.2-0.5-0.2-0.7-0.2c-0.2,0.2-0.2,0.5,0,0.7'+
+                                                    'c2.1,2.5,4.7,5.5,7.5,8c-4.7,'+
+                                                    '4.3-12.1,9.8-17.9,9.8c-11.9,0-11'+
+                                                    '.9-16-1.6-19.2c0.5,0,0.5-0.7,0-'+
+                                                    '0.5c-13.5,3.2-12.8,22.2,1.9,22.2'+
+                                                    'c7,0,13.3-4.6,19.8-10.1c7,6.2,15.'+
+                                                    '8,11.2,27,11.2C87.2,31.6,86.3,'+
+                                                    '0,60.9,0z M58.1,29.1c-9.1,0-17.9-3.9-25.6-9.8'+
+                                                    'c8.9-7.6,17.7-16,28-16C81,3.2,81.4,29.3,58.1,29.1z"/>'+
+                                                '<ellipse cx="16" cy="6.6" rx="3" ry="3"/>'+
+                                            '</g>'+
+                                        '</g>'+
+                                    '</g>'+
+                                '</svg>'+
+                                '<div style="display: flex;flex-direction: column;">'+
+                                    '<h1 class="nomarge font title">swarm<br>.city</h1>'+
+                                    '<small class="nomarge font paperwallet">paper wallet</small>'+
+                                '</div>'+
+                            '</div>'+
+                            '<div class="boxes boxes2 nomarge">'+
+                            '<div class="box box2 nomarge">'+
+                                '<img src=' + this.qrCodePublicKey + ' alt="QRpubkey">'+
+                                '<div style="display: flex;flex-direction: column; margin-left:20px">'+
+                                    '<small class="nomarge font">My public key</small>'+
+                                    '<p class="nomarge font key">' + this.publicKey + '</p>'+
+                                '</div>'+
+                            '</div>'+
+                            '<div class="box box2 nomarge topborder">'+
+                                '<img src=' + this.qrCodePrivateKey + ' alt="QRpubkey">'+
+                                '<div style="display: flex;flex-direction: column; margin-left:20px">'+
+                                    '<small class="nomarge font">My private key</small>'+
+                                    '<p class="nomarge font key">' + this.privateKey + '</p>'+
+                                '</div>'+
+                            '</div>'+
+                            '</div>'+
+                        '</div>'+
+                    '</body>';
+                    /* eslint-enable */
+                    myWindow.document.write(html);
+                    setTimeout(() => {
+                        myWindow.print();
+                    }, 600);
+                    myWindow.onafterprint = (event) => {
+                            myWindow.close();
+                            this.path = 'my-profile/';
+                    };
+                }
+            }
             /**
             * downloads account info, after success routs to download-success
             */
             _download() {
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                const filename = 'SwarmCity - UTC KeyStore';
+                storage.keyStore.avatar = storage.user.avatar;
+                storage.keyStore.username = storage.user.username;
+                const text = JSON.stringify(storage.keyStore);
+                const element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
                 this.path = 'download-success-profile/';
             }
             /**

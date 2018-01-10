@@ -161,13 +161,13 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="flexer"></div>
             <div class="bottom">
-                <div class="avatarandinput" id="content">
-                    <div class="avatar"><img src="{{avatar}}">
+                <div class="avatarandinput">
+                    <div class="avatar" id="contentavatar"><img src="{{avatar}}">
                         <div class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
                     </div>
-                    <div class="inputcontainer">
+                    <div class="inputcontainer" id="contentinput">
                         <paper-input label="{{localize('Username')}}" autofocus value="{{username}}"></paper-input>
                     </div>
                 </div>
@@ -315,6 +315,88 @@ This code may only be used under the license found at https://github.com/swarmci
             if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
+                        let newHeight = -((this.$.contentavatar.offsetTop)-160);
+                        if (this.routeExit[1] == 'resize-avatar') {
+                            // Here come the Exit Animations, going to page resize-avatar
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            if (this.wide) {
+                            this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                    {'transform': 'translate(82px,'+newHeight+'px) scale(1.11, 1.11)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            } else {
+                                this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                    {'transform': 'translate(0px,'+newHeight+'px) scale(1.11, 1.11)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            }
+                            this.$.contentinput.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
                         if (this.routeExit[1] == 'password-warning') {
                             // Here come the Exit Animations, going to page password-warning
                             this.$.title.animate(
@@ -332,7 +414,22 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.content.animate(
+                            this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.contentinput.animate(
                                 [
                                     {'transform': 'translateX(0px)'},
                                     {'transform': 'translateX(-100vw)'},
@@ -369,6 +466,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
+                    let newHeight = -((this.$.contentavatar.offsetTop)-160);
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations
                         if (this.routeExit[0] == 'password-warning') {
@@ -388,10 +486,106 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.content.animate(
+                            this.$.contentavatar.animate(
                                 [
                                     {'transform': 'translateX(-100vw)'},
                                     {'transform': 'translateX(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.contentinput.animate(
+                                [
+                                    {'transform': 'translateX(-100vw)'},
+                                    {'transform': 'translateX(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[0] == 'resize-avatar') {
+                            // Coming from page resize-avatar
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(-100vw)'},
+                                    {'transform': 'translateX(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            if (this.wide) {
+                            this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translate(82px,'+newHeight+'px) scale(1.11, 1.11)'},
+                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            } else {
+                                this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translate(0px,'+newHeight+'px) scale(1.11, 1.11)'},
+                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            }
+                            this.$.contentinput.animate(
+                                [
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
                                 ],
                                 {
                                     fill: 'forwards',

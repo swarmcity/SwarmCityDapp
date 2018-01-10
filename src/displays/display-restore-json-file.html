@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-wallet.html">
 <script src="../data/lightwallet.min.js"></script>
 <!--
@@ -48,7 +49,6 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-start;
             }
 
-
             .inputfile {
                 width: 0.1px;
                 height: 0.1px;
@@ -61,6 +61,7 @@ The following custom properties and mixins are available for styling:
             .container label {
                 width: 100%;
             }
+
             .select {
                 @apply --layout-vertical;
                 @apply --layout-center-center;
@@ -71,7 +72,6 @@ The following custom properties and mixins are available for styling:
                 /*margin: 0 14px 14px 0;*/
                 max-width: 320px;
             }
-
 
             .select:active {
                 @apply --button-active;
@@ -84,8 +84,6 @@ The following custom properties and mixins are available for styling:
                 @apply --body-bold;
                 color: var(--sc-grey4);
             }
-
-
 
             .container[wide-layout] .uploadedfile{
                 width: 100%;
@@ -139,7 +137,6 @@ The following custom properties and mixins are available for styling:
                 @apply --next-blue-normal;
             }
 
-
             .cancel {
                 @apply --xmark-grey4-small;
             }
@@ -173,10 +170,7 @@ The following custom properties and mixins are available for styling:
                 <label for="file">
                     <div class="select">{{localize('select file')}}</div>
                 </label>
-
-                <!-- THIS NEEDS A DOM-IF -->
                 <div class="error">{{error}}</div>
-
             </template>
 
             <template is="dom-if" if="{{askPassword}}">
@@ -192,7 +186,7 @@ The following custom properties and mixins are available for styling:
         </div>
     </template>
     <script>
-        class DisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
@@ -202,6 +196,10 @@ The following custom properties and mixins are available for styling:
             }
             static get properties() {
                 return {
+                    /**
+                    * The users selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -251,7 +249,48 @@ The following custom properties and mixins are available for styling:
                     password: {
                         type: String,
                     },
+                    /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
                 };
+            }
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
             * Fired when the user selects a file
@@ -279,7 +318,14 @@ The following custom properties and mixins are available for styling:
                 if (this.wallet.Crypto) {
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     storage.keyStore = this.wallet;
+                    storage.user.avatar = this.wallet.avatar;
+                    storage.user.username = this.wallet.username;
+                    delete storage.keyStore.username;
+                    delete storage.keyStore.avatar;
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                    this.dispatch('PUBLICKEY', storage.keyStore.address);
+                    this.dispatch('AVATAR', storage.user.avatar);
+                    this.dispatch('USERNAME', storage.user.username);
                     if (sessionStorage.getItem('origin')) {
                         this.path = sessionStorage.getItem('origin');
                         sessionStorage.removeItem('origin');
@@ -297,7 +343,13 @@ The following custom properties and mixins are available for styling:
                             .then((KeyStore) => {
                                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                 storage.keyStore = KeyStore;
+                                // TODO: This avatarhash will need to be converted to a base 64 via the API
+                                // storage.user.avatar = this.wallet.identity.avatarhash;
+                                storage.user.username = this.wallet.identity.username;
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                this.dispatch('PUBLICKEY', storage.keyStore.address);
+                                // this.dispatch('AVATAR', storage.user.avatar);
+                                this.dispatch('USERNAME', storage.user.username);
                                 if (sessionStorage.getItem('origin')) {
                                     this.path = sessionStorage.getItem('origin');
                                     sessionStorage.removeItem('origin');
@@ -317,13 +369,6 @@ The following custom properties and mixins are available for styling:
                 this.askPassword = false;
                 this.error = null;
             }
-            /**
-            * Fired when the component first loads
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-        } window.customElements.define(DisplayRestoreJsonFile.is, DisplayRestoreJsonFile);
+        } window.customElements.define(MyDisplayRestoreJsonFile.is, MyDisplayRestoreJsonFile);
     </script>
 </dom-module>
