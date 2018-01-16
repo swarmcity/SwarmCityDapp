@@ -221,6 +221,7 @@
             }
 
             _publickeyChanged() {
+                alert('Requesting Your Balance Now');
                 // subscribe to updates of the balance of this publickey
                 this.socket.emit('subscribe', {
                     channel: 'balance',
@@ -228,14 +229,17 @@
                         address: this.publicKey,
                     },
                 }, (reply) => {
+                    alert('API Has Returned Your Balance Now');
                     if (reply.response == 200) {
                         this.balance = reply.data;
+                        alert('Your balance is' + this.balance);
                         this.dispatch('BALANCE', this.balance);
                     }
                 });
                 this.socket.on('balanceChanged', (reply) => {
                     if (reply.response == 200) {
                         this.balance = reply;
+                        alert('Your balance is' + this.balance);
                         this.dispatch('BALANCE', this.balance);
                     }
                 });
