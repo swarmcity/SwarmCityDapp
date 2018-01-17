@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-backup.html">
 
 <dom-module id="page-make-backup-profile">
     <template>
@@ -28,6 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .container {
                 background-image: var(--sc-bg);
                 @apply --titlepage-open-container;
+                background-color:red;
             }
 
             .container .top {
@@ -45,6 +47,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] {
                 @apply --titlepage-open-wide-container;
+                padding-bottom: 10vh;
             }
 
             .container[wide-layout] .top {
@@ -53,7 +56,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] .bottom {
                 @apply --titlepage-open-wide-container-bottom;
-                @apply --layout-flex;
             }
 
             .container[wide-layout] .title {
@@ -82,44 +84,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-            .container .printbtn {
-                @apply --text-button-big-fullwhite;
-                color: var(--sc-blue);
-                box-sizing: border-box;
-                width: 100%;
-                margin: 0 0 14px 0;
-            }
-
-            .container .printbtn:active {
-                @apply --button-active;
-            }
-
-            .container[wide-layout] .printbtn {
-                margin: 0 0 14px 0;
-                max-width: 320px;
-            }
-
-            .container .downloadbtn {
-                @apply --text-button-big-fullwhite;
-                color: var(--sc-blue);
-                box-sizing: border-box;
-                width: 100%;
-                margin: 0;
-            }
-
-            .container .downloadbtn :active {
-                @apply --button-active;
-            }
-
-            .container[wide-layout] .downloadbtn {
-                margin: 0;
-                max-width: 320px;
-            }
-
             .container .trianglecontainer {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 position: relative;
+                z-index: 99;
                 top: 25px;
             }
 
@@ -164,6 +133,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 30px 0 60px 0;
             }
 
+            .container[wide-layout] .bluetext-margins {
+                margin: 30px 0 5px 0;
+            }
+
             .container .bluetext {
                 @apply --small-bold;
                 cursor: pointer;
@@ -179,8 +152,8 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close,
-                .triangle {
+                .container .close,
+                .container .triangle {
                     @apply --retina;
                 }
             }
@@ -189,35 +162,40 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="top">
-                <div class="close" on-click="_close"></div>
-                <div class="title">{{localize('Make a backup.')}}</div>
-                <div class="trianglecontainer">
-                    <div class="triangle"></div>
-                </div>
-                <div class="box">
-                    <div class="textbox">
-                        <div class="inner-top">{{localize('There are no central servers on which accounts are stored.')}}</div>
-                        <div class="inner-middle">{{localize('This means you are responsible for your own account at all times.')}}</div>
-                        <div class="inner-bottom">{{localize('Your backup is encrypted with your current password.')}}</div>
+                <div class="top">
+                    <div class="close" on-click="_close"></div>
+                    <div class="title" id="title">{{localize('Make a backup.')}}</div>
+                    <div class="trianglecontainer" id="trianglecontainer">
+                        <div class="triangle"></div>
+                    </div>
+                    <div class="box" id="content">
+                        <div class="textbox">
+                            <div class="inner-top">{{localize('There are no central servers on which accounts are stored.')}}</div>
+                            <div class="inner-middle">{{localize('This means you are responsible for your own account at all times.')}}</div>
+                            <div class="inner-bottom">{{localize('Your backup is encrypted with your current password.')}}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="bottom">
-                <div class="buttons">
-                    <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
-                    <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
+                <div class="bottom">
+                    <div class="buttons" id="buttons">
+                        <display-backup
+                            toggle-unlock="{{toggleUnlock}}"
+                            private-key="{{privateKey}}" 
+                            qr-code-private-key="{{qrCodePrivateKey}}"
+                            qr-code-public-key="{{qrCodePublicKey}}"
+                            path="{{path}}">
+                        </display-backup>
+                    </div>
+                    <div class="bluetext-margins" id="keys">
+                        <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
+                    </div>
                 </div>
-                <div class="bluetext-margins">
-                    <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
-                </div>
-            </div>
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
                 <display-unlock 
                     blue
-                    toggle-unlock="{{toggleUnlock}}" 
+                    toggle-unlock="{{toggleUnlock}}"
                     private-key="{{privateKey}}" 
                     qr-code-private-key="{{qrCodePrivateKey}}"
                     qr-code-public-key="{{qrCodePublicKey}}">
@@ -238,6 +216,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -256,15 +238,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
-                        // observer: '_loadExitAnimations',
-                    },
-                    /**
-                    * contains the private key
-                    * @type {String}
-                    */
-                    privateKey: {
-                        type: String,
-                        observer: '_print',
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -272,7 +246,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        // observer: '_loadEntryAnimations',
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'make-backup-profile',
                     },
                     /**
                     * toggles the unlock display
@@ -282,22 +264,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                         observer: '_blur',
-                    },
-                    /**
-                    * contains the qrCodePrivateKey
-                    * @type {String}
-                    */
-                    qrCodePrivateKey: {
-                        type: String,
-                        observer: '_print',
-                    },
-                    /**
-                    * contains the qrCodePublicKey
-                    * @type {String}
-                    */
-                    qrCodePublicKey: {
-                        type: String,
-                        observer: '_print',
                     },
                 };
             }
@@ -313,18 +279,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = 'my-profile/';
             }
             /**
-            * opens mailto with account info, after success routs to email-success
-            */
-            _mail() {
-                this.path = 'email-success-profile/';
-            }
-            _unlock() {
-                this.qrCodePublicKey = null;
-                this.qrCodePrivateKey = null;
-                window.scrollTo(0, 0);
-                this.toggleUnlock = !this.toggleUnlock;
-            }
-            /**
             * blurs the current page
             */
             _blur() {
@@ -334,111 +288,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.$.container.classList.remove('blur');
                 }
-            }
-            /**
-            * Prints the paper wallet
-            */
-            _print() {
-                if (this.qrCodePublicKey && this.qrCodePrivateKey) {
-                    let myWindow = window.open('', 'MsgWindow', 'width=800,height=600', '_blank');
-                    /* eslint-disable */
-                    let html = ''+
-                    '<body>'+
-                        '<title>Swarm Paper Wallet</title>'+
-                        '<style>'+
-                            '@import url("https://fonts.googleapis.com/css?family=Montserrat:200,300,700");'+
-                            '.font { font-family: "Montserrat", sans-serif;}'+
-                            'h1 { font-size:32px;font-weight:700;line-height:32px;}'+
-                            'p { font-size:20px;font-weight:300;line-height:20px;}'+
-                            'small { font-size:12px;font-weight:700;line-height:16px;}'+
-                            'img { width:120px; height: 120px;}'+
-                            '.total { display: flex; flex-direction: row; justify-content:flex-start; align-items: stretch;}'+
-                            '.total2 { box-sizing:border-box; padding:0px; width: 96vw; border:3px solid black; outline: 12px solid #F2F2F2;}'+
-                            '.logobox { display: flex; flex-direction: column; justify-content:flex-start; align-items: flex-end;}'+
-                            '.logobox2 { box-sizing:border-box; padding:30px 30px;}'+
-                            '.boxes { display: flex; flex-direction: column; align-items: center; border-left:1px solid black;}'+
-                            '.boxes2 { box-sizing:border-box; padding:0px;}'+                            
-                            '.box { display: flex; flex-direction: row; align-items: center; width:100%;}'+
-                            '.box2 { box-sizing:border-box; padding:20px;}'+
-                            '.key {font-size:20px;font-weight:300;line-height:24px;word-break:break-all;}'+
-                            '.paperwallet {font-weight:300;}'+
-                            '.title {padding:20px 0px 15px 0px;}'+
-                            '.nomarge {margin:0px}'+
-                            '.topborder { border-top:1px solid black;}'+
-                            'svg {width:80px;height:32px;margin:12px 20px 0px 0px;}'+
-                        '</style>'+
-                        '<div class="total total2">'+
-                            '<div class="logobox logobox2">'+
-                                '<svg x="0px" y="0px" viewBox="0 0 80 32">'+
-                                    '<g id="Thanks_to_Pieter_Boels_x21__2_">'+
-                                        '<g>'+
-                                            '<g>'+
-                                                '<path d="M60.9,0C49,0,39,9.4,30.2,17.2c-2.6-2.3-5.4-5-7.7-7.6'+
-                                                'c-0.2-0.2-0.5-0.2-0.7-0.2c-0.2,0.2-0.2,0.5,0,0.7'+
-                                                    'c2.1,2.5,4.7,5.5,7.5,8c-4.7,'+
-                                                    '4.3-12.1,9.8-17.9,9.8c-11.9,0-11'+
-                                                    '.9-16-1.6-19.2c0.5,0,0.5-0.7,0-'+
-                                                    '0.5c-13.5,3.2-12.8,22.2,1.9,22.2'+
-                                                    'c7,0,13.3-4.6,19.8-10.1c7,6.2,15.'+
-                                                    '8,11.2,27,11.2C87.2,31.6,86.3,'+
-                                                    '0,60.9,0z M58.1,29.1c-9.1,0-17.9-3.9-25.6-9.8'+
-                                                    'c8.9-7.6,17.7-16,28-16C81,3.2,81.4,29.3,58.1,29.1z"/>'+
-                                                '<ellipse cx="16" cy="6.6" rx="3" ry="3"/>'+
-                                            '</g>'+
-                                        '</g>'+
-                                    '</g>'+
-                                '</svg>'+
-                                '<div style="display: flex;flex-direction: column;">'+
-                                    '<h1 class="nomarge font title">swarm<br>.city</h1>'+
-                                    '<small class="nomarge font paperwallet">paper wallet</small>'+
-                                '</div>'+
-                            '</div>'+
-                            '<div class="boxes boxes2 nomarge">'+
-                            '<div class="box box2 nomarge">'+
-                                '<img src=' + this.qrCodePublicKey + ' alt="QRpubkey">'+
-                                '<div style="display: flex;flex-direction: column; margin-left:20px">'+
-                                    '<small class="nomarge font">My public key</small>'+
-                                    '<p class="nomarge font key">' + this.publicKey + '</p>'+
-                                '</div>'+
-                            '</div>'+
-                            '<div class="box box2 nomarge topborder">'+
-                                '<img src=' + this.qrCodePrivateKey + ' alt="QRpubkey">'+
-                                '<div style="display: flex;flex-direction: column; margin-left:20px">'+
-                                    '<small class="nomarge font">My private key</small>'+
-                                    '<p class="nomarge font key">' + this.privateKey + '</p>'+
-                                '</div>'+
-                            '</div>'+
-                            '</div>'+
-                        '</div>'+
-                    '</body>';
-                    /* eslint-enable */
-                    myWindow.document.write(html);
-                    setTimeout(() => {
-                        myWindow.print();
-                    }, 600);
-                    myWindow.onafterprint = (event) => {
-                            myWindow.close();
-                            this.path = 'my-profile/';
-                    };
-                }
-            }
-            /**
-            * downloads account info, after success routs to download-success
-            */
-            _download() {
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                const filename = 'SwarmCity - UTC KeyStore';
-                storage.keyStore.avatar = storage.user.avatar;
-                storage.keyStore.username = storage.user.username;
-                const text = JSON.stringify(storage.keyStore);
-                const element = document.createElement('a');
-                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-                element.setAttribute('download', filename);
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-                this.path = 'download-success-profile/';
             }
             /**
             * changes the current path to my-keys
@@ -455,6 +304,337 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'my-profile') {
+                            // Here come the Exit Animations, going to page my-profile
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.trianglecontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.keys.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'download-success-profile' ||
+                            this.routeExit[1] == 'print-success-profile' ||
+                            this.routeExit[1] == 'my-keys') {
+                            // Here come the Exit Animations, going to page download-success-profile
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.trianglecontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.keys.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeExit[0] == 'my-profile') {
+                        // Coming from page my-profile
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.trianglecontainer.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.keys.animate(
+                            [
+                                {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                    if (this.routeExit[0] == 'download-success-profile' ||
+                        this.routeExit[0] == 'print-success-profile' ||
+                        this.routeExit[0] == 'my-keys') {
+                        // Coming from page download-success
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.trianglecontainer.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.keys.animate(
+                            [
+                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements.define(MyMakeBackupProfile.is, MyMakeBackupProfile);
     </script>
