@@ -292,12 +292,16 @@
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.transactions = reply.data;
+                        console.log('Your transaction history is: ');
+                        console.log(this.transactions);
                         this.dispatch('TRANSACTIONS', this.transactions);
                     }
                 });
                 this.socket.on('txhistoryChanged', (reply) => {
                     if (reply.response == 200) {
                         this.transactions = reply.data;
+                        console.log('Your transaction history is: ');
+                        console.log(this.transactions);
                         this.dispatch('TRANSACTIONS', this.transactions);
                     }
                 });
@@ -328,9 +332,13 @@
             }
             _broadcast() {
                 // send this.broadcast to the api, this.broadcast is the signed tx
+                console.log('Sending your transaction to the API now: ');
+                console.log(this.transactions);
                 this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
                 }, (data) => {
+                    console.log('After sending transaction we just got this from the API: ');
+                    console.log(data);
                     // does anything need to happen here ?
                     // may as well send me a transaction id
                 });
