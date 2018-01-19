@@ -160,13 +160,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding-top: 3vh;
                 width: 100%;
                 max-width: var(--max-width);
-                margin-bottom: -18px;
+                margin-bottom: -12px;
             }
 
             .close {
                 @apply --xmark-grey2-small;
                 cursor: pointer;
                 margin-right: 5vw;
+            }
+
+            .container[wide-layout] .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+                margin-right: 3vh;
             }
 
             .close:active {
@@ -179,11 +185,14 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .container[wide-layout] .inputs {
-                padding: 24px 30px;
+                padding: 10px 5vw 40px 5vw;
             }
 
             .container .errorcontainer {
                 @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
             }
 
             .container[wide-layout] .errorcontainer {
@@ -192,10 +201,13 @@ This code may only be used under the license found at https://github.com/swarmci
 
             #error {
                 @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
             }
 
             .container[wide-layout] #error {
                 @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
             }
 
             paper-textarea {
@@ -260,7 +272,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] .budget {
                 /* margin-top: 20px; */
-                width: 250px;
+                max-width: 250px;
             }
 
             .horizontal {
@@ -279,18 +291,33 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --small-light;
                 border-top:1px dotted var(--sc-grey2);
                 box-sizing:border-box;
-                padding: 24px 30px 10px 30px;
+                padding: 20px 30px 18px 30px;
+                text-align: right;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-end;
             }
 
-            .container[wide-layout] .cost {
-                /* text-align: left; */
+            .container[wide-layout] .infobox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
             }
 
             .cost {
-                /* @apply --small-bold;
-                margin-top: 8vh;
-                text-align: center;
-                color: var(--sc-grey4); */
+                @apply --body-default;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
+            }
+
+
+            .costwords {
+                margin: 3px 6px 0px 0px;
+            }
+
+            .costbold {
+                @apply --main-title4;
             }
 
             .container[wide-layout] .fee {
@@ -298,23 +325,28 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .fee {
+                color: var(--sc-grey3);
+                @apply --small-light;
+                margin: 4px 0px 0px 0px;
+
                 /* @apply --small-light;
                 text-align: center;
                 color: var(--sc-grey4); */
             }
 
             .buttonbox {
-                margin: 0px 35px -20px 0px;
-                @apply --layout-horizontal;
+                margin: 20px 5px -35px 0px;
+                /* @apply --layout-horizontal;
                 @apply --layout-end-justified;
-                @apply --layout-center;
+                @apply --layout-center; */
             }
 
             .container[wide-layout] .buttonbox {
-                @apply --layout-horizontal;
+                margin: 5px 0px -40px 20px;
+                /* @apply --layout-horizontal;
                 @apply --layout-start-justified;
-                @apply --layout-center;
-                margin-top: 15vh;
+                @apply --layout-center; */
+                /* margin-top: 15vh; */
             }
 
             .disagree {
@@ -412,28 +444,29 @@ This code may only be used under the license found at https://github.com/swarmci
                                 id="budget"
                                 class="budget"
                                 label="{{localize('What is your offer?')}}"
-                                type="txt"
+                                type="number"
                                 on-input="_checkBudget"
                                 value="{{budget}}"></paper-input>
                             <div class="currency">SWT</div>
                         </div>
+                        <div class="fee"> + {{hashtagfee}} SWT {{localize('hashtagfee')}}</div>
                         <template is="dom-if" if="{{showError}}">
-                            <p>{{error}}</p>
-                        <!-- <div class="errorcontainer">
-                            <span id="error">{{error}}</span>
-                        </div> -->
+                            <div class="errorcontainer">
+                                <span id="error">{{error}}</span>
+                            </div>
                         </template>
                     </div>
-                    <template is="dom-if" if="{{showSum}}">
-                        <div class="infobox">
-                            <div class="cost">{{localize('Total cost:')}} {{totalcost}} SWT</div>
-                            <!-- <div class="fee">{{localize('The hashtag fee for')}} #Pioneer {{localize('is')}} 0.05 SWT</div> -->
-                        </div>
-                    </template>
-                    <div class="buttonbox">
-                        <!-- <div class="disagree" on-click="_close" on-keypress="_close" tabindex="2" autofocus></div> -->
-                        <div class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
-                            <div class="agree" id="agree"></div>
+                    <div class="infobox">
+                        <template is="dom-if" if="{{showSum}}">
+                            <div class="cost">
+                                <div class="costwords">{{localize('Total cost:')}}</div>
+                                <div class="costbold">{{totalcost}} SWT</div>
+                            </div>
+                        </template>
+                        <div class="buttonbox">
+                            <div class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
+                                <div class="agree" id="agree"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -515,8 +548,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                     },
                     /**
+                    * budget is what the user wants to offer
+                    * @type {Number}
+                    */
+                    budget: {
+                        type: Number,
+                    },
+                    /**
                     * Balance is the users current balance
-                    * @type {String}
+                    * @type {Number}
                     */
                     balance: {
                         type: Number,
@@ -525,7 +565,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     /**
                     * hashtagfee is the fee owned by the hashtagowner on making a deal.
                     This is currently dummy and should later be replaced.
-                    * @type {String}
+                    * @type {Number}
                     */
                     hashtagfee: {
                         type: Number,
@@ -533,7 +573,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                     /**
                     * totalcost is the sum of the offer and the hashtagfee
-                    * @type {String}
+                    * @type {Number}
                     */
                     totalcost: {
                         type: Number,
@@ -986,20 +1026,25 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             
             _checkBudget() {
-                if (this.balance.swt.balance >= this.budget){
+                this.totalcost = parseFloat(this.budget)+this.hashtagfee;
+                this.showSum = true;
+                // console.log("TOTAL COST=",this.totalcost,"MY BUDGET:",this.balance.swt.balanceSwt);                
+                if (this.balance.swt.balanceSwt >= this.totalcost){
                     this.error = "";
                     if (this.request && this.budget){
                         this.showSum = true;
-                        this.totalcost = parseInt(this.budget)+parseInt(this.hashtagfee);
                         this.$.agree.classList.add('enabled');
+                        console.log("Its a go!");
                     } else {
                         this.showSum = false;
                         this.$.agree.classList.remove('enabled');
                     }
                 } else {
-                    this.error = "YOU NO MONEY!!";
+                    this.error = this.localize('You have insufficient funds for an offer that size.');
+                    this.$.agree.classList.remove('enabled');
                 }
             }
+            
         }
         window.customElements.define(MyNewRequest.is, MyNewRequest);
     </script>
