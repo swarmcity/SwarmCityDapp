@@ -9,6 +9,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <!--
     Displays and shared styles only
 -->
@@ -129,6 +130,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 user-select: text;
             }
 
+            .button {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --text-button-big-fullwhite;
+                white-space: nowrap;
+                width: 100%;
+                max-width: 320px;
+                margin-top: 30px;
+            }
+
+
+            paper-checkbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                @apply --sc-paper-checkbox;
+                margin-top: 30px;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -150,6 +170,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
             <div class="divider" id="divider"></div>
+
+
             <div class="privkey-container" id="privkeycontainer">
                 <dom-if if="{{!showPrivateKey}}">
                     <template>
@@ -164,8 +186,17 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="key">{{privateKey}}</div>
                         <span class="bluetext" on-click="_copyPrivateKey">{{localize('copy private key')}}</span>
                         <div class="qrcodeprivate">
-                                <img src="{{qrCodePrivateKey}}">
+                            <img src="{{qrCodePrivateKey}}">
                         </div>
+                        <paper-checkbox
+                            id="checkbox"
+                            noink
+                            on-active-changed="_enterbuttonVisible">
+                            {{localize('Ive copied or written down my key and want this to count as my backup.')}}
+                        </paper-checkbox>
+                        <template is="dom-if" if="{{showEnterbutton}}">
+                            <div class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
+                        </template>
                     </template>
                 </dom-if>
             </div>
@@ -250,6 +281,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     * @type {Boolean}
                     */
                     showPrivateKey: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * showEnterbutton determines if the Enter Button is shown or not
+                    * @type {Boolean}
+                    */
+                    showEnterbutton: {
                         type: Boolean,
                         value: false,
                     },
@@ -447,6 +486,14 @@ This code may only be used under the license found at https://github.com/swarmci
                             );
                         }
                     }
+                }
+            }
+
+            _enterbuttonVisible() {
+                if (this.$$('#checkbox') && this.$$('#checkbox').checked) {
+                    this.showEnterbutton = true;
+                } else {
+                    this.showEnterbutton = false;
                 }
             }
         }
