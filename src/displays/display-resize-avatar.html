@@ -127,7 +127,7 @@
                 <canvas id="canvas" class="canvas" on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd" on-touchmove="_panMove"
                     on-touchstart="_panStart" on-touchend="_panEnd"></canvas>
                 <div class="rotate-icon" on-click="_rotate"></div>
-                <input type="file" name="file" id="file" class="file" on-change="_getFile" />
+                <input type="file" name="file" id="file" class="file" on-change="_getFile" accept=".jpg, .jpeg, .png, .gif" />
                 <input type="hidden" name="zoom" id="zoom" value="1">
                 <div class="blacktext">{{localize('scroll to zoom')}} - {{localize('drag to move')}}</div>
 
@@ -148,6 +148,14 @@
         </div>
     </template>
     <script>
+
+// import React from 'react'
+// import AvatarEditor from 'react-avatar-editor'
+
+	//---------------------------------------------------------
+	//  mathCanvas
+	//---------------------------------------------------------
+
         const mathCanvas = function() {
             'use strict';
             function t(t, n, o) {
@@ -285,7 +293,7 @@
                 };
             }
 
-            // * Pan methods
+            // Pan methods
             function e(t, n) {
                 function o(o, a) {
                     'left' == o || 'right' == o ? t.left += a * ('left' == o ? 1 : -1) :
@@ -394,10 +402,11 @@
             let n;
             let a;
             let o = '';
-            e.addEventListener ? n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
-                    a = 'onwheel' in t.createElement('div') ? 'wheel' :
-                    void 0 !== t.onmousewheel ? 'mousewheel' : 'DOMMouseScroll',
-                    e.addWheelListener = function(e, t, n) {
+
+            e.addEventListener ?
+                n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
+                a = 'onwheel' in t.createElement('div') ? 'wheel' : void 0 !== t.onmousewheel
+                    ? 'mousewheel' : 'DOMMouseScroll', e.addWheelListener = function(e, t, n) {
                         l(e, a, t, n), 'DOMMouseScroll' == a && l(e, 'MozMousePixelScroll', t, n);
                     };
         }(window, document);
@@ -639,6 +648,10 @@
                 let image = event.target.files[0];
                 event.stopPropagation();
                 event.preventDefault();
+                if (image.type !== "image/jpeg" && image.type !== "image/gif" && image.type !== "image/png") {
+                    alert("Please select an image file of type jpeg, gif, or png (" + image.type + ")");
+                    return;
+                }
                 let img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
