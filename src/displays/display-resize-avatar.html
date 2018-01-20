@@ -127,7 +127,7 @@
                 <canvas id="canvas" class="canvas" on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd" on-touchmove="_panMove"
                     on-touchstart="_panStart" on-touchend="_panEnd"></canvas>
                 <div class="rotate-icon" on-click="_rotate"></div>
-                <input type="file" name="file" id="file" class="file" on-change="_getFile" />
+                <input type="file" name="file" id="file" class="file" on-change="_getFile" accept=".jpg, .jpeg, .png, .gif" />
                 <input type="hidden" name="zoom" id="zoom" value="1">
                 <div class="blacktext">{{localize('scroll to zoom')}} - {{localize('drag to move')}}</div>
 
@@ -148,6 +148,11 @@
         </div>
     </template>
     <script>
+
+    // ---------------------------------------------------------
+    // mathCanvas
+    // ---------------------------------------------------------
+
         const mathCanvas = function() {
             'use strict';
             function t(t, n, o) {
@@ -177,10 +182,12 @@
                     n.canvasHeight = Math.round(h),
                     n.paintWidth = Math.round(m * e),
                     n.paintHeight = Math.round(l * e),
-                    n.noBounds || (0 == r || 2 == r ? (n.left = t(n.left, n.canvasWidth - n.paintWidth, 0),
+                    n.noBounds || (0 == r || 2 == r ?
+                                (n.left = t(n.left, n.canvasWidth - n.paintWidth, 0),
                     n.top = t(n.top, n.canvasHeight - n.paintHeight, 0)) :
-                    (n.left = t(n.left, n.canvasWidth - n.paintHeight, 0),
-                    n.top = t(n.top, n.canvasHeight - n.paintWidth, 0))), n.tX = f, n.tY = s, o && n.draw();
+                            (n.left = t(n.left, n.canvasWidth - n.paintHeight, 0),
+                            n.top = t(n.top, n.canvasHeight - n.paintWidth, 0))),
+                            n.tX = f, n.tY = s, o && n.draw();
                 }
                 return o(), {
                     calculateDim: o,
@@ -245,9 +252,10 @@
                         let r = t.rotations;
                         let c = t.rotation;
                         n instanceof Element ?
-                        n.style.transform = 'translate(' + i + 'px,' + e + 'px) rotate(' + r[c] + 'rad)' :
-                        (n.setTransform(1, 0, 0, 1, 0, 0),
-                        n.translate(o + i, a + e), n.rotate(r[c]));
+                        n.style.transform =
+                            'translate(' + i + 'px,' + e + 'px) rotate(' + r[c] + 'rad)' :
+                            (n.setTransform(1, 0, 0, 1, 0, 0),
+                            n.translate(o + i, a + e), n.rotate(r[c]));
                     },
                 };
             }
@@ -385,19 +393,19 @@
                             t.preventDefault ? t.preventDefault() : t.returnValue = !1;
                         },
                     };
-                    return 'mousewheel' == a ? (l.deltaY = -.025 * t.wheelDelta,
-                    t.wheelDeltaX && (l.deltaX = -.025 * t.wheelDeltaX)) : l.deltaY = t.deltaY || t.detail,
-                    r(l);
+                    return 'mousewheel' == a ? (l.deltaY = -.025 * t.wheelDelta, t.wheelDeltaX
+                        && (l.deltaX = -.025 * t.wheelDeltaX))
+                            : l.deltaY = t.deltaY || t.detail, r(l);
                 }, d || !1);
             }
 
             let n;
             let a;
             let o = '';
-            e.addEventListener ? n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
-                    a = 'onwheel' in t.createElement('div') ? 'wheel' :
-                    void 0 !== t.onmousewheel ? 'mousewheel' : 'DOMMouseScroll',
-                    e.addWheelListener = function(e, t, n) {
+            e.addEventListener ?
+                n = 'addEventListener' : (n = 'attachEvent', o = 'on'),
+                a = 'onwheel' in t.createElement('div') ? 'wheel' : void 0 !== t.onmousewheel
+                    ? 'mousewheel' : 'DOMMouseScroll', e.addWheelListener = function(e, t, n) {
                         l(e, a, t, n), 'DOMMouseScroll' == a && l(e, 'MozMousePixelScroll', t, n);
                     };
         }(window, document);
@@ -639,6 +647,13 @@
                 let image = event.target.files[0];
                 event.stopPropagation();
                 event.preventDefault();
+                if (image.type !== 'image/jpeg'
+                    && image.type !== 'image/gif'
+                    && image.type !== 'image/png') {
+                        alert('Please select an image file of type jpeg, gif, or png ('
+                                + image.type + ')');
+                        return;
+                }
                 let img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
