@@ -170,14 +170,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div id="ethbalance" class="eth">{{balance.eth.balanceEth}} ETH</div>
             </div>
             <div id="divider1" class="divider"></div>
-                <display-transaction-status id="txstatus" path="{{path}}">
-                </display-transaction-status>
-                <template is="dom-if" if="{{showDivider}}">
-                    <div id="divider2" class="divider"></div>
-                </template>
-                <display-transaction-history id="txhistory" tx-array-length="{{txArrayLength}}"></display-transaction-history> 
+            <display-transaction-status id="txstatus" path="{{path}}" shortcode="{{shortcode}}" send="{{send}}" start="{{start}}"></display-transaction-status>
+            <template is="dom-if" if="{{showDivider}}">
+                <div id="divider2" class="divider"></div>
+            </template>
+            <display-transaction-history id="txhistory" tx-array-length="{{txArrayLength}}"></display-transaction-history> 
             <div id="divider3" class="divider"></div>
-            <div class="bottom" id="bottom">
+            <div id="bottom" class="bottom" id="bottom" on-click="_scrollTo">
                 <display-show-keys
                 toggle-unlock="{{toggleUnlock}}"
                 toggle-private-key="{{togglePrivateKey}}"
@@ -302,6 +301,30 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * Shortcode if true shows the shortcode
+                    * @type {Boolean}
+                    */
+                    shortcode: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Send if true shows the send settings
+                    * @type {Boolean}
+                    */
+                    send: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Start if true shows the buttons choice
+                    * @type {Boolean}
+                    */
+                    start: {
+                        type: Boolean,
+                        value: true,
+                    },
                 };
             }
             connectedCallback() {
@@ -315,6 +338,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to originating page
             */
             _close() {
+                this.shortcode = false;
+                this.send = false;
+                this.start = true;
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
@@ -332,6 +358,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * Scrolls to show keys in viewport
+            */
+            _scrollTo() {
+                this.$.bottom.scrollIntoView();
             }
             /**
             * blurs the current page

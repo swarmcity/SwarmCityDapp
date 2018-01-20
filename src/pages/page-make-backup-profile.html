@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-backup.html">
 
 <dom-module id="page-make-backup-profile">
     <template>
@@ -28,6 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .container {
                 background-image: var(--sc-bg);
                 @apply --titlepage-open-container;
+                background-color:red;
             }
 
             .container .top {
@@ -45,6 +47,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] {
                 @apply --titlepage-open-wide-container;
+                padding-bottom: 10vh;
             }
 
             .container[wide-layout] .top {
@@ -53,7 +56,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] .bottom {
                 @apply --titlepage-open-wide-container-bottom;
-                @apply --layout-flex;
             }
 
             .container[wide-layout] .title {
@@ -82,44 +84,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-            .container .emailbtn {
-                @apply --text-button-big-fullwhite;
-                color: var(--sc-blue);
-                box-sizing: border-box;
-                width: 100%;
-                margin: 0 0 14px 0;
-            }
-
-            .container .emailbtn:active {
-                @apply --button-active;
-            }
-
-            .container[wide-layout] .emailbtn {
-                margin: 0 0 14px 0;
-                max-width: 320px;
-            }
-
-            .container .downloadbtn {
-                @apply --text-button-big-fullwhite;
-                color: var(--sc-blue);
-                box-sizing: border-box;
-                width: 100%;
-                margin: 0;
-            }
-
-            .container .downloadbtn :active {
-                @apply --button-active;
-            }
-
-            .container[wide-layout] .downloadbtn {
-                margin: 0;
-                max-width: 320px;
-            }
-
             .container .trianglecontainer {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 position: relative;
+                z-index: 99;
                 top: 25px;
             }
 
@@ -164,6 +133,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 30px 0 60px 0;
             }
 
+            .container[wide-layout] .bluetext-margins {
+                margin: 30px 0 5px 0;
+            }
+
             .container .bluetext {
                 @apply --small-bold;
                 cursor: pointer;
@@ -179,8 +152,8 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close,
-                .triangle {
+                .container .close,
+                .container .triangle {
                     @apply --retina;
                 }
             }
@@ -189,35 +162,40 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="top">
-                <div class="close" on-click="_close"></div>
-                <div class="title">{{localize('Make a backup.')}}</div>
-                <div class="trianglecontainer">
-                    <div class="triangle"></div>
-                </div>
-                <div class="box">
-                    <div class="textbox">
-                        <div class="inner-top">{{localize('There are no central servers on which accounts are stored.')}}</div>
-                        <div class="inner-middle">{{localize('This means you are responsible for your own account at all times.')}}</div>
-                        <div class="inner-bottom">{{localize('Your backup is encrypted with your current password.')}}</div>
+                <div class="top">
+                    <div class="close" on-click="_close"></div>
+                    <div class="title" id="title">{{localize('Make a backup.')}}</div>
+                    <div class="trianglecontainer" id="trianglecontainer">
+                        <div class="triangle"></div>
+                    </div>
+                    <div class="box" id="content">
+                        <div class="textbox">
+                            <div class="inner-top">{{localize('There are no central servers on which accounts are stored.')}}</div>
+                            <div class="inner-middle">{{localize('This means you are responsible for your own account at all times.')}}</div>
+                            <div class="inner-bottom">{{localize('Your backup is encrypted with your current password.')}}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="bottom">
-                <div class="buttons">
-                    <div class="emailbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
-                    <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
+                <div class="bottom">
+                    <div class="buttons" id="buttons">
+                        <display-backup
+                            toggle-unlock="{{toggleUnlock}}"
+                            private-key="{{privateKey}}" 
+                            qr-code-private-key="{{qrCodePrivateKey}}"
+                            qr-code-public-key="{{qrCodePublicKey}}"
+                            path="{{path}}">
+                        </display-backup>
+                    </div>
+                    <div class="bluetext-margins" id="keys">
+                        <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
+                    </div>
                 </div>
-                <div class="bluetext-margins">
-                    <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
-                </div>
-            </div>
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
                 <display-unlock 
-                    color="white"
-                    toggle-unlock="{{toggleUnlock}}" 
+                    blue
+                    toggle-unlock="{{toggleUnlock}}"
                     private-key="{{privateKey}}" 
                     qr-code-private-key="{{qrCodePrivateKey}}"
                     qr-code-public-key="{{qrCodePublicKey}}">
@@ -238,6 +216,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -256,7 +238,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
-                        // observer: '_loadExitAnimations',
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -264,7 +246,24 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        // observer: '_loadEntryAnimations',
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'make-backup-profile',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
                     },
                 };
             }
@@ -280,29 +279,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = 'my-profile/';
             }
             /**
-            * opens mailto with account info, after success routs to email-success
+            * blurs the current page
             */
-            _mail() {
-                this.path = 'email-success-profile/';
-            }
-
-            /**
-            * downloads account info, after success routs to download-success
-            */
-            _download() {
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                const filename = 'SwarmCity - UTC KeyStore';
-                storage.keyStore.avatar = storage.user.avatar;
-                storage.keyStore.username = storage.user.username;
-                const text = JSON.stringify(storage.keyStore);
-                const element = document.createElement('a');
-                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-                element.setAttribute('download', filename);
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-                this.path = 'download-success-profile/';
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
             }
             /**
             * changes the current path to my-keys
@@ -319,6 +304,337 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'my-profile') {
+                            // Here come the Exit Animations, going to page my-profile
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.trianglecontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.keys.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'download-success-profile' ||
+                            this.routeExit[1] == 'print-success-profile' ||
+                            this.routeExit[1] == 'my-keys') {
+                            // Here come the Exit Animations, going to page download-success-profile
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.trianglecontainer.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.content.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(-100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.keys.animate(
+                                [
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                    // Here come the Entry Animations
+                    if (this.routeExit[0] == 'my-profile') {
+                        // Coming from page my-profile
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.trianglecontainer.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.keys.animate(
+                            [
+                                {'transform': 'translateX(20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                    if (this.routeExit[0] == 'download-success-profile' ||
+                        this.routeExit[0] == 'print-success-profile' ||
+                        this.routeExit[0] == 'my-keys') {
+                        // Coming from page download-success
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.trianglecontainer.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.content.animate(
+                            [
+                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.buttons.animate(
+                            [
+                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.keys.animate(
+                            [
+                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX(0px)', 'opacity': '1'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
         }
         window.customElements.define(MyMakeBackupProfile.is, MyMakeBackupProfile);
     </script>

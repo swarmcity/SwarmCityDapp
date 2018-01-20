@@ -33,10 +33,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
+                min-height: 100%;
             }
             .close {
                 @apply --xmark-grey4-small;
                 @apply --close;
+                z-index: 1;
             }
 
             .key-container {
@@ -44,24 +46,22 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
-                margin: 15vh 0px 8vh 0px;
                 box-sizing: border-box;
-                padding: 0 12vw;
+                padding: 15vh 12vw 8vh 12vw;
             }
             .container[wide-layout] .key-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-start;
-                margin-top: 20vh;
+                padding-top: 20vh;
             }
             .privkey-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
-                margin: 8vh 0px;
                 box-sizing: border-box;
-                padding: 0 12vw;
+                padding: 8vh 12vw;
                 background-image: var(--sc-bg);
             }
             .container[wide-layout] .privkey-container {
@@ -151,14 +151,14 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="divider" id="divider"></div>
             <div class="privkey-container" id="privkeycontainer">
-                <dom-if if="{{!showPrivKey}}">
+                <dom-if if="{{!showPrivateKey}}">
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
                         <div class="warning">{{localize('Be careful in displaying your private key. Its the only thing needed to steal your funds.')}}</div>
                         <span class="bluetext" on-click="_toggleUnlock">{{localize('show private key')}}</span>
                     </template>
                 </dom-if>
-                <dom-if if="{{showPrivKey}}">
+                <dom-if if="{{showPrivateKey}}">
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
                         <div class="key">{{privateKey}}</div>
@@ -246,10 +246,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                     },
                     /**
-                    * showPrivKey determines if the Private Key is shown or not
+                    * showPrivateKey determines if the Private Key is shown or not
                     * @type {Boolean}
                     */
-                    showPrivKey: {
+                    showPrivateKey: {
                         type: Boolean,
                         value: false,
                     },
@@ -331,7 +331,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _showPrivateKey() {
                 if (this.privateKey) {
-                    this.showPrivKey = !this.showPrivKey;
+                    this.showPrivateKey = !this.showPrivateKey;
                 }
             }
             _loadExitAnimations() {
@@ -391,6 +391,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _loadEntryAnimations() {
+                if (this.showPrivateKey) {
+                    this.privateKey = null;
+                    this.showPrivateKey = false;
+                }
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations

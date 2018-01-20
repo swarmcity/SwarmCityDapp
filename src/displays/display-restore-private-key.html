@@ -315,8 +315,8 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         reflectToAttribute: true,
                         notify: true,
+                        observer: '_resetValues',
                     },
-
                     /**
                     * choosePassword if true gives the option to choose password
                     * @type {Boolean}
@@ -325,7 +325,6 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         value: true,
                     },
-
                     /**
                     * passwordWarning if true shows a warning about password
                     * @type {Boolean}
@@ -334,7 +333,6 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         value: false,
                     },
-
                     /**
                     * passwordSubmit if true give the option to submit a passw
                     * @type {Boolean}
@@ -343,7 +341,6 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         value: false,
                     },
-
                     /**
                     * passwordSet if true shows that passw is set
                     * @type {Boolean}
@@ -352,7 +349,6 @@ The following custom properties and mixins are available for styling:
                         type: Boolean,
                         value: false,
                     },
-
                     /**
                     * The password the user has entered
                     * @type {String}
@@ -360,7 +356,6 @@ The following custom properties and mixins are available for styling:
                     password: {
                         type: String,
                     },
-
                     /**
                     * The password the user has entered the second time
                     * @type {String}
@@ -368,7 +363,6 @@ The following custom properties and mixins are available for styling:
                     confirmPassword: {
                         type: String,
                     },
-
                     /**
                     * User input error prompt on password input
                     * @type {String}
@@ -377,7 +371,6 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         value: '',
                     },
-
                     /**
                     * User input error prompt on private key input
                     * @type {String}
@@ -386,7 +379,6 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         value: '',
                     },
-
                 };
             }
             /**
@@ -410,7 +402,21 @@ The following custom properties and mixins are available for styling:
                 this.passwordWarning = false;
                 this.passwordSubmit = true;
             }
-
+            /**
+            * When leaving the page, entered values get reset
+            */
+            _resetValues() {
+                setTimeout( ()=>{
+                    this.password = null;
+                    this.confirmPassword = null;
+                    this.privateKey = null;
+                    this.privateKeyError = '';
+                    this.choosePassword = true;
+                    this.passwordWarning = false;
+                    this.passwordSubmit = false;
+                    this.passwordSet = false;
+                }, 300);
+            }
             /**
             * Compares input realtime and toggles button and error message
             */

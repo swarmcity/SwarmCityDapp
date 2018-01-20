@@ -14,139 +14,113 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 
-<dom-module id="page-restore-account">
+<dom-module id="page-print-success-profile">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
--->
+    -->
         <style include="shared-styles">
-
             :host {
-              @apply --titlepage-closed;
+                @apply --titlepage-closed;
             }
 
             .container {
                 background-image: var(--sc-bg);
-              @apply --titlepage-closed-container;
+                @apply --titlepage-closed-container;
             }
+
             .container .top {
-              @apply --titlepage-closed-container-top;
+                @apply --titlepage-closed-container-top;
             }
+
             .container .bottom {
-              @apply --titlepage-closed-container-bottom;
+                @apply --titlepage-closed-container-bottom;
             }
+
             .container .title {
-              @apply --titlepage-title;
-              color: var(--sc-grey3b);
+                @apply --titlepage-title;
+                color: var(--sc-blue);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-grey4);
             }
 
             .container[wide-layout] {
-              @apply --titlepage-closed-wide-container;
+                @apply --titlepage-closed-wide-container;
             }
+
             .container[wide-layout] .top {
-              @apply --titlepage-closed-wide-container-top;
+                @apply --titlepage-closed-wide-container-top;
             }
+
             .container[wide-layout] .bottom {
-              @apply --titlepage-closed-wide-container-bottom;
+                @apply --titlepage-closed-wide-container-bottom;
             }
+
             .container[wide-layout] .title {
-              @apply --titlepage-title-wide;
+                @apply --titlepage-title-wide;
             }
 
-
-            .close {
-                @apply --xmark-grey3-small;
-                @apply --close;
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
             }
 
-            .close:active {
-                @apply --button-active;
-            }
-
-
-
-
-            .container .buttons {
-                @apply --layout-vertical;
+            .button {
+                @apply --layout-horizontal;
                 @apply --layout-center-justified;
-                @apply --layout-center;
-                width: 100%;
-            }
-            .container[wide-layout] .buttons {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-            }
-
-
-            .container .privkey {
                 @apply --text-button-big-fullwhite;
-                color: var(--sc-blue);
-                box-sizing: border-box;
+                white-space: nowrap;
                 width: 100%;
-                margin: 0 0 14px 0;            
-            }
-            .container .privkey:active {
-                @apply --button-active;
-            }
-            .container[wide-layout] .privkey {
-                margin: 0 0 14px 0;
                 max-width: 320px;
             }
 
-
-            .container .json {
-                @apply --text-button-big-fullwhite;
-                color: var(--sc-blue);
-                box-sizing: border-box;
-                width: 100%;
-                margin: 0;
+            .container[wide-layout] .button {
+                margin-top: 0px;
             }
-            .container .json:active {
+
+            .button:active {
                 @apply --button-active;
             }
-            .container[wide-layout] .json {
-                margin: 0;
-                max-width: 320px;
-            }
 
+            .bluetext {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin-top: 4vh;
+            }
             .flexer {
-                @apply --titlepage-flexer;
+               @apply --titlepage-flexer;
             }
 
-            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-            only screen and (min--moz-device-pixel-ratio: 1.5),
-            only screen and (min-resolution: 240dpi) {
-                .close {
-                    @apply --retina;
-                }
-            }
         </style>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+
         <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="close" on-click="_close" id="back"></div>
-                <div class="title" id="title">{{localize('How do you want to restore your account')}}</div>
+                <div class="title" id="title">{{localize('Success!')}}</div>
+                <div class="subtitle" id="subtitle2">{{localize('Youve successfully printed your paper wallet. This contains your private key which will always give you access to your SWT balance.')}}</div>
+                <div class="subtitle" id="subtitle3">{{localize('Warning! Always keep your private key secure. If anyone were to get ahold of it they would gain access to your SWT balance.')}}</div>
             </div>
             <div class="flexer"></div>
             <div class="bottom">
-                <div class="buttons" id="buttons">
-                    <div class="privkey" on-click="_privateKey">{{localize('With a private key')}}</div>
-                    <div class="json" on-click="_jsonFile">{{localize('upload an account file')}}</div>
-                </div>
+                <div class="button" on-click="_backtoprofile" id="buttons">{{localize('back to profile')}}</div>
+                <!-- <div class="bluetext">{{localize('convert my ARC')}}</div> -->
             </div>
         </div>
     </template>
 
     <script>
-        class MyRestoreAccount extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyPrintSuccess extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-restore-account';
+                return 'page-print-success-profile';
             }
             static get properties() {
                 return {
@@ -155,9 +129,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
+                     * Path is the current or requested path
+                     * @type {String}
+                     */
                     path: {
                         type: String,
                         observer: '_path',
@@ -184,7 +158,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     pageID: {
                         type: String,
-                        value: 'restore-account',
+                        value: 'print-success-profile',
                     },
                 };
             }
@@ -193,36 +167,40 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+            /**
+             * takes the user to page-my-profile
+             */
             _close() {
-                this.path = 'stop-signup/';
+                this.path = 'my-profile/';
             }
             /**
-            * takes the user to the hashtag list page
-            */
-            _privateKey() {
-                this.path = 'private-key/';
+             * takes the user to his profile page
+             */
+            _backtoprofile() {
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'my-profile');
+                }
             }
             /**
-            * takes the user to the hashtag list page
-            */
-            _jsonFile() {
-                this.path = 'json-file/';
-            }
-            /**
-            * changes the current path
-            */
+             * changes the current path
+             */
             _path() {
                 if (this.path != null) {
                     this.set('route.path', this.path);
                 }
                 this.path = null;
             }
+
             _loadExitAnimations() {
             if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
-                        if (this.routeExit[1] == 'new-here') {
-                            // Here come the Exit Animations, going to page new-here
+                        if (this.routeExit[1] == 'make-backup-profile') {
+                            // Here come the Exit Animations, going to page make-backup-profile
                             this.$.title.animate(
                                 [
                                     {'transform': 'translateX(0px)'},
@@ -238,10 +216,25 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.back.animate(
+                            this.$.subtitle2.animate(
                                 [
-                                    {'opacity': '1'},
-                                    {'opacity': '0'},
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.subtitle3.animate(
+                                [
+                                    {'transform': 'translateX(0px)'},
+                                    {'transform': 'translateX(100vw)'},
                                 ],
                                 {
                                     fill: 'forwards',
@@ -257,55 +250,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                 [
                                     {'transform': 'translateX(0px)', 'opacity': '1'},
                                     {'transform': 'translateX(20vw)', 'opacity': '0'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeExit[1] == 'private-key' ||
-                            this.routeExit[1] == 'json-file') {
-                            // Here come the Exit Animations, going to page private-key
-                            this.$.title.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100vw)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'opacity': '1'},
-                                    {'opacity': '0'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.buttons.animate(
-                                [
-                                    {'transform': 'translateX(0px)', 'opacity': '1'},
-                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
                                 ],
                                 {
                                     fill: 'forwards',
@@ -326,8 +270,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations
-                        if (this.routeExit[0] == 'new-here') {
-                            // Coming from page new-here
+                        if (this.routeExit[0] == 'make-backup-profile') {
+                            // Coming from page make-backup-profile
                             this.$.title.animate(
                                 [
                                     {'transform': 'translateX(100vw)'},
@@ -343,10 +287,25 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.back.animate(
+                            this.$.subtitle2.animate(
                                 [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
+                                    {'transform': 'translateX(100vw)'},
+                                    {'transform': 'translateX(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.subtitle3.animate(
+                                [
+                                    {'transform': 'translateX(100vw)'},
+                                    {'transform': 'translateX(0px)'},
                                 ],
                                 {
                                     fill: 'forwards',
@@ -374,59 +333,10 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeExit[0] == 'private-key' ||
-                            this.routeExit[0] == 'json-file') {
-                            // Coming from page private-key
-                            this.$.title.animate(
-                                [
-                                    {'transform': 'translateX(-100vw)'},
-                                    {'transform': 'translateX(0px)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.back.animate(
-                                [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.buttons.animate(
-                                [
-                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
-                                    {'transform': 'translateX(0px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
                     }
                 }
             }
         }
-        window.customElements.define(MyRestoreAccount.is, MyRestoreAccount);
+        window.customElements.define(MyPrintSuccess.is, MyPrintSuccess);
     </script>
 </dom-module>
