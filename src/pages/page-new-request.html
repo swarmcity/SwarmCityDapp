@@ -1026,22 +1026,27 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             
             _checkBudget() {
+                console.log("MY BUDGET:",this.budget);                
                 this.totalcost = parseFloat(this.budget)+this.hashtagfee;
-                this.showSum = true;
-                // console.log("TOTAL COST=",this.totalcost,"MY BUDGET:",this.balance.swt.balanceSwt);                
-                if (this.balance.swt.balanceSwt >= this.totalcost){
-                    this.error = "";
-                    if (this.request && this.budget){
-                        this.showSum = true;
-                        this.$.agree.classList.add('enabled');
-                        console.log("Its a go!");
+                if (this.budget) {
+                    this.showSum = true;
+                    if (this.balance.swt.balanceSwt >= this.totalcost){
+                        this.error = "";
+                        if (this.request && this.budget){
+                            this.showSum = true;
+                            this.$.agree.classList.add('enabled');
+                            console.log("Its a go!");
+                        } else {
+                            this.showSum = false;
+                            this.$.agree.classList.remove('enabled');
+                        }
                     } else {
-                        this.showSum = false;
+                        this.error = this.localize('You have insufficient funds for an offer that size.');
                         this.$.agree.classList.remove('enabled');
                     }
                 } else {
-                    this.error = this.localize('You have insufficient funds for an offer that size.');
-                    this.$.agree.classList.remove('enabled');
+                    this.showSum = false;
+                    this.error = "";
                 }
             }
             
