@@ -177,10 +177,14 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                         reflectToAtribute: true,
                     },
+                    broadcast: {
+                        type: String,
+                    }
 
                 };
             }
             _sign() {
+                console.log('Now signing transaction');
                 this.$.transaction.makeTransferTx(
                     this.toAddress,
                     '0x' + (Number.parseFloat(this.amountToSend)*1e18).toString(16)
@@ -198,9 +202,12 @@ The following custom properties and mixins are available for styling:
                     this.rawTx = JSON.stringify(txParams, null, 2);
                     this.$.transaction.signRawTx(txParams, this.privateKey)
                     .then((serializedTx) => {
+                        console.log('Serialized transaction');
+                        console.log(serializedTx);
                         this.dispatch('BROADCAST', serializedTx.toString('hex'));
                     });
                 }).catch((err)=>{
+                    console.log('Error');
                     this.error = err;
                 });
             }
