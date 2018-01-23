@@ -178,6 +178,16 @@
             ready() {
                 super.ready();
 
+                // Listen for changes on 'balanceChanged'
+                this.socket.on('balanceChanged', (reply) => {
+                    console.log('Your balance has changed');
+                    console.log(reply);
+                    if (reply.response == 200) {
+                        this.balance = reply.data;
+                        this.dispatch('BALANCE', this.balance);
+                    }
+                });
+
                 // Listen for changes on 'fxChanged'
                 this.socket.on('fxChanged', (reply) => {
                     this.fx = reply;
@@ -228,14 +238,6 @@
                         address: this.publicKey,
                     },
                 }, (reply) => {
-                    if (reply.response == 200) {
-                        this.balance = reply.data;
-                        this.dispatch('BALANCE', this.balance);
-                    }
-                });
-                this.socket.on('balanceChanged', (reply) => {
-                    console.log('Your balance has changed');
-                    console.log(reply);
                     if (reply.response == 200) {
                         this.balance = reply.data;
                         this.dispatch('BALANCE', this.balance);
