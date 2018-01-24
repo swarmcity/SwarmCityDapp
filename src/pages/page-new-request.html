@@ -17,6 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
+<link rel="import" href="../displays/display-hashtag-about.html">
 
 <dom-module id="page-new-request">
     <template>
@@ -25,19 +26,13 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
         <style include="shared-styles">
             :host {
-                height: 100vh;
-                width: 100vw;
                 display: block;
             }
 
             .container {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-start;
+                width: 100vw;
+                min-height: 100vh;
                 background-image: var(--sc-bg);
-                height: 100%;
-                width: 100%;
-                box-sizing: border-box;
             }
 
             .container[wide-layout] {
@@ -46,42 +41,183 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-            display-my-info {
-                box-sizing: border-box;
-                padding: 8vh 14vw 5vh 14vw;
+            .header {
+                @apply --layout-vertical;
                 width: 100%;
+                box-sizing: border-box;
+                padding: 40px 0 0 0;
+                background-image: var(--sc-bg);
+                position: fixed;
+                top: 0;
+                z-index: 4;
             }
 
-            .container[wide-layout] display-my-info {
-                padding: 10vh 12vw;
-                z-index: 11;
+            .container[wide-layout] .header {
+                box-sizing: border-box;
+                padding: 50px 0 20px 0;
             }
 
             .content {
                 @apply --layout-flex;
                 box-sizing: border-box;
-                padding: 7vh 14vw 0 14vw;
-                height: 100%;
+                padding: 148px 0 0 0;
                 width: 100%;
             }
 
             .container[wide-layout] .content {
-                padding: 0 12vw;
+                padding: 187px 10vw 0 10vw;
+            }
+
+            .box {
+                @apply --layout-vertical;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding: 0px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 10px 10px 4px 10px;
+            }
+
+            .container[wide-layout] .box {
+                max-width: 68vw;
+                margin: 0px;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                box-sizing: border-box;
+                padding: 0 40px;
+                height: 50px;
+            }
+
+            .container[wide-layout] .top {
+                height: 70px;
+                box-sizing: border-box;
+                padding: 0px 10vw 0px;
+            }
+
+            .bottom {
+                @apply --layout-start;
+                @apply --layout-horizontal;
+                @apply --layout-wrap;
+                box-sizing: border-box;
+                padding: 14px 40px 8px 40px;
+                width: 100%;
+            }
+
+            .container[wide-layout] .bottom {
+                box-sizing: border-box;
+                padding: 10px 10vw 0px;
+            }
+
+            .leftbottom {
+                @apply --layout-horizontal;
+                @apply --layout-flex;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+
+            .hashtag {
+                @apply --main-title2;
+                font-size: 30px;
+
+                color: var(--sc-grey4);
+                transition: font-size 0.10s;
+            }
+
+            .info-toggle {
+                @apply --small-bold;
+                @apply --layout-center;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin: 0px 0px 8px 10px;
+                box-sizing: border-box;
+                padding: 1px 3px;
+                cursor: pointer;
+            }
+
+            .info-toggle-scroll {
+                display: none;
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                font-size: 27px;
+                margin-right: 2px;            
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding-top: 3vh;
+                width: 100%;
+                max-width: var(--max-width);
+                margin-bottom: -12px;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+                margin-right: 5vw;
+            }
+
+            .container[wide-layout] .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+                margin-right: 3vh;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .inputs {
+                box-sizing:border-box;
+                padding: 0px 35px 40px 35px;
+            }
+
+            .container[wide-layout] .inputs {
+                padding: 10px 5vw 40px 5vw;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
             }
 
             paper-textarea {
                 text-indent: 1px;
                 box-sizing: border-box;
                 padding: 0 2px;
-                width: 72vw;
-                margin-top: 5vh;
                 text-align: left;
                 @apply --sc-paper-input;
                 --paper-input-container-label: {
                     @apply --body-default;
                 }
                 --paper-input-container-input: {
-                    @apply --body-bold;
+                    @apply --body-detail;
                 }
                 --paper-input-error: {
                     @apply --body-bold;
@@ -97,7 +233,6 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] paper-textarea {
                 width: inherit;
                 max-width: 60vw;
-                margin-top: 5vh;
             }
 
             paper-input {
@@ -107,9 +242,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --sc-paper-input;
                 --paper-input-container-label: {
                     @apply --body-default;
+                    margin-top:5px;
                 }
                 --paper-input-container-input: {
+                    color:var(--sc-yellow);
                     @apply --body-bold;
+                    font-size: 22px;
+                    margin-top:5px;
                 }
                 --paper-input-error: {
                     @apply --body-bold;
@@ -120,17 +259,16 @@ This code may only be used under the license found at https://github.com/swarmci
                 --paper-input-suffix: {
                     @apply --body-default;
                 }
+                --paper-input-container-focus-color: var(--sc-yellow);
             }
 
             .budget {
                 @apply --layout-flex;
-                margin-top: 10px;
-                max-width: 250px;
+                max-width: 160px;
             }
 
             .container[wide-layout] .budget {
-                margin-top: 20px;
-                width: 250px;
+                max-width: 250px;
             }
 
             .horizontal {
@@ -142,41 +280,59 @@ This code may only be used under the license found at https://github.com/swarmci
             .currency {
                 margin: 0 0 4px 15px;
                 @apply --body-bold;
-                color: var(--sc-grey4);
+                color: var(--sc-yellow);
             }
 
-            .container[wide-layout] .cost {
-                text-align: left;
+            .infobox {
+                @apply --small-light;
+                border-top:1px dotted var(--sc-grey2);
+                box-sizing:border-box;
+                padding: 20px 30px 18px 30px;
+                text-align: right;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .container[wide-layout] .infobox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
             }
 
             .cost {
-                @apply --small-bold;
-                margin-top: 8vh;
-                text-align: center;
-                color: var(--sc-grey4);
+                @apply --body-default;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
             }
 
-            .container[wide-layout] .fee {
-                text-align: left;
+
+            .costwords {
+                margin: 3px 6px 0px 0px;
+                color: var(--sc-grey3);
+            }
+
+            .costbold {
+                @apply --main-title4;
+            }
+
+            .container[wide-layout] .costwords {
+                margin: 6px 10px 0px 0px;
             }
 
             .fee {
+                color: var(--sc-grey3);
                 @apply --small-light;
-                text-align: center;
-                color: var(--sc-grey4);
+                margin: 4px 0px 0px 0px;
             }
 
             .buttonbox {
-                margin-top: 10vh;
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
+                margin: 20px 5px -35px 0px;
             }
 
             .container[wide-layout] .buttonbox {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-                margin-top: 15vh;
+                margin: 5px 0px -40px 20px;
             }
 
             .disagree {
@@ -191,6 +347,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .round-button {
                 @apply --icon-button-big;
+                background-color:var(--sc-blue);
             }
 
             .round-button:active {
@@ -198,9 +355,17 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .agree {
-                @apply --vmark-blue-normal;
+                @apply --vmark-white-normal;
+                opacity: 0.2;
             }
 
+            .enabled {
+                opacity: 1;
+            }
+
+            .enabled:active {
+                @apply --button-active;
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -212,29 +377,84 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
-            <display-my-info 
-                avatarSmall
-                path="{{path}}" 
-                route="{{route}}">
-            </display-my-info>
+        <div class="container" id="container" wide-layout$="{{wide}}">
+            <div class="header">
+                <div class="top">
+                    <display-my-info 
+                        avatarSmall
+                        path="{{path}}" 
+                        route="{{route}}">
+                    </display-my-info>
+                </div>
+                <div class="bottom">
+                    <div class="leftbottom" id="hashtagHeader">
+                        <div 
+                            id="hashtag" 
+                            class="hashtag"
+                            on-click="_toggleInfo"><span class="hashtagsymbol">#</span>Pioneer
+                            <!-- {{hashtag.name}} -->
+                        </div>
+                        <div 
+                            id="infolink" 
+                            class="info-toggle" 
+                            on-click="_toggleInfo">i</div>
+                        </div>
+                    </div>
+            </div>
+            <dom-if if="{{showInfo}}">
+                <template>
+                    <display-hashtag-about 
+                        id="about" 
+                        class="info" 
+                        hashtag-info="[[hashtag]]" 
+                        close-info="{{closeInfo}}">
+                    </display-hashtag-about>
+                </template>
+            </dom-if>
+
             <div class="content">
-                <paper-textarea class="request" label="{{localize('What are you looking for?')}}" type="txt"></paper-textarea>
-                <div class="horizontal">
-                    <paper-input class="budget" label="{{localize('What is your budget?')}}" type="txt"></paper-input>
-                    <div class="currency">SWT</div>
-                </div>
-                <div class="infobox">
-                    <div class="cost">{{localize('Total cost:')}} 20.05 SWT</div>
-                    <div class="fee">{{localize('The hashtag fee for')}} #Pioneer {{localize('is')}} 0.05 SWT</div>
-                </div>
-                <div class="buttonbox">
-                    <div class="disagree" on-click="_close" on-keypress="_close" tabindex="2" autofocus></div>
-                    <div class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
-                        <div class="agree"></div>
+                <div class="box" id="box">
+                    <div class="closebox">
+                        <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+                    </div>
+                    <div class="inputs">
+                        <paper-textarea
+                            id="request"
+                            class="request"
+                            label="{{localize('What are you looking for?')}}"
+                            type="txt"
+                            value="{{request}}"></paper-textarea>
+                        <div class="horizontal">
+                            <paper-input
+                                id="budget"
+                                class="budget"
+                                label="{{localize('What is your offer?')}}"
+                                type="number"
+                                on-input="_checkBudget"
+                                value="{{budget}}"></paper-input>
+                            <div class="currency">SWT</div>
+                        </div>
+                        <div class="fee"> + {{hashtagfee}} SWT {{localize('hashtagfee')}}</div>
+                        <template is="dom-if" if="{{showError}}">
+                            <div class="errorcontainer">
+                                <span id="error">{{error}}</span>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="infobox">
+                        <template is="dom-if" if="{{showSum}}">
+                            <div class="cost">
+                                <div class="costwords">{{localize('Total cost:')}}</div>
+                                <div class="costbold">{{totalcost}} SWT</div>
+                            </div>
+                        </template>
+                        <div class="buttonbox">
+                            <div class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
+                                <div class="agree" id="agree"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
             </div>
 
         </div>
@@ -270,7 +490,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
-                        // observer: '_loadExitAnimations',
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -278,13 +498,77 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        // observer: '_loadEntryAnimations',
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'new-request',
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_showError',
+                    },
+                    /**
+                    * showError determines if the infobox with total is show or not
+                    * @type {Boolean}
+                    */
+                    showError: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * showSum determines if the infobox with total is show or not
+                    * @type {Boolean}
+                    */
+                    showSum: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * budget is what the user wants to offer
+                    * @type {Number}
+                    */
+                    budget: {
+                        type: Number,
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Number}
+                    */
+                    balance: {
+                        type: Number,
+                        statePath: 'balance',
+                    },
+                    /**
+                    * hashtagfee is the fee owned by the hashtagowner on making a deal.
+                    This is currently dummy and should later be replaced.
+                    * @type {Number}
+                    */
+                    hashtagfee: {
+                        type: Number,
+                        value: 0.5,
+                    },
+                    /**
+                    * totalcost is the sum of the offer and the hashtagfee
+                    * @type {Number}
+                    */
+                    totalcost: {
+                        type: Number,
                     },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
+                this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
@@ -313,6 +597,435 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+/**
+            * shows and hides the info box
+            * @return {Promise} resolves when animations have finished playing
+            */
+            _toggleInfo() {
+                return new Promise((resolve, reject) => {
+                    if (this.showSlider) {
+                        this.$.infolink.classList.add('highlight-info');
+                        this._fadeInOut();
+                        this._toggleSlider().then(() => {
+                            this.showInfo = true;
+                            this.closeInfo = false;
+                            setTimeout(() => {
+                                let animation = this.shadowRoot
+                                    .querySelector('#about').animate(
+                                    this.anim.slideDownInfo.arr,
+                                    this.anim.slideDownInfo.obj
+                                    );
+                                animation.play();
+                            }, 1);
+                        });
+                    }
+                    else if (!this.showInfo) {
+                        this.$.infolink.classList.add('highlight-info');
+                        this._fadeInOut();
+                        this.showInfo = true;
+                        this.closeInfo = false;
+                        setTimeout(() => {
+                            let animation = this.shadowRoot
+                                .querySelector('#about').animate(
+                                this.anim.slideDownInfo.arr,
+                                this.anim.slideDownInfo.obj
+                                );
+                            animation.play();
+                            animation.onfinish = () => {
+                                resolve();
+                            };
+                        }, 1);
+                    } else {
+                        this.$.infolink.classList.remove('highlight-info');
+                        this._fadeInOut();
+                        let animation = this.shadowRoot
+                            .querySelector('#about').animate(
+                            this.anim.slideUpInfo.arr,
+                            this.anim.slideUpInfo.obj
+                            );
+                        animation.play();
+                        animation.onfinish = () => {
+                            this.showInfo = false;
+                            resolve();
+                        };
+                    }
+                });
+            }
+            /**
+            * fades part of the page in and out
+            */
+            _fadeInOut() {
+                if (!this.faded) {
+                    this.$.container.classList.add('stop-scrolling');
+                    this.faded = !this.faded;
+                    // this.$.fadeArea.animate(
+                    //     this.anim.fadeOut.arr,
+                    //     this.anim.fadeOut.obj
+                    // );
+                }
+                else {
+                    this.$.container.classList.remove('stop-scrolling');
+                    this.faded = !this.faded;
+                    // this.$.fadeArea.animate(
+                    //     this.anim.fadeIn.arr,
+                    //     this.anim.fadeIn.obj
+                    // );
+                }
+            }
+
+
+/**
+            * triggered once the user starts scrolling
+            */
+            _scrollHandler() {
+                if (!this.wide && window.scrollY != 0) {
+                    if (!this.$.hashtag.classList.contains('hashtag-scroll')) {
+                        this.$.hashtag.classList.add('hashtag-scroll');
+                    }
+                    if (!this.$.hashtag.classList.contains('info-toggle-scroll')) {
+                        this.$.infolink.classList.add('info-toggle-scroll');
+                    }
+                } else {
+                    this.$.hashtag.classList.remove('hashtag-scroll');
+                    this.$.infolink.classList.remove('info-toggle-scroll');
+                }
+            }
+            /**
+            * All animations this page needs
+            */
+            _loadAnimations() {
+                this.anim = {
+                    slideDownSlider: {
+                        arr: [{transform: 'translateY(0)'},
+                        {transform: 'translateY(223px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    slideUpSlider: {
+                        arr: [{transform: 'translateY(223px)'},
+                        {transform: 'translateY(0)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    slideDownInfo: {
+                        arr: [{transform: 'translateY(0)'},
+                        {transform: 'translateY(267px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    slideUpInfo: {
+                        arr: [{transform: 'translateY(267px)'},
+                        {transform: 'translateY(0)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    fadeOut: {
+                        arr: [{opacity: 1},
+                        {opacity: 0.2}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                    fadeIn: {
+                        arr: [{opacity: 0.2},
+                        {opacity: 1}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                };
+            }
+
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Here come the Exit Animations, going to page HashtagList
+                            this.$.box.animate(
+                                [
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                    {'transform': 'translateY(50%)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'my-profile') {
+                            // Here come the Exit Animations, going to page My Profile
+                            this.$.fadeArea.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$$('#itemsInvolved').animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagHeader.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                    {'transform': 'translateX(20px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.dealButton.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.filtertoggle.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'my-wallet') {
+                            // Here come the Exit Animations, going to page My Wallet
+                            this.$.fadeArea.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$$('#itemsInvolved').animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagHeader.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateX(0)', 'opacity': '1'},
+                                    {'transform': 'translateX(20px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.dealButton.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.filtertoggle.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        if (this.routeExit[0] == 'hashtag') {
+                            // Here come the Entry Animations, coming from page hashtag
+                            this.$.box.animate(
+                                [
+                                    {'transform': 'translateY(50%)', 'opacity': '0'},
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
+            }
+
+            _checkBudget() {
+                this.totalcost = parseFloat(this.budget)+this.hashtagfee;
+                if (this.budget) {
+                    this.showSum = true;
+                    if (this.balance.swt.balanceSwt >= this.totalcost) {
+                        this.error = '';
+                        if (this.request && this.budget) {
+                            this.showSum = true;
+                            this.$.agree.classList.add('enabled');
+                        } else {
+                            this.showSum = false;
+                            this.$.agree.classList.remove('enabled');
+                        }
+                    } else {
+                        this.error = this.localize('You have insufficient funds for an offer that size.');
+                        this.$.agree.classList.remove('enabled');
+                    }
+                } else {
+                    this.showSum = false;
+                    this.error = '';
+                }
             }
         }
         window.customElements.define(MyNewRequest.is, MyNewRequest);
