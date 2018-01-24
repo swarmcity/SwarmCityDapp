@@ -158,7 +158,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="topleft">
                     <template is="dom-if" if="{{!publicKey}}">
                         <div class="createbox">
-                            <div class="createlink" on-tap="_toCreateAccount">x {{localize('create account')}}
+                            <div class="createlink" on-tap="_toCreateAccount">x{{localize('create account')}}
                             </div>
                         </div>
                     </template>
@@ -251,7 +251,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     publicKey: {
                         type: String,
                         statePath: 'publicKey',
-                        observer: '_testPublicKey',
+                    },
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
                     },
                 };
             }
@@ -260,7 +267,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 this.importHref('src/pages/page-hashtag.html');
-                this._testPublicKey();
             }
             /**
             * takes the user to the welcome page
@@ -285,18 +291,6 @@ This code may only be used under the license found at https://github.com/swarmci
             _toCreateAccount() {
                 sessionStorage.setItem('origin', this.route.path);
                     this.path = 'create-account/';
-            }
-
-            /**
-            * Checking if we have pubkey, if not set to false
-            */
-            _testPublicKey(){
-                if (this.publicKey == undefined){
-                    this.publicKey = false;
-                } else {
-                    this.publicKey = this.publicKey;
-                }
-                console.log("****** observer",this.publicKey);
             }
 
             _loadExitAnimations() {
