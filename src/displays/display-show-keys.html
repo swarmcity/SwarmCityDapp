@@ -255,6 +255,14 @@ Example:
                         value: false,
                         notify: true,
                     },
+                    /**
+                    * contains route information
+                    * @type {String}
+                    */
+                    route: {
+                        type: String,
+                        observer: '_close',
+                    },
                 };
             }
             connectedCallback() {
@@ -272,9 +280,11 @@ Example:
             * toggles the keybox visibility
             */
             _close() {
+                if (!this.toggleKeys) {
                 this.$.keyBox.classList.toggle('opened');
                 this.toggleKeys = !this.toggleKeys;
                 this.privateKey = null;
+                }
             }
             /**
             * resets the private key visibility when keybox closes
