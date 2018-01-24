@@ -159,6 +159,12 @@
                             transactions: transactions,
                         };
                     },
+                    IPHONE: function(iphone) {
+                        return {
+                            type: 'IPHONE',
+                            iphone: iphone,
+                        };
+                    },
                 });
             }
 
@@ -177,7 +183,7 @@
 
             ready() {
                 super.ready();
-
+                this._detectIphone();
                 // Listen for changes on 'fxChanged'
                 this.socket.on('fxChanged', (reply) => {
                     this.fx = reply;
@@ -220,6 +226,13 @@
                 this.socket.connect();
             }
 
+            _detectIphone() {
+                if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
+                    this.dispatch('IPHONE', true);
+                } else {
+                    this.dispatch('IPHONE', false);
+                }
+            }
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
                 this.socket.emit('subscribe', {
