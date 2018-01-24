@@ -17,7 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-qr-code.html">
 
-<dom-module id="page-my-keys">
+<dom-module id="page-my-keys-profile">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -188,17 +188,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="qrcodeprivate">
                             <img src="{{qrCodePrivateKey}}">
                         </div>
-                        <template is="dom-if" if="{{iphone}}">
-                            <paper-checkbox
-                                id="checkbox"
-                                noink
-                                on-active-changed="_enterbuttonVisible">
-                                {{localize('Ive copied my key and stored it in a safe location and want this to count as my backup.')}}
-                            </paper-checkbox>
-                            <template is="dom-if" if="{{showEnterbutton}}">
-                                <div class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
-                            </template>
-                        </template>
                     </template>
                 </dom-if>
             </div>
@@ -217,13 +206,13 @@ This code may only be used under the license found at https://github.com/swarmci
     </template>
 
     <script>
-        class MyKeys extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyKeysProfile extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-my-keys';
+                return 'page-my-keys-profile';
             }
             static get properties() {
                 return {
@@ -239,15 +228,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_path',
                     },
-                    /**
-                    * iphone will show if user is on an iphone or not
-                    * @type {String}
-                    */
-                    iphone: {
-                        type: String,
-                        statePath: 'iphone',
-                    },
-
                     /**
                     * routeExit triggers the exit animations
                     * @type {Array}
@@ -295,14 +275,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
-                    /**
-                    * showEnterbutton determines if the Enter Button is shown or not
-                    * @type {Boolean}
-                    */
-                    showEnterbutton: {
-                        type: Boolean,
-                        value: false,
-                    },
+
                     /**
                     * toggles the unlock display
                     * @type {Boolean}
@@ -500,13 +473,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-            _enterbuttonVisible() {
-                if (this.$$('#checkbox') && this.$$('#checkbox').checked) {
-                    this.showEnterbutton = true;
-                } else {
-                    this.showEnterbutton = false;
-                }
-            }
 
             /**
              * takes the user to the initiating hashtag page
@@ -521,6 +487,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
         }
-        window.customElements.define(MyKeys.is, MyKeys);
+        window.customElements.define(MyKeysProfile.is, MyKeysProfile);
     </script>
 </dom-module>
