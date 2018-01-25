@@ -125,13 +125,11 @@
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-
-                <!-- <canvas id="canvas" class="canvas" on-mousemove="_panMove" on-mousedown="_panStart" on-mouseup="_panEnd" on-touchmove="_panMove"
-                    on-touchstart="_panStart" on-touchend="_panEnd"></canvas> -->
+                
                 <div class="rotate-icon" on-click="_rotate"></div>
                 <input type="file" name="file" id="file" class="file" on-change="_fileSelected" accept=".jpg, .jpeg, .png, .gif" />
                 <canvas id="canvas" class="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}">Your browser does not support HTML5 Canvas.</canvas>
-                <paper-slider id="slider" step="0.01" value="0.5" min="0.0" max="1.0" on-immediate-value-change="_getScale"></paper-slider>{{scale}}
+                <paper-slider id="slider" step="0.01" value="0.5" min="0.0" max="1.0" on-immediate-value-change="_getScale"></paper-slider>
                 <div class="blacktext">{{localize('scroll to zoom')}} - {{localize('drag to move')}}</div>
 
                 <label for="file">
@@ -279,7 +277,7 @@
                     this.context = this.$.canvas.getContext("2d");
                     this.context.fillStyle = "#000";
                     this.context.fillRect(0, 0, 250, 250);
-                    this.context.save();
+                    //this.context.save();
                 }
             }
 
@@ -303,18 +301,14 @@
 
             _drawFile() {
                 if(this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context){
-                    console.log('image: ' + this.image);
-                    console.log('imageWidth: ' + this.image.width);
-                    console.log('imageHeight: ' + this.image.height);
-                    console.log('canvasWidth: ' + this.canvasWidth);
-                    console.log('canvasHeight' + this.canvasHeight);
-                    console.log('scale: ' + this.scale);
-                    console.log('angle: ' + this.angle);
+                    this.context.fillStyle = "#000";
+                    this.context.fillRect(0, 0, 250, 250);
+                    this.context.save();
                     this.context.translate(this.canvasWidth*0.5, this.canvasHeight*0.5);
                     this.context.scale(this.scale, this.scale);
                     this.context.rotate(this.angle * Math.PI / 180);
                     this.context.drawImage(this.image, -this.image.width*0.5, -this.image.height*0.5);
-                    
+                    this.context.restore();
                 }
             }
 
