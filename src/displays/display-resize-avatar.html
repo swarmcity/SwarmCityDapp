@@ -302,7 +302,6 @@
             }
 
             _drawFile() {
-
                 if(this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context){
                     console.log('image: ' + this.image);
                     console.log('imageWidth: ' + this.image.width);
@@ -323,147 +322,13 @@
                 this.scale = this.$.slider.immediateValue;
             }
 
-
-            /**
-            * Fired when the user selects a file
-            * @param {event} event The event from the on-change
-            */
-            _drawCanvas() {
-                let {canvas, ctx, tX, tY, left, top, viewBox,
-                    rotations, rotation, paintWidth, paintHeight} = this.mathCanvas;
-                let img = this.img || this.defaultImg;
-                let width = canvas.width;
-                let height = canvas.height;
-
-                ctx.fillStyle = '#333333';
-                ctx.clearRect(0, 0, width, height);
-                ctx.save();
-
-                // Tom C - Dec 28 2017 - Draw image with pan, zoom, and rotation
-                ctx.translate(tX + left, tY + top);
-                ctx.rotate(rotations[rotation]);
-
-                ctx.globalAlpha = 1;
-                ctx.drawImage(
-                    img,
-                    viewBox.x,
-                    viewBox.y,
-                    viewBox.width,
-                    viewBox.height,
-                    0,
-                    0,
-                    paintWidth,
-                    paintHeight
-                );
-
-                ctx.restore();
-                ctx.save();
-
-                // Fill with destination composite outside circle
-                ctx.globalAlpha = 0.82;
-
-                // Translucent overlay
-                ctx.fillRect(0, 0, width, height);
-
-                ctx.restore();
-                ctx.save();
-
-                // Redraw image opaque inside of circle
-                ctx.beginPath();
-                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
-                ctx.clip();
-
-                ctx.globalAlpha = 1;
-                ctx.translate(tX + left, tY + top);
-                ctx.rotate(rotations[rotation]);
-
-                ctx.drawImage(
-                    img,
-                    viewBox.x,
-                    viewBox.y,
-                    viewBox.width,
-                    viewBox.height,
-                    0,
-                    0,
-                    paintWidth,
-                    paintHeight
-                );
-
-                ctx.restore();
-                ctx.save();
-
-                // Blue circle
-                ctx.beginPath();
-                ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
-                ctx.closePath();
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = '#24B1FF';
-                // Blue box around perimeter
-                ctx.rect(0, 0, width, height);
-                ctx.stroke();
-
-                ctx.restore();
-            }
-            /**
-            * Fired when the user is clicking
-            * @param {event} e The event from the on-change
-            */
-            _panStart(e) {
-                this.isDown = true;
-                this.startX = e.clientX;
-                this.startY = e.clientY;
-            }
-            /**
-            * Fired when the user is not clicking
-            * @param {event} event The event from the on-change
-            */
-            _panEnd() {
-                this.isDown = false;
-                this._drawCanvas();
-            }
-            /**
-            * Fired when the user pans
-            * @param {event} e The event from the on-change
-            */
-            _panMove(e) {
-                if (this.isDown) {
-                    let diffX = e.clientX - this.startX;
-                    let diffY = e.clientY - this.startY;
-                    this.mathCanvas.left += diffX;
-                    this.mathCanvas.top += diffY;
-                    this.startX = e.clientX;
-                    this.startY = e.clientY;
-                    this._drawCanvas();
+            _rotate(){
+                if (this.angle == 180) {
+                    this.angle = 0;
                 }
+                this.angle = this.angle + 45;
             }
-            /**
-            * Fired when the user selects a file
-            * @param {event} event The event from the on-change
-            */
-            _getFile_BACKUP(event) {
-                let image = event.target.files[0];
-                event.stopPropagation();
-                event.preventDefault();
-                if (image.type !== 'image/jpeg'
-                    && image.type !== 'image/gif'
-                    && image.type !== 'image/png') {
-                        alert('Please select an image file of type jpeg, gif, or png ('
-                                + image.type + ')');
-                        return;
-                }
-                let img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = function() {
-                    this.img = img;
-                    this.mathCanvas.size.width = this.mathCanvas.viewBox.width = img.width;
-                    this.mathCanvas.size.height = this.mathCanvas.viewBox.height = img.height;
-                    this.mathCanvas.reorient();
-                    if (img.width == 95 && img.height == 95) {
-                        this.mathCanvas.changeZoom(-60);
-                    }
-                }.bind(this);
-                img.src = URL.createObjectURL(image);
-            }
+
             /**
             * Fired when user selects the X back button, routs to previous page
             */
@@ -494,73 +359,7 @@
                 };
                 image.src = jpegUrl;
             }
-            /**
-            * Fired when the page routes away, all image values are reset
-            * @param {event} event The event from the on-change
-            */
-            _reset() {
-                if (this.routeEntry.includes('resize-avatar')) {
-                    const canvas = this.$.canvas;
-                    const img = new Image();
-                    const draw = this._drawCanvas.bind(this);
-                    img.crossOrigin = 'anonymous';
-                    canvas.width = 250;
-                    canvas.height = 250;
-                    this.img = this.defaultImg = img;
-                    img.onload = function() {
-                        let nonaf = this.mathCanvas = mathCanvas({
-                            canvas,
-                            draw,
-                            noBounds: true,
-                            size: {width: img.width, height: img.height},
-                            viewBox: {x: 0, y: 0, width: img.width, height: img.height},
-                        });
 
-                        if (img.width == 95 && img.height == 95) {
-                            nonaf.changeZoom(-60);
-                        }
-                        draw();
-                        addWheelListener(canvas, function (e) { // eslint-disable-line
-                            e.preventDefault();
-
-                            // tc 12-15-2017
-                            nonaf.setCenter(-window.pageXOffset + canvas.offsetLeft + canvas.width/2,
-                                            -window.pageYOffset + canvas.offsetTop + canvas.height/2);
-                            if (nonaf.zoomFactor > .25 && e.deltaY > 0) {
-                                nonaf.changeZoom(-5);
-                            }
-
-                            if (nonaf.zoomFactor < 1.75 && e.deltaY < 0) {
-                                nonaf.changeZoom(5);
-                            }
-
-                            // nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
-                        });
-                    }.bind(this);
-                    img.src = this.avatar;
-                }
-            }
-            /**
-            * Fired when the user selects a rotate
-            * @param {event} event The event from the on-change
-            */
-            _rotate() {
-                this.mathCanvas.rotate(1);
-            }
-            /**
-            * Fired when the user selects a zoom in
-            * @param {event} event The event from the on-change
-            */
-            _zoomin() {
-                this.mathCanvas.changeZoom(4);
-            }
-            /**
-            * Fired when the user selects a zoom out
-            * @param {event} event The event from the on-change
-            */
-            _zoomout() {
-                this.mathCanvas.changeZoom(-4);
-            }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
     </script>
 </dom-module>
