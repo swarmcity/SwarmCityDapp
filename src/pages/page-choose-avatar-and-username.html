@@ -252,11 +252,22 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
-            * Redux action for setting username
-            * @param {String} username
+            * Redux actions
             */
             static get actions() {
                 return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
                     USERNAME: function(username) {
                         return {
                             type: 'USERNAME',
@@ -279,11 +290,39 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.ready();
             }
             /**
-            * takes the user to page-stop-signup
+            * takes the user out of creating account flow
             */
             _close() {
-                this.path = 'stop-signup/';
+                this._deleteProfile();
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.path = 'hashtag-list';
+                }
             }
+
+            /**
+            * deletes the profile
+            */
+            _deleteProfile() {
+                this.dispatch('PUBLICKEY', null);
+                this.dispatch('AVATAR', '[[importHref]]../../images/defaultavatar.png');
+                this.dispatch('USERNAME', null);
+                localStorage.clear();
+                let storage = {
+                    user: {
+                        language: 'en',
+                        username: '',
+                        location: '',
+                        avatar: '',
+                    },
+                    keyStore: {},
+                };
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+            }
+
             /**
             * takes the user to the next page in user creation
             */
