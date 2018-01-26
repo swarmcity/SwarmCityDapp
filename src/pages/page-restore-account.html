@@ -193,8 +193,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+            /**
+            * takes the user out of creating account flow
+            */
             _close() {
-                this.path = 'stop-signup/';
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.path = 'hashtag-list';
+                }
             }
             /**
             * takes the user to the hashtag list page
