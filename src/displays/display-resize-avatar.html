@@ -125,16 +125,26 @@
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-
+                
                 <div class="rotate-icon" on-click="_rotate"></div>
                 <input type="file" name="file" id="file" class="file" on-change="_fileSelected" accept=".jpg, .jpeg, .png, .gif" />
-                <canvas id="canvas" class="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}"
-                        on-mousedown="_panStart" on-mouseup="_panEnd" on-mousemove="_panMove"
-                        on-touchstart="_panStart" on-touchend="_panEnd" on-touchmove="_panMove"
-                        ontouchstart="_panStart" ontouchend="_panEnd" ontouchmove="_panMove"
-                        onmousewheel="{{_zoom}}"
-                        >Your browser does not support HTML5 Canvas.</canvas>
-                <paper-slider id="slider" step="0.01"  min="0.0" max="1.0" on-change="{{_getScale}}" value="{{scale}}" editable="true" on-immediate-value-change="_getScale"></paper-slider>
+                <canvas 
+                    id="canvas" 
+                    class="canvas" 
+                    width="{{canvasWidth}}" 
+                    height="{{canvasHeight}}" 
+                    on-mousedown="_panStart" 
+                    on-mouseup="_panEnd" 
+                    on-mousemove="_panMove"
+                    on-touchstart="_panStart" 
+                    on-touchend="_panEnd" 
+                    on-touchmove="_panMove"
+                    ontouchstart="_panStart" 
+                    ontouchend="_panEnd" 
+                    ontouchmove="_panMove">
+                    Your browser does not support HTML5 Canvas.
+                </canvas>
+                <paper-slider id="slider" step="0.01" value="0.5" min="0.0" max="1.0" on-immediate-value-change="_getScale"></paper-slider>
                 <div class="blacktext">{{localize('scroll to zoom')}} - {{localize('drag to move')}}</div>
 
                 <label for="file">
@@ -200,32 +210,32 @@
                     },
                     /**
                     * The image
-                    * @type {Image}
+                    * @type {String}
                     */
                     image: {
-                        type: Image,
-                        observer: '_drawFile',
+                        type: String,
+                        observer: '_drawFile'
                     },
-                                        /**
-                    * scale
+                    /**
+                    * The scale of the image
                     * @type {Number}
                     */
                     scale: {
                         type: Number,
                         value: 0.5,
-                        observer: '_drawFile',
+                        observer: '_drawFile'
                     },
                     /**
-                    * angle
+                    * The angle the image is rotated
                     * @type {Number}
                     */
                     angle: {
                         type: Number,
                         value: 0,
-                        observer: '_drawFile',
+                        observer: '_drawFile'
                     },
                     /**
-                    * canvasWidth
+                    * The canvas width
                     * @type {Number}
                     */
                     canvasWidth: {
@@ -233,7 +243,7 @@
                         value: 250,
                     },
                     /**
-                    * canvaseHeight
+                    * The canvas height
                     * @type {Number}
                     */
                     canvasHeight: {
@@ -241,23 +251,15 @@
                         value: 250,
                     },
                     /**
-                    * panX x offset for image within canvas
-                    * @type {Number}
+                    * true if the mouse is down
+                    * @type {Boolean}
                     */
-                    panX: {
-                        type: Number,
-                        value: 0,
+                    mouseDown: {
+                        type: Boolean,
+                        value: false,
                     },
                     /**
-                    * panY y offset for image within canvas
-                    * @type {Number}
-                    */
-                    panY: {
-                        type: Number,
-                        value: 0,
-                    },
-                    /**
-                    * mouse down x offset for image within canvas
+                    * The starting X position on mouse down
                     * @type {Number}
                     */
                     startX: {
@@ -265,7 +267,7 @@
                         value: 0,
                     },
                     /**
-                    * mousedown y offset for image within canvas
+                    * The starting Y position on mouse down
                     * @type {Number}
                     */
                     startY: {
@@ -273,12 +275,22 @@
                         value: 0,
                     },
                     /**
-                    * mouse is/isn't down
-                    * @type {Boolean}
+                    * The ending X position on mouse up
+                    * @type {Number}
                     */
-                    isDown: {
-                        type: Boolean,
+                    endX: {
+                        type: Number,
                         value: 0,
+                        observer: '_drawFile'
+                    },
+                    /**
+                    * The ending Y position on mouse up
+                    * @type {Number}
+                    */
+                    endY: {
+                        type: Number,
+                        value: 0,
+                        observer: '_drawFile'
                     },
                 };
             }
@@ -308,25 +320,17 @@
             */
             ready() {
                 super.ready();
-                // if (!this.$.canvas || !this.$.canvas.getContext) {
-                //     this.context = this.$.canvas.getContext('2d');
-                // }
-
-                this.context = this.$.canvas.getContext('2d');
-
-                super.ready();
-                const canvas = this.$.canvas;
-                const img = new Image();
-                const draw = this._drawFile.bind(this);
-                img.crossOrigin = 'anonymous';
-                canvas.width = 250;
-                canvas.height = 250;
-                img.src = this.avatar;
-                img.onload = () => {
-                    draw();
-                };
-
-                this.image.src = this.avatar;
+                if (!this.$.canvas || !this.$.canvas.getContext) {
+                    this.context = false;
+                } else {
+                    this.context = this.$.canvas.getContext("2d");
+                    this.context.fillStyle = "#000";
+                    this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+                    this.context.arc(this.canvasWidth*0.5, this.canvasHeight*0.5, 50, 0, 2 * Math.PI, false);
+                    this.context.lineWidth = 4;
+                    this.context.strokeStyle = '#24B1FF';
+                    this.context.stroke();
+                }
             }
 
             /**
@@ -335,125 +339,103 @@
             */
             _fileSelected(event) {
                 if (this.context && event.target.files && event.target.files[0]) {
-                    let fileReader = new FileReader();
+                    var fileReader = new FileReader();
                     fileReader.onload = (e) => {
-                        let img = new Image();
-                        img.addEventListener('load', () => {
+                        var img = new Image();
+                        img.addEventListener("load", () => {
                             this.image = img;
                         });
                         img.src = e.target.result;
-                    };
+                    };       
                     fileReader.readAsDataURL(event.target.files[0]);
                 }
             }
-
+            /**
+            * Draws the image to the canvas
+            */
             _drawFile() {
-                if (!this.context) {
-                    this.context = this.$.canvas.getContext('2d');
-                }
-
-                if (this.canvasWidth && this.canvasHeight && this.scale) {
-                    let ctx = this.context;
-                    let width = this.canvasWidth;
-                    let height = this.canvasHeight;
-                    let px = this.panX * (2 + (1-this.scale));
-                    let py = this.panY * (2 + (1-this.scale));
-                    let rad = this.angle * Math.PI / 180;
-                    let nx = px;
-                    let ny = py;
-
-                    // Rotate point
-                    nx = px * Math.cos(-rad) - py * Math.sin(-rad);
-                    ny = px * Math.sin(-rad) + py * Math.cos(-rad);
-
-                    this.context.fillStyle = '#000';
-                    ctx.globalAlpha = 1;
+                if(this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context){
+                    this.context.fillStyle = "#000";
                     this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
                     this.context.save();
                     this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
                     this.context.scale(this.scale, this.scale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.image && this.context.drawImage(this.image, -this.image.width * 0.5 + nx,
-                                -this.image.height * 0.5 + ny);
-
-                    // Fill with destination composite outside circle
-                    // Translucent overlay
-
-                    // remove translate, rotate, scale
-                    ctx.restore();
-                    ctx.globalAlpha = 0.5;
-                    ctx.fillRect(0, 0, width, height);
-                    ctx.save();
-
-                    // Redraw image opaque inside of circle
-                    ctx.beginPath();
-                    ctx.arc(width / 2, height / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
-                    ctx.clip();
-
-                    // Re-establish image context for the inner circle opaque image
-                    ctx.globalAlpha = 1;
-                    this.context.translate(this.canvasWidth*0.5, this.canvasHeight*0.5);
+                    this.context.drawImage(this.image, - this.image.width * 0.5 + this.endX, - this.image.height * 0.5 + this.endY);
+                    this.context.restore();
+                    this.context.globalAlpha = 0.5;
+                    this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+                    this.context.save();
+                    this.context.beginPath();
+                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
+                    this.context.clip();
+                    this.context.globalAlpha = 1;
+                    this.context.translate(this.canvasWidth *  0.5, this.canvasHeight * 0.5);
                     this.context.scale(this.scale, this.scale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.image && this.context.drawImage(this.image, -this.image.width * 0.5 + nx,
-                                -this.image.height * 0.5 + ny);
-
-                    ctx.restore();
+                    this.context.drawImage(this.image, - this.image.width * 0.5 + this.endX, -this.image.height * 0.5 + this.endY);
+                    this.context.restore();
+                    this.context.save();
+                    this.context.globalAlpha = 1;
+                    this.context.arc(this.canvasWidth * 0.5, this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
+                    this.context.lineWidth = 4;
+                    this.context.strokeStyle = '#24B1FF';
+                    this.context.stroke();
+                    this.context.restore();
                 }
             }
-            _getScale() {
+            /**
+            * Fired when the paper slider is being moved
+            */
+            _getScale(){
                 this.scale = this.$.slider.immediateValue;
-                // console.log("getScale called .. scale: " + this.scale + " val: "
-                                // + this.$.slider.immediateValue);
-                // this._drawFile();
             }
-            _rotate() {
-                this.angle = this.angle + 45;
+            /**
+            * Fired when the rotate button is clicked
+            */
+            _rotate(){
+                this.angle = this.angle + 90;
                 if (this.angle > 315) {
                     this.angle = 0;
                 }
             }
             /**
-            * Fired when the user is clicking
-            * @param {e} e The event from the on-change
+            * Fired on mouse down
+            * @param {event} event The event from the on-change
             */
-            _panStart(e) {
-                this.isDown = true;
-                this.startX = e.clientX - this.panX;
-                this.startY = e.clientY - this.panY;
+            _panStart(event) {
+                this.mouseDown = true;
+                if (this.angle == 0) {
+                    this.startX = event.clientX - this.endX;
+                    this.startY = event.clientY - this.endY;
+                }
+                if (this.angle == 90) {
+                    this.startX = event.clientX - this.endX;
+                    this.startY = event.clientY - this.endY;
+                }
             }
             /**
-            * Fired when the user is not clicking
-            * @param {e} e event The event from the on-change
+            * Fired on mouse up
             */
-            _panEnd(e) {
-                this.isDown = false;
-                // this.panX = this.startX - e.clientX;
-                // this.panY = this.startY - e.clientY;
-                // this.panX = e.clientX - this.startX;
-                // this.panY = e.clientY - this.startY;
+            _panEnd() {
+                this.mouseDown = false;
                 this._drawFile();
             }
             /**
             * Fired when the user pans
-            * @param {e} e The event from the on-change
+            * @param {event} event The event from the on-change
             */
-            _panMove(e) {
-                if (this.isDown) {
-                    // let diffX = e.clientX - this.panX;
-                    // let diffY = e.clientY - this.panY;
-                    // this.mathCanvas.left += diffX;
-                    // this.mathCanvas.top += diffY;
-                    this.panX = e.clientX - this.startX;
-                    this.panY = e.clientY - this.startY;
-                    this._drawFile();
+            _panMove(event) {
+                if (this.mouseDown) {
+                    if (this.angle == 0) {
+                        this.endX = event.clientX - this.startX;
+                        this.endY = event.clientY - this.startY;
+                    }
+                    if (this.angle == 90) {
+                        this.endY = event.clientX - this.startX;
+                        this.endX = event.clientY - this.startY;
+                    }
                 }
-            }
-            _zoom(e) {
-                e.preventDefault();
-                this.scale = e.deltaY > 0 ? this.scale + .1 : this.scale - .1;
-                // this._drawFile();
-                // this._getScale();
             }
 
             /**
@@ -486,45 +468,7 @@
                 };
                 image.src = jpegUrl;
             }
-            /**
-            * Fired when the page routes away, all image values are reset
-            * @param {event} event The event from the on-change
-            */
-            _reset() {
-                if (this.routeEntry.includes('resize-avatar')) {
-                    const canvas = this.$.canvas.getContext('2d');
-                    const img = new Image();
-                    const draw = this._drawFile.bind(this);
-                    img.crossOrigin = 'anonymous';
-                    canvas.width = this.canvasWidth;
-                    canvas.height = this.canvasHeight;
-                    this.image = this.defaultImg = img;
-                    img.onload = function() {
-                        // if (img.width == 95 && img.height == 95) {
-                        // nonaf.changeZoom(-60);
-                        // }
-                        // addWheelListener(canvas, function (e) { // eslint-disable-line
-                        // e.preventDefault();
 
-                        // tc 12-15-2017
-                        // nonaf.setCenter(-window.pageXOffset + canvas.offsetLeft + canvas.width / 2,
-                        //                 -window.pageYOffset + canvas.offsetTop + canvas.height / 2);
-                        // if (nonaf.zoomFactor > .25 && e.deltaY > 0) {
-                        //     nonaf.changeZoom(-5);
-                        // }
-
-                        // if (nonaf.zoomFactor < 1.75 && e.deltaY < 0) {
-                        //     nonaf.changeZoom(5);
-                        // }
-
-                        // nonaf.changeZoom(e.deltaY > 0 ? -5 : 5);
-                        // });
-                        draw();
-                    };
-                    this.image.src = this.avatar;
-                    draw();
-                }
-            }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
     </script>
 </dom-module>
