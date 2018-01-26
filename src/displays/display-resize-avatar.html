@@ -367,13 +367,13 @@
                     this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
                     this.context.save();
                     this.context.beginPath();
-                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2 - 0, 0, 2 * Math.PI, false);
+                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
                     this.context.clip();
                     this.context.globalAlpha = 1;
                     this.context.translate(this.canvasWidth *  0.5, this.canvasHeight * 0.5);
                     this.context.scale(this.scale, this.scale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - this.image.width * 0.5 + this.endX, -this.image.height * 0.5 + this.endY);
+                    this.context.drawImage(this.image, - this.image.width * 0.5 + this.endX, - this.image.height * 0.5 + this.endY);
                     this.context.restore();
                     this.context.save();
                     this.context.globalAlpha = 1;
@@ -405,14 +405,8 @@
             */
             _panStart(event) {
                 this.mouseDown = true;
-                if (this.angle == 0) {
-                    this.startX = event.clientX - this.endX;
-                    this.startY = event.clientY - this.endY;
-                }
-                if (this.angle == 90) {
-                    this.startX = event.clientX - this.endX;
-                    this.startY = event.clientY - this.endY;
-                }
+                this.startX = event.clientX - this.endX;
+                this.startY = event.clientY - this.endY;
             }
             /**
             * Fired on mouse up
@@ -427,14 +421,8 @@
             */
             _panMove(event) {
                 if (this.mouseDown) {
-                    if (this.angle == 0) {
-                        this.endX = event.clientX - this.startX;
-                        this.endY = event.clientY - this.startY;
-                    }
-                    if (this.angle == 90) {
-                        this.endY = event.clientX - this.startX;
-                        this.endX = event.clientY - this.startY;
-                    }
+                    this.endX = event.clientX - this.startX;
+                    this.endY = event.clientY - this.startY;
                 }
             }
 
