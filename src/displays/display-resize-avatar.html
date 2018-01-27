@@ -338,7 +338,7 @@
             * @param {event} event The event from the on-change
             */
             _fileSelected(event) {
-                if (this.context && event.target.files && event.target.files[0]) {
+                if (this.context) {
                     var fileReader = new FileReader();
                     fileReader.onload = (e) => {
                         var img = new Image();
@@ -346,8 +346,12 @@
                             this.image = img;
                         });
                         img.src = e.target.result;
-                    };       
-                    fileReader.readAsDataURL(event.target.files[0]);
+                    };   
+                    if(event.target.files && event.target.files[0]){
+                        fileReader.readAsDataURL(event.target.files[0]);
+                    } else {
+                        // TODO: load the default avatar from ../images/defaultavatar.png convert it toa blob or file and load it into the file reader above
+                    }  
                 }
             }
             /**
@@ -443,24 +447,16 @@
             * @param {event} event The event from the on-change
             */
             _save() {
-                const canvas = this.$.canvas;
-                const jpegUrl = canvas.toDataURL('image/jpeg');
-                // make a new canvas
                 let newCanvas = document.createElement('canvas');
                 newCanvas.width = 95;
                 newCanvas.height = 95;
                 let ctx = newCanvas.getContext('2d');
-                let image = new Image();
-                image.onload = () => {
-                    ctx.drawImage(image, -77, -77);
-                    const avatarUrl = newCanvas.toDataURL('image/jpeg');
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    this.dispatch('AVATAR', avatarUrl);
-                    storage.user.avatar = avatarUrl;
-                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    window.history.back();
-                };
-                image.src = jpegUrl;
+                // TODO: position this.image on the new canvas with the same this.scale and this.angle as in _drawFile
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                storage.user.avatar = newCanvas.toDataURL('image/jpeg');;
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                this.dispatch('AVATAR', avatarUrl);
+                window.history.back();
             }
 
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
