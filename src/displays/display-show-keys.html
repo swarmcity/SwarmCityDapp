@@ -227,6 +227,7 @@ Example:
                     privateKey: {
                         type: String,
                         notify: true,
+                        observer: '_scrollTo',
                     },
                     /*
                     * toggles the view to show keys
@@ -298,6 +299,18 @@ Example:
             */
             _togglePrivateKey() {
                 this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Scrolls to show keys in viewport
+            */
+            _scrollTo() {
+                setTimeout(() => {
+                    this.$.keyBox.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'end',
+                        inline: 'nearest',
+                    });
+                }, 1);
             }
         }
         window.customElements.define(DisplayShowKeys.is, DisplayShowKeys);
