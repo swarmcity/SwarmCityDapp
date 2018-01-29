@@ -40,7 +40,7 @@ Example:
 
             .opened {
                 border: 2px solid rgba(0, 0, 0, 0.1);
-                padding: 20px 20px 20px 20px;
+                padding: 20px 30px 20px 30px;
                 margin-top: 10px;
 
             }
@@ -90,12 +90,9 @@ Example:
 
             .bluelink {
                 @apply --blue-link;
-                margin-top: 15px;
+                margin: 20px 15px 0px 0px;
             }
 
-            .keybox[wide-layout] .bluelink {
-                margin-top: 10px;
-            }
 
             .close {
                 @apply --xmark-grey2-small;
@@ -128,11 +125,48 @@ Example:
             }
 
             .extramargin {
-                margin-top: 15px;
+                margin-top: 35px;
             }
 
             .keybox[wide-layout] .extramargin {
                 margin-top: 10px;
+            }
+
+            .privbtn {
+                margin: 30px 0px 10px 0px;
+                @apply --text-button-small;
+                background-color: var(--sc-white);
+                padding: 9px 14px;
+            }
+
+
+            .keybox[wide-layout] .privbtn {
+                margin: 20px 0px 0px 0px;
+
+            }
+
+            .copied {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);
+            }
+
+            .copiedpriv {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);                
+            }
+
+            .showcopied {
+                visibility: visible;
+                /* height: auto;
+                margin-bottom: 0px; */
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -158,17 +192,19 @@ Example:
                     <div class="txtbox">
                         <div class="subtitle">{{localize('Your public key')}}</div>
                         <div class="key">{{publicKey}}</div>
+                        <div class="copied" id="copied">copied!</div>
+                        <div class="bluelink" on-click="_copyPublicKey">{{localize('copy public key')}}</div>
 
-                        <dom-if if="{{!togglePrivateKey}}">
-                            <template>
-                                <div class="bluelink" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
-                            </template>
-                        </dom-if>
+                        <template is="dom-if" if="{{!togglePrivateKey}}">
+                            <div class="privbtn" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
+                        </template>
 
                         <dom-if if="{{togglePrivateKey}}">
                             <template>
                                 <div class="subtitle extramargin">{{localize('Your private key')}}</div>
                                 <div class="key">{{privateKey}}</div>
+                                <div class="copiedpriv" id="copiedpriv">copied!</div>
+                                <div class="bluelink" on-click="_copyPrivateKey">{{localize('copy private key')}}</div>
                             </template>
                         </dom-if>
 
@@ -268,7 +304,77 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                this._loadAnimations();
             }
+/**
+            * All animations this page needs
+            */
+
+            _loadAnimations() {
+                this.anim = {
+                    moveUp: {
+                        arr: [{transform: 'translateY(20px)'},
+                        {transform: 'translateY(0px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                };
+            }
+
+
+            /**
+             * copies the public key to the desktop
+             */
+             _copyPublicKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.publicKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+
+                let copied = this.shadowRoot.querySelector('#copied');
+                copied.classList.add('showcopied');
+                copied.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                    );
+                    setTimeout(() => {
+                    copied.classList.remove('showcopied')
+                    }, 500);
+
+                    // this.anim.moveUp.onfinish = (
+                    //     copied.classList.remove('showcopied')
+                    // )
+            }
+
+            /**
+             * copies the private key to the desktop
+             * TODO: make this and the above function into one function
+             */
+             _copyPrivateKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.privateKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                let copiedpriv = this.shadowRoot.querySelector('#copiedpriv');
+                copiedpriv.classList.add('showcopied');
+                copiedpriv.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                    );
+                    setTimeout(() => {
+                    copiedpriv.classList.remove('showcopied')
+                    }, 500);
+            }
+
             /**
             * Toggles the visibility of the full Public Key
             */
