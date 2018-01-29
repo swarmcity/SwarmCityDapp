@@ -103,6 +103,15 @@
                         type: Array,
                         statePath: 'transactions',
                     },
+                    /**
+                    * Get base 64 image from IPFS hash
+                    * @type {Array}
+                    */
+                    reqipfs: {
+                        type: String,
+                        statePath: 'reqipfs',
+                        observer: '_reqipfs',
+                    },
                 };
             }
             /**
@@ -165,6 +174,12 @@
                             iphone: iphone,
                         };
                     },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
                 });
             }
 
@@ -224,6 +239,22 @@
 
                 // All handlers attached - please connect..
                 this.socket.connect();
+            }
+
+            _reqipfs() {
+                console.log('Requesting base 64 of IPFS hash now...');
+                console.log(this.reqipfs);
+                this.socket.emit('ipfscat', {
+                    hash: this.reqipfs, 
+                    format: 'base64'
+                }, (reply) => {
+                    console.log('Response from server: ');
+                    console.log(reply);
+                    // TODO: This needs saving to local storage
+                    if (reply.response == 200) {
+                        this.dispatch('AVATAR', reply);
+                    }
+                });
             }
 
             _detectIphone() {
