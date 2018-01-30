@@ -242,17 +242,15 @@
             }
 
             _reqipfs() {
-                console.log('Requesting base 64 of IPFS hash now...');
-                console.log(this.reqipfs);
                 this.socket.emit('ipfscat', {
                     hash: this.reqipfs, 
                     format: 'base64'
-                }, (reply) => {
-                    console.log('Response from server: ');
-                    console.log(reply);
-                    // TODO: This needs saving to local storage
+                }, (reply) => {                    
                     if (reply.response == 200) {
-                        this.dispatch('AVATAR', reply);
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.user.avatar = 'data:image/jpg;base64,'+reply.data;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.dispatch('AVATAR', 'data:image/jpg;base64,'+reply.data);
                     }
                 });
             }
