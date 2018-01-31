@@ -139,7 +139,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .flexer {
-               @apply --titlepage-flexer;
+                @apply --titlepage-flexer;
             }
             
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -168,7 +168,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="inputcontainer" id="contentinput">
-                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}"></paper-input>
+                        <paper-input 
+                            label="{{localize('Username')}}" 
+                            autofocus 
+                            value="{{username}}"
+                            on-keydown="_checkForEnter">
+                        </paper-input>
                     </div>
                 </div>
 
@@ -330,6 +335,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                 this.path = 'resize-avatar/';
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._agree();
+                }
             }
             /**
             * The user selected the next button or pressed enter

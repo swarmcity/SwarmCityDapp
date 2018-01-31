@@ -167,12 +167,29 @@ The following custom properties and mixins are available for styling:
             <img src="{{avatar}}">
                 <dom-if if="{{blue}}">
                     <template>
-                        <paper-input autofocus class="input-blue" label="{{localize('password?')}}" autofocus type="password" value="{{password}}" on-click="_changeInput"></paper-input>
+                        <paper-input 
+                            autofocus 
+                            class="input-blue" 
+                            label="{{localize('password?')}}" 
+                            type="password" 
+                            value="{{password}}" 
+                            on-click="_changeInput"
+                            on-keydown="_checkForEnter">
+                        </paper-input>
                     </template>
                 </dom-if>
                 <dom-if if="{{white}}">
                     <template>
-                        <paper-input autofocus class="input-white" label="{{localize('password?')}}" autofocus type="password" value="{{password}}" on-click="_changeInput"></paper-input>
+                        <paper-input 
+                            autofocus 
+                            class="input-white" 
+                            label="{{localize('password?')}}" 
+                            autofocus 
+                            type="password" 
+                            value="{{password}}" 
+                            on-click="_changeInput" 
+                            on-keydown="_checkForEnter">
+                        </paper-input>
                     </template>
                 </dom-if>
             {{error}}
@@ -341,6 +358,15 @@ The following custom properties and mixins are available for styling:
             */
             _changeInput() {
                 this.error = '';
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._getPrivKey();
+                }
             }
             /**
             * Checks for correct password, returns private key and closes this display
