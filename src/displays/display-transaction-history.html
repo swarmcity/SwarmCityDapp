@@ -4,6 +4,7 @@ Copyright (c) 2017 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-time.html">
@@ -26,6 +27,8 @@ Example:
                 --intern-padding: 5vh 0px;
             }
 
+
+
             .container {
                 box-sizing:border-box;
                 padding: var(--intern-padding);
@@ -44,10 +47,22 @@ Example:
                 max-width: 300px;
             }
 
+            .container[wide-layout] .state-box {
+                max-width: 600px;
+            }
+
             .timestamp {
                 @apply --smallest-light;
-                color: var(--sc-grey3);
+                color: var(--sc-grey3b);
                 margin-bottom: 5px;
+            }
+
+            .amount {
+                @apply --body-detail;
+                font-size: 24px;
+                letter-spacing: 0;
+                line-height: 28px;
+                /* @apply --main-title3; */
             }
 
             .flex {
@@ -55,10 +70,14 @@ Example:
             }
 
             .logtext {
-                @apply --body-default;
-                max-width: 200px;
-                color: var(--sc-grey2);
+                @apply --small-light;
+                @apply --layout-flex;
+                color: var(--sc-grey3b);
                 margin-bottom: 10px;
+            }
+
+            .highlight {
+                color: var(--sc-grey3);
             }
 
             .icon-complete {
@@ -122,20 +141,31 @@ Example:
             }
 
         </style>
-        <div class="container">
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
             <template is="dom-repeat" items="{{transactions}}">
-                <div class="repeated">
+                <!-- <div class="repeated"> -->
                     
-                    <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
                     <div class="state-box">
                         <div class="logtext">
+                            <!-- <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
                             <template is="dom-if" if="[[_direction(item.direction)]]">{{localize('Receiving')}}</template>
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('Sent')}}</template>
-                            [[item.amount]] [[item.symbol]] 
-                            <template is="dom-if" if="[[_direction(item.direction)]]">{{localize('from')}} [[item.from]]</template>
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('to')}} [[item.to]]</template>
+                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('Sent')}}</template> -->
+                            <template is="dom-if" if="[[_direction(item.direction)]]"></template>
+                                <span class="amount">
+                                    + [[item.amount]] [[item.symbol]]
+                                </span>
+                                {{localize('from')}} <span class="highlight">[[item.from]]</span>
+                            </template>
+
+                            <template is="dom-if" if="[[!_direction(item.direction)]]">-
+
+                            </template>
+
+                            <!-- <template is="dom-if" if="[[_direction(item.direction)]]">{{localize('from')}} <span class="highlight">[[item.from]]</span></template>
+                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('to')}} <span class="highlight">[[item.to]]</span></template> -->
                         </div>
-                        <div class="flex"></div>
+                        <!-- <div class="flex"></div> -->
                         <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
                             <div class="loading">
                                 <div class="smallpoint" id="point1"></div>
@@ -147,7 +177,7 @@ Example:
                             <div class="icon-complete"></div>
                         </template>
                     </div>
-                </div>
+                <!-- </div> -->
             </template>
         </div>
     </template>
