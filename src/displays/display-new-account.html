@@ -122,15 +122,18 @@ The following custom properties and mixins are available for styling:
                 id="password" 
                 label="{{localize('password?')}}" 
                 type="password" 
-                on-input="_checkInput" value="{{password}}" 
-                autofocus>
+                on-input="_checkInput" 
+                value="{{password}}" 
+                autofocus
+                on-keydown="_checkForEnter">
             </paper-input>
             <paper-input 
                 id="repeat" 
                 label="{{localize('Confirm password')}}" 
                 type="password" 
                 on-input="_checkInput" 
-                value="{{confirmPassword}}">
+                value="{{confirmPassword}}"
+                on-keydown="_checkForEnter">
             </paper-input>
             <div class="errorcontainer">
                 <span id="error">{{error}}</span>
@@ -226,6 +229,15 @@ The following custom properties and mixins are available for styling:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._agree();
+                }
             }
             /**
             * When leaving the page, entered values get reset
