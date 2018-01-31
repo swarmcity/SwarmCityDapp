@@ -24,37 +24,40 @@ Example:
         <style include="shared-styles">
             :host {
                 display: block;
-                --intern-padding: 5vh 0px;
+                --intern-padding: 6vh 0px;
+                /* width: 100%; */
             }
-
-
 
             .container {
                 box-sizing:border-box;
                 padding: var(--intern-padding);
                 @apply --layout-vertical;
                 @apply --start-justified;
+                width: 100%;
             }
 
-            .repeated {
-                @apply --layout-vertical;
-                @apply --start-justified;
+            .notx {
+                @apply --small-light;
+                color: var(--sc-grey2);
             }
+
 
             .state-box {
-                @apply --layout-horizontal;
+                width: 100%;
+                @apply --layout-vertical;
                 @apply --layout-start;
-                max-width: 300px;
+                @apply --layout-start-justified;
+                margin-bottom: 6vh;
             }
 
-            .container[wide-layout] .state-box {
-                max-width: 600px;
-            }
+            /* .container[wide-layout] .state-box {
+                margin-bottom: 5vh;
+            } */
 
             .timestamp {
                 @apply --smallest-light;
-                color: var(--sc-grey3b);
-                margin-bottom: 5px;
+                color: var(--sc-grey2);
+                /* margin-bottom: 5px; */
             }
 
             .amount {
@@ -62,22 +65,85 @@ Example:
                 font-size: 24px;
                 letter-spacing: 0;
                 line-height: 28px;
+                color: var(--sc-grey3);
                 /* @apply --main-title3; */
             }
-
+/* 
             .flex {
                 @apply --layout-flex;
+            } */
+
+            .amountandstate {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                @apply --layout-start-justified;
+                margin-bottom: 5px;
             }
 
-            .logtext {
-                @apply --small-light;
-                @apply --layout-flex;
+            .loadinginfos {
+                @apply --body-default;
+                color: var(--sc-grey3);
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;               
+            }
+
+            .container[wide-layout] .loadinginfos {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                @apply --layout-start-justified;               
+            }
+
+
+            .info {
+                @apply --body-default;
+                color: var(--sc-grey3b);
+                margin-bottom: 20px;
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .info {
+                @apply --body-default;
                 color: var(--sc-grey3b);
                 margin-bottom: 10px;
             }
 
-            .highlight {
+            .innerinfo {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;               
+            }
+
+            .container[wide-layout] .innerinfo {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                @apply --layout-start-justified;               
+            }
+
+            .bluelink {
+                @apply --blue-link;
+                margin: 6px 0px 0px 0px;
+            }
+
+            .container[wide-layout] .bluelink {
+                margin: 0px 0px 0px 15px;
+            }
+
+            .greylink {
+                @apply --grey-link;
+                margin: 6px 0px 0px 0px;
                 color: var(--sc-grey3);
+            }
+
+            .container[wide-layout] .greylink {
+                margin: 0px 0px 0px 15px;
+            }
+
+            .user {
+                word-break: break-all;
+                border-bottom: 1px dotted var(--sc-grey2);
             }
 
             .icon-complete {
@@ -120,6 +186,7 @@ Example:
                 background-color: var(--sc-blue);
             }
 
+
             #point1 {
                 animation: loadanimation 1.5s linear 0s infinite;
             }
@@ -143,42 +210,68 @@ Example:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-repeat" items="{{transactions}}">
-                <!-- <div class="repeated"> -->
-                    
-                    <div class="state-box">
-                        <div class="logtext">
-                            <!-- <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
-                            <template is="dom-if" if="[[_direction(item.direction)]]">{{localize('Receiving')}}</template>
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('Sent')}}</template> -->
-                            <template is="dom-if" if="[[_direction(item.direction)]]"></template>
-                                <span class="amount">
-                                    + [[item.amount]] [[item.symbol]]
-                                </span>
-                                {{localize('from')}} <span class="highlight">[[item.from]]</span>
-                            </template>
-
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">-
-
-                            </template>
-
-                            <!-- <template is="dom-if" if="[[_direction(item.direction)]]">{{localize('from')}} <span class="highlight">[[item.from]]</span></template>
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">{{localize('to')}} <span class="highlight">[[item.to]]</span></template> -->
-                        </div>
-                        <!-- <div class="flex"></div> -->
-                        <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
-                            <div class="loading">
-                                <div class="smallpoint" id="point1"></div>
-                                <div class="smallpoint" id="point2"></div>
-                                <div class="smallpoint" id="point3"></div>
-                            </div>
-                        </template>
-                        <template is="dom-if" if="[[_confirmations(item.confirmations)]]">
-                            <div class="icon-complete"></div>
-                        </template>
-                    </div>
-                <!-- </div> -->
+            <template is="dom-if" if="{{noTX}}">
+                <div class="notx">{{localize('You havent done any transactions with this account yet')}}</div>
             </template>
+            <template is="dom-repeat" items="{{transactions}}">                     
+                <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
+                <div class="state-box">
+                        <div class="amountandstate">
+                            <template is="dom-if" if="[[_direction(item.direction)]]">
+                                <div class="amount">
+                                    + [[item.amount]] [[item.symbol]]
+                                </div>
+                            </template>
+                            <template is="dom-if" if="[[!_direction(item.direction)]]">
+                                <div class="amount">
+                                    - [[item.amount]] [[item.symbol]]
+                                </div>
+                            </template>
+                            <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
+                                <div class="loading">
+                                    <div class="smallpoint" id="point1"></div>
+                                    <div class="smallpoint" id="point2"></div>
+                                    <div class="smallpoint" id="point3"></div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="loadinginfos">
+                            <template is="dom-if" if="[[_direction(item.direction)]]">
+                                <div>{{localize('Receiving')}} {{localize('from')}} <span class="user">[[item.from]]</span></div>
+                                <div class="bluelink">show on etherscan</div>
+                            </template>
+                            <template is="dom-if" if="[[!_direction(item.direction)]]">
+                                    <div>{{localize('Sending')}} {{localize('to')}} <span class="user">[[item.from]]</span></div>
+                                    <div class="bluelink">show on etherscan</div>
+                                </template>
+                        </div>
+                    </div>
+                    </template>
+                </template>
+
+                <!-- <div class="divider"></div> -->
+                
+                <template is="dom-repeat" items="{{transactions}}">                     
+                    <template is="dom-if" if="[[_confirmations(item.confirmations)]]">
+                        <div class="info"> 
+                            <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
+                            <div class="innerinfo">
+                                <div>{{localize('Youve received')}} [[item.amount]] [[item.symbol]] {{localize('from')}} <span class="user">[[item.from]]</span></div>
+                                <div class="greylink">show on etherscan</div>
+                            </div>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="[[!_direction(item.direction)]]">
+                        <div class="info">
+                            <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
+                            <div class="innerinfo">
+                                <div>{{localize('Youve sent')}} [[item.amount]] [[item.symbol]] {{localize('to')}} <span class="user">[[item.to]]</span></div>
+                                <div class="greylink">show on etherscan</div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+
         </div>
     </template>
     <script>
@@ -225,9 +318,11 @@ Example:
             _getLength(event) {
                 this.txArrayLength = this.transactions.length;
                 if (this.txArrayLength === 0) {
-                    this.updateStyles({'--intern-padding': '0px'});
+                    this.noTX = true;
+                    // this.updateStyles({'--intern-padding': '0px'});
                 } else {
-                    this.updateStyles({'--intern-padding': '5vh 0px'});
+                    this.noTX = false;
+                    // this.updateStyles({'--intern-padding': '5vh 0px'});
                 }
             }
         }
