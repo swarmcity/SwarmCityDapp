@@ -1,10 +1,12 @@
 ![Swarm City](https://github.com/swarmcity/sc-boardwalk-production/blob/master/images/icons/icon-48x48.png?raw=true "Swarm City")
 
 
-# Swarm City
-### SwarmCitySite
+# Swarm City Site
 
-# Environment handling
+## Introduction
+The Site is created with Polymer 2 web components, and is differentially served by the PRPL server to ensure the right.
+
+## Environment handling
 
 Some variables ( like the websocket endpoint ) are compiled into the ```environment``` library. By default the production settings are used.
 
