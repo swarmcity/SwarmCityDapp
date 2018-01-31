@@ -4,7 +4,7 @@
 # Swarm City Site
 
 ## Introduction
-The Site is created with Polymer 2 web components, and is differentially served by the PRPL server to ensure the right.
+The Site is created with Polymer 2 web components, and is differentially served by the PRPL server to ensure the right version is used for the specific browser.
 
 ## Environment handling
 
