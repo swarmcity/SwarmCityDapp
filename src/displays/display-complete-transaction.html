@@ -5,8 +5,10 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-
+<link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-transaction.html">
+<script src="../data/abi.js"></script>
+
 <!--
 
 Example:
@@ -58,11 +60,11 @@ The following custom properties and mixins are available for styling:
 
     </template>
     <script>
-        class DisplayCompleteTransaction extends Polymer.mixinBehaviors([
+        class DisplayCompleteTransaction extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
-        ) {
+        )) {
             static get is() {
                 return 'display-complete-transaction';
             }
@@ -177,33 +179,43 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                         reflectToAtribute: true,
                     },
-
+                    broadcast: {
+                        type: String,
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
                 };
             }
             _sign() {
-                this.$.transaction.makeTransferTx(
-                    this.toAddress,
-                    '0x' + (Number.parseFloat(this.amountToSend)*1e18).toString(16)
-                    ).then((data) => {
-                    const txData = data.toString('hex');
-                    const txParams = {
-                        nonce: this.nonce,
-                        gasPrice: this.gasPrice,
-                        gasLimit: 100000,
-                        to: '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607',
+                let swtContract = new webpack.Contract(abi.miniMeToken.abi,
+                '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
+                let txData = swtContract.methods.transfer(this.toAddress,
+                (this.amountToSend)*1e18).encodeABI();
+                const txParams = {
+                        nonce: this._toHex(this.nonce),
+                        gasPrice: this._toHex(this.gasPrice),
+                        gasLimit: this._toHex(200000),
+                        to: '0xb123eCb392ce38F7cbA15EEaA98730260875f471',
                         from: this.address,
                         data: txData,
-                        chainId: 1,
+                        chainId: 4,
                     };
-                    this.rawTx = JSON.stringify(txParams, null, 2);
-                    this.$.transaction.signRawTx(txParams, this.privateKey)
-                    .then((serializedTx) => {
-                        this.dispatch('BROADCAST', serializedTx.toString('hex'));
-                    });
+                this.$.transaction.signRawTx(txParams, this.privateKey)
+                .then((serializedTx) => {
+                    this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
+                    this.path = 'transaction-processing/';
                 }).catch((err)=>{
                     this.error = err;
                 });
             }
+
             /**
             * to hex
             * @param {string} dec - The data to convert

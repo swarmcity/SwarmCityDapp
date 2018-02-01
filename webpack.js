@@ -22,12 +22,8 @@ import Buffer from 'buffer';
 import QRCode from 'qrcode';
 import moment from 'moment';
 import ethereumTx from 'ethereumjs-tx';
-import {
-  simpleEncode,
-  simpleDecode} from 'ethereumjs-abi';
+import Contract from 'web3-eth-contract';
 export {
-  simpleEncode,
-  simpleDecode,
   sha3,
   privateToAddress,
   privateToPublic,
@@ -49,4 +45,5 @@ export {
   QRCode,
   moment,
   ethereumTx,
+  Contract,
 };

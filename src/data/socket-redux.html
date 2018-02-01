@@ -199,6 +199,15 @@
             ready() {
                 super.ready();
                 this._detectIphone();
+
+                // Listen for changes on 'balanceChanged'
+                this.socket.on('balanceChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.balance = reply.data;
+                        this.dispatch('BALANCE', this.balance);
+                    }
+                });
+
                 // Listen for changes on 'fxChanged'
                 this.socket.on('fxChanged', (reply) => {
                     this.fx = reply;
@@ -272,12 +281,6 @@
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.balance = reply.data;
-                        this.dispatch('BALANCE', this.balance);
-                    }
-                });
-                this.socket.on('balanceChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.balance = reply;
                         this.dispatch('BALANCE', this.balance);
                     }
                 });
@@ -369,12 +372,10 @@
                 });
             }
             _broadcast() {
-                // send this.broadcast to the api, this.broadcast is the signed tx
                 this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
                 }, (data) => {
-                    // does anything need to happen here ?
-                    // may as well send me a transaction id
+                    // TODO: get some data back
                 });
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
