@@ -317,6 +317,13 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         reflectToAttribute: true,
                         notify: true,
+                    },
+                    /**
+                    * routeEntry contains routing information
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
                         observer: '_resetValues',
                     },
                     /**
@@ -408,7 +415,7 @@ The following custom properties and mixins are available for styling:
             * When leaving the page, entered values get reset
             */
             _resetValues() {
-                setTimeout( ()=>{
+                if (this.routeEntry[0] == 'private-key') {
                     this.password = null;
                     this.confirmPassword = null;
                     this.privateKey = null;
@@ -417,7 +424,7 @@ The following custom properties and mixins are available for styling:
                     this.passwordWarning = false;
                     this.passwordSubmit = false;
                     this.passwordSet = false;
-                }, 300);
+                }
             }
             /**
             * Compares input realtime and toggles button and error message

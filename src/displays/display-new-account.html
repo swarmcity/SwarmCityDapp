@@ -199,6 +199,15 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         reflectToAttribute: true,
                         notify: true,
+                        observer: '_resetValues',
+                    },
+                    /**
+                    * routeEntry contains routing information
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_resetValues',
                     },
                 };
             }
@@ -219,6 +228,16 @@ The following custom properties and mixins are available for styling:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * When leaving the page, entered values get reset
+            */
+            _resetValues() {
+                if (this.routeEntry[0] == 'choose-password') {
+                    this.password = null;
+                    this.confirmPassword = null;
+                    this.error = null;
+                }
             }
             /**
             * takes the user to the next page in user creation

@@ -99,6 +99,38 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
 
+            display-my-info {
+                @apply --layout-flex;
+            }
+
+            .createbox {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+            .createlink {
+                /* @apply --text-button-small; */
+                outline: none;
+                border: 0;
+                border-radius: 2px;
+                background-color: rgba(255, 255, 255, 0.25);
+                cursor: pointer;
+                color: var(--sc-grey3);
+
+                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+
+                @apply --small-light;
+                padding: 9px 14px;
+            }
+
+            .createlink:active {
+                @apply --button-active;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -124,15 +156,21 @@ This code may only be used under the license found at https://github.com/swarmci
 
             <div class="header">
                 <div class="topleft">
-                    <dom-if if="{{publicKey}}">
-                        <template>
+                    <p>latest version -- {{!publicKey}} --</p>
+                    <template is="dom-if" if="{{!publicKey}}">
+                            <p>there is no public key -- {{!publicKey}} -- </p>
+                        <div class="createbox">
+                            <div class="createlink" on-tap="_toCreateAccount">{{localize('create account')}}
+                            </div>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="{{publicKey}}">
                             <display-my-info
-                                path="{{path}}" 
-                                route="{{route}}"
-                                id="displaymyinfo">
-                            </display-my-info>
-                        </template>
-                    </dom-if>
+                            path="{{path}}" 
+                            route="{{route}}"
+                            id="displaymyinfo">
+                        </display-my-info>
+                    </template>
                 </div>
                 <div class="topright">
                     <div class="back" on-click="_back" id="back"></div>
@@ -216,6 +254,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
                 };
             }
 
@@ -239,6 +285,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                     this.path = null;
                 }
+            }
+
+            /**
+            * go to the page create account
+            */
+            _toCreateAccount() {
+                sessionStorage.setItem('origin', this.route.path);
+                    this.path = 'create-account/';
             }
 
             _loadExitAnimations() {

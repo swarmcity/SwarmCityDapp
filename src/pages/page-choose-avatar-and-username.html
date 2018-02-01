@@ -252,11 +252,22 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
-            * Redux action for setting username
-            * @param {String} username
+            * Redux actions
             */
             static get actions() {
                 return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
                     USERNAME: function(username) {
                         return {
                             type: 'USERNAME',
@@ -279,11 +290,39 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.ready();
             }
             /**
-            * takes the user to page-stop-signup
+            * takes the user out of creating account flow
             */
             _close() {
-                this.path = 'stop-signup/';
+                this._deleteProfile();
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.path = 'hashtag-list';
+                }
             }
+
+            /**
+            * deletes the profile
+            */
+            _deleteProfile() {
+                this.dispatch('PUBLICKEY', null);
+                this.dispatch('AVATAR', '[[importHref]]../../images/defaultavatar.png');
+                this.dispatch('USERNAME', null);
+                localStorage.clear();
+                let storage = {
+                    user: {
+                        language: 'en',
+                        username: '',
+                        location: '',
+                        avatar: '',
+                    },
+                    keyStore: {},
+                };
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+            }
+
             /**
             * takes the user to the next page in user creation
             */
@@ -400,222 +439,14 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeExit[1] == 'password-warning') {
-                            // Here come the Exit Animations, going to page password-warning
-                            this.$.title.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100vw)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.contentavatar.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100vw)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.contentinput.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100vw)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.buttons.animate(
-                                [
-                                    {'transform': 'translateX(0px)', 'opacity': '1'},
-                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
                     }
                 }
             }
 
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
-                    let newHeight = -((this.$.contentavatar.offsetTop)-160);
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations
-                        if (this.routeExit[0] == 'password-warning') {
-                            // Coming from page password-warning
-                            this.$.title.animate(
-                                [
-                                    {'transform': 'translateX(-100vw)'},
-                                    {'transform': 'translateX(0px)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.contentavatar.animate(
-                                [
-                                    {'transform': 'translateX(-100vw)'},
-                                    {'transform': 'translateX(0px)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.contentinput.animate(
-                                [
-                                    {'transform': 'translateX(-100vw)'},
-                                    {'transform': 'translateX(0px)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.buttons.animate(
-                                [
-                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
-                                    {'transform': 'translateX(0px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
-                        if (this.routeExit[0] == 'resize-avatar') {
-                            // Coming from page resize-avatar
-                            this.$.title.animate(
-                                [
-                                    {'transform': 'translateX(-100vw)'},
-                                    {'transform': 'translateX(0px)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            if (this.wide) {
-                            this.$.contentavatar.animate(
-                                [
-                                    {'transform': 'translate(82px,'+newHeight+'px) scale(1.11, 1.11)'},
-                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            } else {
-                                this.$.contentavatar.animate(
-                                [
-                                    {'transform': 'translate(0px,'+newHeight+'px) scale(1.11, 1.11)'},
-                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            }
-                            this.$.contentinput.animate(
-                                [
-                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
-                                    {'transform': 'translateX(0px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.buttons.animate(
-                                [
-                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
-                                    {'transform': 'translateX(0px)', 'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 200,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
                     }
                 }
             }
