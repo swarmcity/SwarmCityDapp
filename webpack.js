@@ -45,5 +45,5 @@ export {
   QRCode,
   moment,
   ethereumTx,
-  Contract
+  Contract,
 };
