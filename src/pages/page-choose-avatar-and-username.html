@@ -8,7 +8,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../redux-state.html">
 
@@ -140,7 +139,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .flexer {
-               @apply --titlepage-flexer;
+                @apply --titlepage-flexer;
             }
             
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -155,7 +154,6 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <iron-a11y-keys id="a11y" keys="enter" on-keys-pressed="_agree"></iron-a11y-keys>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="close" on-click="_close"></div>
@@ -170,7 +168,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="inputcontainer" id="contentinput">
-                        <paper-input label="{{localize('Username')}}" autofocus value="{{username}}"></paper-input>
+                        <paper-input 
+                            label="{{localize('Username')}}" 
+                            autofocus 
+                            value="{{username}}"
+                            on-keydown="_checkForEnter">
+                        </paper-input>
                     </div>
                 </div>
 
@@ -332,6 +335,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                 this.path = 'resize-avatar/';
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._agree();
+                }
             }
             /**
             * The user selected the next button or pressed enter

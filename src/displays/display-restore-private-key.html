@@ -267,8 +267,21 @@ The following custom properties and mixins are available for styling:
             </template>
 
             <template is="dom-if" if="{{passwordSubmit}}">
-                <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}"></paper-input>
-                <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" value="{{confirmPassword}}"></paper-input>
+                <paper-input 
+                    id="password" 
+                    label="{{localize('password?')}}" 
+                    type="password" 
+                    on-input="_checkInput" 
+                    on-keydown="_checkForEnter" 
+                    value="{{password}}">
+                </paper-input>
+                <paper-input 
+                    id="repeat" 
+                    label="{{localize('Confirm password')}}" 
+                    type="password" 
+                    on-input="_checkInput"
+                    on-keydown="_checkForEnter" 
+                    value="{{confirmPassword}}"></paper-input>
                 <div class="errorcontainer">
                     <span id="passwordError" class="error">{{passwordError}}</span>
                 </div>
@@ -472,6 +485,15 @@ The following custom properties and mixins are available for styling:
                 }
             }
 
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._submit();
+                }
+            }
             /**
             * The password and key have been entered
             */

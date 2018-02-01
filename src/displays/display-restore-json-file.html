@@ -180,7 +180,12 @@ The following custom properties and mixins are available for styling:
                     <div>{{filename}}</div>
                     <div class="cancel" on-click="_cancel"></div>
                 </div>
-                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+                <paper-input 
+                    id="password" 
+                    label="{{localize('password?')}}" 
+                    type="password" 
+                    value="{{password}}"
+                    on-keydown="_checkForEnter"></paper-input>
                     <div class="btn">
                         <div class="confirm" on-click="_decrypt"></div>
                     </div>
@@ -326,6 +331,15 @@ The following custom properties and mixins are available for styling:
                 reader.onerror = (error) => {
                     this.error = error;
                 };
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._decrypt();
+                }
             }
             /**
             * Fired when the Restore button is clicked
