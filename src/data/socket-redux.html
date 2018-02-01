@@ -103,6 +103,15 @@
                         type: Array,
                         statePath: 'transactions',
                     },
+                    /**
+                    * Get base 64 image from IPFS hash
+                    * @type {Array}
+                    */
+                    reqipfs: {
+                        type: String,
+                        statePath: 'reqipfs',
+                        observer: '_reqipfs',
+                    },
                 };
             }
             /**
@@ -165,6 +174,12 @@
                             iphone: iphone,
                         };
                     },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
                 });
             }
 
@@ -224,6 +239,20 @@
 
                 // All handlers attached - please connect..
                 this.socket.connect();
+            }
+
+            _reqipfs() {
+                this.socket.emit('ipfscat', {
+                    hash: this.reqipfs,
+                    format: 'base64',
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
+                    }
+                });
             }
 
             _detectIphone() {
