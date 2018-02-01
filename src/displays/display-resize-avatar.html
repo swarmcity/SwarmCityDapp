@@ -214,7 +214,7 @@
                     */
                     image: {
                         type: String,
-                        observer: '_drawFile'
+                        observer: '_drawFile',
                     },
                     /**
                     * The scale of the image
@@ -223,7 +223,7 @@
                     scale: {
                         type: Number,
                         value: 0.5,
-                        observer: '_drawFile'
+                        observer: '_drawFile',
                     },
                     /**
                     * The angle the image is rotated
@@ -232,7 +232,7 @@
                     angle: {
                         type: Number,
                         value: 0,
-                        observer: '_drawFile'
+                        observer: '_drawFile',
                     },
                     /**
                     * The canvas width
@@ -281,7 +281,7 @@
                     endX: {
                         type: Number,
                         value: 0,
-                        observer: '_drawFile'
+                        observer: '_drawFile',
                     },
                     /**
                     * The ending Y position on mouse up
@@ -290,7 +290,7 @@
                     endY: {
                         type: Number,
                         value: 0,
-                        observer: '_drawFile'
+                        observer: '_drawFile',
                     },
                 };
             }
@@ -323,10 +323,11 @@
                 if (!this.$.canvas || !this.$.canvas.getContext) {
                     this.context = false;
                 } else {
-                    this.context = this.$.canvas.getContext("2d");
-                    this.context.fillStyle = "#000";
+                    this.context = this.$.canvas.getContext('2d');
+                    this.context.fillStyle = '#000';
                     this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-                    this.context.arc(this.canvasWidth*0.5, this.canvasHeight*0.5, 50, 0, 2 * Math.PI, false);
+                    this.context.arc(this.canvasWidth*0.5,
+                    this.canvasHeight*0.5, 50, 0, 2 * Math.PI, false);
                     this.context.lineWidth = 4;
                     this.context.strokeStyle = '#24B1FF';
                     this.context.stroke();
@@ -339,18 +340,20 @@
             */
             _fileSelected(event) {
                 if (this.context) {
-                    var fileReader = new FileReader();
+                    let fileReader = new FileReader();
                     fileReader.onload = (e) => {
-                        var img = new Image();
-                        img.addEventListener("load", () => {
+                        let img = new Image();
+                        img.addEventListener('load', () => {
                             this.image = img;
                         });
                         img.src = e.target.result;
-                    };   
-                    if(event.target.files && event.target.files[0]){
+                    };
+                    if (event.target.files && event.target.files[0]) {
                         fileReader.readAsDataURL(event.target.files[0]);
                     } else {
-                        // TODO: load the default avatar from ../images/defaultavatar.png convert it toa blob or file and load it into the file reader above
+                        // TODO: load the default avatar from 
+                        // ../images/defaultavatar.png convert 
+                        // it toa blob or file and load it into the file reader above
                     }  
                 }
             }
@@ -358,7 +361,7 @@
             * Draws the image to the canvas
             */
             _drawFile() {
-                if(this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context){
+                if (this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context) {
                     let px = this.endX * (2 + (1-this.scale));
                     let py = this.endY * (2 + (1-this.scale));
                     let rad = this.angle * Math.PI / 180;
@@ -371,23 +374,27 @@
                     this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
                     this.context.scale(this.scale, this.scale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - this.image.width * 0.5 + nx, - this.image.height * 0.5 + ny);
+                    this.context.drawImage(this.image, - this.image.width * 0.5 + nx,
+                    - this.image.height * 0.5 + ny);
                     this.context.restore();
                     this.context.globalAlpha = 0.5;
                     this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
                     this.context.save();
                     this.context.beginPath();
-                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
+                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2,
+                    Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
                     this.context.clip();
                     this.context.globalAlpha = 1;
                     this.context.translate(this.canvasWidth *  0.5, this.canvasHeight * 0.5);
                     this.context.scale(this.scale, this.scale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - this.image.width * 0.5 + nx, - this.image.height * 0.5 + ny);
+                    this.context.drawImage(this.image, - this.image.width * 0.5 + nx,
+                    - this.image.height * 0.5 + ny);
                     this.context.restore();
                     this.context.save();
                     this.context.globalAlpha = 1;
-                    this.context.arc(this.canvasWidth * 0.5, this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
+                    this.context.arc(this.canvasWidth * 0.5, 
+                    this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
                     this.context.lineWidth = 4;
                     this.context.strokeStyle = '#24B1FF';
                     this.context.stroke();
