@@ -234,17 +234,25 @@ The following custom properties and mixins are available for styling:
                     '</body>';
                     /* eslint-enable */
                     myWindow.document.write(html);
-                    setTimeout(() => {
-                        myWindow.print();
-                    }, 600);
-                    myWindow.onafterprint = (event) => {
-                            myWindow.close();
-                            if (this.route.path == '/make-backup/') {
-                                this.path = 'print-success/';
-                            } else {
-                                this.path = 'print-success-profile/';
-                            }
-                    };
+                    if (this.wide) {
+                        setTimeout(() => {
+                            myWindow.print();
+                        }, 600);
+                        myWindow.onafterprint = (event) => {
+                                myWindow.close();
+                                if (this.route.path == '/make-backup/') {
+                                    this.path = 'print-success/';
+                                } else {
+                                    this.path = 'print-success-profile/';
+                                }
+                        };
+                    } else {
+                        if (this.route.path == '/make-backup/') {
+                            this.path = 'print-success/';
+                        } else {
+                            this.path = 'print-success-profile/';
+                        }
+                    }
                 }
             }
             /**
