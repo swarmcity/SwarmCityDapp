@@ -179,17 +179,19 @@ The following custom properties and mixins are available for styling:
                     },
                     broadcast: {
                         type: String,
-                    }
-
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
                 };
             }
             _sign() {
-
-                // var swtContract = new webpack.Contract(abis.miniMeToken.abi, _tokenAddress);
-                // var encodedTransferTx = swtContract.methods.transfer(to, amountinWEI).encodeABI();
-                console.log('Now signing transaction');
-                console.log('amount to send before hex');
-                console.log(this.amountToSend);
 
                 var abis = {
    "miniMeToken": {
@@ -1266,101 +1268,28 @@ The following custom properties and mixins are available for styling:
      }
 };
 
-console.log('FIRE');
-console.log(webpack);
-console.log(webpack.Contract);
+console.log('Sending to');
+console.log(this.toAddress);
+
                 var swtContract = new webpack.Contract(abis.miniMeToken.abi, '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
-console.log(swtContract);
                 var txData = swtContract.methods.transfer(this.toAddress, (this.amountToSend)*1e18).encodeABI();
-console.log(txData);
-                const test = 21000;
-                // const txParams = {
-                //         nonce: this.nonce,
-                //         gasPrice: this.gasPrice,
-                //         gasLimit: test,
-                //         to: '0xb123eCb392ce38F7cbA15EEaA98730260875f471',
-                //         from: this.address,
-                //         data: txData,
-                //         chainId: 4,
-                //     };
                 const txParams = {
-                        nonce: "0x01",
-                        gasPrice: "0x04e3b29200",
-                        gasLimit: "0x030d40",
+                        nonce: this._toHex(this.nonce),
+                        gasPrice: this._toHex(this.gasPrice),
+                        gasLimit: this._toHex(200000),
                         to: '0xb123eCb392ce38F7cbA15EEaA98730260875f471',
                         from: this.address,
                         data: txData,
                         chainId: 4,
                     };
-console.log(txParams);
                 this.$.transaction.signRawTx(txParams, this.privateKey)
                 .then((serializedTx) => {
-                    console.log('Serialized transaction');
-                    console.log(serializedTx.toString('hex'));
-                    this.dispatch('BROADCAST', '0x'+serializedTx.toString('hex'));
+                    this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
+                    this.path = 'transaction-processing/';
                 }).catch((err)=>{
                     console.log('Error');
                     this.error = err;
                 });
-
-
-                // FROM ETHER SCAN
-                //  {
-                //     "nonce":"0x00",
-                //     "gasPrice":"0x04e3b29200",
-                //     "gasLimit":"0x5208",
-                //     "to":"0xb123eCb392ce38F7cbA15EEaA98730260875f471",
-                //     "value":"0x00","data":"0xa9059cbb00000000000000000000000010c33b7168ca5678e5949ba2e84a743f8f3388f80000000000000000000000000000000000000000000000000de0b6b3a7640000",
-                //     "chainId":4
-                // }
-
-
-                // FROM  US
-                //  {
-                //     "nonce":"0",
-                //     "gasPrice":1000000471,
-                //     "gasLimit":21000,
-                //     "to":"0xb123eCb392ce38F7cbA15EEaA98730260875f471",
-                //     "value":"0x00","data":"0xa9059cbb00000000000000000000000010c33b7168ca5678e5949ba2e84a743f8f3388f80000000000000000000000000000000000000000000000000de0b6b3a7640000",
-                //     "chainId":4
-                // }
-
-
-
-                // 0xf8a9808504e3b2920082520894b123ecb392ce38f7cba15eeaa98730260875f47180b844a9059cbb00000000000000000000000010c33b7168ca5678e5949ba2e84a743f8f3388f80000000000000000000000000000000000000000000000000de0b6b3a76400002ca0913a8ed1a91f7d5d419d8b880ff8ead0f01adfdea1db3ff77aabd90990e0c665a06e77bd1e48bc62419cf6f64f483b52c609aeb4b2d2234af646774b1e13acf713
-
-                0xf8a830843b9acbd782520894b123ecb392ce38f7cba15eeaa98730260875f47180b844a9059cbb00000000000000000000000010c33b7168ca5678e5949ba2e84a743f8f3388f80000000000000000000000000000000000000000000000000de0b6b3a76400002ba03ef1c86bdd87d39cb7ef1f3ac499df03bcda532ab0e65cbfd51031174e52cac4a06b27366dd631a4d3bb1c09bc3005f1d2b1f62976125af3965d41a5f1090f874a
-
-
-                // this.$.transaction.makeTransferTx(
-                //     this.toAddress,
-                //     '0x' + (Number.parseFloat(this.amountToSend)*1e18).toString(16)
-                //     ).then((data) => {
-                //     console.log('data');
-                //     console.log(data);
-                //     const txData = data.toString('hex');
-                //     const txParams = {
-                //         nonce: this.nonce,
-                //         gasPrice: this.gasPrice,
-                //         gasLimit: 100000,
-                //         to: '0xb123eCb392ce38F7cbA15EEaA98730260875f471',
-                //         from: this.address,
-                //         data: txData,
-                //         chainId: 4,
-                //     };
-                //     console.log('txParams');
-                //     console.log(txParams);
-                //     this.rawTx = JSON.stringify(txParams, null, 2);
-                //     this.$.transaction.signRawTx(txParams, this.privateKey)
-                //     .then((serializedTx) => {
-                //         console.log('Serialized transaction');
-                //         console.log(serializedTx.toString('hex'));
-                //         this.dispatch('BROADCAST', serializedTx.toString('hex'));
-                //     });
-                // }).catch((err)=>{
-                //     console.log('Error');
-                //     this.error = err;
-                // });
             }
 
             /**

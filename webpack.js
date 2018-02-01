@@ -24,8 +24,6 @@ import moment from 'moment';
 import ethereumTx from 'ethereumjs-tx';
 import Contract from 'web3-eth-contract';
 export {
-  simpleEncode,
-  simpleDecode,
   sha3,
   privateToAddress,
   privateToPublic,
