@@ -373,9 +373,11 @@ The following custom properties and mixins are available for styling:
                             .then((KeyStore) => {
                                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                 storage.keyStore = KeyStore.utcKeystore;
-                                this.dispatch('REQIPFS', this.wallet.identity.avatarhash);
                                 storage.user.username = this.wallet.identity.username;
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                if (this.wallet.identity.avatarhash) {
+                                    this.dispatch('REQIPFS', this.wallet.identity.avatarhash);
+                                }
                                 this.dispatch('PUBLICKEY', storage.keyStore.address);
                                 this.dispatch('USERNAME', storage.user.username);
                                 if (sessionStorage.getItem('origin')) {
