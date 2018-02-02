@@ -186,6 +186,7 @@ The following custom properties and mixins are available for styling:
                     type="password" 
                     value="{{password}}"
                     on-keydown="_checkForEnter"></paper-input>
+                    <div class="error">{{error}}</div>
                     <div class="btn">
                         <div class="confirm" on-click="_decrypt"></div>
                     </div>
@@ -346,23 +347,30 @@ The following custom properties and mixins are available for styling:
             */
             _decrypt() {
                 if (this.wallet.Crypto) {
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    storage.keyStore = this.wallet;
-                    storage.user.avatar = this.wallet.avatar;
-                    storage.user.username = this.wallet.username;
-                    delete storage.keyStore.username;
-                    delete storage.keyStore.avatar;
-                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    this.dispatch('PUBLICKEY', storage.keyStore.address);
-                    this.dispatch('AVATAR', storage.user.avatar);
-                    this.dispatch('USERNAME', storage.user.username);
-                    if (sessionStorage.getItem('origin')) {
-                        this.path = sessionStorage.getItem('origin');
-                        sessionStorage.removeItem('origin');
-                    }
-                    else {
-                        this.set('route.path', 'hashtag-list');
-                    }
+                    // check password before dooing any of this
+                    this.$.wallet.decryptUtcKeystore(this.wallet, this.password)
+                    .then((privateKey) => {
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.keyStore = this.wallet;
+                        storage.user.avatar = this.wallet.avatar;
+                        storage.user.username = this.wallet.username;
+                        delete storage.keyStore.username;
+                        delete storage.keyStore.avatar;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.dispatch('PUBLICKEY', storage.keyStore.address);
+                        this.dispatch('AVATAR', storage.user.avatar);
+                        this.dispatch('USERNAME', storage.user.username);
+                        if (sessionStorage.getItem('origin')) {
+                            this.path = sessionStorage.getItem('origin');
+                            sessionStorage.removeItem('origin');
+                        }
+                        else {
+                            this.set('route.path', 'hashtag-list');
+                        }
+                    })
+                    .catch((error) => {
+                        this.error = 'wrong password'
+                    })
                 } else {
                     const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
                     keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
