@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-wallet.html">
 <script src="../data/lightwallet.min.js"></script>
@@ -60,6 +61,7 @@ The following custom properties and mixins are available for styling:
 
             .container label {
                 width: 100%;
+                max-width: 320px;
             }
 
             .select {
@@ -163,12 +165,13 @@ The following custom properties and mixins are available for styling:
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <iron-a11y-keys id="a11y" keys="enter" on-keys-pressed="_onEnter"></iron-a11y-keys>
         <div class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{!askPassword}}">
                 <div class="flex"></div>
                 <form method="post" enctype="multipart/form-data"></form>
                     <input type="file" name="file" id="file" class="inputfile" on-change="_getFile" accept='application/json'/>
-                    <label for="file" onclick="">
+                    <label id="button" tabindex="1" for="file" onclick="">
                         <div class="select">{{localize('select file')}}</div>
                     </label>
                 </form>
@@ -313,6 +316,19 @@ The following custom properties and mixins are available for styling:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                this.$.a11y.target = document.querySelector('body');
+            }
+            /**
+            * Fired whenever the user presses the enter key
+            */
+            _onEnter() {
+                if ( this.route.path.split('/')[1] == 'json-file') {
+                    if (!this.askPassword) {
+                        this.shadowRoot.querySelector('#button').click();
+                    } else {
+                        this._decrypt();
+                    }
+                }
             }
             /**
             * Fired when the user selects a file
@@ -332,15 +348,6 @@ The following custom properties and mixins are available for styling:
                 reader.onerror = (error) => {
                     this.error = error;
                 };
-            }
-            /**
-            * Checks for enter key input
-            * @param {Object} e element clicked.
-            */
-            _checkForEnter(e) {
-                if (e.keyCode === 13) {
-                    this._decrypt();
-                }
             }
             /**
             * Fired when the Restore button is clicked
