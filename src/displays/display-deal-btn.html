@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../redux-state.html">
 <!--
 
@@ -56,6 +57,7 @@ The following custom properties and mixins are available for styling:
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <iron-a11y-keys id="a11y" keys="enter" on-keys-pressed="_onEnter"></iron-a11y-keys>
         <div class="container" wide-layout$="{{wide}}" on-click="_next">
             <div class="button">
                 <div class="icon"></div>
@@ -109,7 +111,22 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
-
+            /**
+            * Fired on initial element load.
+            */
+            ready() {
+                super.ready();
+                this.$.a11y.target = document.querySelector('body');
+            }
+            /**
+            * Fired whenever the user presses the enter key
+            */
+            _onEnter() {
+                let path = this.route.path.split('/')[1];
+                if (path == 'hashtag') {
+                    this._next();
+                }
+            }
             /**
             * Either go to the new here or new deal page depending if the user has a
             * complete acocunt.
