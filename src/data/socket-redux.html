@@ -200,6 +200,15 @@
                 super.ready();
                 this._detectIphone();
 
+
+                // Listen for changes on 'txReceipt'
+                this.socket.on('txReceiptChanged', (reply) => {
+                    if (reply.response == 200) {
+                        console.log(reply);
+                    }
+                });
+
+                
                 // Listen for changes on 'balanceChanged'
                 this.socket.on('balanceChanged', (reply) => {
                     if (reply.response == 200) {
@@ -374,10 +383,30 @@
             _broadcast() {
                 this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
-                }, (data) => {
-                    // TODO: get some data back
+                }, (reply) => {
+                    console.log(reply.data.transactionHash);
+                    this._txReceipt(reply.data.transactionHash)
                 });
             }
+
+            _txReceipt(transactionHash) {
+                console.log('_txReceipt called');
+                this.socket.emit('subscribe', {
+                    channel: 'txReceipt',
+                    args: {
+                        transactionHash: transactionHash,
+                    },
+                }, (reply) => {
+                    console.log(reply);
+                    if (reply.response == 200) {
+                        console.log(reply.data);
+                        console.log(reply.subscriptionId);
+                    }
+                });
+            }
+
+
+            
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
 </dom-module>
