@@ -352,7 +352,11 @@ The following custom properties and mixins are available for styling:
                     .then((privateKey) => {
                         let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                         storage.keyStore = this.wallet;
-                        storage.user.avatar = this.wallet.avatar;
+                        if (!this.wallet.avatar) {
+                            storage.user.avatar = '[[importHref]]../../images/defaultavatar.png';
+                        } else {
+                            storage.user.avatar = this.wallet.avatar;
+                        }
                         storage.user.username = this.wallet.username;
                         delete storage.keyStore.username;
                         delete storage.keyStore.avatar;
@@ -360,6 +364,7 @@ The following custom properties and mixins are available for styling:
                         this.dispatch('PUBLICKEY', storage.keyStore.address);
                         this.dispatch('AVATAR', storage.user.avatar);
                         this.dispatch('USERNAME', storage.user.username);
+
                         if (sessionStorage.getItem('origin')) {
                             this.path = sessionStorage.getItem('origin');
                             sessionStorage.removeItem('origin');
