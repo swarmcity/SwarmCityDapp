@@ -35,10 +35,11 @@ Example:
             .big-btn:active {
                 @apply --button-active;
             }
+
         </style>
 
         <template is="dom-if" if="{{selected}}">
-            <div class="language" on-click="_navigateTo">
+            <div tabindex="1" class="language" on-click="_navigateTo" on-KeyPress="_navigateTo">
                 {{language}}
             </div>
         </template>
@@ -167,9 +168,16 @@ Example:
             }
             /**
             * take the user to the language page
+            * @param {Object} e element clicked.
             */
-            _navigateTo() {
-                this.path = 'language/';
+            _navigateTo(e) {
+                if (e.type != 'click') {
+                    if (e.keyCode === 13) {
+                        this.path = 'language/';
+                    }
+                } else {
+                    this.path = 'language/';
+                }
             }
         }
         window.customElements.define(MyDisplayLanguage.is, MyDisplayLanguage);
