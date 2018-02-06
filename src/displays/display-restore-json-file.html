@@ -167,7 +167,7 @@ The following custom properties and mixins are available for styling:
             <template is="dom-if" if="{{!askPassword}}">
                 <div class="flex"></div>
                 <form method="post" enctype="multipart/form-data"></form>
-                    <input type="file" name="file" id="file" class="inputfile" on-change="_getFile"/>
+                    <input type="file" name="file" id="file" class="inputfile" on-change="_getFile" accept='application/json'/>
                     <label for="file" onclick="">
                         <div class="select">{{localize('select file')}}</div>
                     </label>
@@ -180,7 +180,13 @@ The following custom properties and mixins are available for styling:
                     <div>{{filename}}</div>
                     <div class="cancel" on-click="_cancel"></div>
                 </div>
-                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"></paper-input>
+                <paper-input 
+                    id="password" 
+                    label="{{localize('password?')}}" 
+                    type="password" 
+                    value="{{password}}"
+                    on-keydown="_checkForEnter"></paper-input>
+                    <div class="error">{{error}}</div>
                     <div class="btn">
                         <div class="confirm" on-click="_decrypt"></div>
                     </div>
@@ -328,27 +334,48 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._decrypt();
+                }
+            }
+            /**
             * Fired when the Restore button is clicked
             */
             _decrypt() {
                 if (this.wallet.Crypto) {
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    storage.keyStore = this.wallet;
-                    storage.user.avatar = this.wallet.avatar;
-                    storage.user.username = this.wallet.username;
-                    delete storage.keyStore.username;
-                    delete storage.keyStore.avatar;
-                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    this.dispatch('PUBLICKEY', storage.keyStore.address);
-                    this.dispatch('AVATAR', storage.user.avatar);
-                    this.dispatch('USERNAME', storage.user.username);
-                    if (sessionStorage.getItem('origin')) {
-                        this.path = sessionStorage.getItem('origin');
-                        sessionStorage.removeItem('origin');
-                    }
-                    else {
-                        this.set('route.path', 'hashtag-list');
-                    }
+                    // check password before dooing any of this
+                    this.$.wallet.decryptUtcKeystore(this.wallet, this.password)
+                    .then((privateKey) => {
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.keyStore = this.wallet;
+                        if (!this.wallet.avatar) {
+                            storage.user.avatar = '[[importHref]]../../images/defaultavatar.png';
+                        } else {
+                            storage.user.avatar = this.wallet.avatar;
+                        }
+                        storage.user.username = this.wallet.username;
+                        delete storage.keyStore.username;
+                        delete storage.keyStore.avatar;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.dispatch('PUBLICKEY', storage.keyStore.address);
+                        this.dispatch('AVATAR', storage.user.avatar);
+                        this.dispatch('USERNAME', storage.user.username);
+
+                        if (sessionStorage.getItem('origin')) {
+                            this.path = sessionStorage.getItem('origin');
+                            sessionStorage.removeItem('origin');
+                        }
+                        else {
+                            this.set('route.path', 'hashtag-list');
+                        }
+                    })
+                    .catch((error) => {
+                        this.error = 'wrong password';
+                    });
                 } else {
                     const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
                     keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
@@ -359,9 +386,11 @@ The following custom properties and mixins are available for styling:
                             .then((KeyStore) => {
                                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                 storage.keyStore = KeyStore.utcKeystore;
-                                this.dispatch('REQIPFS', this.wallet.identity.avatarhash);
                                 storage.user.username = this.wallet.identity.username;
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                if (this.wallet.identity.avatarhash) {
+                                    this.dispatch('REQIPFS', this.wallet.identity.avatarhash);
+                                }
                                 this.dispatch('PUBLICKEY', storage.keyStore.address);
                                 this.dispatch('USERNAME', storage.user.username);
                                 if (sessionStorage.getItem('origin')) {
