@@ -39,6 +39,8 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-flex;
                 @apply --layout-vertical;
                 @apply --layout-center-center;
+                box-sizing:border-box;
+                padding-top: 5vh;
             }
 
             .container[wide-layout] .middle {
@@ -59,7 +61,6 @@ The following custom properties and mixins are available for styling:
                 @apply --small-light;
                 color: var(--sc-grey4);
                 text-align: center;
-                margin-top: 10vh;
             }
 
             .container[wide-layout] .bottom {
@@ -68,14 +69,12 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-start;
                 width: 100%;
                 text-align: left;
-                margin-top: 10vh;
                 padding: 40px;
             }
 
             .btn {
                 @apply --layout-vertical;
                 @apply --layout-center-center;
-                /*@apply --text-button-big-fullwhite;*/
                 @apply --text-button-small;
                 color: var(--sc-grey4);
                 box-sizing: border-box;
@@ -245,8 +244,13 @@ The following custom properties and mixins are available for styling:
                     <span id="privateKeyError" class="error-key">{{privateKeyError}}</span>
                 </div>
             </div>
+            <template is="dom-if" if="{{showPasswordBox}}">
+
             <div class="bottom">
-            <template is="dom-if" if="{{choosePassword}}">
+
+
+
+                <template is="dom-if" if="{{choosePassword}}">
                 <div>{{localize('To restore an account with a private key please choose a password for it first')}}</div>
                 <div class="btn" on-click="_agreeToEnterPassword">choose password</div>
             </template>
@@ -294,7 +298,11 @@ The following custom properties and mixins are available for styling:
                 <div class="passset">{{localize('the password is set')}}</div>
             </template>
 
+
+
             </div>
+        </template>
+
             <template is="dom-if" if="{{passwordSet}}">
                 <div class="iconbtn"> 
                     <div class="agree" on-click=""></div> 
@@ -360,6 +368,14 @@ The following custom properties and mixins are available for styling:
                     * @type {Boolean}
                     */
                     passwordSubmit: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * showPasswordBox if true show the password-box
+                    * @type {Boolean}
+                    */
+                    showPasswordBox: {
                         type: Boolean,
                         value: false,
                     },
@@ -474,6 +490,7 @@ The following custom properties and mixins are available for styling:
                 this.privateKeyError = '';
                 if (this.privateKey && this.privateKey. length >= 1) {
                     if (this. privateKey.length != 64) {
+                        this.showPasswordBox = false;
                         if (this.privateKey.length < 64) {
                             this.privateKeyError =
                                 this.localize('The private key you entered is too short.');
@@ -481,6 +498,8 @@ The following custom properties and mixins are available for styling:
                             this.privateKeyError =
                                 this.localize('The private key you entered is too long.');
                         }
+                    } else {
+                    this.showPasswordBox = true;
                     }
                 }
             }
