@@ -320,6 +320,7 @@
             */
             ready() {
                 super.ready();
+                this._firstLoad();
                 if (!this.$.canvas || !this.$.canvas.getContext) {
                     this.context = false;
                 } else {
@@ -334,6 +335,16 @@
                 }
             }
 
+            /**
+            * Fired when the element is first loaded
+            */
+            _firstLoad() {
+                var image = new Image();
+                image.onload = () => {
+                    this.image = image;
+                };
+                image.src = '../images/defaultavatar.png';
+            }
             /**
             * Fired when the user selects a file
             * @param {event} event The event from the on-change
@@ -350,11 +361,7 @@
                     };
                     if (event.target.files && event.target.files[0]) {
                         fileReader.readAsDataURL(event.target.files[0]);
-                    } else {
-                        // TODO: load the default avatar from
-                        // ../images/defaultavatar.png convert
-                        // it toa blob or file and load it into the file reader above
-                    }
+                    } 
                 }
             }
             /**
