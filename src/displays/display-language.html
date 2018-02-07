@@ -39,14 +39,14 @@ Example:
         </style>
 
         <template is="dom-if" if="{{selected}}">
-            <div tabindex="1" class="language" on-click="_navigateTo" on-KeyPress="_navigateTo">
+            <div tabindex="1" autofocus class="language" on-click="_navigateTo" on-KeyPress="_navigateTo">
                 {{language}}
             </div>
         </template>
 
         <template is="dom-if" if="{{buttons}}">
             <template is="dom-repeat" items="{{locales}}">
-                <div class="btn-parent" on-click="_selectLanguage">
+                <div tabindex="2" class="btn-parent" on-click="_selectLanguage" on-KeyPress="_selectLanguage">
                     <div class="big-btn">
                         {{item.name}}
                     </div>
@@ -151,20 +151,22 @@ Example:
             * @param {event} event represents the button the user clicked
             */
             _selectLanguage(event) {
-                const selectedLanguage = event.model.__data.item.iso;
-                this.dispatch('LANGUAGE', selectedLanguage);
-                if (this.path == undefined) {
-                    this.path = 'welcome/';
+                if (event.keyCode === 13 || event.type == 'click') {
+                    const selectedLanguage = event.model.__data.item.iso;
+                    this.dispatch('LANGUAGE', selectedLanguage);
+                    if (this.path == undefined) {
+                        this.path = 'welcome/';
+                    }
+                    if (this.path == 'welcome/') {
+                        this.path = '/';
+                    }
+                    if (this.path == '/') {
+                        this.path = 'welcome/';
+                    }
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    storage.user.language = selectedLanguage;
+                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
                 }
-                if (this.path == 'welcome/') {
-                    this.path = '/';
-                }
-                if (this.path == '/') {
-                    this.path = 'welcome/';
-                }
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                storage.user.language = selectedLanguage;
-                localStorage.setItem('SwarmCity', JSON.stringify(storage));
             }
             /**
             * take the user to the language page

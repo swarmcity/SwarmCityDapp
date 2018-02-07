@@ -44,7 +44,7 @@ The following custom properties and mixins are available for styling:
 
         </style>
 
-        <div class="hashtaggadd" on-click="_newhashtag">
+        <div tabindex="5" class="hashtaggadd" on-tap="_newHashtag" on-KeyPress="_newHashtag">
             <div class="icon"></div>
         </div>
 
@@ -100,14 +100,17 @@ The following custom properties and mixins are available for styling:
             /**
             * Either go to the new here or new deal page depending if the user has a
             * complete acocunt.
+            * @param {Object} event element clicked.
             */
-            _newhashtag() {
-                sessionStorage.setItem('origin', this.route.path);
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                if (storage.keyStore && storage.keyStore.Crypto) {
-                    this.path = 'new-hashtag/';
-                } else {
-                    this.path = 'new-hashtag/';
+            _newHashtag(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    sessionStorage.setItem('origin', this.route.path);
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    if (storage.keyStore && storage.keyStore.Crypto) {
+                        this.path = 'new-hashtag/';
+                    } else {
+                        this.path = 'new-hashtag/';
+                    }
                 }
             }
         }
