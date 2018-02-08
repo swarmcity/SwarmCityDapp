@@ -22,7 +22,7 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-            :host {
+            /* :host {
                 background-color: var(--sc-blue);
                 height: 100vh;
                 width: 100vw;
@@ -117,16 +117,103 @@ This code may only be used under the license found at https://github.com/swarmci
             .blur {
                 @apply --unlock-blur;
             }
+ */
 
+            :host {
+                @apply --titlepage-open;
+            }
+
+            .container {
+                background-color: var(--sc-blue);
+                @apply --titlepage-open-container;
+            }
+
+            .container .top {
+                @apply --titlepage-open-container-top;
+            }
+
+            .container .bottom {
+                @apply --titlepage-open-container-bottom;
+            }
+
+            .container .title {
+                @apply --titlepage-title;
+                color: var(--sc-white);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
+            }
+
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
+            }
+
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+
+            .container .confirmers {
+                @apply --titlepage-confirmers;
+            }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
+            }
+
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+         
             .wordbreak {
                 word-break: break-all;
+
+            }
+
+            .amount {
+                color: var(--sc-yellow);
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1),
-                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                     @apply --retina;
                 }
             }
@@ -135,15 +222,14 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
 
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div>
+            <!-- <div>
                 <div>{{localize('Youre about to send')}} [[amountToSend]] SWT {{localize('to')}} <span class="wordbreak">[[toAddress]]</span></div>
                 <div>{{localize('This can not be undone.')}}</div>
-            </div>
-            <div>
+            </div> -->
+            <!-- <div>
                 <div>
                     <div on-click="_disagree"></div>
                     <div on-click="_unlock">
-                        <!-- TODO: why is there and empty div below this comment ?? -->
                         <div></div>
                     </div>
                 </div>
@@ -160,7 +246,39 @@ This code may only be used under the license found at https://github.com/swarmci
                         path="{{path}}">
                     </display-complete-transaction>
                 </div>
-            </div>
+            </div> -->
+
+
+
+            <div class="top">
+                    <div class="close" on-click="_close"></div>
+                    <div class="title" id="title">{{localize('Youre about to send')}} <span class="amount">[[amountToSend]] SWT</span> {{localize('to')}} <span class="wordbreak">[[toAddress]]</span></div>
+                    <div class="subtitle">{{localize('This can not be undone.')}}</div>
+                </div>
+                <div class="flexer"></div>            
+                <div class="bottom">
+
+                <div class="confirmers" id="buttons">
+                    <div on-click="_disagree"></div>
+                    <div on-click="_agree">
+                        <div></div>
+                    </div>
+                </div>
+
+                </div>
+                <display-complete-transaction
+                send="SWT"
+                address="{{address}}"
+                to-address="{{toAddress}}"
+                amount-to-send="{{amountToSend}}"
+                nonce="{{nonce}}"
+                gas-price="{{gasPrice}}"
+                private-key="{{privateKey}}"
+                status="{{status}}"
+                path="{{path}}">
+            </display-complete-transaction>
+        </div>
+
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
