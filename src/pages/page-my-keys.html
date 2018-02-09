@@ -24,8 +24,8 @@ This code may only be used under the license found at https://github.com/swarmci
     -->
         <style include="shared-styles">
             :host {
-                width: 100vw;
-                min-height: 100vh;
+                /* width: 100vw;
+                min-height: 100vh; */
                 display: block;
                 background-image: var(--sc-bg);
             }
@@ -48,48 +48,56 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center;
                 width: 100%;
                 box-sizing: border-box;
-                padding: 15vh 12vw 8vh 12vw;
+                padding: 100px 10vw 0 10vw;
+                /* padding: 15vh 12vw 8vh 12vw; */
             }
             .container[wide-layout] .key-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-start;
-                padding-top: 20vh;
             }
-            .privkey-container {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 8vh 12vw;
-                background-image: var(--sc-bg);
-            }
-            .container[wide-layout] .privkey-container {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-            }
+
             .greytext {
                 @apply --small-light;
-                color: var(--sc-grey4);
+                color: var(--sc-grey3);
             }
 
             .key {
-                @apply --body-bold;
+                @apply --body-detail;
+                font-size: 24px;
+                letter-spacing: 0;
+                line-height: 28px;
                 color: var(--sc-grey4);
                 text-align: center;
-                margin: 1vh 0 3vh 0;
+                word-break: break-all;
+                margin: 2px 0 10px 0;
             }
             .container[wide-layout] .key {
                 text-align: left;
             }
+
             .bluetext {
                 @apply --small-bold;
                 cursor: pointer;
                 color: var(--sc-blue);
                 border-bottom: 2px dotted var(--sc-blue);
+                margin-right: 10px;
             }
+
+            .greylink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3b);
+                border-bottom: 2px dotted var(--sc-grey3b);
+                margin-right: 15px;
+            }
+
+            .links {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;               
+            }
+
             .qrcode {
                 margin: 4vh 0 0 0;
                 width: 148px;
@@ -97,6 +105,48 @@ This code may only be used under the license found at https://github.com/swarmci
                 min-width: 148px;
                 min-height: 148px;
             }
+
+            .showbtn {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big;
+                box-sizing: border-box;
+                width: 100%;
+                margin: 0 0 0 0;
+                max-width: 320px;
+            }
+
+            .showbtn:active {
+                @apply --button-active;
+            }
+
+
+            .privkey-container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 10vw 0 10vw;
+                background-image: var(--sc-bg);
+            }
+            .container[wide-layout] .privkey-container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+
+            .divider {
+                width: 100vw;
+                height: 1px;
+                border-top:1px dotted var(--sc-grey2);
+                margin: 60px 0px;
+            }
+
+
+/* 
+
             .qrcodeprivate {
                 margin: 4vh 0 0 0;
                 width: 180px;
@@ -147,7 +197,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 @apply --sc-paper-checkbox;
                 margin-top: 30px;
-            }
+            } */
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -164,30 +214,40 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="key-container" id="keycontainer">
                 <div class="greytext">{{localize('Your public key')}}</div>
                 <div class="key">{{publicKey}}</div>
-                <span class="bluetext" on-click="_copyPublicKey">{{localize('copy public key')}}</span>
-                <div class="qrcode">
-                    <display-qr-code data="{{publicKey}}"></display-qr-code>
+                <div class="links">
+                    <div class="bluetext" on-click="_copyPublicKey">{{localize('copy public key')}}</div>
+                    <div class="greylink" on-click="_showPublicQR">{{localize('show QR code')}}</div>
                 </div>
+                <template is="dom-if" if="{{showPublicQR}}">
+                    <div class="qrcode">
+                        <display-qr-code data="{{publicKey}}"></display-qr-code>
+                    </div>
+                </template>
             </div>
-            <div class="divider" id="divider"></div>
-
+            <div class="divider"></div>
 
             <div class="privkey-container" id="privkeycontainer">
                 <dom-if if="{{!showPrivateKey}}">
                     <template>
-                        <div class="greytext">{{localize('Your private key')}}</div>
+                        <div on-click="_toggleUnlock" class="showbtn">{{localize('show private key')}}</div>
+                        <!-- <div class="greytext">{{localize('Your private key')}}</div>
                         <div class="warning">{{localize('Be careful in displaying your private key. Its the only thing needed to steal your funds.')}}</div>
-                        <span class="bluetext" on-click="_toggleUnlock">{{localize('show private key')}}</span>
+                        <span class="bluetext" on-click="_toggleUnlock">{{localize('show private key')}}</span> -->
                     </template>
                 </dom-if>
                 <dom-if if="{{showPrivateKey}}">
                     <template>
                         <div class="greytext">{{localize('Your private key')}}</div>
                         <div class="key">{{privateKey}}</div>
-                        <span class="bluetext" on-click="_copyPrivateKey">{{localize('copy private key')}}</span>
+                        <div class="links">
+                            <div class="bluetext" on-click="_copyPrivateKey">{{localize('copy private key')}}</div>
+                            <div class="greylink" on-click="_showPrivateQR">{{localize('show QR code')}}</div>
+                        </div>
+                    <template is="dom-if" if="{{showPrivateQR}}">
                         <div class="qrcodeprivate">
                             <img src="{{qrCodePrivateKey}}">
                         </div>
+                    </template>
                         <template is="dom-if" if="{{iphone}}">
                             <paper-checkbox
                                 id="checkbox"
@@ -288,6 +348,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                     },
                     /**
+                    * showPublicQR determines if the Private Key is shown or not
+                    * @type {Boolean}
+                    */
+                    showPublicQR: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * showPrivateQR determines if the Private Key is shown or not
+                    * @type {Boolean}
+                    */
+                    showPrivateQR: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
                     * showPrivateKey determines if the Private Key is shown or not
                     * @type {Boolean}
                     */
@@ -375,6 +451,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.$.container.classList.remove('blur');
                 }
+            }
+            /**
+            * shows the QR of the public key
+            */
+            _showPublicQR() {
+                this.showPublicQR = !this.showPublicQR; 
+            }
+            /**
+            * shows the QR of the private key
+            */
+            _showPrivateQR() {
+                this.showPrivateQR = !this.showPrivateQR; 
             }
             /**
             * shows the private key section
