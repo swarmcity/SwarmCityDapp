@@ -53,8 +53,12 @@ The following custom properties and mixins are available for styling:
             }
         </style>
         <data-location id="location"></data-location>
-            <div class="geoloc">
-                <div on-click="_getLocation"></div>
+            <div  
+                tabindex="2" 
+                on-tap="_getLocation" 
+                on-KeyPress="_getLocation"
+                class="geoloc">
+                <div></div>
             </div>
     </template>
     <script>
@@ -83,8 +87,10 @@ The following custom properties and mixins are available for styling:
             /**
              * Get s the users location cinverts it tio a geo hash
              * and saves it to local storage
+            * @param {Object} event element clicked.
              */
-            _getLocation() {
+            _getLocation(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
                     this.loading = true;
                     this.$.location.getLocation()
                     .then((latlon) => {
@@ -99,6 +105,7 @@ The following custom properties and mixins are available for styling:
                         window.history.back();
                         this.loading = false;
                     });
+                }
             }
         }
         window.customElements.define(DisplayGeolocation.is, DisplayGeolocation);

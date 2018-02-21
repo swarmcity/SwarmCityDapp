@@ -111,7 +111,6 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             .createlink {
                 /* @apply --text-button-small; */
-                outline: none;
                 border: 0;
                 border-radius: 2px;
                 background-color: rgba(255, 255, 255, 0.25);
@@ -142,23 +141,11 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>      
         <div class="container" wide-layout$="{{wide}}">
-                <div class="hashtagaddbtn">        
-                        <!-- <dom-if if="{{!faded}}">
-                            <template>  -->
-                                <display-hashtagadd-btn 
-                                    route="[[route]]" 
-                                    path="{{path}}"
-                                    id="hashtagaddbtn">
-                                </display-hashtagadd-btn>
-                            <!--  </template>
-                        </dom-if> -->
-                    </div>
-
             <div class="header">
                 <div class="topleft">
                     <template is="dom-if" if="{{!publicKey}}">
                         <div class="createbox">
-                            <div class="createlink" on-tap="_toCreateAccount">{{localize('create account')}}
+                            <div tabindex="1" class="createlink" on-tap="_toCreateAccount" on-KeyPress="_toCreateAccount">{{localize('create account')}}
                             </div>
                         </div>
                     </template>
@@ -171,13 +158,24 @@ This code may only be used under the license found at https://github.com/swarmci
                     </template>
                 </div>
                 <div class="topright">
-                    <div class="back" on-click="_back" id="back"></div>
+                    <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back"></div>
                 </div>
             </div>
             <display-hashtag-list 
                 id="hashtagList" 
                 path="{{path}}">
             </display-hashtag-list>
+            <div class="hashtagaddbtn">        
+                    <!-- <dom-if if="{{!faded}}">
+                        <template>  -->
+                            <display-hashtagadd-btn 
+                                route="[[route]]" 
+                                path="{{path}}"
+                                id="hashtagaddbtn">
+                            </display-hashtagadd-btn>
+                        <!--  </template>
+                    </dom-if> -->
+            </div>
         </div>
     </template>
 
@@ -270,9 +268,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * takes the user to the welcome page
+            * @param {Object} event element clicked.
             */
-            _back() {
+            _back(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
                 this.set('route.path', 'welcome/');
+                }
             }
 
             /**
@@ -287,10 +288,13 @@ This code may only be used under the license found at https://github.com/swarmci
 
             /**
             * go to the page create account
+            * @param {Object} event element clicked.
             */
-            _toCreateAccount() {
-                sessionStorage.setItem('origin', this.route.path);
+            _toCreateAccount(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    sessionStorage.setItem('origin', this.route.path);
                     this.path = 'create-account/';
+                }
             }
 
             _loadExitAnimations() {

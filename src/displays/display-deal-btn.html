@@ -56,7 +56,7 @@ The following custom properties and mixins are available for styling:
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}" on-click="_next">
+        <div tabindex="6" class="container" wide-layout$="{{wide}}" on-tap="_next" on-KeyPress="_next">
             <div class="button">
                 <div class="icon"></div>
             </div>
@@ -109,17 +109,25 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
-
+            /**
+            * Fired on initial element load.
+            */
+            ready() {
+                super.ready();
+            }
             /**
             * Either go to the new here or new deal page depending if the user has a
             * complete acocunt.
+            * @param {Object} event element clicked.
             */
             _next() {
-                sessionStorage.setItem('origin', this.route.path);
-                if (this.publicKey) {
-                    this.path = 'new-request/';
-                } else {
-                    this.path = 'new-here/';
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    sessionStorage.setItem('origin', this.route.path);
+                    if (this.publicKey) {
+                        this.path = 'new-request/';
+                    } else {
+                        this.path = 'new-here/';
+                    }
                 }
             }
         }

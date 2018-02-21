@@ -139,15 +139,15 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <div class="container" wide-layout$="{{wide}}" id="container">
             <div class="top">
-                <div class="close" on-click="_close"></div>
+                <div tabindex="3" class="close" on-click="_close"></div>
                 <div class="title" id="title">{{localize('You must be new here')}}</div>
                 <div class="subtitle" id="subtitle">{{localize('No account was found. When you restore or create a new account its stored locally on your device')}}</div>
             </div>
             <div class="flexer"></div>            
             <div class="bottom">
                 <div class="buttons" id="buttons">
-                    <div class="create" on-click="_create">{{localize('create account')}}</div>
-                    <div class="restore" on-click="_restore">{{localize('restore account')}}</div>
+                    <div autofocus tabindex="1" class="create" on-click="_create" on-keypress="_create">{{localize('create account')}}</div>
+                    <div tabindex="2" class="restore" on-click="_restore" on-keypress="_restore">{{localize('restore account')}}</div>
                 </div>
             </div>
         </div>
@@ -210,9 +210,16 @@ This code may only be used under the license found at https://github.com/swarmci
 
             /**
             * takes the user to the next page in user creation
+            * @param {Object} e element clicked.
             */
-            _create() {
-                this.path = 'choose-avatar-and-username/';
+            _create(e) {
+                if (e.type != 'click') {
+                    if (e.keyCode === 13) {
+                        this.path = 'choose-avatar-and-username/';
+                    }
+                } else {
+                    this.path = 'choose-avatar-and-username/';
+                }
             }
             /**
             * takes the user to the previous page
@@ -228,9 +235,16 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * takes the user to the hashtag list page
+            * @param {Object} e element clicked.
             */
-            _restore() {
-                this.path = 'restore-account/';
+            _restore(e) {
+                if (e.type != 'click') {
+                    if (e.keyCode === 13) {
+                        this.path = 'restore-account/';
+                    }
+                } else {
+                    this.path = 'restore-account/';
+                }
             }
 
             /**

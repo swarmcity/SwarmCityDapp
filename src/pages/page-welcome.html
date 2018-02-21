@@ -26,13 +26,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 max-width: 100%;
             }
             
-            *:focus {
-                outline: none;
-            }            
-
             .container {
                 width: 100%;
             }
+
+            * :focus:hover {
+                outline: none;
+            } 
 
             .container>div:nth-child(1) {
                 @apply --layout-vertical;
@@ -129,7 +129,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
                 -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
                 text-align: center;
-                outline: none;
                 border: 0;
                 box-sizing: border-box;
                 padding: 30px 42px;
@@ -326,7 +325,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             </template>city</div>
                     </div>
                     <div>
-                        <div id="button" autofocus on-click="_btnClick" on-KeyPress="_btnClick">
+                        <div tabindex="2" id="button" on-tap="_btnClick" on-KeyPress="_btnClick">
                             <div>
                                 <div>{{localize('enter here')}}</div>
                                 <div>{{localize('boardwalk')}} v2.0</div>
@@ -338,16 +337,16 @@ This code may only be used under the license found at https://github.com/swarmci
             <div id="middle">
                 <ul>
                     <li>
-                        <a href="https://thisis.swarm.city/" target="_blank" rel="noopener">{{localize('What is Swarm City?')}}</a>
+                        <a tabindex="3" href="https://thisis.swarm.city/" target="_blank" rel="noopener">{{localize('What is Swarm City?')}}</a>
                     </li>
                     <li>
-                        <a href="http://support.swarm.city/" target="_blank" rel="noopener">{{localize('Support')}}</a>
+                        <a tabindex="4" href="http://support.swarm.city/" target="_blank" rel="noopener">{{localize('Support')}}</a>
                     </li>
                     <li>
-                        <a href="http://support.swarm.city/" target="_blank" rel="noopener">{{localize('FAQ')}}</a>
+                        <a tabindex="5" href="http://support.swarm.city/" target="_blank" rel="noopener">{{localize('FAQ')}}</a>
                     </li>
                     <li>
-                        <a href="https://advisors.swarm.city/" target="_blank" rel="noopener">{{localize('Advisors')}}</a>
+                        <a tabindex="6" href="https://advisors.swarm.city/" target="_blank" rel="noopener">{{localize('Advisors')}}</a>
                     </li>
                 </ul>
             </div>
@@ -355,25 +354,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div>{{localize('Find Swarm City on')}}</div>
                 <ul>
                     <li>
-                        <a href="https://slackinvite.swarm.city" target="_blank" rel="noopener">{{localize('Slack')}}</a>
+                        <a tabindex="7" href="https://slackinvite.swarm.city" target="_blank" rel="noopener">{{localize('Slack')}}</a>
                     </li>
                     <li>
-                        <a href="https://medium.com/swarm-city-times" target="_blank" rel="noopener">{{localize('Medium')}}</a>
+                        <a tabindex="8" href="https://medium.com/swarm-city-times" target="_blank" rel="noopener">{{localize('Medium')}}</a>
                     </li>
                     <li>
-                        <a href="https://github.com/swarmcity" target="_blank" rel="noopener">{{localize('Github')}}</a>
+                        <a tabindex="9" href="https://github.com/swarmcity" target="_blank" rel="noopener">{{localize('Github')}}</a>
                     </li>
                     <li>
-                        <a href="https://twitter.com/swarmcitydapp" target="_blank" rel="noopener">{{localize('Twitter')}}</a>
+                        <a tabindex="10" href="https://twitter.com/swarmcitydapp" target="_blank" rel="noopener">{{localize('Twitter')}}</a>
                     </li>
                     <li>
-                        <a href="https://www.facebook.com/groups/SwarmCity/" target="_blank" rel="noopener">{{localize('Facebook')}}</a>
+                        <a tabindex="11" href="https://www.facebook.com/groups/SwarmCity/" target="_blank" rel="noopener">{{localize('Facebook')}}</a>
                     </li>
                     <li>
-                        <a href="https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg" target="_blank" rel="noopener">{{localize('Youtube')}}</a>
+                        <a tabindex="12" href="https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg" target="_blank" rel="noopener">{{localize('Youtube')}}</a>
                     </li>
                     <li>
-                        <a href="https://www.reddit.com/r/SwarmCity/" target="_blank" rel="noopener">{{localize('Reddit')}}</a>
+                        <a tabindex="13" href="https://www.reddit.com/r/SwarmCity/" target="_blank" rel="noopener">{{localize('Reddit')}}</a>
                     </li>
                 </ul>
             </div>
@@ -456,14 +455,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
-
             /**
             * loads the next page, once loaded fires the exit animation
+            * @param {Object} event element clicked.
             */
-            _btnClick() {
-                this.set('route.path', 'hashtag-list/');
+            _btnClick(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    this.set('route.path', 'hashtag-list/');
+                }
             }
-
+            /**
+            * Fired on route change, loads this page's exit animations
+            */
             _loadExitAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {

@@ -32,6 +32,10 @@ The following custom properties and mixins are available for styling:
             :host {
                 display: block;
             }
+            
+            * :focus:hover {
+                outline: none;
+            }
 
             .container {
                 width: 100%;
@@ -105,7 +109,7 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <template is="dom-repeat" items="{{hashtags}}" id="domRepeat">
-                <div class="box" on-click="_toHashtag">
+                <div tabindex="3" class="box" on-click="_toHashtag" on-KeyPress="_toHashtag">
                     <div class="flex">
                             <div class="hashtag">
                                 <span class="cursor"><span class="hashtag">#</span>[[item.name]]</span>
@@ -161,11 +165,13 @@ The following custom properties and mixins are available for styling:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * @param {object} e represents the selected hashtag
             * When a hashtag is selected change the route to include the hashtag id.
+            * @param {object} event represents the selected hashtag
             */
-            _toHashtag(e) {
-                this.path = 'hashtag/'+e.model.__data.item.id+'/';
+            _toHashtag(event) {
+                if (event.keyCode === 13 || event.type == 'click') {
+                    this.path = 'hashtag/'+event.model.__data.item.id+'/';
+                }
             }
         }
         window.customElements.define(DisplayHashtagList.is, DisplayHashtagList);

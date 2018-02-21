@@ -124,7 +124,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .flexer {
-               @apply --titlepage-flexer;
+                @apply --titlepage-flexer;
             }
 
             .smallpoint {
@@ -184,7 +184,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="bottom" id="buttons">         
                 <template is="dom-if" if="{{!loading}}">
                     <div class="confirmers">
-                        <div on-click="_goBack"></div>
+                        <div tabindex="1" on-tap="_goBack" on-KeyPress="_goBack"></div>
                         <display-geolocation loading="{{loading}}"></display-geolocation>
                     </div>
                 </template>
@@ -255,9 +255,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * takes the user to the hashtag list page
+            * @param {Object} event element clicked.
             */
-            _goBack() {
-                window.history.back();
+            _goBack(event) {
+                    if (event.keyCode === 13 || event.type == 'tap') {
+                    window.history.back();
+                }
             }
 
             _loadExitAnimations() {

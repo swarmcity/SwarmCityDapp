@@ -60,7 +60,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center;
                 background-image: var(--sc-bg);
                 box-sizing: border-box;
-                height: 180px;
+                height: 170px;
                 position: fixed;
                 top: 0;
                 width: 100vw;
@@ -111,7 +111,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <div id="fix" class="container" wide-layout$="{{wide}}">
             <div class="header">
-                <div class="close" on-click="_changePage"></div>
+                <div tabindex="0" class="close" on-click="_changePage" on-KeyPress="_changePage"></div>
                 <div class="title">{{localize('Choose a language')}}</div>
             </div>
             <div class="list">
@@ -155,9 +155,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * routes back to page welcome
+            * @param {Object} event element clicked.
             */
-            _changePage() {
-                this.set('route.path', 'welcome/');
+            _changePage(event) {
+                if (event.keyCode === 13 || event.type == 'click') {
+                    this.set('route.path', 'welcome/');
+                }
             }
             /**
             * triggered after the user selects a language

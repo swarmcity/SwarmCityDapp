@@ -189,7 +189,7 @@ The following custom properties and mixins are available for styling:
             <!-- <div class="empty">{{localize('Currently no deals selected. Try a broader search.')}}</div> -->
             
         <template is="dom-repeat" items="{{items}}">
-            <div class="box" on-click="_toNewHere">
+            <div tabindex="5" class="box" on-tap="_toNewHere" on-KeyPress="_toNewHere">
                 <div class="top">
                     <div class="datedescript">
                             <div class="description">[[item.description]]</div>
@@ -411,11 +411,17 @@ The following custom properties and mixins are available for styling:
             //     }
             // }
 
+            /**
+            * Routes to New-Here
+            * @param {Object} event element clicked.
+            **/
             _toNewHere() {
-                if (!this.showSlider && !this.showInfo) {
-                    // stores the current hashtag choice in session
-                    sessionStorage.setItem('hashtagID', this.routeData.page);
-                    this.path = 'new-here/';
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    if (!this.showSlider && !this.showInfo) {
+                        // stores the current hashtag choice in session
+                        sessionStorage.setItem('hashtagID', this.routeData.page);
+                        this.path = 'new-here/';
+                    }
                 }
             }
             _toDetail() {

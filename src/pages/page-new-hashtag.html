@@ -160,11 +160,11 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="close" on-click="_toHashtagList" id="back"></div>                    
+                <div class="close" tabindex="1" on-tap="_toHashtagList" on-KeyPress="_toHashtagList" id="back"></div>                    
                 <div class="title" id="title">{{localize('Create a new hashtag')}}</div>
                 <div class="centerpiece" id="content">
                     <div>{{localize('Hashtags are marketplaces.')}}</div>
-                    <div class="bluelink"><a href="https://press.swarm.city/hashtags-revisited-694a7c9ff7a4" target="_blank">{{localize('Hashtags revisited')}}</a></div>     
+                    <div tabindex="2" class="bluelink"><a href="https://press.swarm.city/hashtags-revisited-694a7c9ff7a4" target="_blank">{{localize('Hashtags revisited')}}</a></div>     
                 </div>                               
             </div>
         </div>
@@ -226,9 +226,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
              * takes the user to the initiating hashtag page
+            * @param {Object} event element clicked.
              */
-            _toHashtagList() {
-                this.path = 'hashtag-list/';
+            _toHashtagList(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    this.path = 'hashtag-list/';
+                }
             }
             /**
              * changes the current path
