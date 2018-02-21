@@ -24,8 +24,6 @@ This code may only be used under the license found at https://github.com/swarmci
     -->
         <style include="shared-styles">
             :host {
-                /* width: 100vw;
-                min-height: 100vh; */
                 display: block;
                 background-image: var(--sc-bg);
             }
@@ -49,7 +47,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100%;
                 box-sizing: border-box;
                 padding: 100px 10vw 0 10vw;
-                /* padding: 15vh 12vw 8vh 12vw; */
             }
             .container[wide-layout] .key-container {
                 @apply --layout-vertical;
@@ -135,7 +132,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center;
                 width: 100%;
                 box-sizing: border-box;
-                padding: 0 10vw 0 10vw;
+                padding: 0 10vw 40px 10vw;
                 background-image: var(--sc-bg);
             }
             .container[wide-layout] .privkey-container {
@@ -192,7 +189,16 @@ This code may only be used under the license found at https://github.com/swarmci
                 /* height: auto;
                 margin-bottom: 0px; */
             }
-/* 
+
+.button {
+    @apply --layout-horizontal;
+    @apply --layout-center-justified;
+    @apply --text-button-big-fullwhite;
+    white-space: nowrap;
+    width: 100%;
+    max-width: 320px;
+    margin-top: 30px;
+} 
 
             .qrcodeprivate {
                 margin: 4vh 0 0 0;
@@ -274,7 +280,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                 </template>
             </div>
-            <div class="divider"></div>
+            <div id="divider" class="divider"></div>
 
             <div class="privkey-container" id="privkeycontainer">
                 <dom-if if="{{!showPrivateKey}}">
@@ -309,7 +315,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 {{localize('Ive copied my key and stored it in a safe location and want this to count as my backup.')}}
                             </paper-checkbox>
                             <template is="dom-if" if="{{showEnterbutton}}">
-                                <div class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
+                                <div id="enterButton" class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
                             </template>
                         </template>
                     </template>
@@ -563,6 +569,33 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.showPrivateKey = !this.showPrivateKey;
                 }
             }
+            /**
+             * Toggles visibility of enter button
+             */
+            _enterbuttonVisible() {
+                setTimeout(() => {
+                    if (this.$$('#enterButton')) {
+                        this.$$('#enterButton').scrollIntoView();
+                    }
+                }, 1);
+                if (this.$$('#checkbox') && this.$$('#checkbox').checked) {
+                    this.showEnterbutton = true;
+                } else {
+                    this.showEnterbutton = false;
+                }
+            }
+            /**
+             * takes the user to the initiating hashtag page
+             */
+            _enter() {
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
             _loadExitAnimations() {
             if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
@@ -618,6 +651,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 }
             }
+        
 
             _loadEntryAnimations() {
                 if (this.showPrivateKey) {
@@ -678,28 +712,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 }
             }
-
-            _enterbuttonVisible() {
-                if (this.$$('#checkbox') && this.$$('#checkbox').checked) {
-                    this.showEnterbutton = true;
-                } else {
-                    this.showEnterbutton = false;
-                }
-            }
-
-            /**
-             * takes the user to the initiating hashtag page
-             */
-             _enter() {
-                if (sessionStorage.getItem('origin')) {
-                    this.path = sessionStorage.getItem('origin');
-                    sessionStorage.removeItem('origin');
-                }
-                else {
-                    this.set('route.path', 'hashtag-list');
-                }
-            }
         }
-        window.customElements.define(MyKeys.is, MyKeys);
+    window.customElements.define(MyKeys.is, MyKeys);
     </script>
 </dom-module>
