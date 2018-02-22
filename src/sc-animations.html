@@ -16,7 +16,7 @@
             static get is() { return 'sc-animations'; }
             static get properties() {
                 return {
-                    default: {
+                    defaultAnimation: {
                         Type: Object,
                         value: {
                             entryAnimation: {
@@ -49,10 +49,97 @@
                                     endDelay: 0,
                                 },
                             },
-                        },
+                        }
+                    },
+                    customAnimations: {
+                        Type: Object,
+                        value: [
+                            // Standard slide-motion
+                            {
+                                routes: [{
+                                    from: 'new-here',
+                                    to: 'choose-avatar-and-username'
+                                }, {
+                                    from: 'choose-avatar-and-username',
+                                    to: 'new-here',
+                                }
+                                ],
+                                entryAnimation: {
+                                    descriptionArray: [
+                                        { 'transform': 'translateX(100%)' },
+                                        { 'transform': 'translateX(0)' },
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 150,
+                                        endDelay: 0,
+                                    },
+                                },
+                                exitAnimation: {
+                                    descriptionArray: [
+                                        { 'transform': 'translateX(0)' },
+                                        { 'transform': 'translateX(-100%)' },
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'backwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    },
+                                },
+                            },
+                            // Standard stop-signup
+                            {
+                                routes: [{
+                                    from: 'make-backup',
+                                    to: 'stop-signup'
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'make-backup',
+                                }],
+                                entryAnimation: {
+                                    descriptionArray: [
+                                        { 'opacity': '0' },
+                                        { 'opacity': '1' },
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 150,
+                                        endDelay: 0,
+                                    },
+                                },
+                                exitAnimation: {
+                                    descriptionArray: [
+                                        { 'opacity': '1' },
+                                        { 'opacity': '0' },
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'backwards',
+                                        duration: 200,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    },
+                                },
+                            }
+                        ]
                     },
                     animationsArray: {
                         Type: Array,
+                        value: [],
                         notify: true,
                         reflectToAttribute: true,
                     },
@@ -65,6 +152,27 @@
             }
 
             _loadAnimationsArray() {
+                // There's one pre-filled property: customAnimations.
+                // This is an array of predefined animation objects with a list of corresponding routes.
+                // We iterate over the customAnimations Array and for every route it pushes the corresponding 
+                // animation object into AnimationsArray.
+
+                for (let i = 0; i < this.customAnimations.length; i++) {
+                    for (let j = 0; j < this.customAnimations[i].routes.length; j++) {
+                        let from = this.customAnimations[i].routes[j].from;
+                        let to = this.customAnimations[i].routes[j].to;
+                        let entryAnimation = this.customAnimations[i].entryAnimation;
+                        let exitAnimation = this.customAnimations[i].exitAnimation;
+                        this.animationsArray.push({
+                            from,
+                            to,
+                            entryAnimation,
+                            exitAnimation
+                        });
+                    }
+
+                }
+
 
             }
         }
