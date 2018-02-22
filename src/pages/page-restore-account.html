@@ -20,52 +20,42 @@ This code may only be used under the license found at https://github.com/swarmci
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
-
             :host {
-              @apply --titlepage-closed;
+                @apply --titlepage-closed;
             }
-
             .container {
                 background-image: var(--sc-bg);
-              @apply --titlepage-closed-container;
+                @apply --titlepage-closed-container;
             }
             .container .top {
-              @apply --titlepage-closed-container-top;
+                @apply --titlepage-closed-container-top;
             }
             .container .bottom {
-              @apply --titlepage-closed-container-bottom;
+                @apply --titlepage-closed-container-bottom;
             }
             .container .title {
-              @apply --titlepage-title;
-              color: var(--sc-grey3b);
+                @apply --titlepage-title;
+                color: var(--sc-grey3b);
             }
-
             .container[wide-layout] {
-              @apply --titlepage-closed-wide-container;
+                @apply --titlepage-closed-wide-container;
             }
             .container[wide-layout] .top {
-              @apply --titlepage-closed-wide-container-top;
+                @apply --titlepage-closed-wide-container-top;
             }
             .container[wide-layout] .bottom {
-              @apply --titlepage-closed-wide-container-bottom;
+                @apply --titlepage-closed-wide-container-bottom;
             }
             .container[wide-layout] .title {
-              @apply --titlepage-title-wide;
+                @apply --titlepage-title-wide;
             }
-
-
             .close {
                 @apply --xmark-grey3-small;
                 @apply --close;
             }
-
             .close:active {
                 @apply --button-active;
             }
-
-
-
-
             .container .buttons {
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
@@ -77,8 +67,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-start;
             }
-
-
             .container .privkey {
                 @apply --text-button-big-fullwhite;
                 color: var(--sc-blue);
@@ -93,8 +81,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0 0 14px 0;
                 max-width: 320px;
             }
-
-
             .container .json {
                 @apply --text-button-big-fullwhite;
                 color: var(--sc-blue);
@@ -109,11 +95,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0;
                 max-width: 320px;
             }
-
             .flexer {
                 @apply --titlepage-flexer;
             }
-
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -133,7 +117,9 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="bottom">
                 <div class="buttons" id="buttons">
                     <div class="privkey" on-click="_privateKey">{{localize('With a private key')}}</div>
-                    <div class="json" on-click="_jsonFile">{{localize('upload an account file')}}</div>
+                    <template is="dom-if" if="{{!iphone}}">
+                        <div class="json" on-click="_jsonFile">{{localize('upload an account file')}}</div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -185,6 +171,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     pageID: {
                         type: String,
                         value: 'restore-account',
+                    },
+                    /**
+                    * ipgone is true if the user is on an iphone
+                    * @type {String}
+                    */
+                    iphone: {
+                        type: Boolean,
+                        statePath: 'iphone',
                     },
                 };
             }
