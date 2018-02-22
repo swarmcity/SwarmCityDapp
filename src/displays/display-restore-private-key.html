@@ -417,8 +417,32 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         value: '',
                     },
+                    /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                    },
+
                 };
             }
+
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
+
             /**
             * Fired when the component first loads
             */
@@ -524,6 +548,7 @@ The following custom properties and mixins are available for styling:
                     if (this.privateKey && this.privateKey.length === 64) {
                         this.$.wallet.restoreKey(this.privateKey, this.password)
                         .then((KeyStore) => {
+                            this.dispatch('PUBLICKEY', KeyStore.address);
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                             storage.keyStore = KeyStore.utcKeystore;
                             localStorage.setItem('SwarmCity', JSON.stringify(storage));
