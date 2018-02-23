@@ -336,7 +336,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <div id="container" class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}" on-scroll="_scrollHandler">
             <div class="dealbtn" id="dealButton">
                 <dom-if if="{{!faded}}">
                     <template>
@@ -586,7 +586,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.ready();
                 this._loadAnimations();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                window.onscroll = this._scrollHandler.bind(this);
             }
             /**
             * find the selected hashtag
@@ -805,7 +804,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * triggered once the user starts scrolling
             */
             _scrollHandler() {
-                if (!this.wide && window.scrollY != 0) {
+                if (!this.wide && this.$.container.scrollTop != 0) {
                     if (!this.$.hashtag.classList.contains('hashtag-scroll')) {
                         this.$.hashtag.classList.add('hashtag-scroll');
                     }
