@@ -16,15 +16,92 @@
             static get is() {return 'sc-animations';}
             static get properties() {
                 return {
-                    animationsArray: {
-                        Type: Array,
-                        notify: true,
-                        reflectToAttribute: true,
+                    /**
+                     * defaultAnimation is the default animation object
+                     * @type {Object}
+                     */
+                    defaultAnimation: {
+                        Type: Object,
+                        value: {
+                            entryAnimation: {
+                                descriptionArray: [
+                                    {'opacity': 0},
+                                    {'opacity': 1},
+                                ],
+                                descriptionObject: {
+                                    fill: 'forwards',
+                                    duration: 0,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 300,
+                                },
+                            },
+                            exitAnimation: {
+                                descriptionArray: [
+                                    {'opacity': 1},
+                                    {'opacity': 0},
+                                ],
+                                descriptionObject: {
+                                    fill: 'forwards',
+                                    duration: 0,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 300,
+                                    endDelay: 0,
+                                },
+                            },
+                        },
+                    },
+                    /**
+                     * customAnimations are the custom animation objects
+                     * @type {Object}
+                     */
+                    customAnimations: {
+                        Type: Object,
                         value: [
-                            // Standard slide-motion
+                            // TRANSITION A: SLIDE-MOTION
                             {
-                                from: 'new-here',
-                                to: 'choose-avatar-and-username',
+                                routes: [{
+                                    from: 'new-here',
+                                    to: 'choose-avatar-and-username',
+                                }, {
+                                    from: 'choose-avatar-and-username',
+                                    to: 'new-here',
+                                }, {
+                                    from: 'choose-avatar-and-username',
+                                    to: 'password-warning',
+                                }, {
+                                    from: 'password-warning',
+                                    to: 'choose-avatar-and-username',
+                                }, {
+                                    from: 'password-warning',
+                                    to: 'choose-password',
+                                }, {
+                                    from: 'choose-password',
+                                    to: 'password-warning',
+                                }, {
+                                    from: 'choose-password',
+                                    to: 'choose-avatar',
+                                }, {
+                                    from: 'choose-avatar',
+                                    to: 'choose-password',
+                                }, {
+                                    from: 'choose-password',
+                                    to: 'account-complete',
+                                }, {
+                                    from: 'account-complete',
+                                    to: 'choose-password',
+                                }, {
+                                    from: 'account-complete',
+                                    to: 'make-backup',
+                                }, {
+                                    from: 'make-backup',
+                                    to: 'account-complete',
+                                },
+                                ],
                                 entryAnimation: {
                                     descriptionArray: [
                                         {'transform': 'translateX(100%)'},
@@ -56,13 +133,46 @@
                                     },
                                 },
                             },
+                            // TRANSITION B: STANDARD TO STOP-SIGNUP
                             {
-                                from: 'choose-avatar-and-username',
-                                to: 'new-here',
+                                routes: [{
+                                    from: 'make-backup',
+                                    to: 'stop-signup',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'make-backup',
+                                }, {
+                                    from: 'choose-avatar-and-username',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'password-warning',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'choose-password',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'account-complete',
+                                    to: 'stop-signup',
+                                }, {
+                                    from: 'make-backup',
+                                    to: 'stop-signup',
+                                }, {
+                                    from: 'private-key',
+                                    to: 'stop-signup',
+                                }, {
+                                    from: 'json-file',
+                                    to: 'stop-signup',
+                                }, {
+                                    from: 'hashtag',
+                                    to: 'stop-signup',
+                                }, {
+                                    from: 'hashtag-list',
+                                    to: 'stop-signup',
+                                }],
                                 entryAnimation: {
                                     descriptionArray: [
-                                        {'transform': 'translateX(-100%)'},
-                                        {'transform': 'translateX(0)'},
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
                                     ],
                                     descriptionObject: {
                                         fill: 'forwards',
@@ -76,12 +186,12 @@
                                 },
                                 exitAnimation: {
                                     descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(100%)'},
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
                                     ],
                                     descriptionObject: {
                                         fill: 'backwards',
-                                        duration: 150,
+                                        duration: 200,
                                         iterations: 1,
                                         iterationStart: 0,
                                         easing: 'cubic-bezier(0.42,0,0.58,1)',
@@ -90,14 +200,40 @@
                                     },
                                 },
                             },
-                            // Standard slide-motion
+                            // TRANSITION C: STANDARD FROM STOP-SIGNUP, slide down
                             {
-                                from: 'choose-avatar-and-username',
-                                to: 'password-warning',
+                                routes: [{
+                                    from: 'new-here',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'create-account',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'location',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'account-complete',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'make-backup',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'private-key',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'json-file',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'stop-signup',
+                                    to: 'hashtag-list',
+                                }],
                                 entryAnimation: {
                                     descriptionArray: [
-                                        {'transform': 'translateX(100%)'},
-                                        {'transform': 'translateX(0)'},
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
                                     ],
                                     descriptionObject: {
                                         fill: 'forwards',
@@ -111,12 +247,12 @@
                                 },
                                 exitAnimation: {
                                     descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(-100%)'},
+                                        {'transform': 'translateY(0)'},
+                                        {'transform': 'translateY(100%)'},
                                     ],
                                     descriptionObject: {
                                         fill: 'backwards',
-                                        duration: 150,
+                                        duration: 200,
                                         iterations: 1,
                                         iterationStart: 0,
                                         easing: 'cubic-bezier(0.42,0,0.58,1)',
@@ -125,323 +261,15 @@
                                     },
                                 },
                             },
+                            // TRANSITION D: PAGE-WELCOME
                             {
-                                from: 'password-warning',
-                                to: 'choose-avatar-and-username',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(-100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard slide-motion
-                            {
-                                from: 'password-warning',
-                                to: 'choose-password',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'choose-password',
-                                to: 'password-warning',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(-100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard slide-motionb
-                            {
-                                from: 'choose-password',
-                                to: 'choose-avatar',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'choose-avatar',
-                                to: 'choose-password',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(-100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-
-                            // Standard slide-motion
-                            {
-                                from: 'choose-password',
-                                to: 'account-complete',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'account-complete',
-                                to: 'choose-password',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(-100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-
-                            // Standard slide-motion
-                            {
-                                from: 'account-complete',
-                                to: 'make-backup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'make-backup',
-                                to: 'account-complete',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(-100%)'},
-                                        {'transform': 'translateX(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateX(0)'},
-                                        {'transform': 'translateX(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-
-
-                            {
-                                from: 'welcome',
-                                to: 'language',
+                                routes: [{
+                                    from: 'welcome',
+                                    to: 'language',
+                                }, {
+                                    from: 'language',
+                                    to: 'welcome',
+                                }],
                                 entryAnimation: {
                                     descriptionArray: [
                                         {'transform': 'translateY(-100%)'},
@@ -472,44 +300,20 @@
                                         endDelay: 0,
                                     },
                                 },
+
                             },
+                            // TRANSITION E: STANDARD FROM HASHTAG
                             {
-                                from: 'language',
-                                to: 'welcome',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(100%)'},
-                                        {'transform': 'translateY(0)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 200,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'hashtag',
-                                to: 'new-here',
+                                routes: [{
+                                    from: 'hashtag',
+                                    to: 'new-here',
+                                }, {
+                                    from: 'hashtag',
+                                    to: 'create-account',
+                                }, {
+                                    from: 'hashtag',
+                                    to: 'location',
+                                }],
                                 entryAnimation: {
                                     descriptionArray: [
                                         {'opacity': '0'},
@@ -541,9 +345,94 @@
                                     },
                                 },
                             },
+                            // TRANSITION F: backwards
                             {
-                                from: 'new-here',
-                                to: 'hashtag',
+                                routes: [{
+                                    from: 'my-profile',
+                                    to: 'warning-delete',
+                                }],
+                                entryAnimation: {
+                                    descriptionArray: [
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'forwards',
+                                        duration: 200,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 200,
+                                        endDelay: 0,
+                                    },
+                                },
+                                exitAnimation: {
+                                    descriptionArray: [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'backwards',
+                                        duration: 200,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    },
+                                },
+                            },
+                            // TRANSITION G: backwards 300
+                            {
+                                routes: [{
+                                    from: 'download-success',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'print-success',
+                                    to: 'hashtag',
+                                }, {
+                                    from: 'my-keys',
+                                    to: 'hashtag',
+                                }],
+                                entryAnimation: {
+                                    descriptionArray: [
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 300,
+                                        endDelay: 0,
+                                    },
+                                },
+                                exitAnimation: {
+                                    descriptionArray: [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    descriptionObject: {
+                                        fill: 'backwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    },
+                                },
+
+                            },
+                            // TRANSITION H: my-profile slide-down
+                            {
+                                routes: [{
+                                    from: 'warning-delete',
+                                    to: 'my-profile',
+                                }],
+
                                 entryAnimation: {
                                     descriptionArray: [
                                         {'opacity': '0'},
@@ -574,214 +463,14 @@
                                         endDelay: 0,
                                     },
                                 },
+
                             },
+                            // TRANSITION I: 700ms duration
                             {
-                                from: 'hashtag',
-                                to: 'create-account',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 200,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'create-account',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'hashtag',
-                                to: 'location',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 200,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'location',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'my-profile',
-                                to: 'warning-delete',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 200,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'warning-delete',
-                                to: 'my-profile',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'warning-delete',
-                                to: 'welcome',
+                                routes: [{
+                                    from: 'warning-delete',
+                                    to: 'welcome',
+                                }],
                                 entryAnimation: {
                                     descriptionArray: [
                                         {'opacity': '0'},
@@ -813,678 +502,42 @@
                                     },
                                 },
                             },
-                            {
-                                from: 'download-success',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 300,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'print-success',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 300,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'choose-avatar-and-username',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'password-warning',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'choose-password',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'my-keys',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 300,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'account-complete',
-                                to: 'stop-signup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'stop-signup',
-                                to: 'account-complete',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'make-backup',
-                                to: 'stop-signup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'stop-signup',
-                                to: 'make-backup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'private-key',
-                                to: 'stop-signup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'stop-signup',
-                                to: 'private-key',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'json-file',
-                                to: 'stop-signup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'stop-signup',
-                                to: 'json-file',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'hashtag',
-                                to: 'stop-signup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'stop-signup',
-                                to: 'hashtag',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            // Standard STOP SIGNUP
-                            {
-                                from: 'hashtag-list',
-                                to: 'stop-signup',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-                            {
-                                from: 'stop-signup',
-                                to: 'hashtag-list',
-                                entryAnimation: {
-                                    descriptionArray: [
-                                        {'opacity': '0'},
-                                        {'opacity': '1'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 150,
-                                        endDelay: 0,
-                                    },
-                                },
-                                exitAnimation: {
-                                    descriptionArray: [
-                                        {'transform': 'translateY(0)'},
-                                        {'transform': 'translateY(-100%)'},
-                                    ],
-                                    descriptionObject: {
-                                        fill: 'backwards',
-                                        duration: 200,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    },
-                                },
-                            },
-
                         ],
+                    },
+                    /**
+                     * animationsArray is an Array of all animation objects
+                     * @type {Array}
+                     */
+                    animationsArray: {
+                        Type: Array,
+                        value: [],
+                        notify: true,
+                        reflectToAttribute: true,
                     },
                 };
             }
 
-            _loadAnimations() {
-                if (this.routeExit[0] != this.routeExit[1]) {
-                    let transitionFound = false;
-                    for (let i = 0; i < this.animationsArray.length; i++) {
-                        if (this.animationsArray[i].from == this.routeExit[0]
-                            && this.animationsArray[i].to == this.routeExit[1]) {
-                            this.animations = this.animationsArray[i];
-                            transitionFound = true;
-                        }
-                    }
-                    if (!transitionFound) {
-                        this.animations = {
-                            entryAnimation: {
-                                descriptionArray: [
-                                    {'opacity': 0},
-                                    {'opacity': 1},
-                                ],
-                                descriptionObject: {
-                                    fill: 'forwards',
-                                    duration: 0,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: this.onPageTransitionDuration,
-                                    endDelay: this.onPageTransitionDuration,
-                                },
-                            },
-                            exitAnimation: {
-                                descriptionArray: [
-                                    {'opacity': 1},
-                                    {'opacity': 0},
-                                ],
-                                descriptionObject: {
-                                    fill: 'forwards',
-                                    duration: 0,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                    delay: this.onPageTransitionDuration,
-                                    endDelay: 0,
-                                },
-                            },
-                        };
+            connectedCallback() {
+                super.connectedCallback();
+                this._loadAnimationsArray();
+            }
+            /**
+             * Iterate through the custom animations and populate the animationsArray
+             */
+            _loadAnimationsArray() {
+                this.animationsArray.push(this.defaultAnimation);
+                for (let i = 0; i < this.customAnimations.length; i++) {
+                    for (let j = 0; j < this.customAnimations[i].routes.length; j++) {
+                        let from = this.customAnimations[i].routes[j].from;
+                        let to = this.customAnimations[i].routes[j].to;
+                        let entryAnimation = this.customAnimations[i].entryAnimation;
+                        let exitAnimation = this.customAnimations[i].exitAnimation;
+                        this.animationsArray.push({
+                            from,
+                            to,
+                            entryAnimation,
+                            exitAnimation,
+                        });
                     }
                 }
             }
