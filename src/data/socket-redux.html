@@ -201,7 +201,6 @@
                 this._detectIphone();
                 // Listen for changes on 'txReceipt'
                 this.socket.on('txReceiptChanged', (reply) => {
-                    console.log('We recieved a txReceiptChanged event: '+ JSON.stringify(reply));
                     if (reply.response == 200) {
                         // Do somthing
                     }
@@ -211,25 +210,21 @@
                     if (reply.response == 200) {
                         this.balance = reply.data;
                         this.dispatch('BALANCE', this.balance);
-                        console.log('The balance has changed: ' + JSON.stringify(this.balance));
                     }
                 });
                 // Listen for changes on 'fxChanged'
                 this.socket.on('fxChanged', (reply) => {
                     this.fx = reply;
                     this.dispatch('FX', this.fx);
-                    console.log('The fx price has changed: ' + JSON.stringify(this.fx));
                 });
                 // Listen for changes on 'gasPriceChanged'
                 this.socket.on('gasPriceChanged', (reply) => {
                     this.gasprice = reply;
                     this.dispatch('GASPRICE', this.gasprice);
-                    console.log('The gass price has changed: ' + JSON.stringify(this.gasprice));
                 });
                 this.socket.on('nonceChanged', (reply) => {
                     this.nonce = reply;
                     this.dispatch('NONCE', this.nonce);
-                    console.log('The nonce has changed: ' + JSON.stringify(this.nonce));
                 });
                 // Listen for changes on 'hashtagsChanged'
                 this.socket.on('hashtagsChanged', (reply) => {
@@ -287,7 +282,6 @@
                     if (reply.response == 200) {
                         this.balance = reply.data;
                         this.dispatch('BALANCE', this.balance);
-                        console.log('The balance has changed after subscribing: ' + JSON.stringify(this.balance));
                     }
                 });
                 // subscribe to updates of the nonce of this publickey
@@ -300,7 +294,6 @@
                     if (reply.response == 200) {
                         this.nonce = reply.data.nonce;
                         this.dispatch('NONCE', this.nonce);
-                        console.log('The nonce has changed after subscribing: ' + JSON.stringify(this.nonce));
                     }
                 });
 
@@ -345,14 +338,12 @@
                     if (reply.response == 200) {
                         this.transactions = reply.data;
                         this.dispatch('TRANSACTIONS', this.transactions);
-                        console.log('The transactions has changed after subscribing: ' + JSON.stringify(this.transactions));
                     }
                 });
                 this.socket.on('txhistoryChanged', (reply) => {
                     if (reply.response == 200) {
                         this.transactions = reply.data;
                         this.dispatch('TRANSACTIONS', this.transactions);
-                        console.log('The txhistoryChanged has changed : ' + JSON.stringify(this.transactions));
                     }
                 });
             }
@@ -381,11 +372,9 @@
                 });
             }
             _broadcast() {
-                console.log('Now Sending this transaction to the API: '+ JSON.stringify(this.broadcast));
                 this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
                 }, (reply) => {
-                    console.log('After sendRawTx we recieved back:' + reply);
                     this._txReceipt(reply.data.transactionHash);
                 });
             }
@@ -397,7 +386,6 @@
                         transactionHash: transactionHash,
                     },
                 }, (reply) => {
-                    console.log('We have recieved the tx recipt: '+ JSON.stringify(reply));
                     if (reply.response == 200) {
                         // Do somthing!
                     }
