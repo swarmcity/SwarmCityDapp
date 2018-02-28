@@ -70,11 +70,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-bottom: 1px;
             }
 
-            .icon-send {
-                @apply --vmark-white-small;
+            .broadcasted {
+                opacity: 1 !important;
             }
 
-            .icon-complete {
+            .icon-vmark {
                 @apply --vmark-white-small;
                 opacity: 0.2;
             }
@@ -95,6 +95,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .successbox {
                 @apply --icon-button-big;
+                opacity: 0.2;
             }
 
             .success {
@@ -193,27 +194,52 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="statusbox">
                     <div class="bar">
                         <div class="statusinfo">{{localize('Sending SWT')}}</div>
-                        <div class="icon-send"></div>
+                        <dom-if if="{{!broadcasted}}">
+                            <template>
+                                    <div class="loading">
+                                        <div class="smallpoint" id="point1"></div>
+                                        <div class="smallpoint" id="point2"></div>
+                                        <div class="smallpoint" id="point3"></div>
+                                    </div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{broadcasted}}">
+                            <template>
+                                    <div class="icon-vmark broadcasted"></div>
+                            </template>
+                        </dom-if>
                     </div>
                     <div class="bar">
                         <div class="statusinfo">{{localize('Received TXhash')}}</div>
-                        <div class="icon-receive">
-                            <div class="loading">
-                                <div class="smallpoint" id="point1"></div>
-                                <div class="smallpoint" id="point2"></div>
-                                <div class="smallpoint" id="point3"></div>
-                            </div>
+                                <dom-if if="{{!broadcasted}}">
+                                    <template>
+                                            <div class="icon-vmark">
+                                    </template>
+                                </dom-if>
+                                <dom-if if="{{broadcasted}}">
+                                    <template>
+                                            <div class="icon-vmark broadcasted"></div>
+                                    </template>
+                                </dom-if>
                         </div>
-                    </div>
                     <div class="bar">
                         <div class="statusinfo">{{localize('TX complete')}}</div>
-                        <div class="icon-complete"></div>
+                        <dom-if if="{{!broadcasted}}">
+                            <template>
+                                    <div class="icon-vmark">
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{broadcasted}}">
+                            <template>
+                                    <div class="icon-vmark broadcasted"></div>
+                            </template>
+                        </dom-if>
                     </div>
                 </div>
             </div>
             <div class="bottom">
                 <div class="choicebox">
-                    <div class="successbox" on-click="_success" on-keypress="_success" tabindex="1">
+                    <div id="button" class="successbox" on-click="_success" on-keypress="_success" tabindex="1">
                         <div class="success"></div>
                     </div>
                 </div>
@@ -254,7 +280,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
-                        // observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -262,7 +287,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        // observer: '_loadEntryAnimations',
                     },
                     /**
                     * txhash of broadcasted transaction
@@ -271,7 +295,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     txhash: {
                         type: Object,
                         statePath: 'txhash',
-                        observer: '_print',
+                        observer: '_broadcasted',
+                    },
+                    /**
+                    * Broadcasted is true if the client has received txhash
+                    * @type {Boolean}
+                    */
+                    broadcasted: {
+                        type: Boolean,
+                        value: false,
                     },
                 };
             }
@@ -284,7 +316,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the conversion success page
             */
             _success() {
-                this.path = 'my-wallet';
+                if (this.broadcasted) {
+                    this.path = 'my-wallet';
+                }
             }
 
             /**
@@ -296,8 +330,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
-            _print() {
-                console.log(this.txhash);
+            _broadcasted() {
+                this.broadcasted = true;
+                this.$.button.classList.add('broadcasted');
             }
         }
         window.customElements

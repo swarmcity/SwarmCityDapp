@@ -207,7 +207,6 @@
                 this._detectIphone();
                 // Listen for changes on 'txReceipt'
                 this.socket.on('txReceiptChanged', (reply) => {
-                    console.log('We recieved a txReceiptChanged event: '+ JSON.stringify(reply));
                     if (reply.response == 200) {
                         // Do somthing
                     }
@@ -344,7 +343,6 @@
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.transactions = reply.data;
-                        console.log(reply);
                         this.dispatch('TRANSACTIONS', this.transactions);
                     }
                 });
@@ -380,12 +378,9 @@
                 });
             }
             _broadcast() {
-                console.log('Now Sending this transaction to the API: '+ JSON.stringify(this.broadcast));
                 this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
                 }, (reply) => {
-                    console.log('After sendRawTx we recieved back:');
-                    console.log(reply);
                     this.dispatch('TXHASH', reply);
                     this._txReceipt(reply.data.transactionHash);
                 });
@@ -398,7 +393,6 @@
                         transactionHash: transactionHash,
                     },
                 }, (reply) => {
-                    console.log('We have recieved the tx recipt: '+ JSON.stringify(reply));
                     if (reply.response == 200) {
                         // Do somthing!
                     }
