@@ -180,6 +180,12 @@
                             avatar: avatar,
                         };
                     },
+                    TXHASH: function(txhash) {
+                        return {
+                            type: 'TXHASH',
+                            txhash: txhash,
+                        };
+                    },
                 });
             }
 
@@ -375,20 +381,7 @@
                 this.socket.emit('sendRawTx', {
                     tx: this.broadcast,
                 }, (reply) => {
-                    this._txReceipt(reply.data.transactionHash);
-                });
-            }
-
-            _txReceipt(transactionHash) {
-                this.socket.emit('subscribe', {
-                    channel: 'txReceipt',
-                    args: {
-                        transactionHash: transactionHash,
-                    },
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        // Do somthing!
-                    }
+                    this.dispatch('TXHASH', reply);
                 });
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
