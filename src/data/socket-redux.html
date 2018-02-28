@@ -180,6 +180,12 @@
                             avatar: avatar,
                         };
                     },
+                    TXHASH: function(txhash) {
+                        return {
+                            type: 'TXHASH',
+                            txhash: txhash,
+                        };
+                    },
                 });
             }
 
@@ -338,6 +344,7 @@
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.transactions = reply.data;
+                        console.log(reply);
                         this.dispatch('TRANSACTIONS', this.transactions);
                     }
                 });
@@ -379,6 +386,7 @@
                 }, (reply) => {
                     console.log('After sendRawTx we recieved back:');
                     console.log(reply);
+                    this.dispatch('TXHASH', reply);
                     this._txReceipt(reply.data.transactionHash);
                 });
             }
