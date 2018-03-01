@@ -304,8 +304,16 @@ This code may only be used under the license found at https://github.com/swarmci
                 else {
                     this.path = 'hashtag-list';
                 }
+                this._resetValues();
             }
-
+            /**
+            * When leaving the page, entered values get reset
+            */
+            _resetValues() {
+                setTimeout(()=>{
+                    this.username = null;
+                }, 500);
+            }
             /**
             * deletes the profile
             */
@@ -361,7 +369,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                 storage.keyStore && storage.keyStore.Crypto ?
-                    this.path = 'account-complete/' : this.path = 'password-warning/';
+                this.path = 'account-complete/' : this.path = 'password-warning/';
+                this._resetValues();
             }
             /**
             * changes the current path
@@ -466,7 +475,88 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                         this.$.input.focus();
-                    // Here come the Entry Animations
+                        if (this.routeExit[0] == 'resize-avatar') {
+                            // Here come the Entry Animations, coming from page resize-avatar
+                            let newHeight = -((this.$.contentavatar.offsetTop)-160);
+                            this.$.title.animate(
+                                [
+                                    {'transform': 'translateX(-100vw)'},
+                                    {'transform': 'translateX(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            if (this.wide) {
+                            this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translate(82px,'+newHeight+'px) scale(1.11, 1.11)'},
+                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            } else {
+                                this.$.contentavatar.animate(
+                                [
+                                    {'transform': 'translate(0px,'+newHeight+'px) scale(1.11, 1.11)'},
+                                    {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            }
+                            this.$.contentinput.animate(
+                                [
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttons.animate(
+                                [
+                                    {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                    {'transform': 'translateX(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
                     }
                 }
             }
