@@ -440,6 +440,10 @@ Example:
             }
             static get properties() {
                 return {
+                    /**
+                    * The language as chosen by user
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -548,6 +552,10 @@ Example:
                         type: Object,
                         statePath: 'balance',
                     },
+                    /**
+                    * the amount to be sent
+                    * @type {String}
+                    */
                     amountToSend: {
                         type: String,
                     },
@@ -563,6 +571,7 @@ Example:
             * @param {Object} event element clicked.
             */
             _start(event) {
+                this._resetValues();
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = true;
                     this.looking = false;
@@ -579,6 +588,7 @@ Example:
             * @param {Object} event element clicked.
             */
             _showShortcode(event) {
+                this._resetValues();
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.shortcode = true;
@@ -592,6 +602,7 @@ Example:
             * @param {Object} event element clicked.
             */
             _sendSwt(event) {
+                this._resetValues();
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.looking = false;
@@ -654,6 +665,7 @@ Example:
                 };
                 sessionStorage.setItem('tx', JSON.stringify(txData));
                 this.path = 'confirm-sending/';
+                this._resetValues();
             }
             /**
             * Fires when the user enters each number into amount
@@ -669,7 +681,16 @@ Example:
                     }
                 }
             }
-
+            /**
+            * When changing status, entered values get reset
+            */
+            _resetValues() {
+                this.amountToSend = null;
+                this.sendDestination = null;
+            }
+            /**
+            * When entering incorrect number format, style for error
+            */
             _error() {
                 if (this.send) {
                     if (!this.error) {
