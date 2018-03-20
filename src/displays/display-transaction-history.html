@@ -32,21 +32,87 @@ Example:
                 width: 100%;
             }
 
-            .success {
-                color: blue;
-            }
+            .success {}
 
             .failed {
                 color: red;
             }
 
-            .pending {
-                color: green;
+            .pending {}
+
+            .pending>span {
+                color: blue;
             }
 
             .horizontal {
                 @apply --layout-horizontal;
                 @apply --start-justified;
+            }
+
+            .greylink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey3b);
+                margin-top: 10px;
+            }
+
+            .bluelink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-blue);
+                margin-top: 10px;
+            }
+
+            .pending-dots {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -54,12 +120,44 @@ Example:
 
             <template is="dom-repeat" items="{{txHistory}}">
                 <div class="txContainer">
-                    <div class$="{{_checkState(item.status)}}">
+                    <div class$="[[_checkState(item.status)]]">
                         <div class="date">3 sec ago</div>
                         <div class="horizontal">
-                            <template is="dom-if" if="[[_isIncoming(item.direction)]]">+</template>
-                            <template is="dom-if" if="{{_isOutgoing(item.direction)}}">-</template>
+
+                            <template is="dom-if" if="[[_isFailed(item.status)]]">
+                                <span class="failed-text">Failed:&nbsp;</span>
+                            </template>
+
+                            <template is="dom-if" if="[[_isIncoming(item.direction)]]">+&nbsp;</template>
+                            <template is="dom-if" if="[[_isOutgoing(item.direction)]]">-&nbsp;</template>
+
+                            <div>[[_format(item.amount)]] SWT&nbsp;</div>
+
+                            <template is="dom-if" if="[[!_isPending(item.status)]]">
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from [[item.from]]</template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to [[item.to]]</template>
+                            </template>
+
+                            <template is="dom-if" if="[[_isPending(item.status)]]">
+                                <div class="pending-dots">
+                                    <div class="smallpoint" id="point1"></div>
+                                    <div class="smallpoint" id="point2"></div>
+                                    <div class="smallpoint" id="point3"></div>
+                                </div>
+                            </template>
+
                         </div>
+
+                        <template is="dom-if" if="[[_isPending(item.status)]]">
+                            <div class="horizontal">
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from [[item.from]]</template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to [[item.to]]</template>
+                            </div>
+                        </template>
+
+                    </div>
+                    <div>
+                        <span class$="[[_checkLinkStyle(item.status)]]">show on etherscan</span>
                     </div>
                 </div>
             </template>
@@ -102,74 +200,74 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 // BEGIN TEMPORARY REDUX FILL
 
-                    this.dispatch('TXHISTORY', [
-                        // dummy incoming & confirmed transaction
-                        {
-                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'dateTime': 1521180797077,
-                            'direction': 'in',
-                            'amount': 7000000000000000000,
-                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'block': 5264013,
-                            'status': 1,
-                        },
-                        // dummy outgoing & confirmed transaction
-                        {
-                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'dateTime': 1521180797077,
-                            'direction': 'out',
-                            'amount': 18000000000000000000,
-                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'block': 5264013,
-                            'status': 1,
-                        },
-                        // dummy incoming & pending transaction
-                        {
-                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'dateTime': 1521180797077,
-                            'direction': 'in',
-                            'amount': 11000000000000000000,
-                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'block': 5264013,
-                            'status': 0,
-                        },
-                        // dummy outgoing & pending transaction
-                        {
-                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'dateTime': 1521180797077,
-                            'direction': 'out',
-                            'amount': 12000000000000000000,
-                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'block': 5264013,
-                            'status': 0,
-                        },
-                        // dummy incoming & failed transaction
-                        {
-                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'dateTime': 1521180797077,
-                            'direction': 'in',
-                            'amount': 15000000000000000000,
-                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'block': 5264013,
-                            'status': 2,
-                        },
-                        // dummy outgoing & failed transaction
-                        {
-                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'dateTime': 1521180797077,
-                            'direction': 'out',
-                            'amount': 22000000000000000000,
-                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                            'block': 5264013,
-                            'status': 2,
-                        }]
-                    );
+                this.dispatch('TXHISTORY', [
+                    // dummy incoming & confirmed transaction
+                    {
+                        'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'dateTime': 1521180797077,
+                        'direction': 'in',
+                        'amount': 7000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 2,
+                    },
+                    // dummy outgoing & confirmed transaction
+                    {
+                        'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'dateTime': 1521180797077,
+                        'direction': 'out',
+                        'amount': 18000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 2,
+                    },
+                    // dummy incoming & pending transaction
+                    {
+                        'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'dateTime': 1521180797077,
+                        'direction': 'in',
+                        'amount': 11000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 0,
+                    },
+                    // dummy outgoing & pending transaction
+                    {
+                        'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'dateTime': 1521180797077,
+                        'direction': 'out',
+                        'amount': 12000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 0,
+                    },
+                    // dummy incoming & failed transaction
+                    {
+                        'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'dateTime': 1521180797077,
+                        'direction': 'in',
+                        'amount': 15000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 1,
+                    },
+                    // dummy outgoing & failed transaction
+                    {
+                        'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'dateTime': 1521180797077,
+                        'direction': 'out',
+                        'amount': 22000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 1,
+                    }]
+                );
                 // END TEMPORARY REDUX FILL
             }
 
@@ -206,6 +304,26 @@ Example:
 
             _isIncoming(direction) {
                 return direction == 'in' ? true : false;
+            }
+
+            _isPending(status) {
+                return status == 2 ? true : false;
+            }
+
+            _isSucces(status) {
+                return status == 0 ? true : false;
+            }
+
+            _isFailed(status) {
+                return status == 1 ? true : false;
+            }
+
+            _format(amount) {
+                return amount / 1000000000000000000;
+            }
+
+            _checkLinkStyle(status) {
+                return status == 2 ? 'bluelink' : 'greylink';
             }
         }
 
