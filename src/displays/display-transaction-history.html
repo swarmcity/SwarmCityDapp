@@ -30,19 +30,38 @@ Example:
                 @apply --start-justified;
                 width: 100%;
             }
+
+            .success {
+                color: blue;
+            }
+
+            .failure {
+                color: red;
+            }
+
+            .pending {
+                color: green;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                @apply --start-justified;
+            }
+
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
 
-            <template is="dom-repeat" items="{{transactions}}">
-                <div>[[item.transactionHash]]</div>
-                <div>[[item.dateTime]]</div>
-                <div>[[item.direction]]</div>
-                <div>[[item.amount]]</div>
-                <div>[[item.from]]</div>
-                <div>[[item.to]]</div>
-                <div>[[item.block]]</div>
-                <div>[[item.status]]</div>
+            <template is="dom-repeat" items="{{txHistory}}">
+                <div class="txContainer">
+                    <div class$="{{_checkState(item.status)}}">
+                        <div class="date">3 sec ago</div>
+                        <div class="horizontal">
+                            <dom-if if="{{_isIncoming(item.direction)}}">+</dom-if>
+                            <dom-if if="{{_isOutgoing(item.direction)}}">-</dom-if>
+                        </div>
+                    </div>
+                </div>
             </template>
 
         </div>
@@ -71,7 +90,7 @@ Example:
                     * An array containing the transaction history for this public key
                     * @type {Array}
                     */
-                    transactions: {
+                    txHistory: {
                         type: Array,
                         value: [
                             // dummy incoming & confirmed transaction
@@ -128,7 +147,6 @@ Example:
                                 'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
                                 'block': 5264013,
                                 'status': 2,
-
                             },
                             // dummy outgoing & failed transaction
                             {
@@ -148,6 +166,32 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            _checkState(status) {
+                switch (status) {
+                    case 0:
+                        return 'success';
+                        break;
+                    case 1:
+                        return 'failed';
+                        break;
+                    case 2:
+                        return 'pending';
+                        break;
+                }
+            }
+
+            _isOutgoing(direction) {
+                if (direction === 'out') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            _isIncoming(direction) {
+                return direction == 'in' ? true : false 
             }
         }
 
