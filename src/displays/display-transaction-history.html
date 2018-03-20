@@ -153,7 +153,7 @@ Example:
                             <div>[[_format(item.amount)]] SWT&nbsp;</div>
 
                             <template is="dom-if" if="[[!_isPending(item.status)]]">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">fro&nbsp;<span class="truncate">[[item.from]]</span></template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;<span class="truncate">[[item.from]]</span></template>
                                 <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;<span class="truncate">[[item.to]]</span></template>
                             </template>
 
@@ -217,8 +217,8 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                // BEGIN TEMPORARY REDUX FILL
 
+                // BEGIN TEMPORARY REDUX FILL
                 this.dispatch('TXHISTORY', [
                     // dummy incoming & confirmed transaction
                     {
@@ -312,6 +312,11 @@ Example:
             }
             // END TEMPORARY REDUX ACCESS
 
+            /**
+            * returns style class depending on item status
+            * @param {Number} status statuscode of item
+            * @return {string} classname
+            */
             _checkState(status) {
                 switch (status) {
                     case 0:
@@ -323,26 +328,56 @@ Example:
                 }
             }
 
+            /**
+            * returns true if transaction is outgoing
+            * @param {string} direction direction of transaction
+            * @return {boolean} boolean
+            */
             _isOutgoing(direction) {
                 return direction == 'out' ? true : false;
             }
 
+            /**
+            * returns true if transaction is incoming
+            * @param {string} direction direction of transaction
+            * @return {boolean} boolean
+            */
             _isIncoming(direction) {
                 return direction == 'in' ? true : false;
             }
 
+            /**
+            * returns true if transactioncode states pending
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
             _isPending(status) {
                 return status == 2 ? true : false;
             }
 
+            /**
+            * returns true if transactioncode states success
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
             _isSucces(status) {
                 return status == 0 ? true : false;
             }
 
+            /**
+            * returns true if transactioncode states failed
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
             _isFailed(status) {
                 return status == 1 ? true : false;
             }
 
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
             _formatDate(dateTime) {
                 if (webpack.moment().valueOf() - dateTime < 86400000) {
                     return webpack.moment(dateTime).fromNow();
@@ -351,14 +386,28 @@ Example:
                 }
             }
 
+            /**
+            * formats amount to more readable format
+            * @param {Number} amount amount that has been transferred
+            * @return {Number} formatted amount
+            */
             _format(amount) {
                 return amount / 1000000000000000000;
             }
 
+            /**
+            * switches to correct styling depending on item status
+            * @param {Number} status statuscode of item
+            * @return {string} classname
+            */
             _checkLinkStyle(status) {
                 return status == 2 ? 'bluelink' : 'greylink';
             }
 
+            /**
+            * takes the user to txhash page on etherscan
+            * @param {Object} event element clicked
+            */
             _toEtherscan(event) {
                 window.open('https://etherscan.io/tx/' + event.model.__data.item.transactionHash, '_blank');
             }
