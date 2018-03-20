@@ -7,6 +7,7 @@ This code may  be used under the license found at https://github.com/swarmcity/l
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../data/data-time.html">
+<link rel="import" href="../redux-state.html">
 <!--
     Displays and shared styles 
 -->
@@ -47,7 +48,6 @@ Example:
                 @apply --layout-horizontal;
                 @apply --start-justified;
             }
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -92,73 +92,7 @@ Example:
                     */
                     txHistory: {
                         type: Array,
-                        value: [
-                            // dummy incoming & confirmed transaction
-                            {
-                                'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'dateTime': 1521180797077,
-                                'direction': 'in',
-                                'amount': 7000000000000000000,
-                                'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'block': 5264013,
-                                'status': 1,
-                            },
-                            // dummy outgoing & confirmed transaction
-                            {
-                                'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'dateTime': 1521180797077,
-                                'direction': 'out',
-                                'amount': 18000000000000000000,
-                                'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'block': 5264013,
-                                'status': 1,
-                            },
-                            // dummy incoming & pending transaction
-                            {
-                                'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'dateTime': 1521180797077,
-                                'direction': 'in',
-                                'amount': 11000000000000000000,
-                                'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'block': 5264013,
-                                'status': 0,
-                            },
-                            // dummy outgoing & pending transaction
-                            {
-                                'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'dateTime': 1521180797077,
-                                'direction': 'out',
-                                'amount': 12000000000000000000,
-                                'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'block': 5264013,
-                                'status': 0,
-                            },
-                            // dummy incoming & failed transaction
-                            {
-                                'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'dateTime': 1521180797077,
-                                'direction': 'in',
-                                'amount': 15000000000000000000,
-                                'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'block': 5264013,
-                                'status': 2,
-                            },
-                            // dummy outgoing & failed transaction
-                            {
-                                'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'dateTime': 1521180797077,
-                                'direction': 'out',
-                                'amount': 22000000000000000000,
-                                'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                                'block': 5264013,
-                                'status': 2,
-                            }],
+                        statePath: 'txHistory',
                     },
                 };
             }
@@ -166,7 +100,95 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                // BEGIN TEMPORARY REDUX FILL
+                setTimeout(() => {
+                    this.dispatch('TXHISTORY', [
+                        // dummy incoming & confirmed transaction
+                        {
+                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'dateTime': 1521180797077,
+                            'direction': 'in',
+                            'amount': 7000000000000000000,
+                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'block': 5264013,
+                            'status': 1,
+                        },
+                        // dummy outgoing & confirmed transaction
+                        {
+                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'dateTime': 1521180797077,
+                            'direction': 'out',
+                            'amount': 18000000000000000000,
+                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'block': 5264013,
+                            'status': 1,
+                        },
+                        // dummy incoming & pending transaction
+                        {
+                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'dateTime': 1521180797077,
+                            'direction': 'in',
+                            'amount': 11000000000000000000,
+                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'block': 5264013,
+                            'status': 0,
+                        },
+                        // dummy outgoing & pending transaction
+                        {
+                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'dateTime': 1521180797077,
+                            'direction': 'out',
+                            'amount': 12000000000000000000,
+                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'block': 5264013,
+                            'status': 0,
+                        },
+                        // dummy incoming & failed transaction
+                        {
+                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'dateTime': 1521180797077,
+                            'direction': 'in',
+                            'amount': 15000000000000000000,
+                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'block': 5264013,
+                            'status': 2,
+                        },
+                        // dummy outgoing & failed transaction
+                        {
+                            'transactionHash': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'dateTime': 1521180797077,
+                            'direction': 'out',
+                            'amount': 22000000000000000000,
+                            'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                            'block': 5264013,
+                            'status': 2,
+                        }]
+                    );
+                }, 5000);
+                // END TEMPORARY REDUX FILL
             }
+
+            // BEGIN TEMPORARY REDUX ACCESS
+            /**
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    TXHISTORY: function(txHistory) {
+                        return {
+                            type: 'TXHISTORY',
+                            txHistory: txHistory,
+                        };
+                    },
+                });
+            }
+            // END TEMPORARY REDUX ACCESS
 
             _checkState(status) {
                 switch (status) {
