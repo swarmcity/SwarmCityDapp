@@ -35,7 +35,7 @@ Example:
                 color: blue;
             }
 
-            .failure {
+            .failed {
                 color: red;
             }
 
@@ -57,8 +57,8 @@ Example:
                     <div class$="{{_checkState(item.status)}}">
                         <div class="date">3 sec ago</div>
                         <div class="horizontal">
-                            <dom-if if="{{_isIncoming(item.direction)}}">+</dom-if>
-                            <dom-if if="{{_isOutgoing(item.direction)}}">-</dom-if>
+                            <template is="dom-if" if="[[_isIncoming(item.direction)]]">+</template>
+                            <template is="dom-if" if="{{_isOutgoing(item.direction)}}">-</template>
                         </div>
                     </div>
                 </div>
@@ -172,26 +172,19 @@ Example:
                 switch (status) {
                     case 0:
                         return 'success';
-                        break;
                     case 1:
                         return 'failed';
-                        break;
                     case 2:
                         return 'pending';
-                        break;
                 }
             }
 
             _isOutgoing(direction) {
-                if (direction === 'out') {
-                    return true;
-                } else {
-                    return false;
-                }
+                return direction == 'out' ? true : false;
             }
 
             _isIncoming(direction) {
-                return direction == 'in' ? true : false 
+                return direction == 'in' ? true : false;
             }
         }
 
