@@ -8,6 +8,7 @@ This code may  be used under the license found at https://github.com/swarmcity/l
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../data/data-time.html">
 <link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
 <!--
     Displays and shared styles 
 -->
@@ -140,7 +141,7 @@ Example:
             <template is="dom-repeat" items="{{txHistory}}">
                 <div class="item">
                     <div class$="[[_checkState(item.status)]]">
-                        <div class="date">3 sec ago</div>
+                        <div class="date">[[_formatDate(item.dateTime)]]</div>
                         <div class="horizontal">
 
                             <template is="dom-if" if="[[_isFailed(item.status)]]">
@@ -224,7 +225,7 @@ Example:
                     {
                         'transactionHash':
                             '0xf47c3e8b3b7b44730c04cb8cff28d2098dfbbba7f5be65dda1558a232e711f4d',
-                        'dateTime': 1521180797077,
+                        'dateTime': 1521563134387,
                         'direction': 'in',
                         'amount': 7000000000000000000,
                         'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
@@ -236,19 +237,19 @@ Example:
                     {
                         'transactionHash':
                             '0xf47c3e8b3b7b44730c04cb8cff28d2098dfbbba7f5be65dda1558a232e711f4d',
-                        'dateTime': 1521180797077,
+                        'dateTime': 1519864652000,
                         'direction': 'out',
                         'amount': 18000000000000000000,
                         'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
                         'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
                         'block': 5264013,
-                        'status': 2,
+                        'status': 1,
                     },
                     // dummy incoming & pending transaction
                     {
                         'transactionHash':
                             '0xf47c3e8b3b7b44730c04cb8cff28d2098dfbbba7f5be65dda1558a232e711f4d',
-                        'dateTime': 1521180797077,
+                        'dateTime': 1518444651500,
                         'direction': 'in',
                         'amount': 11000000000000000000,
                         'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
@@ -260,7 +261,7 @@ Example:
                     {
                         'transactionHash':
                             '0xf47c3e8b3b7b44730c04cb8cff28d2098dfbbba7f5be65dda1558a232e711f4d',
-                        'dateTime': 1521180797077,
+                        'dateTime': 1517444651500,
                         'direction': 'out',
                         'amount': 12000000000000000000,
                         'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
@@ -272,7 +273,7 @@ Example:
                     {
                         'transactionHash':
                             '0xf47c3e8b3b7b44730c04cb8cff28d2098dfbbba7f5be65dda1558a232e711f4d',
-                        'dateTime': 1521180797077,
+                        'dateTime': 1516444651500,
                         'direction': 'in',
                         'amount': 15000000000000000000,
                         'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
@@ -284,13 +285,13 @@ Example:
                     {
                         'transactionHash':
                             '0xf47c3e8b3b7b44730c04cb8cff28d2098dfbbba7f5be65dda1558a232e711f4d',
-                        'dateTime': 1521180797077,
+                        'dateTime': 1519944651500,
                         'direction': 'out',
                         'amount': 22000000000000000000,
                         'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
                         'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
                         'block': 5264013,
-                        'status': 1,
+                        'status': 0,
                     }]
                 );
                 // END TEMPORARY REDUX FILL
@@ -341,6 +342,14 @@ Example:
 
             _isFailed(status) {
                 return status == 1 ? true : false;
+            }
+
+            _formatDate(dateTime) {
+                if (webpack.moment().valueOf() - dateTime < 86400000) {
+                    return webpack.moment(dateTime).fromNow();
+                } else {
+                    return webpack.moment(dateTime).format('DD MMM YYYY - HH:mm');
+                }
             }
 
             _format(amount) {
