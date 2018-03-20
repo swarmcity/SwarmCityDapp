@@ -28,16 +28,28 @@ Example:
             .container {
                 @apply --layout-vertical;
                 @apply --start-justified;
+                padding: 5vh 0 8vh 0;
                 width: 100%;
             }
 
-            .success {}
+            .item {
+                margin-bottom: 20px;
+            }
+
+            .success {
+                @apply --body-default;
+                color: var(--sc-grey3b);
+            }
 
             .failed {
                 color: red;
             }
 
-            .pending {}
+            .failed-text {
+                font-weight: bold;
+            }
+            .pending {
+                color: var(--sc-grey3);}
 
             .pending>span {
                 color: blue;
@@ -46,6 +58,13 @@ Example:
             .horizontal {
                 @apply --layout-horizontal;
                 @apply --start-justified;
+            }
+
+            .truncate {
+                width: 90px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .greylink {
@@ -58,7 +77,7 @@ Example:
             }
 
             .bluelink {
-                @apply --small-bold;
+                @apply --small-bold;    
                 cursor: pointer;
                 color: var(--sc-blue);
                 text-decoration: none;
@@ -118,7 +137,7 @@ Example:
         <div class="container" wide-layout$="{{wide}}">
 
             <template is="dom-repeat" items="{{txHistory}}">
-                <div class="txContainer">
+                <div class="item">
                     <div class$="[[_checkState(item.status)]]">
                         <div class="date">3 sec ago</div>
                         <div class="horizontal">
@@ -133,8 +152,8 @@ Example:
                             <div>[[_format(item.amount)]] SWT&nbsp;</div>
 
                             <template is="dom-if" if="[[!_isPending(item.status)]]">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from [[item.from]]</template>
-                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to [[item.to]]</template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">fro&nbsp;<span class="truncate">[[item.from]]</span></template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;<span class="truncate">[[item.to]]</span></template>
                             </template>
 
                             <template is="dom-if" if="[[_isPending(item.status)]]">
@@ -149,8 +168,8 @@ Example:
 
                         <template is="dom-if" if="[[_isPending(item.status)]]">
                             <div class="horizontal">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from [[item.from]]</template>
-                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to [[item.to]]</template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from&nbsp;<span class="truncate">[[item.from]]</span></template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to&nbsp;<span class="truncate">[[item.to]]</span></template>
                             </div>
                         </template>
 
