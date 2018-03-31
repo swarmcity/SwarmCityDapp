@@ -50,47 +50,47 @@ Example:
                 @apply --button-active;
             }
 
-            .shortcode-box {
+            .shortCode-box {
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
                 height: 100%;
                 width: 100%;
             }
 
-            .container[wide-layout] .shortcode-box {
+            .container[wide-layout] .shortCode-box {
                 @apply --layout-start;
             }
 
 
-            .container .shortcode-greytext {
+            .container .shortCode-greytext {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 margin-top: 8px;
                 text-align: center;
             }
 
-            .container[wide-layout] .shortcode-greytext {
+            .container[wide-layout] .shortCode-greytext {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 margin-top: 8px;
                 text-align: left;
             }
 
-            .shortcode-code {
+            .shortCode-code {
                 @apply --main-title3;
                 color: var(--sc-grey4);
             }
 
-            .shortcode-code-close {
+            .shortCode-code-close {
                 @apply --xmark-blue-small;
                 cursor: pointer;
             }
 
-            .shortcode-code-close:active {
+            .shortCode-code-close:active {
                 @apply --button-active;
             }
 
-            .shortcode-codebox {
+            .shortCode-codebox {
                 @apply --layout-horizontal;
                 @apply --layout-center-center;
                 margin-top: 3px;
@@ -348,7 +348,7 @@ Example:
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .shortcode-code-close,
+                .shortCode-code-close,
                 .code-close,
                 .disagree,
                 .agree {
@@ -365,12 +365,12 @@ Example:
                 </div>
             </template>
 
-            <template is="dom-if" if="{{shortcode}}">
-                <div class="shortcode-box">
-                    <div class="shortcode-greytext">{{localize('Your temporary shortcode')}} is valid for <data-time countdown="600000" epoch="[[shortcodeVal.received]]"></data-time> min</div>
-                    <div class="shortcode-codebox">
-                        <div class="shortcode-code">{{shortcodeVal.shortcode}}</div>
-                        <div tabindex="10" class="shortcode-code-close" on-tap="_start" on-keyPress="_start"></div>
+            <template is="dom-if" if="{{usingShortCode}}">
+                <div class="shortCode-box">
+                    <div class="shortCode-greytext">{{localize('Your temporary shortcode')}} is valid for <data-time countdown="600000" epoch="[[shortCode.received]]"></data-time> min</div>
+                    <div class="shortCode-codebox">
+                        <div class="shortCode-code">{{shortCode.shortCode}}</div>
+                        <div tabindex="10" class="shortCode-code-close" on-tap="_start" on-keyPress="_start"></div>
                     </div>
                 </div>
             </template>
@@ -381,7 +381,7 @@ Example:
                         <paper-input tabindex="1" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"  value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
-                    <paper-input tabindex="2" class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
+                    <paper-input tabindex="2" class="send-destination" label="{{localize('Receivers shortCode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
                     </div>                  
@@ -459,14 +459,14 @@ Example:
                         notify: true,
                     },
                     /**
-                    * Shortcode if true shows the shortcode
+                    * Shortcode if true shows the shortCode
                     * @type {Boolean}
                     */
-                    shortcode: {
+                    usingShortCode: {
                         type: Boolean,
-                        value: false,
                         reflectToAttribute: true,
                         notify: true,
+                        statePath: 'usingShortCode',
                     },
                     /**
                     * Send if true shows the send settings
@@ -523,9 +523,9 @@ Example:
                     * Shortcode for public key
                     * @type {String}
                     */
-                    shortcodeVal: {
+                    shortCode: {
                         type: String,
-                        statePath: 'shortcode',
+                        statePath: 'shortCode',
                     },
                     /**
                     * The user error
@@ -536,7 +536,7 @@ Example:
                         observer: '_error',
                     },
                     /**
-                    * the public key for the given shortcode
+                    * the public key for the given shortCode
                     * @type {String}
                     */
                     tokey: {
@@ -567,7 +567,20 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * asks the user to select show shortcode to send swt
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    USINGSHORTCODE: function(usingShortCode) {
+                        return {
+                            type: 'USINGSHORTCODE',
+                            usingShortCode: usingShortCode,
+                        };
+                    },
+                });
+            }
+            /**
+            * asks the user to select show shortCode to send swt
             * @param {Object} event element clicked.
             */
             _start(event) {
@@ -575,7 +588,7 @@ Example:
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = true;
                     this.looking = false;
-                    this.shortcode = false;
+                    this.dispatch('USINGSHORTCODE', false);
                     this.send = false;
                     this.found = false;
                     this.updateStyles({
@@ -584,21 +597,21 @@ Example:
                 }
             }
             /**
-            * Shows the user their shortcode
+            * Shows the user their shortCode
             * @param {Object} event element clicked.
             */
             _showShortcode(event) {
                 this._resetValues();
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
-                    this.shortcode = true;
+                    this.dispatch('USINGSHORTCODE', true);
                     this.updateStyles({
                         '--container-height': '85px',
                     });
                 }
             }
             /**
-            * User can enter amount and public key or shortcode
+            * User can enter amount and public key or shortCode
             * @param {Object} event element clicked.
             */
             _sendSwt(event) {
@@ -606,7 +619,7 @@ Example:
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.looking = false;
-                    this.shortcode = false;
+                    this.dispatch('USINGSHORTCODE', false);
                     this.found = false;
                     this.send = true;
                     setTimeout(()=>{
@@ -618,7 +631,7 @@ Example:
                 }
             }
             /**
-            * switches to state shortcode
+            * switches to state shortCode
             * @param {Object} event element clicked.
             */
             _checkPublicKey(event) {
@@ -633,13 +646,13 @@ Example:
                             this.sendToPublicKey = this.sendDestination;
                             this._goToConfirm();
                         } else {
-                            this.error = this.localize('shortcode or address is the wrong length');
+                            this.error = this.localize('shortCode or address is the wrong length');
                         }
                     }
                 }
             }
             /**
-            * shows waiting animation while we get the publick key for the given shortcode
+            * shows waiting animation while we get the publick key for the given shortCode
             */
             _gettingPublicKey() {
                     this.send = false;
@@ -649,7 +662,7 @@ Example:
                     });
             }
             /**
-            * Firted once the API returns the public key for the supplied shortcode
+            * Fired once the API returns the public key for the supplied shortCode
             */
             _totKey() {
                 this.sendToPublicKey = this.tokey;
