@@ -283,7 +283,7 @@ Example:
                 width: 100%;
             }
 
-            .container[wide-layout] .found-avatarbox{
+            .container[wide-layout] .found-avatarbox {
                 margin: 30px 0 0 0;
 
             }
@@ -354,7 +354,7 @@ Example:
             .container[wide-layout] .timer-box {
                 @apply --layout-start;
             }
-            
+
             .timer-text {
                 margin-top: 20px;
                 @apply --small-light;
@@ -365,6 +365,54 @@ Example:
                 max-width: 300px;
                 margin-top: 10px;
                 --paper-progress-active-color: var(--sc-blue);
+            }
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
+            }
+
+            .loading {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -391,13 +439,23 @@ Example:
                 <div class="shortCode-box">
                     <div class="shortCode-greytext">{{localize('Your temporary shortcode')}}</div>
                     <div class="shortCode-codebox">
-                        <div class="shortCode-code">{{shortCode}}</div>
+
+                        <template is="dom-if" if="{{shortCode.shortCode}}">
+                            <div class="shortCode-code">{{shortCode.shortCode}}</div>
+                        </template>
+                        <template is="dom-if" if="{{!shortCode.shortCode}}">
+                            <div class="loading">
+                                <div class="smallpoint" id="point1"></div>
+                                <div class="smallpoint" id="point2"></div>
+                                <div class="smallpoint" id="point3"></div>
+                            </div>
+                        </template>
                         <div tabindex="10" class="shortCode-code-close" on-tap="_start" on-keyPress="_start"></div>
                     </div>
                     <template is="dom-if" if="{{showCountDown}}">
                         <div class="timer-box">
                             <div class="timer-text">
-                                    {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
+                                {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
                             </div>
                             <paper-progress value="[[timeLeft]]" max="30"></paper-progress>
                         </div>
@@ -408,13 +466,14 @@ Example:
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
                     <div class="totalamountinput">
-                        <paper-input tabindex="1" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"  value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
+                        <paper-input tabindex="1" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}"
+                            on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
                     <paper-input tabindex="2" class="send-destination" label="{{localize('Receivers shortCode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
-                    </div>                  
+                    </div>
                     <div class="send-buttonbox">
                         <div tabindex="3" class="disagree" on-tap="_start" on-keyPress="_start"></div>
                         <div tabindex="4" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
@@ -439,7 +498,7 @@ Example:
             </template>
 
             <template is="dom-if" if="{{found}}">
-                    <p> enter password</p>
+                <p> enter password</p>
             </template>
 
         </div>
@@ -650,25 +709,24 @@ Example:
             */
             _showShortcode(event) {
                 this._resetValues();
-                console.log(this.shortCode);
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.dispatch('USINGSHORTCODE', true);
                     this.updateStyles({
                         '--container-height': '85px',
                     });
-                    this.timeLeft = 120;
-                    this.interval = setInterval(()=>{
+                }
+            }
+
+            _shortCode() {
+                if (this.shortCode != null) {
+                    this.timeLeft = this.shortCode.validity / 1000;
+                    this.interval = setInterval(() => {
                         if (this.timeLeft > 0) {
                             this.timeLeft -= 1;
                         }
                     }, 1000);
                 }
-            }
-
-            _shortCode() {
-                console.log('observer triggered')
-                console.log(this.shortCode);
             }
             /**
             * This observer triggers actions on time left
@@ -703,7 +761,7 @@ Example:
                     this.dispatch('USINGSHORTCODE', false);
                     this.found = false;
                     this.send = true;
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         this.$$('#sendInput').focus();
                     }, 1);
                     this.updateStyles({
@@ -736,11 +794,11 @@ Example:
             * shows waiting animation while we get the publick key for the given shortCode
             */
             _gettingPublicKey() {
-                    this.send = false;
-                    this.looking = true;
-                    this.updateStyles({
-                        '--container-height': '80px',
-                    });
+                this.send = false;
+                this.looking = true;
+                this.updateStyles({
+                    '--container-height': '80px',
+                });
             }
             /**
             * Fired once the API returns the public key for the supplied shortCode
@@ -789,11 +847,15 @@ Example:
             _error() {
                 if (this.send) {
                     if (!this.error) {
-                        this.updateStyles({'--container-height': '268px',
-                        '--minheight-errorcontainer': '0px'});
+                        this.updateStyles({
+                            '--container-height': '268px',
+                            '--minheight-errorcontainer': '0px',
+                        });
                     } else {
-                        this.updateStyles({'--container-height': '288px',
-                        '--minheight-errorcontainer': '20px'});
+                        this.updateStyles({
+                            '--container-height': '288px',
+                            '--minheight-errorcontainer': '20px',
+                        });
                     }
                 }
             }
