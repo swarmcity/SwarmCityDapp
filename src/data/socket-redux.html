@@ -219,12 +219,12 @@
                 // Create websocket
                 this.socket = io(environment.socketurl, // eslint-disable-line
 
-                {
-                    query: 'apiUser=swarmCity',
-                    path: '/api',
-                    transports: ['websocket', 'xhr-polling'],
-                    autoConnect: false,
-                });
+                    {
+                        query: 'apiUser=swarmCity',
+                        path: '/api',
+                        transports: ['websocket', 'xhr-polling'],
+                        autoConnect: false,
+                    });
             }
 
             ready() {
@@ -365,8 +365,8 @@
                         break;
                     case '/hashtag/7c9v87bc98v7b/':
                     // the number here '7c9v87bc98v7b'is the hashtag id
-                        // now we know which page the user is on request the collection...
-                        // of items and save them to redux in ITEMCOLLECTION
+                    // now we know which page the user is on request the collection...
+                    // of items and save them to redux in ITEMCOLLECTION
                 }
             }
             _reqToKey() {
@@ -386,32 +386,28 @@
                     this.dispatch('TXHASH', reply);
                 });
             }
-            
+
             // fired when entering needing a shortCode
             _usingShortCode() {
                 if (this.usingShortCode) {
-                    this.socket.emit('subscribe', { 
-                    channel: 'createShortCode', 
-                    args: {
-                        address: this.publicKey,
-                        userName: this.username,
-                        avatar: this.avatar
-
-                    },
-                }, (reply) => { 
-                    if (reply.response == 200) {
-                        this.shortCode = reply.data; 
-                        this.shortCode.received = (new Date).getTime(); 
-                        this.dispatch('SHORTCODE', this.shortCode); 
-                    }
-                });
+                    this.socket.emit('subscribe', {
+                        channel: 'createShortCode',
+                        args: {
+                            address: this.publicKey,
+                            userName: this.username,
+                            avatar: this.avatar,
+                        },
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this.shortCode = reply.data;
+                            this.shortCode.received = (new Date).getTime();
+                            this.dispatch('SHORTCODE', this.shortCode);
+                        }
+                    });
                 } else {
-                    // cancel subscription
-
+                    this.dispatch('SHORTCODE', null);
                 }
-
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
 </dom-module>
-
