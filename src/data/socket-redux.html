@@ -21,6 +21,22 @@
                         type: Object,
                     },
                     /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    /**
+                    * Avatar represents the user's base64 of their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    /**
                     * fx is the SWT exchange rates
                     * @type {Object}
                     */
@@ -69,7 +85,7 @@
                         type: Number,
                     },
                     /**
-                    * This is the shortcode we want a public key for
+                    * This is the shortCode we want a public key for
                     * as given by the ETH network
                     * @type {Number}
                     */
@@ -88,12 +104,12 @@
                         observer: '_broadcast',
                     },
                     /**
-                    * This is a generated shortcode
+                    * This is a generated shortCode
                     * @type {String}
                     */
-                    shortcode: {
+                    shortCode: {
                         type: String,
-                        statePath: 'shortcode',
+                        statePath: 'shortCode',
                     },
                     /**
                     * Historic transactions for publickey
@@ -111,6 +127,15 @@
                         type: String,
                         statePath: 'reqipfs',
                         observer: '_reqipfs',
+                    },
+                    /**
+                    * usingShortCode will maintain a subscription while true
+                    * @type {Boolean}
+                    */
+                    usingShortCode: {
+                        type: Boolean,
+                        statePath: 'usingShortCode',
+                        observer: '_usingShortCode',
                     },
                 };
             }
@@ -156,10 +181,10 @@
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function(shortcode) {
+                    SHORTCODE: function(shortCode) {
                         return {
                             type: 'SHORTCODE',
-                            shortcode: shortcode,
+                            shortCode: shortCode,
                         };
                     },
                     TRANSACTIONS: function(transactions) {
@@ -346,7 +371,7 @@
             }
             _reqToKey() {
                 this.socket.emit('readShortCode', {
-                    shortcode: this.reqtokey,
+                    shortCode: this.reqtokey,
                 }, (reply) => {
                     if (reply.response === 200) {
                         this.tokey = reply.data.payload.publickey;
@@ -360,6 +385,33 @@
                 }, (reply) => {
                     this.dispatch('TXHASH', reply);
                 });
+            }
+            
+            // fired when entering needing a shortCode
+            _usingShortCode() {
+                if (this.usingShortCode) {
+                    this.socket.emit('subscribe', { 
+                    channel: 'createShortCode', 
+                    args: {
+                        address: this.publicKey,
+                        userName: this.username,
+                        avatar: this.avatar
+
+                    },
+                }, (reply) => { 
+                    if (reply.response == 200) {
+                        this.shortCode = reply.data; 
+                        this.shortCode.received = (new Date).getTime(); 
+                        this.dispatch('SHORTCODE', this.shortCode); 
+                    } else {
+                    // cancel subscription
+                    }
+                });
+                } else {
+                console.log('usingShortCode is false');
+
+                }
+
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
