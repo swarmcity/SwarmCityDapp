@@ -350,6 +350,10 @@ Example:
                 @apply --layout-vertical;
                 @apply --layout-center;
             }
+
+            .container[wide-layout] .timer-box {
+                @apply --layout-start;
+            }
             
             .timer-text {
                 margin-top: 20px;
@@ -358,6 +362,7 @@ Example:
 
             paper-progress {
                 width: 100%;
+                max-width: 300px;
                 margin-top: 10px;
                 --paper-progress-active-color: var(--sc-blue);
             }
@@ -448,28 +453,6 @@ Example:
         )) {
             static get is() {
                 return 'display-transaction-status';
-            }
-            /**
-            * Redux action for sertting balance
-            * @param {balance} balance
-            */
-            static get actions() {
-                return Object.assign({
-                    REQTOKEY: function(reqtokey) {
-                        return {
-                            type: 'REQTOKEY',
-                            reqtokey: reqtokey,
-                        };
-                    },
-                });
-                // return Object.assign({
-                //     USINGSHORTCODE: function(usingShortCode) {
-                //         return {
-                //             type: 'USINGSHORTCODE',
-                //             usingShortCode: usingShortCode,
-                //         };
-                //     },
-                // });
             }
             static get properties() {
                 return {
@@ -623,6 +606,25 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    REQTOKEY: function(reqtokey) {
+                        return {
+                            type: 'REQTOKEY',
+                            reqtokey: reqtokey,
+                        };
+                    },
+                    USINGSHORTCODE: function(usingShortCode) {
+                        return {
+                            type: 'USINGSHORTCODE',
+                            usingShortCode: usingShortCode,
+                        };
+                    },
+                });
             }
             /**
             * asks the user to select show shortCode to send swt
