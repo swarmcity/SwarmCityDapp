@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 <!--
 
 Example:
@@ -355,8 +356,10 @@ Example:
                 @apply --small-light;
             }
 
-            progress {
-                width: 50px;
+            paper-progress {
+                width: 100%;
+                margin-top: 10px;
+                --paper-progress-active-color: var(--sc-blue);
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -391,7 +394,7 @@ Example:
                             <div class="timer-text">
                                     {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
                             </div>
-                            <progress value="24" max="30" id="progressBar"></progress>
+                            <paper-progress value="[[timeLeft]]" max="30"></paper-progress>
                         </div>
                     </template>
                 </div>
@@ -459,6 +462,14 @@ Example:
                         };
                     },
                 });
+                // return Object.assign({
+                //     USINGSHORTCODE: function(usingShortCode) {
+                //         return {
+                //             type: 'USINGSHORTCODE',
+                //             usingShortCode: usingShortCode,
+                //         };
+                //     },
+                // });
             }
             static get properties() {
                 return {
@@ -614,19 +625,6 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * Redux actions
-            */
-            static get actions() {
-                return Object.assign({
-                    USINGSHORTCODE: function(usingShortCode) {
-                        return {
-                            type: 'USINGSHORTCODE',
-                            usingShortCode: usingShortCode,
-                        };
-                    },
-                });
-            }
-            /**
             * asks the user to select show shortCode to send swt
             * @param {Object} event element clicked.
             */
@@ -655,7 +653,7 @@ Example:
                     this.updateStyles({
                         '--container-height': '85px',
                     });
-                    this.timeLeft = 11;
+                    this.timeLeft = 120;
                     this.interval = setInterval(()=>{
                         if (this.timeLeft > 0) {
                             this.timeLeft -= 1;
@@ -668,9 +666,9 @@ Example:
             */
             _timeLeft() {
                 switch (this.timeLeft) {
-                    case 10: {
+                    case 30: {
                         this.updateStyles({
-                            '--container-height': '100px',
+                            '--container-height': '120px',
                         });
                         this.showCountDown = true;
                         break;
@@ -678,7 +676,7 @@ Example:
                     case 0: {
                         let e = {
                             type: 'functionCall',
-                        }
+                        };
                         this._start(e);
                         break;
                     }
