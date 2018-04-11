@@ -344,6 +344,21 @@ Example:
                 @apply --error-msg-wide;
             }
 
+            .timer-box {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center;
+            }
+            
+            .timer-text {
+                margin-top: 20px;
+                @apply --small-light;
+            }
+
+            progress {
+                width: 50px;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -371,8 +386,13 @@ Example:
                         <div class="shortCode-code">{{shortCode}}</div>
                         <div tabindex="10" class="shortCode-code-close" on-tap="_start" on-keyPress="_start"></div>
                     </div>
-                    <template is="dom-if" if="{{timer}}">
-                        
+                    <template is="dom-if" if="{{showCountDown}}">
+                        <div class="timer-box">
+                            <div class="timer-text">
+                                    {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
+                            </div>
+                            <progress value="24" max="30" id="progressBar"></progress>
+                        </div>
                     </template>
                 </div>
             </template>
@@ -471,6 +491,16 @@ Example:
                         statePath: 'usingShortCode',
                     },
                     /**
+                    * showCountDown if true shows countDown counting down
+                    * @type {Boolean}
+                    */
+                    showCountDown: {
+                        type: Boolean,
+                        value: false,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
                     * Send if true shows the send settings
                     * @type {Boolean}
                     */
@@ -561,6 +591,21 @@ Example:
                     amountToSend: {
                         type: String,
                     },
+                    /**
+                    * The interval on shortCode timer
+                    * @type {Object}
+                    */
+                    interval: {
+                        type: Object,
+                    },
+                    /**
+                    * The time left on shortCode
+                    * @type {Number}
+                    */
+                    timeLeft: {
+                        type: Number,
+                        observer: '_timeLeft',
+                    },
                 };
             }
 
@@ -587,7 +632,7 @@ Example:
             */
             _start(event) {
                 this._resetValues();
-                if (event.keyCode === 13 || event.type == 'tap') {
+                if (event.keyCode === 13 || event.type == 'tap' || event.type == 'functionCall') {
                     this.start = true;
                     this.looking = false;
                     this.dispatch('USINGSHORTCODE', false);
@@ -610,6 +655,33 @@ Example:
                     this.updateStyles({
                         '--container-height': '85px',
                     });
+                    this.timeLeft = 11;
+                    this.interval = setInterval(()=>{
+                        if (this.timeLeft > 0) {
+                            this.timeLeft -= 1;
+                        }
+                    }, 1000);
+                }
+            }
+            /**
+            * This observer triggers actions on time left
+            */
+            _timeLeft() {
+                switch (this.timeLeft) {
+                    case 10: {
+                        this.updateStyles({
+                            '--container-height': '100px',
+                        });
+                        this.showCountDown = true;
+                        break;
+                    }
+                    case 0: {
+                        let e = {
+                            type: 'functionCall',
+                        }
+                        this._start(e);
+                        break;
+                    }
                 }
             }
             /**
@@ -701,6 +773,8 @@ Example:
             _resetValues() {
                 this.amountToSend = null;
                 this.sendDestination = null;
+                this.showCountDown = false;
+                clearInterval(this.interval);
             }
             /**
             * When entering incorrect number format, style for error
