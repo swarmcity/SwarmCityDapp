@@ -475,7 +475,7 @@ Example:
                         notify: true,
                     },
                     /**
-                    * Shortcode if true shows the shortCode
+                    * usingShortCode will maintain a subscription while true
                     * @type {Boolean}
                     */
                     usingShortCode: {
@@ -547,11 +547,12 @@ Example:
                     },
                     /**
                     * Shortcode for public key
-                    * @type {String}
+                    * @type {Object}
                     */
                     shortCode: {
-                        type: String,
-                        value: '78900',
+                        type: Object,
+                        statePath: 'shortCode',
+                        observer: '_shortCode',
                     },
                     /**
                     * The user error
@@ -649,6 +650,7 @@ Example:
             */
             _showShortcode(event) {
                 this._resetValues();
+                console.log(this.shortCode);
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.dispatch('USINGSHORTCODE', true);
@@ -662,6 +664,11 @@ Example:
                         }
                     }, 1000);
                 }
+            }
+
+            _shortCode() {
+                console.log('observer triggered')
+                console.log(this.shortCode);
             }
             /**
             * This observer triggers actions on time left
