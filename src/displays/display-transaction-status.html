@@ -502,7 +502,8 @@ Example:
                     <div class="found-greytext">
                         {{localize('Receiver found!')}}
                     </div>
-                    <div class="found-avatarbox"><img src="data:image/jpeg;base64,{{tokey.data.avatar}}">
+                    <div class="found-avatarbox">
+                        <img src="{{tokey.data.avatar}}">
                         <div class="found-infobox">
                             <div class="found-name">
                                 {{tokey.data.userName}}
@@ -608,15 +609,6 @@ Example:
                         type: String,
                     },
                     /**
-                    * Path signlas to the parent to change the path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        value: null,
-                        notify: true,
-                    },
-                    /**
                     * Shortcode for public key
                     * @type {Object}
                     */
@@ -678,6 +670,14 @@ Example:
                     timeLeft: {
                         type: Number,
                         observer: '_timeLeft',
+                    },
+                    /**
+                    * routeEntry will reset the page once exit animations are finished
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_routeReset',
                     },
                 };
             }
@@ -861,6 +861,17 @@ Example:
                     } else {
                         this.error = null;
                     }
+                }
+            }
+            /**
+            * When changing page, restore to start state
+            */
+            _routeReset(){
+                if(this.routeEntry[0] == 'my-wallet') {
+                    let e = {
+                        type: 'functionCall',
+                    };
+                    this._start(e);
                 }
             }
             /**
