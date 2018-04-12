@@ -300,7 +300,7 @@ Example:
                 margin-bottom: 3px;
             }
 
-            .found-pubkey {
+            .found-address {
                 @apply --small-light;
                 color: var(--sc-grey4);
                 cursor: pointer;
@@ -498,7 +498,21 @@ Example:
             </template>
 
             <template is="dom-if" if="{{found}}">
-                <p> enter password</p>
+                <div class="found-box">
+                    <div class="found-greytext">
+                        {{localize('Receiver found!')}}
+                    </div>
+                    <div class="found-avatarbox"><img src="data:image/jpeg;base64,{{tokey.data.avatar}}">
+                        <div class="found-infobox">
+                            <div class="found-name">
+                                {{tokey.data.userName}}
+                            </div>
+                            <div class="found-address">
+                                {{tokey.data.address}}</div>
+                        </div>
+                    </div>
+                    <div class="found-buttonbox"></div>
+                </div>
             </template>
 
         </div>
@@ -677,13 +691,13 @@ Example:
             */
             static get actions() {
                 return Object.assign({
-                    REQTOKEY: function(reqtokey) {
+                    REQTOKEY: function (reqtokey) {
                         return {
                             type: 'REQTOKEY',
                             reqtokey: reqtokey,
                         };
                     },
-                    USINGSHORTCODE: function(usingShortCode) {
+                    USINGSHORTCODE: function (usingShortCode) {
                         return {
                             type: 'USINGSHORTCODE',
                             usingShortCode: usingShortCode,
@@ -809,8 +823,20 @@ Example:
             * Fired once the API returns the public key for the supplied shortCode
             */
             _toKey() {
-                this.sendToPublicKey = this.tokey.data.address;
-                this._goToConfirm();
+                if (this.tokey) {
+                    switch (this.tokey.found) {
+                        case true: {
+                            console.log(this.tokey);
+                            this.looking = false;
+                            this.found = true;
+                            this.sendToPublicKey = this.tokey.data.address;
+                            break;
+                        }
+                        case false: {
+                            break;
+                        }
+                    }
+                }
             }
             /**
             * takes the user to the confirm page
