@@ -374,9 +374,16 @@
                     shortCode: this.reqtokey,
                 }, (reply) => {
                     if (reply.response === 200) {
-                        this.tokey = reply.data.payload.publickey;
+                        this.tokey = reply;
+                        this.tokey.found = true;
+                        this.dispatch('TOKEY', this.tokey);
+                    } 
+                    if (reply.response === 400) {
+                        this.tokey = reply;
+                        this.tokey.found = false;
                         this.dispatch('TOKEY', this.tokey);
                     }
+
                 });
             }
             _broadcast() {
