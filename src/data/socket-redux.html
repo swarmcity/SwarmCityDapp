@@ -399,13 +399,21 @@
                         },
                     }, (reply) => {
                         if (reply.response == 200) {
-                            this.shortCode = reply.data;
+                            this.shortCode = reply;
                             this.shortCode.received = (new Date).getTime();
                             this.dispatch('SHORTCODE', this.shortCode);
                         }
                     });
                 } else {
-                    this.dispatch('SHORTCODE', null);
+                    if (this.shortCode != null) {
+                        this.socket.emit('unsubscribe', {
+                            subscriptionId: this.shortCode.subscriptionId,
+                        }, (reply) => {
+                            if (reply.response == 200) {
+                            this.dispatch('SHORTCODE', null);
+                            }
+                        });
+                    }
                 }
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
