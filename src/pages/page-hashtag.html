@@ -437,10 +437,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 <display-hashtag-items 
                     range="{{range}}" 
                     hashtag="{{hashtag}}" 
-                    route-data="[[routeData]]" 
+                    route="[[route]]"
                     path="{{path}}" 
                     show-slider="{{showSlider}}"
-                    show-info="{{showInfo}}">
+                    show-info="{{showInfo}}"
+                    faded = "{{faded}}">
                 </display-hashtag-items>
             </div>
         </div>
@@ -615,7 +616,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @param {Object} event element clicked.
             */
             _toggleSlider(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
+                if (!event || event.keyCode === 13 || event.type == 'tap') {
                     return new Promise((resolve, reject) => {
                         let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                         if (!storage.user.location) {
@@ -727,6 +728,18 @@ This code may only be used under the license found at https://github.com/swarmci
                             };
                         }
                     });
+                }
+            }
+            /**
+            * Closes all open sliders and fades page back in
+            */
+            _fadeClose() {
+                if (this.faded) {
+                    if (this.showInfo) {
+                        this._toggleInfo();
+                    } else if (this.showSlider) {
+                        this._toggleSlider();
+                    }
                 }
             }
             /**

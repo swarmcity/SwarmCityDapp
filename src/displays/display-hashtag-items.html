@@ -52,11 +52,7 @@ The following custom properties and mixins are available for styling:
                 border-bottom: 1px solid rgba(0, 0, 0, 0.1);
                 margin: 0px 10px 4px 10px;
             }
-
-            .box:active {
-                @apply --button-active;
-            }
-
+            
             .empty {
                 width: 100%;
                 box-sizing: border-box;
@@ -189,7 +185,7 @@ The following custom properties and mixins are available for styling:
             <!-- <div class="empty">{{localize('Currently no deals selected. Try a broader search.')}}</div> -->
             
         <template is="dom-repeat" items="{{items}}">
-            <div tabindex="5" class="box" on-tap="_toNewHere" on-KeyPress="_toNewHere">
+            <div tabindex="5" class="box" on-tap="_next" on-KeyPress="_next">
                 <div class="top">
                     <div class="datedescript">
                             <div class="description">[[item.description]]</div>
@@ -250,12 +246,12 @@ The following custom properties and mixins are available for styling:
                         observer: '_filterItems',
                     },
                     /**
-                    * route data represents the curent route
+                    * contains the user's public key
                     * @type {String}
                     */
-                    routeData: {
+                    publicKey: {
                         type: String,
-                        observer: '_getHashtag',
+                        statePath: 'publicKey',
                     },
                     /**
                     * Hashtag represents the selected hashtag
@@ -289,6 +285,13 @@ The following custom properties and mixins are available for styling:
                     showInfo: {
                         type: Boolean,
                         notify: true,
+                    },
+                    /**
+                    * faded indicates if the items should be clickable or not
+                    * @type {Boolean}
+                    */
+                    faded: {
+                        type: Boolean,
                     },
                     items: {
                         type: Object,
@@ -412,17 +415,28 @@ The following custom properties and mixins are available for styling:
             // }
 
             /**
-            * Routes to New-Here
+            * Routes user when clicked on request
             * @param {Object} event element clicked.
             **/
-            _toNewHere() {
-                if (event.keyCode === 13 || event.type == 'tap') {
+            _next(event) {
+                if (!this.faded && (!event || event.keyCode === 13 || event.type == 'tap')) {
                     if (!this.showSlider && !this.showInfo) {
                         // stores the current hashtag choice in session
-                        sessionStorage.setItem('hashtagID', this.routeData.page);
-                        this.path = 'new-here/';
+                        sessionStorage.setItem('origin', this.route.path);
+                        if (this.publicKey) {
+                            // Here comes routing to this request's detail
+                        } else {
+                            this._toNewHere();
+                        }
                     }
                 }
+            }
+
+            /**
+            * Routes to New-Here
+            **/
+            _toNewHere() {
+                this.path = 'new-here/';
             }
             _toDetail() {
                 if (!this.showSlider && !this.showInfo) {
