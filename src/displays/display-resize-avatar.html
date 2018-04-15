@@ -433,8 +433,14 @@
             */
             _panStart(event) {
                 this.mouseDown = true;
-                this.startX = event.clientX - this.endX;
-                this.startY = event.clientY - this.endY;
+                if (event.clientX===undefined) {
+                        this.startX = event.touches[0].clientX - this.endX;
+                        this.startY = event.touches[0].clientY - this.endY;
+                }else{
+                        this.startX = event.clientX - this.endX;
+                        this.startY = event.clientY - this.endY;
+                }
+
             }
             /**
             * Fired on mouse up
@@ -449,8 +455,13 @@
             */
             _panMove(event) {
                 if (this.mouseDown) {
-                    this.endX = event.clientX - this.startX;
-                    this.endY = event.clientY - this.startY;
+                     if (event.clientX===undefined) {
+                          this.endX = event.touches[0].clientX - this.startX;
+                          this.endY = event.touches[0].clientY - this.startY;
+                     }else{
+                          this.endX = event.clientX - this.startX;
+                          this.endY = event.clientY - this.startY;
+                     }
                 }
             }
 
