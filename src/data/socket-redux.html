@@ -21,6 +21,22 @@
                         type: Object,
                     },
                     /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    /**
+                    * Avatar represents the user's base64 of their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    /**
                     * fx is the SWT exchange rates
                     * @type {Object}
                     */
@@ -69,7 +85,7 @@
                         type: Number,
                     },
                     /**
-                    * This is the shortcode we want a public key for
+                    * This is the shortCode we want a public key for
                     * as given by the ETH network
                     * @type {Number}
                     */
@@ -88,12 +104,12 @@
                         observer: '_broadcast',
                     },
                     /**
-                    * This is a generated shortcode
+                    * This is a generated shortCode
                     * @type {String}
                     */
-                    shortcode: {
+                    shortCode: {
                         type: String,
-                        statePath: 'shortcode',
+                        statePath: 'shortCode',
                     },
                     /**
                     * Historic transactions for publickey
@@ -111,6 +127,15 @@
                         type: String,
                         statePath: 'reqipfs',
                         observer: '_reqipfs',
+                    },
+                    /**
+                    * usingShortCode will maintain a subscription while true
+                    * @type {Boolean}
+                    */
+                    usingShortCode: {
+                        type: Boolean,
+                        statePath: 'usingShortCode',
+                        observer: '_usingShortCode',
                     },
                 };
             }
@@ -156,10 +181,10 @@
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function(shortcode) {
+                    SHORTCODE: function(shortCode) {
                         return {
                             type: 'SHORTCODE',
-                            shortcode: shortcode,
+                            shortCode: shortCode,
                         };
                     },
                     TRANSACTIONS: function(transactions) {
@@ -194,12 +219,12 @@
                 // Create websocket
                 this.socket = io(environment.socketurl, // eslint-disable-line
 
-                {
-                    query: 'apiUser=swarmCity',
-                    path: '/api',
-                    transports: ['websocket', 'xhr-polling'],
-                    autoConnect: false,
-                });
+                    {
+                        query: 'apiUser=swarmCity',
+                        path: '/api',
+                        transports: ['websocket', 'xhr-polling'],
+                        autoConnect: false,
+                    });
             }
 
             ready() {
@@ -310,29 +335,6 @@
                         this.dispatch('NONCE', this.nonce);
                     }
                 });
-                // subscribe to updates of the shortcode => publickey
-                this.socket.emit('subscribe', {
-                    channel: 'shortcode',
-                    args: {
-                        validity: 60*1000,
-                        payload: {
-                            publickey: this.publicKey,
-                        },
-                    },
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.shortcode = reply.data;
-                        this.shortcode.received = (new Date).getTime();
-                        this.dispatch('SHORTCODE', this.shortcode);
-                    }
-                });
-                this.socket.on('shortcodeChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.shortcode = reply.data;
-                        this.shortcode.received = (new Date).getTime();
-                        this.dispatch('SHORTCODE', this.shortcode);
-                    }
-                });
 
                 // subscribe to updates of the tx history
                 this.socket.emit('subscribe', {
@@ -363,28 +365,73 @@
                         break;
                     case '/hashtag/7c9v87bc98v7b/':
                     // the number here '7c9v87bc98v7b'is the hashtag id
-                        // now we know which page the user is on request the collection...
-                        // of items and save them to redux in ITEMCOLLECTION
+                    // now we know which page the user is on request the collection...
+                    // of items and save them to redux in ITEMCOLLECTION
                 }
             }
             _reqToKey() {
                 this.socket.emit('readShortCode', {
-                    shortcode: this.reqtokey,
+                    shortCode: this.reqtokey,
                 }, (reply) => {
                     if (reply.response === 200) {
-                        this.tokey = reply.data.payload.publickey;
+                        this.tokey = reply;
+                        this.tokey.found = true;
+                        this.dispatch('TOKEY', this.tokey);
+                    }
+                    if (reply.response === 400) {
+                        this.tokey = reply;
+                        this.tokey.found = false;
                         this.dispatch('TOKEY', this.tokey);
                     }
                 });
             }
             _broadcast() {
-                this.socket.emit('sendRawTx', {
+                this.socket.emit('replyShortCode', {
+                    shortCode: this.reqtokey,
                     tx: this.broadcast,
                 }, (reply) => {
-                    this.dispatch('TXHASH', reply);
+                    if (reply.response === 200) {
+                        this.txHash = reply;
+                        this.txHAsh.success = true;
+                        this.dispatch('TXHASH', this.txHash);
+                    }
+                    if (reply.response === 400) {
+                        this.txHash = reply;
+                        this.txHAsh.success = false;
+                        this.dispatch('TXHASH', this.txHash);
+                    }
                 });
+            }
+
+            // fired when entering needing a shortCode
+            _usingShortCode() {
+                if (this.usingShortCode) {
+                    this.socket.emit('subscribe', {
+                        channel: 'createShortCode',
+                        args: {
+                            address: this.publicKey,
+                            userName: this.username,
+                            avatar: this.avatar,
+                        },
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this.shortCode = reply;
+                            this.shortCode.received = (new Date).getTime();
+                            this.dispatch('SHORTCODE', this.shortCode);
+                        }
+                    });
+                } else {
+                    if (this.shortCode != null) {
+                        this.socket.emit('unsubscribe', {
+                            subscriptionId: this.shortCode.subscriptionId,
+                        }, (reply) => {
+                            if (reply.response == 200) {
+                                this.dispatch('SHORTCODE', null);
+                            }
+                        });
+                    }
+                }
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
 </dom-module>
-

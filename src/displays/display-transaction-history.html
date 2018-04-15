@@ -1,15 +1,15 @@
 <!--
 @license
 Copyright (c) 2017 Swarm City
-This code may only be used under the license found at https://github.com/swarmcity/license
+This code may  be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
-<link rel="import" href="../data/data-time.html">
+<script src="../data/webpack.min.js"></script>
 <!--
-    Displays and shared styles only
+    Displays and shared styles 
 -->
 <!--
 
@@ -24,130 +24,103 @@ Example:
         <style include="shared-styles">
             :host {
                 display: block;
-                --intern-padding: 6vh 0px;
-                /* width: 100%; */
             }
 
             .container {
-                box-sizing:border-box;
-                padding: var(--intern-padding);
                 @apply --layout-vertical;
                 @apply --start-justified;
+                padding: 5vh 0 8vh 0;
                 width: 100%;
             }
 
-            .notx {
-                @apply --small-light;
-                color: var(--sc-grey2);
-            }
-
-
-            .state-box {
-                width: 100%;
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-                margin-bottom: 6vh;
-            }
-
-            /* .container[wide-layout] .state-box {
-                margin-bottom: 5vh;
-            } */
-
-            .timestamp {
-                @apply --smallest-light;
-                color: var(--sc-grey2);
-                /* margin-bottom: 5px; */
-            }
-
-            .amount {
-                @apply --body-detail;
-                font-size: 24px;
-                letter-spacing: 0;
-                line-height: 28px;
-                color: var(--sc-grey3);
-                /* @apply --main-title3; */
-            }
-/* 
-            .flex {
-                @apply --layout-flex;
-            } */
-
-            .amountandstate {
-                @apply --layout-horizontal;
-                @apply --layout-end;
-                @apply --layout-start-justified;
-                margin-bottom: 5px;
-            }
-
-            .loadinginfos {
-                @apply --body-default;
-                color: var(--sc-grey3);
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;               
-            }
-
-            .container[wide-layout] .loadinginfos {
-                @apply --layout-horizontal;
-                @apply --layout-end;
-                @apply --layout-start-justified;               
-            }
-
-
-            .info {
-                @apply --body-default;
-                color: var(--sc-grey3b);
+            .item {
                 margin-bottom: 20px;
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;
             }
 
-            .container[wide-layout] .info {
+            .success {
                 @apply --body-default;
                 color: var(--sc-grey3b);
-                margin-bottom: 10px;
             }
 
-            .innerinfo {
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;               
+            .failed {
+                color: red;
             }
 
-            .container[wide-layout] .innerinfo {
+            .failed-text {
+                font-weight: bold;
+            }
+            .pending {
+                color: var(--sc-grey3);}
+
+            .pending>span {
+                color: blue;
+            }
+
+            .horizontal {
                 @apply --layout-horizontal;
-                @apply --layout-end;
-                @apply --layout-start-justified;               
+                @apply --start-justified;
             }
 
-            .bluelink {
-                @apply --blue-link;
-                margin: 6px 0px 0px 0px;
+            .container[wide-layout] .truncate {
+                width: 40vw;
             }
 
-            .container[wide-layout] .bluelink {
-                margin: 0px 0px 0px 15px;
+            .truncate {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+                width: 90px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .greylink {
-                @apply --grey-link;
-                margin: 6px 0px 0px 0px;
+                @apply --small-bold;
+                cursor: pointer;
                 color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey3b);
+                margin-top: 10px;
             }
 
-            .container[wide-layout] .greylink {
-                margin: 0px 0px 0px 15px;
+            .bluelink {
+                @apply --small-bold;    
+                cursor: pointer;
+                color: var(--sc-blue);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-blue);
+                margin-top: 10px;
             }
 
-            .user {
-                word-break: break-all;
-                border-bottom: 1px dotted var(--sc-grey2);
+            .pending-dots {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
             }
 
-            .icon-complete {
-                @apply --vmark-blue-small;
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
             }
 
             @keyframes loadanimation {
@@ -168,111 +141,56 @@ Example:
                     opacity: 0;
                 }
             }
-
-            .loading {
-                @apply --layout-horizontal;
-                margin: 2px 0px 2px 0px;
-                box-sizing: border-box;
-                padding: 4px;
-                @apply --layout-horizontal;
-                @apply --layout-end;
-            }
-
-            .smallpoint {
-                margin: 0px 3px 0px 3px;
-                width: 3px;
-                height: 3px;
-                border-radius: 50%;
-                background-color: var(--sc-blue);
-            }
-
-
-            #point1 {
-                animation: loadanimation 1.5s linear 0s infinite;
-            }
-
-            #point2 {
-                animation: loadanimation 1.5s linear 0.3s infinite;
-            }
-
-            #point3 {
-                animation: loadanimation 1.5s linear 0.6s infinite;
-            }
-
-            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-            only screen and (min--moz-device-pixel-ratio: 1.5),
-            only screen and (min-resolution: 240dpi) {
-                .icon-complete {
-                    @apply --retina;
-                }
-            }
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-if" if="{{noTX}}">
-                <div class="notx">{{localize('You havent done any transactions with this account yet')}}</div>
-            </template>
-            <template is="dom-repeat" items="{{transactions}}">                     
-                <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
-                <div class="state-box">
-                        <div class="amountandstate">
-                            <template is="dom-if" if="[[_direction(item.direction)]]">
-                                <div class="amount">
-                                    + [[item.amount]] [[item.symbol]]
-                                </div>
+
+            <template is="dom-repeat" items="{{txHistory}}">
+                <div class="item">
+                    <div class$="[[_checkState(item.status)]]">
+                        <div class="date">[[_formatDate(item.dateTime)]]</div>
+                        <div class="horizontal">
+
+                            <template is="dom-if" if="[[_isFailed(item.status)]]">
+                                <span class="failed-text">Failed:&nbsp;</span>
                             </template>
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">
-                                <div class="amount">
-                                    - [[item.amount]] [[item.symbol]]
-                                </div>
+
+                            <template is="dom-if" if="[[_isIncoming(item.direction)]]">+&nbsp;</template>
+                            <template is="dom-if" if="[[_isOutgoing(item.direction)]]">-&nbsp;</template>
+
+                            <div>[[_format(item.amount)]] SWT&nbsp;</div>
+
+                            <template is="dom-if" if="[[!_isPending(item.status)]]">
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;<span class="truncate">[[item.from]]</span></template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;<span class="truncate">[[item.to]]</span></template>
                             </template>
-                            <template is="dom-if" if="[[!_confirmations(item.confirmations)]]">
-                                <div class="loading">
+
+                            <template is="dom-if" if="[[_isPending(item.status)]]">
+                                <div class="pending-dots">
                                     <div class="smallpoint" id="point1"></div>
                                     <div class="smallpoint" id="point2"></div>
                                     <div class="smallpoint" id="point3"></div>
                                 </div>
                             </template>
-                        </div>
-                        <div class="loadinginfos">
-                            <template is="dom-if" if="[[_direction(item.direction)]]">
-                                <div>{{localize('Receiving')}} {{localize('from')}} <span class="user">[[item.from]]</span></div>
-                                <div class="bluelink">show on etherscan</div>
-                            </template>
-                            <template is="dom-if" if="[[!_direction(item.direction)]]">
-                                    <div>{{localize('Sending')}} {{localize('to')}} <span class="user">[[item.from]]</span></div>
-                                    <div class="bluelink">show on etherscan</div>
-                                </template>
-                        </div>
-                    </div>
-                    </template>
-                </template>
 
-                <!-- <div class="divider"></div> -->
-                
-                <template is="dom-repeat" items="{{transactions}}">                     
-                    <template is="dom-if" if="[[_confirmations(item.confirmations)]]">
-                        <div class="info"> 
-                            <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
-                            <div class="innerinfo">
-                                <div>{{localize('Youve received')}} [[item.amount]] [[item.symbol]] {{localize('from')}} <span class="user">[[item.from]]</span></div>
-                                <div class="greylink">show on etherscan</div>
-                            </div>
                         </div>
-                    </template>
-                    <template is="dom-if" if="[[!_direction(item.direction)]]">
-                        <div class="info">
-                            <div class="timestamp"><data-time epoch="[[item.timeDate]]"></data-time></div>
-                            <div class="innerinfo">
-                                <div>{{localize('Youve sent')}} [[item.amount]] [[item.symbol]] {{localize('to')}} <span class="user">[[item.to]]</span></div>
-                                <div class="greylink">show on etherscan</div>
+
+                        <template is="dom-if" if="[[_isPending(item.status)]]">
+                            <div class="horizontal">
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from&nbsp;<span class="truncate">[[item.from]]</span></template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to&nbsp;<span class="truncate">[[item.to]]</span></template>
                             </div>
-                        </div>
-                    </template>
-                </template>
+                        </template>
+
+                    </div>
+                    <div>
+                        <span class$="[[_checkLinkStyle(item.status)]]" on-click="_toEtherscan">show on etherscan</span>
+                    </div>
+                </div>
+            </template>
 
         </div>
+
     </template>
     <script>
         class MyDisplayTransactionHistory extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -285,18 +203,21 @@ Example:
             }
             static get properties() {
                 return {
+                    /**
+                    * The language as chosen by user
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
                     },
-                    transactions: {
+                    /**
+                    * An array containing the transaction history for this public key
+                    * @type {Array}
+                    */
+                    txHistory: {
                         type: Array,
-                        statePath: 'transactions',
-                        observer: '_getLength',
-                    },
-                    txArrayLength: {
-                        type: Number,
-                        notify: true,
+                        statePath: 'txhistory',
                     },
                 };
             }
@@ -304,26 +225,200 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+
+                // BEGIN TEMPORARY REDUX FILL
+                this.dispatch('TXHISTORY', [
+                    // dummy incoming & confirmed transaction
+                    {
+                        'transactionHash':
+                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
+                        'dateTime': 1521563134387,
+                        'direction': 'in',
+                        'amount': 7120500000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 2,
+                    },
+                    // dummy outgoing & confirmed transaction
+                    {
+                        'transactionHash':
+                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
+                        'dateTime': 1519864652000,
+                        'direction': 'out',
+                        'amount': 18340000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 1,
+                    },
+                    // dummy incoming & pending transaction
+                    {
+                        'transactionHash':
+                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
+                        'dateTime': 1518444651500,
+                        'direction': 'in',
+                        'amount': 11000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 0,
+                    },
+                    // dummy outgoing & pending transaction
+                    {
+                        'transactionHash':
+                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
+                        'dateTime': 1517444651500,
+                        'direction': 'out',
+                        'amount': 12000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 0,
+                    },
+                    // dummy incoming & failed transaction
+                    {
+                        'transactionHash':
+                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
+                        'dateTime': 1516444651500,
+                        'direction': 'in',
+                        'amount': 15000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 1,
+                    },
+                    // dummy outgoing & failed transaction
+                    {
+                        'transactionHash':
+                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
+                        'dateTime': 1519944651500,
+                        'direction': 'out',
+                        'amount': 22000000000000000000,
+                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                        'block': 5264013,
+                        'status': 0,
+                    }]
+                );
+                // END TEMPORARY REDUX FILL
             }
-            _direction(event) {
-                if (event == 'in') {
-                    return true;
+
+            // BEGIN TEMPORARY REDUX ACCESS
+            /**
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    TXHISTORY: function(txhistory) {
+                        return {
+                            type: 'TXHISTORY',
+                            txhistory: txhistory,
+                        };
+                    },
+                });
+            }
+            // END TEMPORARY REDUX ACCESS
+
+            /**
+            * returns style class depending on item status
+            * @param {Number} status statuscode of item
+            * @return {string} classname
+            */
+            _checkState(status) {
+                switch (status) {
+                    case 0:
+                        return 'success';
+                    case 1:
+                        return 'failed';
+                    case 2:
+                        return 'pending';
                 }
             }
-            _confirmations(event) {
-                if (event > 5) {
-                    return true;
-                }
+
+            /**
+            * returns true if transaction is outgoing
+            * @param {string} direction direction of transaction
+            * @return {boolean} boolean
+            */
+            _isOutgoing(direction) {
+                return direction == 'out' ? true : false;
             }
-            _getLength(event) {
-                this.txArrayLength = this.transactions.length;
-                if (this.txArrayLength === 0) {
-                    this.noTX = true;
-                    // this.updateStyles({'--intern-padding': '0px'});
+
+            /**
+            * returns true if transaction is incoming
+            * @param {string} direction direction of transaction
+            * @return {boolean} boolean
+            */
+            _isIncoming(direction) {
+                return direction == 'in' ? true : false;
+            }
+
+            /**
+            * returns true if transactioncode states pending
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
+            _isPending(status) {
+                return status == 2 ? true : false;
+            }
+
+            /**
+            * returns true if transactioncode states success
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
+            _isSucces(status) {
+                return status == 0 ? true : false;
+            }
+
+            /**
+            * returns true if transactioncode states failed
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
+            _isFailed(status) {
+                return status == 1 ? true : false;
+            }
+
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                if (webpack.moment().valueOf() - dateTime < 86400000) {
+                    return webpack.moment(dateTime).fromNow();
                 } else {
-                    this.noTX = false;
-                    // this.updateStyles({'--intern-padding': '5vh 0px'});
+                    return webpack.moment(dateTime).format('DD MMM YYYY - HH:mm');
                 }
+            }
+
+            /**
+            * formats amount to more readable format
+            * @param {Number} amount amount that has been transferred
+            * @return {Number} formatted amount
+            */
+            _format(amount) {
+                return amount / 1000000000000000000;
+            }
+
+            /**
+            * switches to correct styling depending on item status
+            * @param {Number} status statuscode of item
+            * @return {string} classname
+            */
+            _checkLinkStyle(status) {
+                return status == 2 ? 'bluelink' : 'greylink';
+            }
+
+            /**
+            * takes the user to txhash page on etherscan
+            * @param {Object} event element clicked
+            */
+            _toEtherscan(event) {
+                window.open('https://rinkeby.etherscan.io/tx/'
+                    + event.model.__data.item.transactionHash, '_blank');
             }
         }
 

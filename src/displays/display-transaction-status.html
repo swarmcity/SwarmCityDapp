@@ -7,7 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../data/data-time.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 <!--
 
 Example:
@@ -50,47 +50,47 @@ Example:
                 @apply --button-active;
             }
 
-            .shortcode-box {
+            .shortCode-box {
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
                 height: 100%;
                 width: 100%;
             }
 
-            .container[wide-layout] .shortcode-box {
+            .container[wide-layout] .shortCode-box {
                 @apply --layout-start;
             }
 
 
-            .container .shortcode-greytext {
+            .container .shortCode-greytext {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 margin-top: 8px;
                 text-align: center;
             }
 
-            .container[wide-layout] .shortcode-greytext {
+            .container[wide-layout] .shortCode-greytext {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 margin-top: 8px;
                 text-align: left;
             }
 
-            .shortcode-code {
+            .shortCode-code {
                 @apply --main-title3;
                 color: var(--sc-grey4);
             }
 
-            .shortcode-code-close {
+            .shortCode-code-close {
                 @apply --xmark-blue-small;
                 cursor: pointer;
             }
 
-            .shortcode-code-close:active {
+            .shortCode-code-close:active {
                 @apply --button-active;
             }
 
-            .shortcode-codebox {
+            .shortCode-codebox {
                 @apply --layout-horizontal;
                 @apply --layout-center-center;
                 margin-top: 3px;
@@ -164,6 +164,7 @@ Example:
 
             .round-button {
                 @apply --icon-button-big;
+                cursor: pointer;
             }
 
             .round-button:active {
@@ -200,28 +201,9 @@ Example:
                 margin-bottom: 2px;
             }
 
-            .looking-close {
+            .looking-close, .notfound-close {
                 @apply --xmark-blue-small;
                 cursor: pointer;
-            }
-
-            @keyframes loadanimation {
-                0% {
-                    transform: scale(1);
-                    opacity: 0.2;
-                }
-                25% {
-                    transform: scale(1.5);
-                    opacity: 1;
-                }
-                50% {
-                    transform: scale(1);
-                    opacity: 0.2;
-                }
-                100% {
-                    transform: scale(1);
-                    opacity: 0;
-                }
             }
 
             .looking-loading {
@@ -233,7 +215,7 @@ Example:
                 @apply --layout-end;
             }
 
-            .smallpoint {
+            .looking-smallpoint {
                 margin: 0px 3px 0px 3px;
                 width: 2px;
                 height: 2px;
@@ -241,15 +223,15 @@ Example:
                 background-color: var(--sc-grey4);
             }
 
-            #point1 {
+            #looking-point1 {
                 animation: loadanimation 1.5s linear 0s infinite;
             }
 
-            #point2 {
+            #looking-point2 {
                 animation: loadanimation 1.5s linear 0.3s infinite;
             }
 
-            #point3 {
+            #looking-point3 {
                 animation: loadanimation 1.5s linear 0.6s infinite;
             }
 
@@ -270,6 +252,12 @@ Example:
                 color: var(--sc-grey4);
             }
 
+            .notfound-greytext {
+                margin-top: 8px;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
             .found-buttonbox {
                 margin-top: 24px;
                 @apply --layout-horizontal;
@@ -278,12 +266,12 @@ Example:
 
             .found-avatarbox {
                 @apply --layout-horizontal;
-                margin: 30px 0 0 25vw;
+                margin: 15px 0 0 25vw;
                 max-width: 100%;
                 width: 100%;
             }
 
-            .container[wide-layout] .found-avatarbox{
+            .container[wide-layout] .found-avatarbox {
                 margin: 30px 0 0 0;
 
             }
@@ -300,13 +288,20 @@ Example:
                 margin-bottom: 3px;
             }
 
-            .found-pubkey {
+            .found-address {
                 @apply --small-light;
                 color: var(--sc-grey4);
                 cursor: pointer;
                 max-width: 60%;
                 overflow: scroll;
                 overflow-wrap: break-all;
+            }
+
+            .container[wide-layout] .truncate {
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .truncate {
@@ -345,10 +340,80 @@ Example:
                 @apply --error-msg-wide;
             }
 
+            .timer-box {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center;
+            }
+
+            .container[wide-layout] .timer-box {
+                @apply --layout-start;
+            }
+
+            .timer-text {
+                margin-top: 20px;
+                @apply --small-light;
+            }
+
+            paper-progress {
+                width: 100%;
+                max-width: 300px;
+                margin-top: 10px;
+                --paper-progress-active-color: var(--sc-blue);
+            }
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
+            }
+
+            .loading {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .shortcode-code-close,
+                .shortCode-code-close,
                 .code-close,
                 .disagree,
                 .agree {
@@ -365,26 +430,45 @@ Example:
                 </div>
             </template>
 
-            <template is="dom-if" if="{{shortcode}}">
-                <div class="shortcode-box">
-                    <div class="shortcode-greytext">{{localize('Your temporary shortcode')}} is valid for <data-time countdown="600000" epoch="[[shortcodeVal.received]]"></data-time> min</div>
-                    <div class="shortcode-codebox">
-                        <div class="shortcode-code">{{shortcodeVal.shortcode}}</div>
-                        <div tabindex="10" class="shortcode-code-close" on-tap="_start" on-keyPress="_start"></div>
+            <template is="dom-if" if="{{usingShortCode}}">
+                <div class="shortCode-box">
+                    <div class="shortCode-greytext">{{localize('Your temporary shortcode')}}</div>
+                    <div class="shortCode-codebox">
+
+                        <template is="dom-if" if="{{shortCode.data.shortCode}}">
+                            <div class="shortCode-code">{{shortCode.data.shortCode}}</div>
+                        </template>
+                        <template is="dom-if" if="{{!shortCode.data.shortCode}}">
+                            <div class="loading">
+                                <div class="smallpoint" id="point1"></div>
+                                <div class="smallpoint" id="point2"></div>
+                                <div class="smallpoint" id="point3"></div>
+                            </div>
+                        </template>
+                        <div tabindex="10" class="shortCode-code-close" on-tap="_start" on-keyPress="_start"></div>
                     </div>
+                    <template is="dom-if" if="{{showCountDown}}">
+                        <div class="timer-box">
+                            <div class="timer-text">
+                                {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
+                            </div>
+                            <paper-progress value="[[timeLeft]]" max="30"></paper-progress>
+                        </div>
+                    </template>
                 </div>
             </template>
 
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
                     <div class="totalamountinput">
-                        <paper-input tabindex="1" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"  value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
+                        <paper-input tabindex="1" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}"
+                            on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
-                    <paper-input tabindex="2" class="send-destination" label="{{localize('Receivers shortcode or public key')}}" type="txt" value="{{sendDestination}}"></paper-input>
+                    <paper-input tabindex="2" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
-                    </div>                  
+                    </div>
                     <div class="send-buttonbox">
                         <div tabindex="3" class="disagree" on-tap="_start" on-keyPress="_start"></div>
                         <div tabindex="4" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
@@ -399,9 +483,9 @@ Example:
                     <div class="looking-textbox">
                         <div class="looking-greytext" on-tap="_goToConfirm">{{localize('Looking for receiver')}}</div>
                         <div class="looking-loading">
-                            <div class="smallpoint" id="point1"></div>
-                            <div class="smallpoint" id="point2"></div>
-                            <div class="smallpoint" id="point3"></div>
+                            <div class="looking-smallpoint" id="looking-point1"></div>
+                            <div class="looking-smallpoint" id="looking-point2"></div>
+                            <div class="looking-smallpoint" id="looking-point3"></div>
                         </div>
                     </div>
                     <div class="looking-close" on-tap="_sendSwt"></div>
@@ -409,7 +493,34 @@ Example:
             </template>
 
             <template is="dom-if" if="{{found}}">
-                    <p> enter password</p>
+                <div class="found-box">
+                    <div class="found-greytext">
+                        {{localize('Receiver found!')}}
+                    </div>
+                    <div class="found-avatarbox">
+                        <img src="{{tokey.data.avatar}}">
+                        <div class="found-infobox">
+                            <div class="found-name">
+                                {{tokey.data.userName}}
+                            </div>
+                            <div class="found-address truncate">
+                                {{tokey.data.address}}</div>
+                        </div>
+                    </div>
+                    <div class="found-buttonbox">
+                        <div class="disagree" on-tap="_sendSwt"></div>
+                        <div class="round-button">
+                            <div class="agree" on-tap="_goToConfirm"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template is="dom-if" if="{{notFound}}">
+                    <div class="notfound-greytext">
+                        {{localize('No receiver found.')}}
+                    </div>
+                    <div class="notfound-close" on-tap="_sendSwt"></div>
             </template>
 
         </div>
@@ -423,20 +534,6 @@ Example:
         )) {
             static get is() {
                 return 'display-transaction-status';
-            }
-            /**
-            * Redux action for sertting balance
-            * @param {balance} balance
-            */
-            static get actions() {
-                return Object.assign({
-                    REQTOKEY: function(reqtokey) {
-                        return {
-                            type: 'REQTOKEY',
-                            reqtokey: reqtokey,
-                        };
-                    },
-                });
             }
             static get properties() {
                 return {
@@ -459,10 +556,18 @@ Example:
                         notify: true,
                     },
                     /**
-                    * Shortcode if true shows the shortcode
+                    * usingShortCode will maintain a subscription while true
                     * @type {Boolean}
                     */
-                    shortcode: {
+                    usingShortCode: {
+                        type: Boolean,
+                        statePath: 'usingShortCode',
+                    },
+                    /**
+                    * showCountDown if true shows countDown counting down
+                    * @type {Boolean}
+                    */
+                    showCountDown: {
                         type: Boolean,
                         value: false,
                         reflectToAttribute: true,
@@ -495,12 +600,28 @@ Example:
                         value: false,
                     },
                     /**
+                    * notFound if true shows error message for unknown shortcode
+                    * @type {Boolean}
+                    */
+                    notFound: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
                     * Loading indicates if the component is loading
                     * @type {Boolean}
                     */
                     loading: {
                         type: Boolean,
                         value: false,
+                        notify: true,
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
                         notify: true,
                     },
                     /**
@@ -511,21 +632,13 @@ Example:
                         type: String,
                     },
                     /**
-                    * Path signlas to the parent to change the path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        value: null,
-                        notify: true,
-                    },
-                    /**
                     * Shortcode for public key
-                    * @type {String}
+                    * @type {Object}
                     */
-                    shortcodeVal: {
-                        type: String,
-                        statePath: 'shortcode',
+                    shortCode: {
+                        type: Object,
+                        statePath: 'shortCode',
+                        observer: '_shortCode',
                     },
                     /**
                     * The user error
@@ -536,13 +649,20 @@ Example:
                         observer: '_error',
                     },
                     /**
-                    * the public key for the given shortcode
+                    * the destination shortCode
+                    * @type {String}
+                    */
+                    sendToShortcode: {
+                        type: String,
+                    },
+                    /**
+                    * the public key for the given shortCode
                     * @type {String}
                     */
                     tokey: {
                         type: String,
                         statePath: 'tokey',
-                        observer: '_totKey',
+                        observer: '_toKey',
                     },
                     /**
                     * the users balances
@@ -559,6 +679,29 @@ Example:
                     amountToSend: {
                         type: String,
                     },
+                    /**
+                    * The interval on shortCode timer
+                    * @type {Object}
+                    */
+                    interval: {
+                        type: Object,
+                    },
+                    /**
+                    * The time left on shortCode
+                    * @type {Number}
+                    */
+                    timeLeft: {
+                        type: Number,
+                        observer: '_timeLeft',
+                    },
+                    /**
+                    * routeEntry will reset the page once exit animations are finished
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_routeReset',
+                    },
                 };
             }
 
@@ -567,15 +710,34 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * asks the user to select show shortcode to send swt
+            * Redux actions
+            */
+            static get actions() {
+                return Object.assign({
+                    REQTOKEY: function(reqtokey) {
+                        return {
+                            type: 'REQTOKEY',
+                            reqtokey: reqtokey,
+                        };
+                    },
+                    USINGSHORTCODE: function(usingShortCode) {
+                        return {
+                            type: 'USINGSHORTCODE',
+                            usingShortCode: usingShortCode,
+                        };
+                    },
+                });
+            }
+            /**
+            * asks the user to select show shortCode to send swt
             * @param {Object} event element clicked.
             */
             _start(event) {
                 this._resetValues();
-                if (event.keyCode === 13 || event.type == 'tap') {
+                if (event.keyCode === 13 || event.type == 'tap' || event.type == 'functionCall') {
                     this.start = true;
                     this.looking = false;
-                    this.shortcode = false;
+                    this.dispatch('USINGSHORTCODE', false);
                     this.send = false;
                     this.found = false;
                     this.updateStyles({
@@ -584,21 +746,53 @@ Example:
                 }
             }
             /**
-            * Shows the user their shortcode
+            * Shows the user their shortCode
             * @param {Object} event element clicked.
             */
             _showShortcode(event) {
                 this._resetValues();
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
-                    this.shortcode = true;
+                    this.dispatch('USINGSHORTCODE', true);
                     this.updateStyles({
                         '--container-height': '85px',
                     });
                 }
             }
+
+            _shortCode() {
+                if (this.shortCode != null) {
+                    this.timeLeft = this.shortCode.data.validity / 1000;
+                    this.interval = setInterval(() => {
+                        if (this.timeLeft > 0) {
+                            this.timeLeft -= 1;
+                        }
+                    }, 1000);
+                }
+            }
             /**
-            * User can enter amount and public key or shortcode
+            * This observer triggers actions on time left
+            */
+            _timeLeft() {
+                switch (this.timeLeft) {
+                    case 30: {
+                        this.updateStyles({
+                            '--container-height': '120px',
+                        });
+                        this.showCountDown = true;
+                        break;
+                    }
+                    case 0: {
+                        let e = {
+                            type: 'functionCall',
+                        };
+                        this._start(e);
+                        break;
+                    }
+                }
+            }
+            /**
+            * User can enter amount and public key or shortCode
             * @param {Object} event element clicked.
             */
             _sendSwt(event) {
@@ -606,10 +800,11 @@ Example:
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.looking = false;
-                    this.shortcode = false;
+                    this.dispatch('USINGSHORTCODE', false);
                     this.found = false;
+                    this.notFound = false;
                     this.send = true;
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         this.$$('#sendInput').focus();
                     }, 1);
                     this.updateStyles({
@@ -618,7 +813,7 @@ Example:
                 }
             }
             /**
-            * switches to state shortcode
+            * switches to state shortCode
             * @param {Object} event element clicked.
             */
             _checkPublicKey(event) {
@@ -629,31 +824,49 @@ Example:
                             this.sendToShortcode = this.sendDestination;
                             this.dispatch('REQTOKEY', this.sendToShortcode);
                             this._gettingPublicKey();
-                        } else if (length == 42) {
-                            this.sendToPublicKey = this.sendDestination;
-                            this._goToConfirm();
                         } else {
-                            this.error = this.localize('shortcode or address is the wrong length');
+                            this.error = this.localize('shortcode is the wrong length');
                         }
                     }
                 }
             }
             /**
-            * shows waiting animation while we get the publick key for the given shortcode
+            * shows waiting animation while we get the publick key for the given shortCode
             */
             _gettingPublicKey() {
-                    this.send = false;
-                    this.looking = true;
-                    this.updateStyles({
-                        '--container-height': '80px',
-                    });
+                this.send = false;
+                this.looking = true;
+                this.updateStyles({
+                    '--container-height': '80px',
+                });
             }
             /**
-            * Firted once the API returns the public key for the supplied shortcode
+            * Fired once the API returns the public key for the supplied shortCode
             */
-            _totKey() {
-                this.sendToPublicKey = this.tokey;
-                this._goToConfirm();
+            _toKey() {
+                if (this.tokey) {
+                    setTimeout(()=>{
+                        switch (this.tokey.found) {
+                            case true: {
+                                this.updateStyles({
+                                    '--container-height': '184px',
+                                });
+                                this.looking = false;
+                                this.found = true;
+                                this.sendToPublicKey = this.tokey.data.address;
+                                break;
+                            }
+                            case false: {
+                                this.looking = false;
+                                this.notFound = true;
+                                this.updateStyles({
+                                    '--container-height': '80px',
+                                });
+                                break;
+                            }
+                        }
+                    }, 1000);
+                }
             }
             /**
             * takes the user to the confirm page
@@ -662,6 +875,7 @@ Example:
                 let txData = {
                     amountToSend: this.amountToSend,
                     toAddress: this.sendToPublicKey,
+                    toUserName: this.tokey.data.userName,
                 };
                 sessionStorage.setItem('tx', JSON.stringify(txData));
                 this.path = 'confirm-sending/';
@@ -681,11 +895,26 @@ Example:
                 }
             }
             /**
+            * When changing page, restore to start state
+            */
+            _routeReset() {
+                if (this.routeEntry[0] == 'my-wallet') {
+                    let e = {
+                        type: 'functionCall',
+                    };
+                    this._start(e);
+                }
+            }
+            /**
             * When changing status, entered values get reset
             */
             _resetValues() {
                 this.amountToSend = null;
                 this.sendDestination = null;
+                this.showCountDown = false;
+                this.found = false;
+                this.notFound = false;
+                clearInterval(this.interval);
             }
             /**
             * When entering incorrect number format, style for error
@@ -693,11 +922,15 @@ Example:
             _error() {
                 if (this.send) {
                     if (!this.error) {
-                        this.updateStyles({'--container-height': '268px',
-                        '--minheight-errorcontainer': '0px'});
+                        this.updateStyles({
+                            '--container-height': '268px',
+                            '--minheight-errorcontainer': '0px',
+                        });
                     } else {
-                        this.updateStyles({'--container-height': '288px',
-                        '--minheight-errorcontainer': '20px'});
+                        this.updateStyles({
+                            '--container-height': '288px',
+                            '--minheight-errorcontainer': '20px',
+                        });
                     }
                 }
             }
