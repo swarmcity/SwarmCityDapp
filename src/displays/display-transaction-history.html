@@ -29,16 +29,16 @@ Example:
             .container {
                 @apply --layout-vertical;
                 @apply --start-justified;
+                @apply --small-light;
                 padding: 5vh 0 8vh 0;
                 width: 100%;
             }
 
             .item {
-                margin-bottom: 20px;
+                margin-bottom: 30px;
             }
 
             .success {
-                @apply --body-default;
                 color: var(--sc-grey3b);
             }
 
@@ -57,32 +57,36 @@ Example:
             }
 
             .horizontal {
+                @apply --body-detail;
                 @apply --layout-horizontal;
                 @apply --start-justified;
             }
 
             .container[wide-layout] .truncate {
-                width: 40vw;
+                width: 50vw;
             }
-
+            
             .truncate {
                 -webkit-user-select: text;
                 -moz-user-select: text;
                 -ms-user-select: text;
                 user-select: text;
-                width: 90px;
+                width: 150px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
 
+            .linkbox {
+                margin-top: 5px;
+            }
+
             .greylink {
-                @apply --small-bold;
+                @apply --small-light;
                 cursor: pointer;
                 color: var(--sc-grey3);
                 text-decoration: none;
                 border-bottom: 2px dotted var(--sc-grey3b);
-                margin-top: 10px;
             }
 
             .bluelink {
@@ -91,7 +95,6 @@ Example:
                 color: var(--sc-blue);
                 text-decoration: none;
                 border-bottom: 2px dotted var(--sc-blue);
-                margin-top: 10px;
             }
 
             .pending-dots {
@@ -159,7 +162,7 @@ Example:
                             <template is="dom-if" if="[[_isOutgoing(item.direction)]]">-&nbsp;</template>
 
                             <div>[[_format(item.amount)]] SWT&nbsp;</div>
-
+                            
                             <template is="dom-if" if="[[!_isPending(item.status)]]">
                                 <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;<span class="truncate">[[item.from]]</span></template>
                                 <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;<span class="truncate">[[item.to]]</span></template>
@@ -183,7 +186,7 @@ Example:
                         </template>
 
                     </div>
-                    <div>
+                    <div class="linkbox">
                         <span class$="[[_checkLinkStyle(item.status)]]" on-click="_toEtherscan">show on etherscan</span>
                     </div>
                 </div>
@@ -240,6 +243,8 @@ Example:
                         return 'failed';
                     case 2:
                         return 'pending';
+                    default:
+                        return 'success';
                 }
             }
 
@@ -294,10 +299,11 @@ Example:
             * @return {string} formatted date string
             */
             _formatDate(dateTime) {
-                if (webpack.moment().valueOf() - dateTime < 86400000) {
-                    return webpack.moment(dateTime).fromNow();
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
                 } else {
-                    return webpack.moment(dateTime).format('DD MMM YYYY - HH:mm');
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
                 }
             }
 
@@ -307,7 +313,7 @@ Example:
             * @return {Number} formatted amount
             */
             _format(amount) {
-                return amount / 1000000000000000000;
+                return amount;
             }
 
             /**
