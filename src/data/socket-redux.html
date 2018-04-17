@@ -386,16 +386,25 @@
                 });
             }
             _broadcast() {
+                console.log('broadcasting...');
+                console.log(this.reqtokey);
+                console.log(this.broadcast);
                 this.socket.emit('replyShortCode', {
                     shortCode: this.reqtokey,
                     tx: this.broadcast,
                 }, (reply) => {
+                    console.log('response after broadcast');
+                    console.log(reply);
                     if (reply.response === 200) {
+                        console.log('success with broadcast');
+                        console.log(reply);
                         this.txHash = reply;
                         this.txHAsh.success = true;
                         this.dispatch('TXHASH', this.txHash);
                     }
-                    if (reply.response === 400) {
+                    if (reply.response === 500) {
+                        console.log('failure with broadcast');
+                        console.log(reply);
                         this.txHash = reply;
                         this.txHAsh.success = false;
                         this.dispatch('TXHASH', this.txHash);
@@ -405,7 +414,9 @@
 
             // fired when entering needing a shortCode
             _usingShortCode() {
+                console.log('observer triggered');
                 if (this.usingShortCode) {
+                    console.log('requesting shortcode');
                     this.socket.emit('subscribe', {
                         channel: 'createShortCode',
                         args: {
@@ -414,23 +425,27 @@
                             avatar: this.avatar,
                         },
                     }, (reply) => {
+                        console.log(reply);
                         if (reply.response == 200) {
                             this.shortCode = reply;
                             this.shortCode.received = (new Date).getTime();
                             this.dispatch('SHORTCODE', this.shortCode);
                         }
                     });
-                } else {
-                    if (this.shortCode != null) {
-                        this.socket.emit('unsubscribe', {
-                            subscriptionId: this.shortCode.subscriptionId,
-                        }, (reply) => {
-                            if (reply.response == 200) {
-                                this.dispatch('SHORTCODE', null);
-                            }
-                        });
-                    }
-                }
+                } 
+                // else {
+                //     if (this.shortCode != null) {
+                //         console.log('set shortCode to null & unsubscribing');
+                //         this.socket.emit('unsubscribe', {
+                //             subscriptionId: this.shortCode.subscriptionId,
+                //         }, (reply) => {
+                //             console.log(reply);
+                //             if (reply.response == 200) {
+                //                 this.dispatch('SHORTCODE', null);
+                //             }
+                //         });
+                //     }
+                // }
             }
         } window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
