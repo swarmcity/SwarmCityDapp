@@ -194,21 +194,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="statusbox">
                     <div class="bar">
                         <div class="statusinfo">{{localize('Received TXhash')}}</div>
-                                <dom-if if="{{!broadcasted}}">
-                                    <template>
-                                            <div class="loading">
-                                                <div class="smallpoint" id="point1"></div>
-                                                <div class="smallpoint" id="point2"></div>
-                                                <div class="smallpoint" id="point3"></div>
-                                            </div>
-                                    </template>
-                                </dom-if>
-                                <dom-if if="{{broadcasted}}">
-                                    <template>
-                                            <div class="icon-vmark broadcasted"></div>
-                                    </template>
-                                </dom-if>
-                        </div>
+                        <dom-if if="{{!broadcasted}}">
+                            <template>
+                                <div class="loading">
+                                    <div class="smallpoint" id="point1"></div>
+                                    <div class="smallpoint" id="point2"></div>
+                                    <div class="smallpoint" id="point3"></div>
+                                </div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{broadcasted}}">
+                            <template>
+                                <div class="icon-vmark broadcasted"></div>
+                            </template>
+                        </dom-if>
+                    </div>
                 </div>
             </div>
             <div class="bottom">
@@ -279,12 +279,34 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
+                    /**
+                    * An array containing the transaction history for this public key
+                    * @type {Array}
+                    */
+                    txHistory: {
+                        type: Array,
+                        statePath: 'txhistory',
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Redux action for setting the txHistory
+            * @param {Array} txhistory
+            */
+            static get actions() {
+                return Object.assign({
+                    TXHISTORY: function(txhistory) {
+                        return {
+                            type: 'TXHISTORY',
+                            txhistory: txhistory,
+                        };
+                    },
+                });
             }
             /**
             * takes the user to the conversion success page
