@@ -137,6 +137,14 @@
                         statePath: 'usingShortCode',
                         observer: '_usingShortCode',
                     },
+                    /**
+                    * An array containing the transaction history for this public key
+                    * @type {Array}
+                    */
+                    txHistory: {
+                        type: Array,
+                        statePath: 'txhistory',
+                    },
                 };
             }
             /**
@@ -187,12 +195,6 @@
                             shortCode: shortCode,
                         };
                     },
-                    TRANSACTIONS: function(transactions) {
-                        return {
-                            type: 'TRANSACTIONS',
-                            transactions: transactions,
-                        };
-                    },
                     IPHONE: function(iphone) {
                         return {
                             type: 'IPHONE',
@@ -209,6 +211,12 @@
                         return {
                             type: 'TXHASH',
                             txhash: txhash,
+                        };
+                    },
+                    TXHISTORY: function(txhistory) {
+                        return {
+                            type: 'TXHISTORY',
+                            txhistory: txhistory,
                         };
                     },
                 });
@@ -338,20 +346,20 @@
 
                 // subscribe to updates of the tx history
                 this.socket.emit('subscribe', {
-                    channel: 'txhistory',
+                    channel: 'txHistory',
                     args: {
-                        publickey: this.publickey,
+                        address: this.publicKey,
                     },
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.transactions = reply.data;
-                        this.dispatch('TRANSACTIONS', this.transactions);
+                        this.txHistory = reply.data;
+                        this.dispatch('TXHISTORY', this.txHistory);
                     }
                 });
-                this.socket.on('txhistoryChanged', (reply) => {
+                this.socket.on('txHistoryChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.transactions = reply.data;
-                        this.dispatch('TRANSACTIONS', this.transactions);
+                        this.txHistory = reply.data;
+                        this.dispatch('TXHISTORY', this.txHistory);
                     }
                 });
             }
