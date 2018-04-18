@@ -80,6 +80,12 @@ The following custom properties and mixins are available for styling:
                             broadcast: broadcast,
                         };
                     },
+                    PUBLICKEY: function (publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
                 });
             }
             static get properties() {
@@ -202,27 +208,23 @@ The following custom properties and mixins are available for styling:
                         reflectToAttribute: true,
                         notify: true,
                     },
+                    /**
+                    * lastNonce stores the last used nonce
+                    * @type {Number}
+                    */
+                    lastNonce: {
+                        type: Number,
+                        value: -1,
+                    },
                 };
             }
-            /**
-            * Redux action for setting property values
-            * @param {String} publicKey
-            */
-            static get actions() {
-                return Object.assign({
-                    PUBLICKEY: function(publicKey) {
-                        return {
-                            type: 'PUBLICKEY',
-                            publicKey: publicKey,
-                        };
-                    },
-                });
-            }
             _sign() {
-                console.log('we goan signen eh');
-                if (this.privateKey != null) {
-                    console.log('die privkey is goe');
+                if (this.privateKey) {
+                    console.log('The nonce: ');
                     console.log(this.nonce);
+                    if (this.nonce === this.lastNonce) {
+                        this.nonce += 1;
+                    }
                     let swtContract = new webpack.Contract(abi.miniMeToken.abi,
                         '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
                     let txData = swtContract.methods.transfer(this.toAddress,
@@ -240,11 +242,10 @@ The following custom properties and mixins are available for styling:
                         .then((serializedTx) => {
                             this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
                             this.path = 'transaction-processing/';
+                            this.lastNonce = this.nonce;
                         }).catch((err) => {
                             this.error = err;
                         });
-                } else  {
-                    console.log('die privkey is leeg');
                 }
             }
 
