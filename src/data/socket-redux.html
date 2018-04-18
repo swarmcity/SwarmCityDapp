@@ -262,8 +262,6 @@
                     this.dispatch('GASPRICE', this.gasprice);
                 });
                 this.socket.on('nonceChanged', (reply) => {
-                    console.log('socket reply on nonceChanged');
-                    console.log(reply)
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
@@ -340,8 +338,6 @@
 
                 // Fired when the users nonce changes
                 this.socket.on('nonceChanged', (reply) => {
-                    console.log('socket reply on nonceChanged');
-                    console.log(reply.data.nonce)
                     if (reply.response == 200) {
                         this.nonce = reply.data.nonce;
                         this.dispatch('NONCE', this.nonce);
@@ -398,25 +394,16 @@
                 });
             }
             _broadcast() {
-                console.log('broadcasting...');
-                console.log(this.reqtokey);
-                console.log(this.broadcast);
                 this.socket.emit('replyShortCode', {
                     shortCode: this.reqtokey,
                     tx: this.broadcast,
                 }, (reply) => {
-                    console.log('response after broadcast');
-                    console.log(reply);
                     if (reply.response === 200) {
-                        console.log('success with broadcast');
-                        console.log(reply);
                         this.txHash = reply;
                         this.txHash.success = true;
                         this.dispatch('TXHASH', this.txHash);
                     }
                     if (reply.response === 500) {
-                        console.log('failure with broadcast');
-                        console.log(reply);
                         this.txHash = reply;
                         this.txHash.success = false;
                         this.dispatch('TXHASH', this.txHash);
@@ -441,8 +428,7 @@
                             this.dispatch('SHORTCODE', this.shortCode);
                         }
                     });
-                } 
-                else {
+                } else {
                     if (this.shortCode != null) {
                         this.socket.emit('unsubscribe', {
                             subscriptionId: this.shortCode.subscriptionId,
