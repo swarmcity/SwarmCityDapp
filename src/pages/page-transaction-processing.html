@@ -79,6 +79,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 opacity: 0.2;
             }
 
+            .icon-xmark {
+                @apply --xmark-white-small;
+                opacity: 0.2;
+            }
+
             .bottom {
                 box-sizing: border-box;
                 padding: 0 14vw;
@@ -203,9 +208,14 @@ This code may only be used under the license found at https://github.com/swarmci
                                 </div>
                             </template>
                         </dom-if>
-                        <dom-if if="{{broadcasted}}">
+                        <dom-if if="{{broadcastSuccess}}">
                             <template>
                                 <div class="icon-vmark broadcasted"></div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{broadcastFailure}}">
+                            <template>
+                                <div class="icon-xmark broadcasted"></div>
                             </template>
                         </dom-if>
                     </div>
@@ -300,7 +310,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    TXHISTORY: function(txhistory) {
+                    TXHISTORY: function (txhistory) {
                         return {
                             type: 'TXHISTORY',
                             txhistory: txhistory,
@@ -312,7 +322,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the conversion success page
             */
             _success() {
-                if (this.broadcasted) {
+                if (this.broadcastSuccess || this.broadcastFailure) {
                     this.path = 'my-wallet';
                 }
             }
@@ -329,8 +339,20 @@ This code may only be used under the license found at https://github.com/swarmci
             * updates styling when txHash received
             */
             _broadcasted() {
-                this.broadcasted = true;
-                this.$.button.classList.add('broadcasted');
+                switch (this.txhash.success) {
+                    case true: {
+                        this.broadcasted = false;
+                        this.broadcastSuccess = true;
+                        this.$.button.classList.add('broadcasted');
+                        break;
+                    }
+                    case false: {
+                        this.broadcasted = false;
+                        this.broadcastFailure = true;
+                        this.$.button.classList.add('broadcasted');
+                        break;
+                    }
+                }
             }
         }
         window.customElements

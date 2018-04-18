@@ -726,6 +726,24 @@ Example:
                             usingShortCode: usingShortCode,
                         };
                     },
+                    TOADDRESS: function(toAddress) {
+                        return {
+                            type: 'TOADDRESS',
+                            toAddress: toAddress,
+                        };
+                    },
+                    TOUSERNAME: function(toUserName) {
+                        return {
+                            type: 'TOUSERNAME',
+                            toUserName: toUserName,
+                        };
+                    },
+                    AMOUNTTOSEND: function(amountToSend) {
+                        return {
+                            type: 'AMOUNTTOSEND',
+                            amountToSend: amountToSend,
+                        };
+                    },
                 });
             }
             /**
@@ -872,12 +890,9 @@ Example:
             * takes the user to the confirm page
             */
             _goToConfirm() {
-                let txData = {
-                    amountToSend: this.amountToSend,
-                    toAddress: this.sendToPublicKey,
-                    toUserName: this.tokey.data.userName,
-                };
-                sessionStorage.setItem('tx', JSON.stringify(txData));
+                this.dispatch('AMOUNTTOSEND', this.amountToSend);
+                this.dispatch('TOADDRESS', this.sendToPublicKey);
+                this.dispatch('TOUSERNAME', this.tokey.data.userName);
                 this.path = 'confirm-sending/';
             }
             /**

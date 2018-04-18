@@ -254,16 +254,36 @@ This code may only be used under the license found at https://github.com/swarmci
                     routeEntry: {
                         type: Array,
                     },
+                    /**
+                    * The address of the receiver
+                    * @type {String}
+                    */
+                    toAddress: {
+                        type: String,
+                        statePath: 'toAddress',
+                    },
+                    /**
+                    * The username of the receiver
+                    * @type {String}
+                    */
+                    toUserName: {
+                        type: String,
+                        statePath: 'toUserName',
+                    },
+                    /**
+                    * The amount to send
+                    * @type {Number}
+                    */
+                    amountToSend: {
+                        type: Number,
+                        statePath: 'amountToSend',
+                    },
                 };
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                const data = JSON.parse(sessionStorage.getItem('tx'));
-                this.amountToSend = data.amountToSend;
-                this.toAddress = data.toAddress;
-                this.toUserName = data.toUserName;
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 this.address = storage.keyStore.address;
             }
@@ -280,20 +300,14 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the previous page
             */
             _disagree() {
-                sessionStorage.removeItem('tx');
                 window.history.back();
             }
 
             /**
-            * takes the user to the initiating hashtag page
-            */
-            _agree() {
-                this.path = 'transaction-processing';
-            }
-            /**
             * toggles the password unlock display
             */
             _unlock() {
+                console.log('unlocking');
                 this.toggleUnlock = !this.toggleUnlock;
             }
             /**
@@ -301,6 +315,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _blur() {
                 if (this.toggleUnlock) {
+                    this.privateKey = null;
                     this.$.container.classList.add('blur');
                 }
                 else {

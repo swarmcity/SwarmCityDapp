@@ -28,10 +28,10 @@ The following custom properties and mixins are available for styling:
 -->
 <dom-module id="display-complete-transaction">
     <template>
-<data-transaction id="transaction"></data-transaction>
-<template is="dom-if" if="{{debug}}">
-    <p style="margin-top:100px">
-        <pre style="background-color:black; color:lime">
+        <data-transaction id="transaction"></data-transaction>
+        <template is="dom-if" if="{{debug}}">
+            <p style="margin-top:100px">
+                <pre style="background-color:black; color:lime">
             
             ==========================================================================  
             Test DIV To show all TX values (this is for testing only)   
@@ -55,8 +55,8 @@ The following custom properties and mixins are available for styling:
             ERROR: {{error}}
         
         </pre>
-    </p>
-</template>
+            </p>
+        </template>
 
     </template>
     <script>
@@ -74,7 +74,7 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    BROADCAST: function(broadcast) {
+                    BROADCAST: function (broadcast) {
                         return {
                             type: 'BROADCAST',
                             broadcast: broadcast,
@@ -112,6 +112,7 @@ The following custom properties and mixins are available for styling:
                     */
                     toAddress: {
                         type: String,
+                        statePath: 'toAddress',
                     },
                     /**
                     * amount is the amount of SWT tot send
@@ -119,6 +120,7 @@ The following custom properties and mixins are available for styling:
                     */
                     amountToSend: {
                         type: Number,
+                        statePath: 'amountToSend',
                     },
                     /**
                     * nonce is the count of transactions this address has made so far
@@ -126,6 +128,14 @@ The following custom properties and mixins are available for styling:
                     */
                     nonce: {
                         type: Number,
+                    },
+                    /**
+                    * publickey is the wallet pubkey
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
                     },
                     /**
                     * gas price is the curent price of gas
@@ -141,6 +151,7 @@ The following custom properties and mixins are available for styling:
                     privateKey: {
                         type: String,
                         observer: '_sign',
+                        notify: true,
                     },
                     /**
                     * Raw transaction for checking the values
@@ -193,12 +204,30 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
+            /**
+            * Redux action for setting property values
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
             _sign() {
-                let swtContract = new webpack.Contract(abi.miniMeToken.abi,
-                '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
-                let txData = swtContract.methods.transfer(this.toAddress,
-                (this.amountToSend)*1e18).encodeABI();
-                const txParams = {
+                console.log('we goan signen eh');
+                if (this.privateKey != null) {
+                    console.log('die privkey is goe');
+                    console.log(this.nonce);
+                    let swtContract = new webpack.Contract(abi.miniMeToken.abi,
+                        '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
+                    let txData = swtContract.methods.transfer(this.toAddress,
+                        (this.amountToSend) * 1e18).encodeABI();
+                    const txParams = {
                         nonce: this._toHex(this.nonce),
                         gasPrice: this._toHex(this.gasPrice),
                         gasLimit: this._toHex(200000),
@@ -207,13 +236,16 @@ The following custom properties and mixins are available for styling:
                         data: txData,
                         chainId: 4,
                     };
-                this.$.transaction.signRawTx(txParams, this.privateKey)
-                .then((serializedTx) => {
-                    this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
-                    this.path = 'transaction-processing/';
-                }).catch((err)=>{
-                    this.error = err;
-                });
+                    this.$.transaction.signRawTx(txParams, this.privateKey)
+                        .then((serializedTx) => {
+                            this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
+                            this.path = 'transaction-processing/';
+                        }).catch((err) => {
+                            this.error = err;
+                        });
+                } else  {
+                    console.log('die privkey is leeg');
+                }
             }
 
             /**
@@ -224,7 +256,7 @@ The following custom properties and mixins are available for styling:
             _toHex(dec) {
                 let hex = Number(dec).toString(16);
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
-                return '0x'+ result;
+                return '0x' + result;
             }
         } window.customElements.define(DisplayCompleteTransaction.is, DisplayCompleteTransaction);
     </script>
