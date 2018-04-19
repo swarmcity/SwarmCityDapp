@@ -31,6 +31,7 @@ let initialState = {
     toUserName: null,
     amountToSend: 0,
     txhistory: [],
+    pendingTx: [],
     usingShortCode: false,
     language: 'en',
     fx: {
@@ -393,6 +394,14 @@ let reducer = function(state, action) {
             txhistory = action.txhistory;
             return Object.assign({}, state, {
                 txhistory: txhistory,
+            });
+        }
+        // This is the array containing all outgoing pending transactions on user's publicKey
+        case 'PENDINGTX': {
+            let pendingTx = state.pendingTx;
+            pendingTx = action.pendingTx;
+            return Object.assign({}, state, {
+                pendingTx: pendingTx,
             });
         }
         // An array containing all reputation earned

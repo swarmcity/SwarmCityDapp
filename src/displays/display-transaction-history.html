@@ -49,8 +49,10 @@ Example:
             .failed-text {
                 font-weight: bold;
             }
+
             .pending {
-                color: var(--sc-grey3);}
+                color: var(--sc-grey3);
+            }
 
             .pending>span {
                 color: blue;
@@ -65,7 +67,7 @@ Example:
             .container[wide-layout] .truncate {
                 width: 50vw;
             }
-            
+
             .truncate {
                 -webkit-user-select: text;
                 -moz-user-select: text;
@@ -90,7 +92,7 @@ Example:
             }
 
             .bluelink {
-                @apply --small-bold;    
+                @apply --small-bold;
                 cursor: pointer;
                 color: var(--sc-blue);
                 text-decoration: none;
@@ -162,10 +164,14 @@ Example:
                             <template is="dom-if" if="[[_isOutgoing(item.direction)]]">-&nbsp;</template>
 
                             <div>[[_format(item.amount)]]&nbsp;SWT&nbsp;</div>
-                            
+
                             <template is="dom-if" if="[[!_isPending(item.status)]]">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;<span class="truncate">[[item.from]]</span></template>
-                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;<span class="truncate">[[item.to]]</span></template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;
+                                    <span class="truncate">[[item.from]]</span>
+                                </template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;
+                                    <span class="truncate">[[item.to]]</span>
+                                </template>
                             </template>
 
                             <template is="dom-if" if="[[_isPending(item.status)]]">
@@ -180,8 +186,12 @@ Example:
 
                         <template is="dom-if" if="[[_isPending(item.status)]]">
                             <div class="horizontal">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from&nbsp;<span class="truncate">[[item.from]]</span></template>
-                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to&nbsp;<span class="truncate">[[item.to]]</span></template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from&nbsp;
+                                    <span class="truncate">[[item.from]]</span>
+                                </template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to&nbsp;
+                                    <span class="truncate">[[item.to]]</span>
+                                </template>
                             </div>
                         </template>
 
@@ -221,6 +231,15 @@ Example:
                     txHistory: {
                         type: Array,
                         statePath: 'txhistory',
+                        observer: '_txHistoryChanged',
+                    },
+                    /**
+                    * An array containing the pending outgoing transactions for this public key
+                    * @type {Array}
+                    */
+                    pendingTx: {
+                        type: Array,
+                        statePath: 'pendingTx',
                     },
                 };
             }
@@ -228,6 +247,24 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let tempPendingTx = [{
+                    amount: '666',
+                    direction: 'out',
+                    status: 2,
+                    from: '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                    symbol: 'SWT',
+                    to: '0xc28cb3E2cB9Ceb316106E3c54A4611c271f7C62c',
+                    transactionHash: '0x0609ea0e05a76076ccd7f3fba6dsdb3d38cfc300be8cfb5e7b341c5c8c7b48c8',
+                }, {
+                    amount: '123',
+                    direction: 'out',
+                    status: 2,
+                    from: '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
+                    symbol: 'SWT',
+                    to: '0xc28cb3E2cB9Ceb316106E3c54A4611c271f7C62c',
+                    transactionHash: '0xa7d8a0ef14e387ebcca806499cbf4c4840a99fddc6b44e4de4ac13fb07ffd568',
+                }];
+                this.dispatch('PENDINGTX', tempPendingTx);
             }
             /**
             * Redux action for setting the txHistory
@@ -239,6 +276,12 @@ Example:
                         return {
                             type: 'TXHISTORY',
                             txhistory: txhistory,
+                        };
+                    },
+                    PENDINGTX: function(pendingTx) {
+                        return {
+                            type: 'PENDINGTX',
+                            pendingTx: pendingTx,
                         };
                     },
                 });
@@ -346,6 +389,29 @@ Example:
             _toEtherscan(event) {
                 window.open('https://rinkeby.etherscan.io/tx/'
                     + event.model.__data.item.transactionHash, '_blank');
+            }
+            /**
+            * On every new txHistory Array received, we check if the pending tx's got confirmed
+            */
+            _txHistoryChanged() {
+                // Verify if pending tx has been confirmed, remove from pendingTx list if so
+                let newPendingTx = this.pendingTx;
+                for (let confirmedTx of this.txHistory) {
+                    for (let i = 0; i < newPendingTx.length; i++ ) {
+                        if (confirmedTx.transactionHash == newPendingTx[i].transactionHash) {
+                            newPendingTx.splice(i, 1);
+                        }
+                    }
+                }
+                // Add remaining pendingTx to the txHistory array
+                let newTxHistory = this.txHistory;
+                for (let pendingTx of newPendingTx) {
+                    newTxHistory.unshift(pendingTx);
+                }
+
+                // Dispatch new arrays to redux
+                this.dispatch('PENDINGTX', newPendingTx);
+                this.dispatch('TXHISTORY', newTxHistory);
             }
         }
 
