@@ -30,8 +30,9 @@ let initialState = {
     toAddress: null,
     toUserName: null,
     amountToSend: 0,
-    txhistory: [],
+    confirmedTx: [],
     pendingTx: [],
+    shownTx: [],
     usingShortCode: false,
     language: 'en',
     fx: {
@@ -389,11 +390,19 @@ let reducer = function(state, action) {
             });
         }
         // This is the array containing all past transactions on user's publicKey
-        case 'TXHISTORY': {
-            let txhistory = state.txhistory;
-            txhistory = action.txhistory;
+        case 'SHOWNTX': {
+            let shownTx = state.shownTx;
+            shownTx = action.shownTx;
             return Object.assign({}, state, {
-                txhistory: txhistory,
+                shownTx: shownTx,
+            });
+        }
+        // This is the array containing all past transactions on user's publicKey
+        case 'CONFIRMEDTX': {
+            let confirmedTx = state.confirmedTx;
+            confirmedTx = action.confirmedTx;
+            return Object.assign({}, state, {
+                confirmedTx: confirmedTx,
             });
         }
         // This is the array containing all outgoing pending transactions on user's publicKey

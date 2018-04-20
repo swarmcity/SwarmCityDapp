@@ -150,7 +150,7 @@ Example:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
 
-            <template is="dom-repeat" items="{{txHistory}}">
+            <template is="dom-repeat" items="{{shownTx}}">
                 <div class="item">
                     <div class$="[[_checkState(item.status)]]">
                         <div class="date">[[_formatDate(item.dateTime)]]</div>
@@ -225,13 +225,28 @@ Example:
                         statePath: 'language',
                     },
                     /**
-                    * An array containing the transaction history for this public key
+                    * An array containing the confirmed transaction history for this public key
                     * @type {Array}
                     */
-                    txHistory: {
+                    confirmedTx: {
                         type: Array,
-                        statePath: 'txhistory',
-                        observer: '_txHistoryChanged',
+                        statePath: 'confirmedTx',
+                    },
+                    /**
+                    * An array containing the pending transaction history for this public key
+                    * @type {Array}
+                    */
+                    pendingTx: {
+                        type: Array,
+                        statePath: 'pendingTx',
+                    },
+                    /**
+                    * An array containing the visible transaction history for this public key
+                    * @type {Array}
+                    */
+                    shownTx: {
+                        type: Array,
+                        statePath: 'shownTx',
                     },
                     /**
                     * txhash of broadcasted transaction
@@ -274,21 +289,27 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * Redux action for setting the txHistory
+            * Redux action for setting the shownTx
             * @param {Array} txhistory
             */
             static get actions() {
                 return Object.assign({
-                    TXHISTORY: function(txhistory) {
+                    SHOWNTX: function(shownTx) {
                         return {
-                            type: 'TXHISTORY',
-                            txhistory: txhistory,
+                            type: 'SHOWNTX',
+                            shownTx: shownTx,
                         };
                     },
                     PENDINGTX: function(pendingTx) {
                         return {
                             type: 'PENDINGTX',
                             pendingTx: pendingTx,
+                        };
+                    },
+                    CONFIRMEDTX: function(confirmedTx) {
+                        return {
+                            type: 'CONFIRMEDTX',
+                            confirmedTx: confirmedTx,
                         };
                     },
                 });
@@ -397,32 +418,24 @@ Example:
                 window.open('https://rinkeby.etherscan.io/tx/'
                     + event.model.__data.item.transactionHash, '_blank');
             }
-
-            _pendingTxChanged() {
-                console.log('pending has changed!')
-            }
             /**
-            * On every new txHistory Array received, we check if the pending tx's got confirmed
+            * On every new shownTx or pendingTx Array received, we check if the pending tx's got confirmed
             */
-            _txHistoryChanged() {
-                console.log('History changed!');
-                // Verify if pending tx has been confirmed, remove from pendingTx list if so
-                let newPendingTx = this.pendingTx;
-                for (let confirmedTx of this.txHistory) {
-                    for (let i = 0; i < newPendingTx.length; i++ ) {
-                        if (confirmedTx.transactionHash == newPendingTx[i].transactionHash) {
-                            newPendingTx.splice(i, 1);
-                        }
-                    }
-                }
-                // Add remaining pendingTx to the txHistory array
-                let newTxHistory = this.txHistory;
-                for (let pendingTx of newPendingTx) {
-                    newTxHistory.unshift(pendingTx);
-                }
+            _shownTxChanged() {
+            }
+            _newTxHash(){
+                let newTxHistory = this.shownTx;
 
-                // Dispatch new arrays to redux
-                this.dispatch('PENDINGTX', newPendingTx);
+                newTxHistory.unshift({
+                    amount: this.amountToSend,
+                    direction: 'out',
+                    status: 2,
+                    from: this.address,
+                    symbol: 'SWT',
+                    to: this.toAddress,
+                    transactionHash: this.txhash.data.transactionHash,
+                });
+
                 this.dispatch('TXHISTORY', newTxHistory);
             }
         }

@@ -141,9 +141,9 @@
                     * An array containing the transaction history for this public key
                     * @type {Array}
                     */
-                    txHistory: {
+                    confirmedTx: {
                         type: Array,
-                        statePath: 'txhistory',
+                        statePath: 'confirmedTx',
                     },
                 };
             }
@@ -213,10 +213,10 @@
                             txhash: txhash,
                         };
                     },
-                    TXHISTORY: function(txhistory) {
+                    CONFIRMEDTX: function(confirmedTx) {
                         return {
-                            type: 'TXHISTORY',
-                            txhistory: txhistory,
+                            type: 'CONFIRMEDTX',
+                            confirmedTx: confirmedTx,
                         };
                     },
                 });
@@ -352,14 +352,14 @@
                     },
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.txHistory = reply.data;
-                        this.dispatch('TXHISTORY', this.txHistory);
+                        this.confirmedTx = reply.data;
+                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
                     }
                 });
                 this.socket.on('txHistoryChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.txHistory = reply.data;
-                        this.dispatch('TXHISTORY', this.txHistory);
+                        this.confirmedTx = reply.data;
+                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
                     }
                 });
             }
