@@ -8,6 +8,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-transaction.html">
 <script src="../data/abi.js"></script>
+<script src="../data/webpack.min.js"></script>
+
 
 <!--
 
@@ -226,8 +228,11 @@ The following custom properties and mixins are available for styling:
                     }
                     let swtContract = new webpack.Contract(abi.miniMeToken.abi,
                         '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
+
+                    let weiAmount = new webpack.BN(this.amountToSend, 10) *
+                        new webpack.BN('1000000000000000', 10);
                     let txData = swtContract.methods.transfer(this.toAddress,
-                    (this.amountToSend) * 1e18).encodeABI();
+                        weiAmount).encodeABI();
                     const txParams = {
                         nonce: this._toHex(this.nonce),
                         gasPrice: this._toHex(this.gasPrice),
