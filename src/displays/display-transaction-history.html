@@ -231,6 +231,7 @@ Example:
                     confirmedTx: {
                         type: Array,
                         statePath: 'confirmedTx',
+                        observer: '_confirmedTx',
                     },
                     /**
                     * An array containing the pending transaction history for this public key
@@ -238,7 +239,7 @@ Example:
                     */
                     pendingTx: {
                         type: Array,
-                        statePath: 'pendingTx',
+                        value: [],
                     },
                     /**
                     * An array containing the visible transaction history for this public key
@@ -298,12 +299,6 @@ Example:
                         return {
                             type: 'SHOWNTX',
                             shownTx: shownTx,
-                        };
-                    },
-                    PENDINGTX: function(pendingTx) {
-                        return {
-                            type: 'PENDINGTX',
-                            pendingTx: pendingTx,
                         };
                     },
                     CONFIRMEDTX: function(confirmedTx) {
@@ -419,24 +414,37 @@ Example:
                     + event.model.__data.item.transactionHash, '_blank');
             }
             /**
-            * On every new shownTx or pendingTx Array received, we check if the pending tx's got confirmed
+            * Updates the visible transactions with confirmed tx's
             */
-            _shownTxChanged() {
+            _confirmedTx() {
+                let newShownTx = this.shownTx;
+                for (let tx of this.confirmedTx) {
+                    for (let i = 0; i < newShownTx.length; i++) {
+                        if (newShownTx[i].transactionHash === tx.transactionHash) {
+                            newShownTx[i] = tx;
+                        }
+                    }
+                }
+                this.dispatch('SHOWNTX', this.confirmedTx);
             }
-            _newTxHash(){
-                let newTxHistory = this.shownTx;
 
-                newTxHistory.unshift({
+            /**
+            * Adds the new tx to the pending tx array
+            */
+            _newTxHash() {
+                let newShownTx = this.shownTx;
+                newShownTx.unshift({
                     amount: this.amountToSend,
                     direction: 'out',
                     status: 2,
+                    dateTime: (new Date).getTime()/1000,
                     from: this.address,
                     symbol: 'SWT',
                     to: this.toAddress,
                     transactionHash: this.txhash.data.transactionHash,
                 });
-
-                this.dispatch('TXHISTORY', newTxHistory);
+                this.dispatch('SHOWNTX', []);
+                this.dispatch('SHOWNTX', newShownTx);
             }
         }
 
