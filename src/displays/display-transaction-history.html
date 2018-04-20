@@ -432,19 +432,21 @@ Example:
             * Adds the new tx to the pending tx array
             */
             _newTxHash() {
-                let newShownTx = this.shownTx;
-                newShownTx.unshift({
-                    amount: this.amountToSend,
-                    direction: 'out',
-                    status: 2,
-                    dateTime: (new Date).getTime()/1000,
-                    from: this.address,
-                    symbol: 'SWT',
-                    to: this.toAddress,
-                    transactionHash: this.txhash.data.transactionHash,
-                });
-                this.dispatch('SHOWNTX', []);
-                this.dispatch('SHOWNTX', newShownTx);
+                if (this.txhash.success) {
+                    let newShownTx = this.shownTx;
+                    newShownTx.unshift({
+                        amount: this.amountToSend,
+                        direction: 'out',
+                        status: 2,
+                        dateTime: (new Date).getTime()/1000,
+                        from: this.address,
+                        symbol: 'SWT',
+                        to: this.toAddress,
+                        transactionHash: this.txhash.data.transactionHash,
+                    });
+                    this.dispatch('SHOWNTX', []);
+                    this.dispatch('SHOWNTX', newShownTx);
+                }
             }
         }
 
