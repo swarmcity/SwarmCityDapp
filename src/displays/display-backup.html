@@ -287,31 +287,37 @@ The following custom properties and mixins are available for styling:
                     this.path = 'download-success-profile/';
                 }
             }
+            /**
+            * check for operating system for enable/disable the download backup file link
+            */
             _isShowDownload() {
                 this.getOS();
                 return this.osType !== 'iOS';
             }
+            /**
+            * update the osType variable (operating system)
+            */
             getOS() {
-              let userAgent = window.navigator.userAgent;
-              let platform = window.navigator.platform;
-              let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
-              let windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
-              let iosPlatforms = ['iPhone', 'iPad', 'iPod'];
-              let os = null;
+                let userAgent = window.navigator.userAgent;
+                let platform = window.navigator.platform;
+                let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+                let windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+                let iosPlatforms = ['iPhone', 'iPad', 'iPod'];
+                let os = null;
 
-              if (macosPlatforms.indexOf(platform) !== -1) {
-                os = 'Mac OS';
-              } else if (iosPlatforms.indexOf(platform) !== -1) {
-                os = 'iOS';
-              } else if (windowsPlatforms.indexOf(platform) !== -1) {
-                os = 'Windows';
-              } else if (/Android/.test(userAgent)) {
-                os = 'Android';
-              } else if (!os && /Linux/.test(platform)) {
-                os = 'Linux';
-              }
-              this.osType = os;
-              return os;
+                if (macosPlatforms.indexOf(platform) !== -1) {
+                    os = 'Mac OS';
+                } else if (iosPlatforms.indexOf(platform) !== -1) {
+                    os = 'iOS';
+                } else if (windowsPlatforms.indexOf(platform) !== -1) {
+                    os = 'Windows';
+                } else if (/Android/.test(userAgent)) {
+                    os = 'Android';
+                } else if (!os && /Linux/.test(platform)) {
+                    os = 'Linux';
+                }
+                this.osType = os;
+                return os;
             }
         }
         window.customElements.define(MyDisplayBackup.is, MyDisplayBackup);
