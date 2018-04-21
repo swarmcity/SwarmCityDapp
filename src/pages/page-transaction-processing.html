@@ -70,7 +70,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-bottom: 1px;
             }
 
-            .broadcasted {
+            .continue {
                 opacity: 1 !important;
             }
 
@@ -80,7 +80,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .icon-xmark {
-                @apply --xmark-white-small;
+                @apply --xmark-grey4-small;
                 opacity: 0.2;
             }
 
@@ -98,13 +98,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center-center;
             }
 
-            .successbox {
+            .buttonbox {
                 @apply --icon-button-big;
                 opacity: 0.2;
             }
 
-            .success {
+            .icon-next {
                 @apply --next-grey4-normal;
+            }
+
+            .icon-previous {
+                @apply --xmark-grey4-normal;
             }
 
             .container[wide-layout] .top {
@@ -130,7 +134,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-            .successbox:active {
+            .buttonbox:active {
                 @apply --button-active;
             }
 
@@ -185,7 +189,8 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .success {
+                .icon-next,
+                .icon-previous {
                     @apply --retina;
                 }
             }
@@ -199,7 +204,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="statusbox">
                     <div class="bar">
                         <div class="statusinfo">{{localize('Received TXhash')}}</div>
-                        <dom-if if="{{!broadcasted}}">
+
+
+                        <dom-if if="{{waiting}}">
                             <template>
                                 <div class="loading">
                                     <div class="smallpoint" id="point1"></div>
@@ -208,23 +215,31 @@ This code may only be used under the license found at https://github.com/swarmci
                                 </div>
                             </template>
                         </dom-if>
-                        <dom-if if="{{broadcastSuccess}}">
+                        <dom-if if="{{success}}">
                             <template>
-                                <div class="icon-vmark broadcasted"></div>
+                                <div class="icon-vmark continue"></div>
                             </template>
                         </dom-if>
-                        <dom-if if="{{broadcastFailure}}">
+                        <dom-if if="{{failure}}">
                             <template>
-                                <div class="icon-xmark broadcasted"></div>
+                                <div class="icon-xmark continue"></div>
                             </template>
                         </dom-if>
+                        <dom-if if="{{timeOut}}">
+                            <template>
+                                <div class="icon-xmark continue"></div>
+                            </template>
+                        </dom-if>
+
+
+
                     </div>
                 </div>
             </div>
             <div class="bottom">
                 <div class="choicebox">
-                    <div id="button" class="successbox" on-click="_success" on-keypress="_success" tabindex="1">
-                        <div class="success"></div>
+                    <div id="button" class="buttonbox" on-click="_next" on-keypress="_next" tabindex="1">
+                        <div id="icon" class="icon-next"></div>
                     </div>
                 </div>
             </div>
@@ -251,43 +266,38 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        observer: '_path',
-                    },
-                    /**
-                    * routeExit triggers the exit animations
-                    * @type {Array}
-                    */
-                    routeExit: {
-                        type: Array,
-                    },
-                    /**
-                    * routeEntry triggers the entry animations
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                    },
-                    /**
                     * txhash of broadcasted transaction
                     * @type {Object}
                     */
                     txhash: {
                         type: Object,
                         statePath: 'txhash',
-                        observer: '_broadcasted',
+                        observer: '_newTxHash',
                     },
                     /**
-                    * Broadcasted is true if the client has received txhash
+                    * signed tx we're waiting on hash for 
+                    * @type {Object}
+                    */
+                    broadcast: {
+                        type: Object,
+                        statePath: 'broadcast',
+                        observer: '_newBroadcast',
+                    },
+                    /**
+                    * timer counting down until timeout
+                    * @type {Object}
+                    */
+                    timer: {
+                        type: Object,
+                    },
+                    /**
+                    * this is set to true when timer hits 0
                     * @type {Boolean}
                     */
-                    broadcasted: {
+                    timeOut: {
                         type: Boolean,
                         value: false,
+                        observer: '_timeOut',
                     },
                 };
             }
@@ -295,41 +305,64 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+
             }
-            /**
-            * takes the user to the conversion success page
-            */
-            _success() {
-                if (this.broadcastSuccess || this.broadcastFailure) {
-                    this.path = 'my-wallet';
-                }
+
+            _newBroadcast() {
+                console.log('new broadcast');
+                this._resetValues();
+                this._startTimer();
             }
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
+
+            _resetValues() {
+                this.waiting = true;
+                this.success = false;
+                this.failure = false;
+                this.$.button.classList.remove('continue');
+                this.$.icon.classList.add('icon-next');
             }
-            /**
-            * updates styling when txHash received
-            */
-            _broadcasted() {
+
+            _startTimer() {
+                this.timer = setTimeout(() => {
+                    this.timeOut = true;
+                }, 30000);
+            }
+
+            _newTxHash() {
+                console.log('new txhash received');
+                clearTimeout(this.timer);
+                this.$.button.classList.add('continue');
                 switch (this.txhash.success) {
                     case true: {
-                        this.broadcasted = true;
-                        this.broadcastSuccess = true;
-                        this.$.button.classList.add('broadcasted');
+                        this.success = true;
+                        this.waiting = false;
                         break;
                     }
                     case false: {
-                        this.broadcasted = true;
-                        this.broadcastFailure = true;
-                        this.$.button.classList.add('broadcasted');
+                        this.waiting = false;
+                        this.failure = true;
+                        this.$.icon.classList.remove('icon-next');
+                        this.$.icon.classList.add('icon-previous');
                         break;
                     }
+                }
+            }
+
+            _timeOut() {
+                if (this.timeOut) {
+                    this.waiting = false;
+                    this.$.button.classList.add('continue');
+                    this.$.icon.classList.remove('icon-next');
+                    this.$.icon.classList.add('icon-previous');
+                }
+            }
+
+            /**
+            * takes the user back to my-wallet page
+            */
+            _next() {
+                if (!this.waiting) {
+                    this.set('route.path', 'my-wallet');
                 }
             }
         }
