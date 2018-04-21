@@ -37,9 +37,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 70%;
                 @apply --layout-vertical;
                 @apply --layout-center;
-                @apply --layout-center-justified;
+                @apply --layout-start-justified;
                 box-sizing: border-box;
-                padding: 0 14vw;
+                padding: 20vh 14vw 0 14vw;
             }
 
             .title {
@@ -48,8 +48,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 text-align: center;
             }
 
+            .dividerbox {
+                width: 100%;
+                height: 6vh;
+            }
+
             .statusbox {
-                margin: 6vh 0 0 0;
                 color: var(--sc-white);
                 width: 100%;
                 max-width: 800px;
@@ -67,7 +71,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-flex;
                 @apply --body-default;
                 color: var(--sc-grey4);
-                margin-bottom: 1px;
+                padding-top: 18px;
+                height: 36px;
             }
 
             .continue {
@@ -186,6 +191,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 animation: loadanimation 1.5s linear 0.6s infinite;
             }
 
+            .darkline {
+                background-color: var(--sc-grey4);
+                width: 100%;
+                height: 2px;
+
+
+            }
+
+            .failure-text {
+                margin-top: 20px;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -201,7 +221,9 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title">{{localize('Your transaction is being processed.')}}</div>
+                <div class="dividerbox"></div>
                 <div class="statusbox">
+
                     <div class="bar">
                         <div class="statusinfo">{{localize('Received TXhash')}}</div>
 
@@ -234,6 +256,23 @@ This code may only be used under the license found at https://github.com/swarmci
 
 
                     </div>
+
+
+                    <dom-if if="{{failure}}">
+                        <template>
+                            <div class="darkline"></div>
+                            <div class="failure-text">{{localize('Transaction error')}}: {{txhash.data}}</div>
+                        </template>
+                    </dom-if>
+
+                    <dom-if if="{{timeOut}}">
+                        <template>
+                            <div class="darkline"></div>
+                            <div class="failure-text">{{localize('Something went wrong no TXhash was received.')}}</div>
+                        </template>
+                    </dom-if>
+
+
                 </div>
             </div>
             <div class="bottom">
@@ -275,7 +314,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_newTxHash',
                     },
                     /**
-                    * signed tx we're waiting on hash for 
+                    * signed tx whose hash we're waiting for
                     * @type {Object}
                     */
                     broadcast: {
@@ -305,16 +344,21 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-
             }
 
+            /**
+            * When new tx is broadcast, reset page & timer
+            */
             _newBroadcast() {
-                console.log('new broadcast');
                 this._resetValues();
                 this._startTimer();
             }
 
+            /**
+            * reset all page styling conditions
+            */
             _resetValues() {
+                this.timeOut = false;
                 this.waiting = true;
                 this.success = false;
                 this.failure = false;
@@ -322,25 +366,35 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.$.icon.classList.add('icon-next');
             }
 
+            /**
+            * start the timeout timer
+            */
             _startTimer() {
                 this.timer = setTimeout(() => {
                     this.timeOut = true;
-                }, 30000);
+                }, 3000);
             }
 
+            /**
+            * once a txHash is received, decide on the feedback
+            */
             _newTxHash() {
-                console.log('new txhash received');
                 clearTimeout(this.timer);
                 this.$.button.classList.add('continue');
                 switch (this.txhash.success) {
                     case true: {
                         this.success = true;
+                        this.failure = false;
                         this.waiting = false;
+                        this.timeOut = false;
+                        this.$.icon.classList.remove('icon-previous');
+                        this.$.icon.classList.add('icon-next');
                         break;
                     }
                     case false: {
                         this.waiting = false;
                         this.failure = true;
+                        this.timeOut = false;
                         this.$.icon.classList.remove('icon-next');
                         this.$.icon.classList.add('icon-previous');
                         break;
@@ -348,6 +402,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
+            /**
+            * once timeout has been reached, show user timeout feedback
+            */
             _timeOut() {
                 if (this.timeOut) {
                     this.waiting = false;
