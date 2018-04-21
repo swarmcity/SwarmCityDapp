@@ -417,22 +417,29 @@ Example:
             * Updates the visible transactions with confirmed tx's
             */
             _confirmedTx() {
-                let newShownTx = this.shownTx;
-                for (let tx of this.confirmedTx) {
-                    for (let i = 0; i < newShownTx.length; i++) {
-                        if (newShownTx[i].transactionHash === tx.transactionHash) {
-                            newShownTx[i] = tx;
+                console.log('nieuwe confirmed array is binnen');
+                let shownTxCopy = this.shownTx;
+                if (shownTxCopy.length < 1) {
+                    shownTxCopy = this.confirmedTx;
+                } else {
+                    shownTxCopy = this.shownTx;
+                    for (let i = 0; i < shownTxCopy.length; i++) {
+                        for (let tx of this.confirmedTx) {
+                            if (shownTxCopy[i].transactionHash === tx.transactionHash) {
+                                shownTxCopy[i] = tx;
+                            }
                         }
                     }
                 }
-                this.dispatch('SHOWNTX', this.confirmedTx);
+                this.dispatch('SHOWNTX', shownTxCopy);
             }
 
             /**
             * Adds the new tx to the pending tx array
             */
             _newTxHash() {
-                if (this.txhash.success) {
+                console.log(this.txhash);
+                if (this.txhash.response === 200) {
                     let newShownTx = this.shownTx;
                     newShownTx.unshift({
                         amount: this.amountToSend,
