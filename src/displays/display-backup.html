@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-if.html">
 <link rel="import" href="../redux-state.html">
 <!--
 
@@ -27,7 +28,7 @@ The following custom properties and mixins are available for styling:
 
 -->
 <dom-module id="display-backup">
-    <template>
+    <template is="dom-if">
         <style>
             :host {
                 display: block;
@@ -71,7 +72,7 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
-            <dom-if if="{{wide}}">
+            <dom-if if="[[_isShowDownload()]]" restamp="true">
                 <template>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </template>
@@ -138,6 +139,14 @@ The following custom properties and mixins are available for styling:
                     privateKey: {
                         type: String,
                         observer: '_print',
+                    },
+                    /**
+                    * contains the osType
+                    * @type {String}
+                    */
+                    osType: {
+                        type: String,
+                        notify: true,
                     },
                 };
             }
@@ -277,6 +286,32 @@ The following custom properties and mixins are available for styling:
                 } else {
                     this.path = 'download-success-profile/';
                 }
+            }
+            _isShowDownload() {
+                this.getOS();
+                return this.osType !== 'iOS';
+            }
+            getOS() {
+              let userAgent = window.navigator.userAgent;
+              let platform = window.navigator.platform;
+              let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+              let windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+              let iosPlatforms = ['iPhone', 'iPad', 'iPod'];
+              let os = null;
+
+              if (macosPlatforms.indexOf(platform) !== -1) {
+                os = 'Mac OS';
+              } else if (iosPlatforms.indexOf(platform) !== -1) {
+                os = 'iOS';
+              } else if (windowsPlatforms.indexOf(platform) !== -1) {
+                os = 'Windows';
+              } else if (/Android/.test(userAgent)) {
+                os = 'Android';
+              } else if (!os && /Linux/.test(platform)) {
+                os = 'Linux';
+              }
+              this.osType = os;
+              return os;
             }
         }
         window.customElements.define(MyDisplayBackup.is, MyDisplayBackup);
