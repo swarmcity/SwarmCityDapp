@@ -243,10 +243,10 @@ Example:
                     },
                     /**
                     * An array containing the visible transaction history for this public key
-                    * @type {Array}
+                    * @type {Object}
                     */
                     shownTx: {
-                        type: Array,
+                        type: Object,
                         statePath: 'shownTx',
                     },
                     /**
@@ -306,12 +306,6 @@ Example:
                         return {
                             type: 'SHOWNTX',
                             shownTx: shownTx,
-                        };
-                    },
-                    CONFIRMEDTX: function(confirmedTx) {
-                        return {
-                            type: 'CONFIRMEDTX',
-                            confirmedTx: confirmedTx,
                         };
                     },
                     NONCE: function(nonce) {
@@ -426,23 +420,32 @@ Example:
                 window.open('https://rinkeby.etherscan.io/tx/'
                     + event.model.__data.item.transactionHash, '_blank');
             }
+
             /**
             * Updates the visible transactions with confirmed tx's
             */
             _confirmedTx() {
                 let shownTxCopy = this.shownTx;
-                if (shownTxCopy.length < 1) {
-                    shownTxCopy = this.confirmedTx;
-                } else {
-                    shownTxCopy = this.shownTx;
+                let newConfirmedTxArray = [];
+                // for every confirmed tx, we compared to shown tx
+                for (let tx of this.confirmedTx) {
+                        let found = false;
                     for (let i = 0; i < shownTxCopy.length; i++) {
-                        for (let tx of this.confirmedTx) {
-                            if (shownTxCopy[i].transactionHash === tx.transactionHash) {
-                                shownTxCopy[i] = tx;
-                            }
+                        // if a tx with the same txHash is found, overwrite it
+                        if (tx.transactionHash === shownTxCopy[i].transactionHash) {
+                            shownTxCopy[i] = tx;
+                            found = true;
                         }
                     }
+                    // if the confirmedTx is not found in shownTx, add it to newConfirmed
+                    // this way we can push it to shownTx later
+                    if (!found) {
+                        newConfirmedTxArray.push(tx);
+                    }
                 }
+                // Now add the new confirmed tx to the shownTx Array
+                for (let newConfirmedTx of newConfirmedTxArray) shownTxCopy.push(newConfirmedTx);
+                this.dispatch('SHOWNTX', []);
                 this.dispatch('SHOWNTX', shownTxCopy);
             }
 
@@ -453,19 +456,27 @@ Example:
                 if (this.txhash.response === 200) {
                     let newNonce = Number(this.nonce) + 1;
                     this.dispatch('NONCE', newNonce);
-                    let newShownTx = this.shownTx;
-                    newShownTx.unshift({
-                        amount: this.amountToSend,
-                        direction: 'out',
-                        status: 2,
-                        dateTime: (new Date).getTime()/1000,
-                        from: this.address,
-                        symbol: 'SWT',
-                        to: this.toAddress,
-                        transactionHash: this.txhash.data.transactionHash,
-                    });
-                    this.dispatch('SHOWNTX', []);
-                    this.dispatch('SHOWNTX', newShownTx);
+                    let confirmed = false;
+                    for (let shownTx of this.shownTx) {
+                        if (this.txhash.data.transactionHash === shownTx.transactionHash) {
+                            confirmed = true;
+                        }
+                    }
+                    if (!confirmed) {
+                        let newShownTx = this.shownTx;
+                        newShownTx.unshift({
+                            amount: this.amountToSend,
+                            direction: 'out',
+                            status: 2,
+                            dateTime: (new Date).getTime() / 1000,
+                            from: this.address,
+                            symbol: 'SWT',
+                            to: this.toAddress,
+                            transactionHash: this.txhash.data.transactionHash,
+                        });
+                        this.dispatch('SHOWNTX', []);
+                        this.dispatch('SHOWNTX', newShownTx);
+                    }
                 }
             }
         }
