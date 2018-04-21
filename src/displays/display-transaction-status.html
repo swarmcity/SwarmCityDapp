@@ -355,6 +355,10 @@ Example:
                 @apply --small-light;
             }
 
+            .disabled {
+                opacity: 0.4;
+            }
+
             paper-progress {
                 width: 100%;
                 max-width: 300px;
@@ -465,14 +469,14 @@ Example:
                             on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
-                    <paper-input tabindex="2" type="tel" pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}"></paper-input>
+                    <paper-input tabindex="2" type="tel" pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}" on-keyup="_checkBalance"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
                     </div>
                     <div class="send-buttonbox">
                         <div tabindex="3" class="disagree" on-tap="_start" on-keyPress="_start"></div>
                         <div tabindex="4" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
-                            <div class="agree"></div>
+                            <div id="button-send" class="agree disabled"></div>
                         </div>
                     </div>
                 </div>
@@ -897,6 +901,14 @@ Example:
             * Fires when the user enters each number into amount
             */
             _checkBalance() {
+                if (this.amountToSend &&
+                (this.amountToSend.length > 0)
+                && this.sendDestination
+                && (this.sendDestination.length === 5)) {
+                    this.$$('#button-send').classList.remove('disabled');
+                } else {
+                    this.$$('#button-send').classList.add('disabled');
+                }
                 if (isNaN(this.amountToSend)) {
                     this.error = this.localize('You didnt enter a number.');
                 } else {
