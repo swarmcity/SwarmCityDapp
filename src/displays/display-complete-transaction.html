@@ -213,19 +213,10 @@ The following custom properties and mixins are available for styling:
                         reflectToAttribute: true,
                         notify: true,
                     },
-                    /**
-                    * lastNonce stores the last used nonce
-                    * @type {Number}
-                    */
-                    lastNonce: {
-                        type: Number,
-                        value: -1,
-                    },
                 };
             }
             _sign() {
                 if (this.privateKey) {
-                    // let currentNonce = this.nonce === this.lastNonce ? this.lastNonce + 1 : this.nonce;
                     let swtContract = new webpack.Contract(abi.miniMeToken.abi,
                         '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
 
@@ -246,7 +237,6 @@ The following custom properties and mixins are available for styling:
                         .then((serializedTx) => {
                             this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
                             this.path = 'transaction-processing/';
-                            this.lastNonce = this.nonce;
                         }).catch((err) => {
                             this.error = err;
                         });

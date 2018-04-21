@@ -282,6 +282,14 @@ Example:
                         type: String,
                         statePath: 'publicKey',
                     },
+                    /**
+                    * nonce is the current nonce of the used public key
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
                 };
             }
 
@@ -290,8 +298,7 @@ Example:
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * Redux action for setting the shownTx
-            * @param {Array} txhistory
+            * Redux action for setting redux properties
             */
             static get actions() {
                 return Object.assign({
@@ -305,6 +312,12 @@ Example:
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
+                        };
+                    },
+                    NONCE: function(nonce) {
+                        return {
+                            type: 'NONCE',
+                            nonce: nonce,
                         };
                     },
                 });
@@ -417,7 +430,6 @@ Example:
             * Updates the visible transactions with confirmed tx's
             */
             _confirmedTx() {
-                console.log('nieuwe confirmed array is binnen');
                 let shownTxCopy = this.shownTx;
                 if (shownTxCopy.length < 1) {
                     shownTxCopy = this.confirmedTx;
@@ -438,8 +450,9 @@ Example:
             * Adds the new tx to the pending tx array
             */
             _newTxHash() {
-                console.log(this.txhash);
                 if (this.txhash.response === 200) {
+                    let newNonce = Number(this.nonce) + 1;
+                    this.dispatch('NONCE', newNonce);
                     let newShownTx = this.shownTx;
                     newShownTx.unshift({
                         amount: this.amountToSend,
