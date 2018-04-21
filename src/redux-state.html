@@ -23,10 +23,16 @@ if (storage && storage.user && storage.user.avatar) {
 }
 
 let initialState = {
-    gasprice: 99,
+    gasPrice: 21e9,
     username: username,
     avatar: avatar,
+    broadcast: null,
     shortCode: null,
+    toAddress: null,
+    toUserName: null,
+    amountToSend: 0,
+    confirmedTx: [],
+    shownTx: [],
     usingShortCode: false,
     language: 'en',
     fx: {
@@ -36,7 +42,7 @@ let initialState = {
     },
     balance: {
         eth: 99,
-        swt: 98,
+        swt: 1.73,
         arc: 97,
     },
     reputation: [{
@@ -51,7 +57,6 @@ let initialState = {
         dealsDone: 3,
         dealsConflicted: 0,
     }],
-    transactions: [],
     hashtags: [{
         name: 'Pioneer1',
         deals: 25,
@@ -282,13 +287,6 @@ let reducer = function(state, action) {
                 usingShortCode: usingShortCode,
             });
         }
-        case 'TRANSACTIONS': {
-            let transactions = state.transactions;
-            transactions = action.transactions;
-            return Object.assign({}, state, {
-                transactions: transactions,
-            });
-        }
         case 'BALANCE': {
             let balance = state.balance;
             balance = action.balance;
@@ -346,10 +344,10 @@ let reducer = function(state, action) {
             });
         }
         case 'GASPRICE': {
-            let gasprice = state.gasprice;
-            gasprice = _parseFloat(action.gasprice);
+            let gasPrice = state.gasPrice;
+            gasPrice = _parseFloat(action.gasPrice);
             return Object.assign({}, state, {
-                gasprice: gasprice,
+                gasPrice: gasPrice,
             });
         }
         case 'NONCE': {
@@ -392,11 +390,19 @@ let reducer = function(state, action) {
             });
         }
         // This is the array containing all past transactions on user's publicKey
-        case 'TXHISTORY': {
-            let txhistory = state.txhistory;
-            txhistory = action.txhistory;
+        case 'CONFIRMEDTX': {
+            let confirmedTx = state.confirmedTx;
+            confirmedTx = action.confirmedTx;
             return Object.assign({}, state, {
-                txhistory: txhistory,
+                confirmedTx: confirmedTx,
+            });
+        }
+        // This is the array containing all past transactions on user's publicKey
+        case 'SHOWNTX': {
+            let shownTx = state.shownTx;
+            shownTx = action.shownTx;
+            return Object.assign({}, state, {
+                shownTx: shownTx,
             });
         }
         // An array containing all reputation earned
@@ -429,6 +435,30 @@ let reducer = function(state, action) {
             reqipfs = action.reqipfs;
             return Object.assign({}, state, {
                 reqipfs: reqipfs,
+            });
+        }
+        // A string containing the ipfs hash of an image
+        case 'TOADDRESS': {
+            let toAddress = state.toAddress;
+            toAddress = action.toAddress;
+            return Object.assign({}, state, {
+                toAddress: toAddress,
+            });
+        }
+        // A string containing the ipfs hash of an image
+        case 'TOUSERNAME': {
+            let toUserName = state.toUserName;
+            toUserName = action.toUserName;
+            return Object.assign({}, state, {
+                toUserName: toUserName,
+            });
+        }
+        // A string containing the ipfs hash of an image
+        case 'AMOUNTTOSEND': {
+            let amountToSend = state.amountToSend;
+            amountToSend = action.amountToSend;
+            return Object.assign({}, state, {
+                amountToSend: amountToSend,
             });
         }
     }

@@ -23,6 +23,7 @@ import QRCode from 'qrcode';
 import moment from 'moment';
 import ethereumTx from 'ethereumjs-tx';
 import Contract from 'web3-eth-contract';
+import BN from 'bn.js';
 export {
   sha3,
   privateToAddress,
@@ -46,4 +47,5 @@ export {
   moment,
   ethereumTx,
   Contract,
+  BN,
 };

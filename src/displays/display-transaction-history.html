@@ -29,16 +29,16 @@ Example:
             .container {
                 @apply --layout-vertical;
                 @apply --start-justified;
+                @apply --small-light;
                 padding: 5vh 0 8vh 0;
                 width: 100%;
             }
 
             .item {
-                margin-bottom: 20px;
+                margin-bottom: 30px;
             }
 
             .success {
-                @apply --body-default;
                 color: var(--sc-grey3b);
             }
 
@@ -49,20 +49,23 @@ Example:
             .failed-text {
                 font-weight: bold;
             }
+
             .pending {
-                color: var(--sc-grey3);}
+                color: var(--sc-grey3);
+            }
 
             .pending>span {
                 color: blue;
             }
 
             .horizontal {
+                @apply --body-detail;
                 @apply --layout-horizontal;
                 @apply --start-justified;
             }
 
             .container[wide-layout] .truncate {
-                width: 40vw;
+                width: 50vw;
             }
 
             .truncate {
@@ -70,28 +73,30 @@ Example:
                 -moz-user-select: text;
                 -ms-user-select: text;
                 user-select: text;
-                width: 90px;
+                width: 150px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
 
+            .linkbox {
+                margin-top: 5px;
+            }
+
             .greylink {
-                @apply --small-bold;
+                @apply --small-light;
                 cursor: pointer;
                 color: var(--sc-grey3);
                 text-decoration: none;
                 border-bottom: 2px dotted var(--sc-grey3b);
-                margin-top: 10px;
             }
 
             .bluelink {
-                @apply --small-bold;    
+                @apply --small-bold;
                 cursor: pointer;
                 color: var(--sc-blue);
                 text-decoration: none;
                 border-bottom: 2px dotted var(--sc-blue);
-                margin-top: 10px;
             }
 
             .pending-dots {
@@ -105,8 +110,8 @@ Example:
 
             .smallpoint {
                 margin: 0px 3px 0px 3px;
-                width: 4px;
-                height: 4px;
+                width: 2px;
+                height: 2px;
                 border-radius: 50%;
                 background-color: var(--sc-blue);
             }
@@ -145,7 +150,7 @@ Example:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
 
-            <template is="dom-repeat" items="{{txHistory}}">
+            <template is="dom-repeat" items="{{shownTx}}">
                 <div class="item">
                     <div class$="[[_checkState(item.status)]]">
                         <div class="date">[[_formatDate(item.dateTime)]]</div>
@@ -158,11 +163,15 @@ Example:
                             <template is="dom-if" if="[[_isIncoming(item.direction)]]">+&nbsp;</template>
                             <template is="dom-if" if="[[_isOutgoing(item.direction)]]">-&nbsp;</template>
 
-                            <div>[[_format(item.amount)]] SWT&nbsp;</div>
+                            <div>[[_format(item.amount)]]&nbsp;SWT&nbsp;</div>
 
                             <template is="dom-if" if="[[!_isPending(item.status)]]">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;<span class="truncate">[[item.from]]</span></template>
-                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;<span class="truncate">[[item.to]]</span></template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">from&nbsp;
+                                    <span class="truncate">[[item.from]]</span>
+                                </template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">to&nbsp;
+                                    <span class="truncate">[[item.to]]</span>
+                                </template>
                             </template>
 
                             <template is="dom-if" if="[[_isPending(item.status)]]">
@@ -177,13 +186,17 @@ Example:
 
                         <template is="dom-if" if="[[_isPending(item.status)]]">
                             <div class="horizontal">
-                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from&nbsp;<span class="truncate">[[item.from]]</span></template>
-                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to&nbsp;<span class="truncate">[[item.to]]</span></template>
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving from&nbsp;
+                                    <span class="truncate">[[item.from]]</span>
+                                </template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending to&nbsp;
+                                    <span class="truncate">[[item.to]]</span>
+                                </template>
                             </div>
                         </template>
 
                     </div>
-                    <div>
+                    <div class="linkbox">
                         <span class$="[[_checkLinkStyle(item.status)]]" on-click="_toEtherscan">show on etherscan</span>
                     </div>
                 </div>
@@ -212,12 +225,70 @@ Example:
                         statePath: 'language',
                     },
                     /**
-                    * An array containing the transaction history for this public key
+                    * An array containing the confirmed transaction history for this public key
                     * @type {Array}
                     */
-                    txHistory: {
+                    confirmedTx: {
                         type: Array,
-                        statePath: 'txhistory',
+                        statePath: 'confirmedTx',
+                        observer: '_confirmedTx',
+                    },
+                    /**
+                    * An array containing the pending transaction history for this public key
+                    * @type {Array}
+                    */
+                    pendingTx: {
+                        type: Array,
+                        value: [],
+                    },
+                    /**
+                    * An array containing the visible transaction history for this public key
+                    * @type {Array}
+                    */
+                    shownTx: {
+                        type: Array,
+                        statePath: 'shownTx',
+                    },
+                    /**
+                    * txhash of broadcasted transaction
+                    * @type {Object}
+                    */
+                    txhash: {
+                        type: Object,
+                        statePath: 'txhash',
+                        observer: '_newTxHash',
+                    },
+                    /**
+                    * The amount to send
+                    * @type {Number}
+                    */
+                    amountToSend: {
+                        type: Number,
+                        statePath: 'amountToSend',
+                    },
+                    /**
+                    * The address of the receiver
+                    * @type {String}
+                    */
+                    toAddress: {
+                        type: String,
+                        statePath: 'toAddress',
+                    },
+                    /**
+                    * Address is the ethereum address the transaction is to be sent from
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * nonce is the current nonce of the used public key
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
                     },
                 };
             }
@@ -225,100 +296,32 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-
-                // BEGIN TEMPORARY REDUX FILL
-                this.dispatch('TXHISTORY', [
-                    // dummy incoming & confirmed transaction
-                    {
-                        'transactionHash':
-                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
-                        'dateTime': 1521563134387,
-                        'direction': 'in',
-                        'amount': 7120500000000000000,
-                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'block': 5264013,
-                        'status': 2,
-                    },
-                    // dummy outgoing & confirmed transaction
-                    {
-                        'transactionHash':
-                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
-                        'dateTime': 1519864652000,
-                        'direction': 'out',
-                        'amount': 18340000000000000000,
-                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'block': 5264013,
-                        'status': 1,
-                    },
-                    // dummy incoming & pending transaction
-                    {
-                        'transactionHash':
-                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
-                        'dateTime': 1518444651500,
-                        'direction': 'in',
-                        'amount': 11000000000000000000,
-                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'block': 5264013,
-                        'status': 0,
-                    },
-                    // dummy outgoing & pending transaction
-                    {
-                        'transactionHash':
-                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
-                        'dateTime': 1517444651500,
-                        'direction': 'out',
-                        'amount': 12000000000000000000,
-                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'block': 5264013,
-                        'status': 0,
-                    },
-                    // dummy incoming & failed transaction
-                    {
-                        'transactionHash':
-                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
-                        'dateTime': 1516444651500,
-                        'direction': 'in',
-                        'amount': 15000000000000000000,
-                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'block': 5264013,
-                        'status': 1,
-                    },
-                    // dummy outgoing & failed transaction
-                    {
-                        'transactionHash':
-                            '0x765d19586600cacbd36d5762f1ae7cd5e38d414bd319de831b9ca060925bf208',
-                        'dateTime': 1519944651500,
-                        'direction': 'out',
-                        'amount': 22000000000000000000,
-                        'from': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'to': '0xC9E5a19Fdc73648e15E08Ec5117FB4370992041B',
-                        'block': 5264013,
-                        'status': 0,
-                    }]
-                );
-                // END TEMPORARY REDUX FILL
             }
-
-            // BEGIN TEMPORARY REDUX ACCESS
             /**
-            * Redux actions
+            * Redux action for setting redux properties
             */
             static get actions() {
                 return Object.assign({
-                    TXHISTORY: function(txhistory) {
+                    SHOWNTX: function(shownTx) {
                         return {
-                            type: 'TXHISTORY',
-                            txhistory: txhistory,
+                            type: 'SHOWNTX',
+                            shownTx: shownTx,
+                        };
+                    },
+                    CONFIRMEDTX: function(confirmedTx) {
+                        return {
+                            type: 'CONFIRMEDTX',
+                            confirmedTx: confirmedTx,
+                        };
+                    },
+                    NONCE: function(nonce) {
+                        return {
+                            type: 'NONCE',
+                            nonce: nonce,
                         };
                     },
                 });
             }
-            // END TEMPORARY REDUX ACCESS
 
             /**
             * returns style class depending on item status
@@ -333,6 +336,8 @@ Example:
                         return 'failed';
                     case 2:
                         return 'pending';
+                    default:
+                        return 'success';
                 }
             }
 
@@ -387,10 +392,11 @@ Example:
             * @return {string} formatted date string
             */
             _formatDate(dateTime) {
-                if (webpack.moment().valueOf() - dateTime < 86400000) {
-                    return webpack.moment(dateTime).fromNow();
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
                 } else {
-                    return webpack.moment(dateTime).format('DD MMM YYYY - HH:mm');
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
                 }
             }
 
@@ -400,7 +406,7 @@ Example:
             * @return {Number} formatted amount
             */
             _format(amount) {
-                return amount / 1000000000000000000;
+                return amount;
             }
 
             /**
@@ -419,6 +425,48 @@ Example:
             _toEtherscan(event) {
                 window.open('https://rinkeby.etherscan.io/tx/'
                     + event.model.__data.item.transactionHash, '_blank');
+            }
+            /**
+            * Updates the visible transactions with confirmed tx's
+            */
+            _confirmedTx() {
+                let shownTxCopy = this.shownTx;
+                if (shownTxCopy.length < 1) {
+                    shownTxCopy = this.confirmedTx;
+                } else {
+                    shownTxCopy = this.shownTx;
+                    for (let i = 0; i < shownTxCopy.length; i++) {
+                        for (let tx of this.confirmedTx) {
+                            if (shownTxCopy[i].transactionHash === tx.transactionHash) {
+                                shownTxCopy[i] = tx;
+                            }
+                        }
+                    }
+                }
+                this.dispatch('SHOWNTX', shownTxCopy);
+            }
+
+            /**
+            * Adds the new tx to the pending tx array
+            */
+            _newTxHash() {
+                if (this.txhash.response === 200) {
+                    let newNonce = Number(this.nonce) + 1;
+                    this.dispatch('NONCE', newNonce);
+                    let newShownTx = this.shownTx;
+                    newShownTx.unshift({
+                        amount: this.amountToSend,
+                        direction: 'out',
+                        status: 2,
+                        dateTime: (new Date).getTime()/1000,
+                        from: this.address,
+                        symbol: 'SWT',
+                        to: this.toAddress,
+                        transactionHash: this.txhash.data.transactionHash,
+                    });
+                    this.dispatch('SHOWNTX', []);
+                    this.dispatch('SHOWNTX', newShownTx);
+                }
             }
         }
 

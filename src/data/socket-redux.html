@@ -137,11 +137,19 @@
                         statePath: 'usingShortCode',
                         observer: '_usingShortCode',
                     },
+                    /**
+                    * An array containing the transaction history for this public key
+                    * @type {Array}
+                    */
+                    confirmedTx: {
+                        type: Array,
+                        statePath: 'confirmedTx',
+                    },
                 };
             }
             /**
-            * Redux action for setting balance
-            * @param {balance} balance
+            * Redux action for setting property values
+            * @param {String} publicKey
             */
             static get actions() {
                 return Object.assign({
@@ -187,12 +195,6 @@
                             shortCode: shortCode,
                         };
                     },
-                    TRANSACTIONS: function(transactions) {
-                        return {
-                            type: 'TRANSACTIONS',
-                            transactions: transactions,
-                        };
-                    },
                     IPHONE: function(iphone) {
                         return {
                             type: 'IPHONE',
@@ -209,6 +211,12 @@
                         return {
                             type: 'TXHASH',
                             txhash: txhash,
+                        };
+                    },
+                    CONFIRMEDTX: function(confirmedTx) {
+                        return {
+                            type: 'CONFIRMEDTX',
+                            confirmedTx: confirmedTx,
                         };
                     },
                 });
@@ -248,13 +256,8 @@
                     this.fx = reply;
                     this.dispatch('FX', this.fx);
                 });
-                // Listen for changes on 'gasPriceChanged'
-                this.socket.on('gasPriceChanged', (reply) => {
-                    this.gasprice = reply;
-                    this.dispatch('GASPRICE', this.gasprice);
-                });
                 this.socket.on('nonceChanged', (reply) => {
-                    this.nonce = reply;
+                    this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
                 // Listen for changes on 'hashtagsChanged'
@@ -338,20 +341,20 @@
 
                 // subscribe to updates of the tx history
                 this.socket.emit('subscribe', {
-                    channel: 'txhistory',
+                    channel: 'txHistory',
                     args: {
-                        publickey: this.publickey,
+                        address: this.publicKey,
                     },
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.transactions = reply.data;
-                        this.dispatch('TRANSACTIONS', this.transactions);
+                        this.confirmedTx = reply.data;
+                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
                     }
                 });
-                this.socket.on('txhistoryChanged', (reply) => {
+                this.socket.on('txHistoryChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.transactions = reply.data;
-                        this.dispatch('TRANSACTIONS', this.transactions);
+                        this.confirmedTx = reply.data;
+                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
                     }
                 });
             }
@@ -392,12 +395,10 @@
                 }, (reply) => {
                     if (reply.response === 200) {
                         this.txHash = reply;
-                        this.txHAsh.success = true;
                         this.dispatch('TXHASH', this.txHash);
                     }
-                    if (reply.response === 400) {
+                    if (reply.response === 500) {
                         this.txHash = reply;
-                        this.txHAsh.success = false;
                         this.dispatch('TXHASH', this.txHash);
                     }
                 });

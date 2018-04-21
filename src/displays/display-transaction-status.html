@@ -461,7 +461,7 @@ Example:
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
                     <div class="totalamountinput">
-                        <paper-input tabindex="1" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}"
+                        <paper-input tabindex="1" type="number" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}"
                             on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
@@ -677,7 +677,7 @@ Example:
                     * @type {String}
                     */
                     amountToSend: {
-                        type: String,
+                        type: Number,
                     },
                     /**
                     * The interval on shortCode timer
@@ -724,6 +724,24 @@ Example:
                         return {
                             type: 'USINGSHORTCODE',
                             usingShortCode: usingShortCode,
+                        };
+                    },
+                    TOADDRESS: function(toAddress) {
+                        return {
+                            type: 'TOADDRESS',
+                            toAddress: toAddress,
+                        };
+                    },
+                    TOUSERNAME: function(toUserName) {
+                        return {
+                            type: 'TOUSERNAME',
+                            toUserName: toUserName,
+                        };
+                    },
+                    AMOUNTTOSEND: function(amountToSend) {
+                        return {
+                            type: 'AMOUNTTOSEND',
+                            amountToSend: amountToSend,
                         };
                     },
                 });
@@ -872,12 +890,9 @@ Example:
             * takes the user to the confirm page
             */
             _goToConfirm() {
-                let txData = {
-                    amountToSend: this.amountToSend,
-                    toAddress: this.sendToPublicKey,
-                    toUserName: this.tokey.data.userName,
-                };
-                sessionStorage.setItem('tx', JSON.stringify(txData));
+                this.dispatch('AMOUNTTOSEND', this.amountToSend);
+                this.dispatch('TOADDRESS', this.sendToPublicKey);
+                this.dispatch('TOUSERNAME', this.tokey.data.userName);
                 this.path = 'confirm-sending/';
             }
             /**

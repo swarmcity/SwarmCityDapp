@@ -8,6 +8,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-transaction.html">
 <script src="../data/abi.js"></script>
+<script src="../data/webpack.min.js"></script>
+
 
 <!--
 
@@ -28,10 +30,10 @@ The following custom properties and mixins are available for styling:
 -->
 <dom-module id="display-complete-transaction">
     <template>
-<data-transaction id="transaction"></data-transaction>
-<template is="dom-if" if="{{debug}}">
-    <p style="margin-top:100px">
-        <pre style="background-color:black; color:lime">
+        <data-transaction id="transaction"></data-transaction>
+        <template is="dom-if" if="{{debug}}">
+            <p style="margin-top:100px">
+                <pre style="background-color:black; color:lime">
             
             ==========================================================================  
             Test DIV To show all TX values (this is for testing only)   
@@ -55,8 +57,8 @@ The following custom properties and mixins are available for styling:
             ERROR: {{error}}
         
         </pre>
-    </p>
-</template>
+            </p>
+        </template>
 
     </template>
     <script>
@@ -78,6 +80,12 @@ The following custom properties and mixins are available for styling:
                         return {
                             type: 'BROADCAST',
                             broadcast: broadcast,
+                        };
+                    },
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
                         };
                     },
                 });
@@ -105,6 +113,7 @@ The following custom properties and mixins are available for styling:
                     */
                     address: {
                         type: String,
+                        statePath: 'publicKey',
                     },
                     /**
                     * to is the address to send the transaction to
@@ -112,6 +121,7 @@ The following custom properties and mixins are available for styling:
                     */
                     toAddress: {
                         type: String,
+                        statePath: 'toAddress',
                     },
                     /**
                     * amount is the amount of SWT tot send
@@ -119,6 +129,7 @@ The following custom properties and mixins are available for styling:
                     */
                     amountToSend: {
                         type: Number,
+                        statePath: 'amountToSend',
                     },
                     /**
                     * nonce is the count of transactions this address has made so far
@@ -126,13 +137,23 @@ The following custom properties and mixins are available for styling:
                     */
                     nonce: {
                         type: Number,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * publickey is the wallet pubkey
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
                     },
                     /**
                     * gas price is the curent price of gas
                     * @type {Number}
                     */
-                    gasPriced: {
+                    gasPrice: {
                         type: Number,
+                        statePath: 'gasPrice',
                     },
                     /**
                     * private key that is asocated with the from address
@@ -141,6 +162,7 @@ The following custom properties and mixins are available for styling:
                     privateKey: {
                         type: String,
                         observer: '_sign',
+                        notify: true,
                     },
                     /**
                     * Raw transaction for checking the values
@@ -194,11 +216,15 @@ The following custom properties and mixins are available for styling:
                 };
             }
             _sign() {
-                let swtContract = new webpack.Contract(abi.miniMeToken.abi,
-                '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
-                let txData = swtContract.methods.transfer(this.toAddress,
-                (this.amountToSend)*1e18).encodeABI();
-                const txParams = {
+                if (this.privateKey) {
+                    let swtContract = new webpack.Contract(abi.miniMeToken.abi,
+                        '0xb123eCb392ce38F7cbA15EEaA98730260875f471');
+
+                    let weiAmount = new webpack.BN(this.amountToSend, 10) *
+                        new webpack.BN('1000000000000000', 10);
+                    let txData = swtContract.methods.transfer(this.toAddress,
+                        weiAmount).encodeABI();
+                    const txParams = {
                         nonce: this._toHex(this.nonce),
                         gasPrice: this._toHex(this.gasPrice),
                         gasLimit: this._toHex(200000),
@@ -207,13 +233,14 @@ The following custom properties and mixins are available for styling:
                         data: txData,
                         chainId: 4,
                     };
-                this.$.transaction.signRawTx(txParams, this.privateKey)
-                .then((serializedTx) => {
-                    this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
-                    this.path = 'transaction-processing/';
-                }).catch((err)=>{
-                    this.error = err;
-                });
+                    this.$.transaction.signRawTx(txParams, this.privateKey)
+                        .then((serializedTx) => {
+                            this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
+                            this.path = 'transaction-processing/';
+                        }).catch((err) => {
+                            this.error = err;
+                        });
+                }
             }
 
             /**
@@ -224,7 +251,7 @@ The following custom properties and mixins are available for styling:
             _toHex(dec) {
                 let hex = Number(dec).toString(16);
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
-                return '0x'+ result;
+                return '0x' + result;
             }
         } window.customElements.define(DisplayCompleteTransaction.is, DisplayCompleteTransaction);
     </script>
