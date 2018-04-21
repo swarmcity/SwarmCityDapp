@@ -461,11 +461,11 @@ Example:
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
                     <div class="totalamountinput">
-                        <paper-input tabindex="1" type="number" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}"
+                        <paper-input tabindex="1" type="numeric" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}"
                             on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
-                    <paper-input tabindex="2" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}"></paper-input>
+                    <paper-input tabindex="2" type="tel" pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
                     </div>
@@ -863,27 +863,25 @@ Example:
             */
             _toKey() {
                 if (this.tokey) {
-                    setTimeout(()=>{
-                        switch (this.tokey.found) {
-                            case true: {
-                                this.updateStyles({
-                                    '--container-height': '184px',
-                                });
-                                this.looking = false;
-                                this.found = true;
-                                this.sendToPublicKey = this.tokey.data.address;
-                                break;
-                            }
-                            case false: {
-                                this.looking = false;
-                                this.notFound = true;
-                                this.updateStyles({
-                                    '--container-height': '80px',
-                                });
-                                break;
-                            }
+                    switch (this.tokey.found) {
+                        case true: {
+                            this.updateStyles({
+                                '--container-height': '184px',
+                            });
+                            this.looking = false;
+                            this.found = true;
+                            this.sendToPublicKey = this.tokey.data.address;
+                            break;
                         }
-                    }, 1000);
+                        case false: {
+                            this.looking = false;
+                            this.notFound = true;
+                            this.updateStyles({
+                                '--container-height': '80px',
+                            });
+                            break;
+                        }
+                    }
                 }
             }
             /**
