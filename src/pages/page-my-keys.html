@@ -250,7 +250,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 @apply --sc-paper-checkbox;
                 margin-top: 30px;
-            } */
+            } 
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -304,7 +304,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             <img src="{{qrCodePrivateKey}}">
                         </div>
                     </template>
-                        <template is="dom-if" if="{{iphone}}">
+                        <template is="dom-if" if="{{_showCheckbox()}}">
                             <paper-checkbox
                                 id="checkbox"
                                 noink
@@ -473,6 +473,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
+             * Only show the checkbox on iphone & new user flow creation
+             */
+            _showCheckbox() {
+                return (this.iphone && this.routeEntry[0] != 'make-backup-profile');
+            }
+            /**
              * copies the public key to the desktop
              */
             _copyPublicKey() {
@@ -575,7 +581,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.$$('#enterButton').scrollIntoView();
                     }
                 }, 1);
-                if (this.$$('#checkbox') && this.$$('#checkbox').checked) {
+                if (this.$$('#checkbox')
+                && this.$$('#checkbox').checked
+                && this.routeEntry[0] != 'make-backup-profile'
+                && this.iphone) {
                     this.showEnterbutton = true;
                 } else {
                     this.showEnterbutton = false;
@@ -651,6 +660,7 @@ This code may only be used under the license found at https://github.com/swarmci
         
 
             _loadEntryAnimations() {
+                this._showCheckbox();
                 if (this.showPrivateKey) {
                     this.privateKey = null;
                     this.showPrivateKey = false;
