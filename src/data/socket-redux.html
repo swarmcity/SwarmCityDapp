@@ -35,6 +35,7 @@
                     avatar: {
                         type: String,
                         statePath: 'avatar',
+                        observer: '_avatarChanged',
                     },
                     /**
                     * fx is the SWT exchange rates
@@ -207,6 +208,12 @@
                             avatar: avatar,
                         };
                     },
+                    AVATARHASH: function(avatarHash) {
+                        return {
+                            type: 'AVATARHASH',
+                            avatarHash: avatarHash,
+                        };
+                    },
                     TXHASH: function(txhash) {
                         return {
                             type: 'TXHASH',
@@ -294,6 +301,18 @@
                         storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
                         localStorage.setItem('SwarmCity', JSON.stringify(storage));
                         this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
+                    }
+                });
+            }
+
+            _avatarChanged() {
+                // Send the user's base64 image and get the ipfsHash back
+                this.socket.emit('ipfsAdd', {
+                    payload: this.avatar,
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.avatarHash = reply.data;
+                        this.dispatch('AVATARHASH', this.avatarHash);
                     }
                 });
             }
