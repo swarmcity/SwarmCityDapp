@@ -483,13 +483,7 @@ This code may only be used under the license found at https://github.com/swarmci
              * copies the public key to the desktop
              */
             _copyPublicKey() {
-                let textArea = document.createElement('textarea');
-                textArea.value = this.publicKey;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-
+                this.copyToClipboard(this.publicKey);
                 let copied = this.shadowRoot.querySelector('#copied');
                 copied.classList.add('showcopied');
                 copied.animate(
@@ -505,12 +499,7 @@ This code may only be used under the license found at https://github.com/swarmci
              * TODO: make this and the above function into one function
              */
             _copyPrivateKey() {
-                let textArea = document.createElement('textarea');
-                textArea.value = this.privateKey;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
+                this.copyToClipboard(this.privateKey);
                 let copiedpriv = this.shadowRoot.querySelector('#copiedpriv');
                 copiedpriv.classList.add('showcopied');
                 copiedpriv.animate(
@@ -657,6 +646,33 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     }
                 }
+            }
+            /**
+             * copy a string to the clipboard. supports iOS>10
+             * @param {string} str the string to copy
+             */
+            copyToClipboard(str) {
+                let textArea = document.createElement('textarea');
+                textArea.value = str;
+                document.body.appendChild(textArea);
+                if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
+                    let editable = textArea.contentEditable;
+                    let readOnly = textArea.readOnly;
+                    textArea.contentEditable = true;
+                    textArea.readOnly = true;
+                    let range = document.createRange();
+                    range.selectNodeContents(textArea);
+                    let selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    textArea.setSelectionRange(0, 999999);
+                    textArea.contentEditable = editable;
+                    textArea.readOnly = readOnly;
+                } else {
+                    textArea.select();
+                }
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
             }
         
 
