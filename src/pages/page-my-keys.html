@@ -286,7 +286,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <dom-if if="{{!showPrivateKey}}">
                     <template>
                         <div on-click="_toggleUnlock" class="showbtn">{{localize('show private key')}}</div>
-                        </template>
+                    </template>
                 </dom-if>
                 <dom-if if="{{showPrivateKey}}">
                     <template>
@@ -299,21 +299,21 @@ This code may only be used under the license found at https://github.com/swarmci
                             </div>
                             <div class="greylink" on-click="_showPrivateQR">{{localize('show QR code')}}</div>
                         </div>
-                    <template is="dom-if" if="{{showPrivateQR}}">
-                        <div class="qrcodeprivate">
-                            <img src="{{qrCodePrivateKey}}">
-                        </div>
-                    </template>
-                        <template is="dom-if" if="{{_showCheckbox()}}">
+                        <template is="dom-if" if="{{showPrivateQR}}">
+                            <div class="qrcodeprivate">
+                                <img src="{{qrCodePrivateKey}}">
+                            </div>
+                        </template>
+                        <template is="dom-if" if="{{showCheckbox}}" restamp="true">
                             <paper-checkbox
                                 id="checkbox"
                                 noink
                                 on-active-changed="_enterbuttonVisible">
                                 {{localize('Ive copied my key and stored it in a safe location and want this to count as my backup.')}}
                             </paper-checkbox>
-                            <template is="dom-if" if="{{showEnterbutton}}">
-                                <div id="enterButton" class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
-                            </template>
+                        </template>
+                        <template is="dom-if" if="{{showEnterbutton}}">
+                            <div id="enterButton" class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
                         </template>
                     </template>
                 </dom-if>
@@ -428,6 +428,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                     },
                     /**
+                    * showCheckbox determines if the checkbox is shown or not
+                    * @type {Boolean}
+                    */
+                    showCheckbox: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
                     * showEnterbutton determines if the Enter Button is shown or not
                     * @type {Boolean}
                     */
@@ -474,10 +482,9 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
              * Only show the checkbox on iphone & new user flow creation
-            * @return {boolean} boolean
              */
             _showCheckbox() {
-                return (this.iphone && this.routeEntry[0] != 'make-backup-profile');
+                this.showCheckbox = this.iphone && this.routeEntry[0] != 'make-backup-profile';
             }
             /**
              * copies the public key to the desktop
@@ -570,6 +577,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _showPrivateKey() {
                 if (this.privateKey) {
+                    this._showCheckbox();
                     this.showPrivateKey = !this.showPrivateKey;
                 }
             }
@@ -661,6 +669,7 @@ This code may only be used under the license found at https://github.com/swarmci
         
 
             _loadEntryAnimations() {
+                this.showEnterbutton = false;
                 this._showCheckbox();
                 if (this.showPrivateKey) {
                     this.privateKey = null;
