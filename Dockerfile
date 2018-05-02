@@ -8,6 +8,7 @@ ENV HOME /root
 COPY . .
 RUN npm install -g bower polymer-cli --unsafe-perm
 
+RUN npm install sha3
 RUN npm install
 RUN bower --allow-root install
 RUN node --max-old-space-size=3072 ./node_modules/.bin/polymer build
