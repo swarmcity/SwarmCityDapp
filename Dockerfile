@@ -1,4 +1,4 @@
-FROM node
+FROM node:8
 
 WORKDIR /root
 RUN apt-get update
