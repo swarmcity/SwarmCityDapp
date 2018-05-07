@@ -336,6 +336,17 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
+        <app-route
+            route="{{route}}"
+            pattern="/:page"
+            data="{{routeData}}"
+            tail="{{subroute}}">
+        </app-route>
+        <app-route
+            route="{{subroute}}"
+            pattern="/:id"
+            data="{{subrouteData}}">
+        </app-route>
         <div id="container" class="container" wide-layout$="{{wide}}" on-scroll="_scrollHandler">
             <div class="dealbtn" id="dealButton">
                 <dom-if if="{{!faded}}">
@@ -603,12 +614,16 @@ This code may only be used under the license found at https://github.com/swarmci
             * the pages route has changed
             */
             _routeChanged() {
-                // TODO: Reset the page on load, close the
-                // info and filter if they are open,
-                // if faded out, fade in
                 if (this.hashtags) {
                     this._filterHashtags();
                 }
+                debugger;
+                console.log(this.routeData);
+                console.log(this.subrouteData);
+
+                // if (this.tail.path && this.tail.path.length > 1) {
+                //     this.path = this.tail.path;
+                // }
             }
             /**
             * shows and hides the slider
@@ -1215,21 +1230,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$$('#itemsInvolved').animate(
-                                [
-                                    {'opacity': '1'},
-                                    {'opacity': '0'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
+                            if (this.$$('#itemsInvolved')) {
+                                this.$$('#itemsInvolved').animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
                             this.$.back.animate(
                                 [
                                     {'transform': 'translateX(0)', 'opacity': '1'},

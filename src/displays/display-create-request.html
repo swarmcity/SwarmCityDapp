@@ -256,11 +256,11 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="inputs">
                 <paper-textarea id="request" class="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}"></paper-textarea>
                 <div class="horizontal">
-                    <paper-input id="budget" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]" on-input="_checkBudget"
+                    <paper-input id="budget"  type="Number" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]" on-input="_checkBudget"
                         value="{{budget}}"></paper-input>
                     <div class="currency">SWT</div>
                 </div>
-                <div class="fee"> + {{hashtagfee}} SWT {{localize('hashtagfee')}}</div>
+                <div class="fee"> + 0.5 SWT {{localize('hashtagfee')}}</div>
                 <template is="dom-if" if="{{showError}}">
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
@@ -309,6 +309,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         notify: true,
                     },
+                    showError: {
+                        type: Boolean,
+                        value: true,
+                    }
                 };
             }
             /**
@@ -317,6 +321,13 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to originating page
+            */
+            _checkBudget() {
+                console.log(this.budget);
+                console.log(this.requests);
             }
             /**
             * takes the user to originating page
