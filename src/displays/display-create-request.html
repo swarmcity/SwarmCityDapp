@@ -329,6 +329,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_showError',
                     },
+                    /**
+                    * routeEntry triggers the entry animations
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_reset',
+                    },
                 };
             }
             /**
@@ -412,6 +420,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 else {
                     this.path = 'hashtag-list';
+                }
+            }
+            /**
+            * empties all input fields if not coming confirm-new-request page
+            */
+            _reset() {
+                if (
+                    !(this.routeEntry.includes('confirm-new-request') &&
+                    this.routeEntry.includes('new-request'))
+                ) {
+                    this.request = '';
+                    this.budget = '';
                 }
             }
         }
