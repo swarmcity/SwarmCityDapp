@@ -16,7 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-complete-transaction.html">
 
-<dom-module id="page-confirm-sending">
+<dom-module id="page-confirm-new-request">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -122,10 +122,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 word-break: break-word;
             }
 
-            .yellow {
-                color: var(--sc-yellow);
-            }
-
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -140,8 +136,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div>
-                <div>{{localize('Youre about to send')}} <span class="yellow" > [[amountToSend]] SWT </span> {{localize('to')}} <span class="wordbreak">[[toUserName]]</span>.</div>
-                <div>{{localize('This can not be undone.')}}</div>
+                <div>{{localize('Post this request for')}} [[requestCost]] 5 SWT?</div>
+                <div>{{localize('This can not be undone.')}} [[hashtagfee]] 0.5 SWT {{localize('hashtagfee is included')}}.</div>
             </div>
             <div>
                 <div>
@@ -149,19 +145,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div on-click="_unlock">
                         <div></div>
                     </div>
-                </div>
-                <div>
-                    <display-complete-transaction
-                        send="SWT"
-                        address="{{address}}"
-                        to-address="{{toAddress}}"
-                        amount-to-send="{{amountToSend}}"
-                        nonce="{{nonce}}"
-                        gas-price="{{gasPrice}}"
-                        private-key="{{privateKey}}"
-                        status="{{status}}"
-                        path="{{path}}">
-                    </display-complete-transaction>
                 </div>
             </div>
         </div>
@@ -177,13 +160,13 @@ This code may only be used under the license found at https://github.com/swarmci
     </template>
 
     <script>
-        class MyConfirmSending extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyConfirmNewRequest extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-confirm-sending';
+                return 'page-confirm-new-request';
             }
             static get properties() {
                 return {
@@ -330,6 +313,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
         }
-        window.customElements.define(MyConfirmSending.is, MyConfirmSending);
+        window.customElements.define(MyConfirmNewRequest.is, MyConfirmNewRequest);
     </script>
 </dom-module>
