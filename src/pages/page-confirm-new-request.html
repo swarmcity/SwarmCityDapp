@@ -31,95 +31,78 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-color: var(--sc-blue);
-                height: 100%;
-                width: 100%;
-                @apply --layout-vertical;
+                @apply --titlepage-closed-container;
             }
 
-            .container>div:nth-child(1) {
-                height: 70%;
-                @apply --layout-vertical;
-                @apply --layout-center;
-                @apply --layout-center-justified;
-                box-sizing: border-box;
-                padding: 0 14vw;
+            .container .top {
+                @apply --titlepage-closed-container-top;
             }
 
-            .container>div:nth-child(1)>div:nth-child(1) {
-                @apply --main-title1;
+            .container .bottom {
+                @apply --titlepage-closed-container-bottom;
+            }
+
+            .container .title {
+                @apply --titlepage-title;
                 color: var(--sc-white);
-                text-align: center;
             }
 
-            .container>div:nth-child(1)>div:nth-child(2) {
-                @apply --small-light;
-                margin: 20px 0 0;
+            .container .subtitle {
+                @apply --titlepage-subtitle;
                 color: var(--sc-white);
-                text-align: center;
             }
 
-            .container>div:nth-child(2) {
-                box-sizing: border-box;
-                padding: 0 14vw;
-                @apply --layout-vertical;
-                @apply --layout-center;
-                @apply --layout-start-justified;
-                height: 30%;
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
             }
 
-            .container>div:nth-child(2)>div:nth-child(1) {
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
             }
 
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+            .container .confirmers {
+                @apply --titlepage-confirmers;
+            }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
                 @apply --xmark-grey4-normal;
-                cursor: pointer;
-                margin-right: 20px;
             }
 
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2) {
-                @apply --icon-button-big;
-            }
-
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
-                @apply --vmark-blue-normal;
-            }
-
-            .container[wide-layout]>div:nth-child(1) {
-                height: 55%;
-                padding: 0 12vw 7vh;
-                @apply --layout-start;
-                @apply --layout-end-justified;
-            }
-
-            .container[wide-layout]>div:nth-child(1)>div:nth-child(1) {
-                @apply --main-title1-wide;
-                text-align: left;
-            }
-
-            .container[wide-layout]>div:nth-child(1)>div:nth-child(2) {
-                @apply --small-light-wide;
-                text-align: left;
-            }
-
-            .container[wide-layout]>div:nth-child(2) {
-                height: 45%;
-                padding: 0 12vw;
-                @apply --layout-start;
-            }
-
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1):active,
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2):active {
+            .container .confirmers>div:nth-child(1):active {
                 @apply --button-active;
             }
 
-            .blur {
-                @apply --unlock-blur;
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
             }
 
-            .wordbreak {
-                word-break: break-word;
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -135,12 +118,14 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
 
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div>
-                <div>{{localize('Post this request for')}} [[requestCost]] 5 SWT?</div>
-                <div>{{localize('This can not be undone.')}} [[hashtagfee]] 0.5 SWT {{localize('hashtagfee is included')}}.</div>
+            <div class="top">
+                <div class="title" id="title">{{localize('Post this request for')}} [[requestCost]] 5 SWT?</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[hashtagfee]] 0.5 SWT {{localize('hashtagfee is included')}}.</div>
             </div>
-            <div>
-                <div>
+            <div class="flexer">
+            </div>
+            <div class="bottom">
+                <div class="confirmers" id="buttons">
                     <div on-click="_disagree"></div>
                     <div on-click="_unlock">
                         <div></div>
@@ -229,6 +214,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -236,6 +222,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
+                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * The address of the receiver
@@ -260,6 +247,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     amountToSend: {
                         type: Number,
                         statePath: 'amountToSend',
+                    },
+/**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'confirm-new-request',
                     },
                 };
             }
@@ -312,6 +307,84 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.path = 'transaction-processing/';
                 }
             }
+
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateY(0px)'},
+                                {'transform': 'translateY(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateY(0px)'},
+                                {'transform': 'translateY(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateY(50px)'},
+                                {'transform': 'translateY(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateY(50px)'},
+                                {'transform': 'translateY(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+
+
         }
         window.customElements.define(MyConfirmNewRequest.is, MyConfirmNewRequest);
     </script>
