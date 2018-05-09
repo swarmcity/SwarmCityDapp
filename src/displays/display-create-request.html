@@ -340,6 +340,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
+            * Redux action for setting the request metadata
+            */
+            static get actions() {
+                return Object.assign({
+                    ITEMBUDGET: function(itemBudget) {
+                        return {
+                            type: 'ITEMBUDGET',
+                            itemBudget: itemBudget,
+                        };
+                    },
+                    ITEMDESCRIPTION: function(itemDescription) {
+                        return {
+                            type: 'ITEMDESCRIPTION',
+                            itemDescription: itemDescription,
+                        };
+                    },
+                });
+            }
+            /**
             * Fired when the component is connected
             */
             connectedCallback() {
@@ -407,6 +426,8 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _confirm() {
                 if (this._toggleButton()) {
+                    this.dispatch('ITEMBUDGET', this.budget);
+                    this.dispatch('ITEMDESCRIPTION', this.request);
                     this.path = 'confirm-new-request';
                 }
             }
