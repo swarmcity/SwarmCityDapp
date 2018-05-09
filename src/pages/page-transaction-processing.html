@@ -195,8 +195,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-color: var(--sc-grey4);
                 width: 100%;
                 height: 2px;
-
-
             }
 
             .failure-text {
@@ -210,7 +208,8 @@ This code may only be used under the license found at https://github.com/swarmci
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
                 .icon-next,
-                .icon-previous {
+                .icon-previous,
+                .icon-xmark {
                     @apply --retina;
                 }
             }
@@ -220,14 +219,31 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title">{{localize('Your transaction is being processed.')}}</div>
+                <dom-if if="{{waiting}}">
+                    <template>
+                        <div class="title">{{localize('Processing')}}</div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{success}}">
+                    <template>
+                        <div class="title">{{localize('SWT has been sent')}}</div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{failure}}">
+                    <template>
+                        <div class="title">{{localize('Something went wrong.')}}</div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{timeOut}}">
+                    <template>
+                        <div class="title">{{localize('Something went wrong.')}}</div>
+                    </template>
+                </dom-if>
+
                 <div class="dividerbox"></div>
                 <div class="statusbox">
 
                     <div class="bar">
-                        <div class="statusinfo">{{localize('Received TXhash')}}</div>
-
-
                         <dom-if if="{{waiting}}">
                             <template>
                                 <div class="loading">
@@ -261,14 +277,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     <dom-if if="{{failure}}">
                         <template>
                             <div class="darkline"></div>
-                            <div class="failure-text">{{localize('Transaction error')}}: {{txhash.data}}</div>
+                            <div class="failure-text">{{txhash.data}}</div>
                         </template>
                     </dom-if>
 
                     <dom-if if="{{timeOut}}">
                         <template>
                             <div class="darkline"></div>
-                            <div class="failure-text">{{localize('Something went wrong no TXhash was received.')}}</div>
+                            <div class="failure-text">{{txhash.data}}</div>
                         </template>
                     </dom-if>
 
