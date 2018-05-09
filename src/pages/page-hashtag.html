@@ -556,7 +556,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     route: {
                         type: String,
-                        observer: '_routeChanged',
                     },
                     /**
                     * the selected hashtag
@@ -592,19 +591,11 @@ This code may only be used under the license found at https://github.com/swarmci
             * find the selected hashtag
             */
             _filterHashtags() {
-                if (!this.hashtag) {
+                if (this.hashtags) {
                     let selectedHashtag = this.hashtags.filter((hashtag) => {
-                        return hashtag.id == this.route.path.split('/')[2];
+                        return hashtag.address == this.route.path.split('/')[2];
                     });
                     this.hashtag = selectedHashtag[0];
-                }
-            }
-            /**
-            * the pages route has changed
-            */
-            _routeChanged() {
-                if (this.hashtags) {
-                    this._filterHashtags();
                 }
             }
             /**
@@ -1282,6 +1273,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
+                        this._filterHashtags();
                         // Here come the Entry Animations
                         if (this.routeExit[0] == 'hashtag-list') {
                             // Here come the Entry Animations, coming from page hashtag-list
