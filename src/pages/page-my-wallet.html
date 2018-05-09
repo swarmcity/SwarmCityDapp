@@ -163,7 +163,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 route-entry="{{routeEntry}}">
             </display-transaction-status>              
             <div id="divider2" class="divider"></div>
-            <div class="linkbox"><span class="link">show address on ethplorer</span></div>
+            <div class="linkbox"><span class="link" on-click="_toEtherscan">{{localize('show address on etherscan')}}</span></div>
             <display-transaction-history id="txhistory"></display-transaction-history> 
         </div>
         <dom-if if="{{toggleUnlock}}">
@@ -249,6 +249,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     publicKey: {
                         type: String,
+                        statePath: 'publicKey',
                     },
                     /**
                     * toggles the unlock display
@@ -344,7 +345,15 @@ This code may only be used under the license found at https://github.com/swarmci
             _privateKeyObserver() {
                 this.togglePrivateKey = !this.togglePrivateKey;
             }
-
+            /**
+            * takes the user to the user balance on ethplorer
+            */
+            _toEtherscan() {
+                window.open('https://rinkeby.etherscan.io/address/' + this.publicKey, '_blank');
+            }
+            /**
+            * loads the exit animations
+            */
             _loadExitAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     let balanceSize = ((Polymer.dom(this.root).querySelector('#swtbalance').offsetWidth)/2);
@@ -400,21 +409,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.ethbalance.animate(
-                                    [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
                                 this.$.divider1.animate(
                                     [
                                         {'opacity': '1'},
@@ -431,21 +425,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     }
                                 );
                                 this.$.txstatus.animate(
-                                    [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
-                                this.$.showkeys.animate(
                                     [
                                         {'opacity': '1'},
                                         {'opacity': '0'},
@@ -538,21 +517,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.ethbalance.animate(
-                                    [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
                                 this.$.divider1.animate(
                                     [
                                         {'opacity': '1'},
@@ -569,21 +533,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     }
                                 );
                                 this.$.txstatus.animate(
-                                    [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
-                                this.$.showkeys.animate(
                                     [
                                         {'opacity': '1'},
                                         {'opacity': '0'},
@@ -679,21 +628,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.ethbalance.animate(
-                                    [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
                                 this.$.divider1.animate(
                                     [
                                         {'opacity': '1'},
@@ -710,21 +644,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     }
                                 );
                                 this.$.txstatus.animate(
-                                    [
-                                        {'opacity': '1'},
-                                        {'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
-                                this.$.showkeys.animate(
                                     [
                                         {'opacity': '1'},
                                         {'opacity': '0'},
@@ -776,6 +695,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
+            /**
+            * loads the entry animations
+            */
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
@@ -812,21 +734,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.ethbalance.animate(
-                                [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
                             this.$.divider1.animate(
                                 [
                                     {'opacity': '0'},
@@ -843,21 +750,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                             this.$.txstatus.animate(
-                                [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.showkeys.animate(
                                 [
                                     {'opacity': '0'},
                                     {'opacity': '1'},
@@ -937,21 +829,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$.ethbalance.animate(
-                                [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
                             this.$.divider1.animate(
                                 [
                                     {'opacity': '0'},
@@ -968,21 +845,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                             this.$.txstatus.animate(
-                                [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.showkeys.animate(
                                 [
                                     {'opacity': '0'},
                                     {'opacity': '1'},
