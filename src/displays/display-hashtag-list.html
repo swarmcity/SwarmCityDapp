@@ -114,7 +114,7 @@ The following custom properties and mixins are available for styling:
                             <div class="hashtag">
                                 <span class="cursor"><span class="hashtag">#</span>[[item.name]]</span>
                             </div>
-                        <div class="deals">[[item.stats.paid]] {{localize('deals done')}}</div>
+                        <div class="deals">[[_allDealsCount(item.stats)]] {{localize('deals done')}}</div>
                     </div>
                     <div class="right"></div>
                 </div>
@@ -172,6 +172,14 @@ The following custom properties and mixins are available for styling:
                 if (event.keyCode === 13 || event.type == 'click') {
                     this.path = 'hashtag/'+event.model.__data.item.id+'/';
                 }
+            }
+            /**
+            * When a hashtag is selected change the route to include the hashtag id.
+            * @param {object} stats contains stats about the hashtag
+            * @return {int} returns amount of completed deals
+            */
+            _allDealsCount(stats) {
+                return stats.paidNoConflict + stats.resolved;
             }
         }
         window.customElements.define(DisplayHashtagList.is, DisplayHashtagList);
