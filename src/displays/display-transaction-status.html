@@ -172,10 +172,15 @@ Example:
 
             .round-button {
                 @apply --icon-button-big;
-                cursor: pointer;
+                opacity: 0.5;
             }
 
-            .round-button:active {
+            .enabled {
+                cursor: pointer;
+                opacity: 1;
+            }
+
+            .enabled:active {
                 @apply --button-active;
             }
 
@@ -329,13 +334,11 @@ Example:
             }
 
             .container .errorcontainer {
-                /* @apply --error-container; */
                 min-height: var(--minheight-errorcontainer);
                 transition: all 0.3s ease-in-out;
             }
 
             .container[wide-layout] .errorcontainer {
-                /* @apply --error-container-wide; */
                 text-align: left;
                 min-height: var(--minheight-errorcontainer);
             }
@@ -433,8 +436,6 @@ Example:
         <div class="container" id="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{start}}">
                 <div class="start-buttonbox">
-                    <!-- <div tabindex="1" class="start-button" on-tap="_sendSwt" on-keypress="_sendSwt">{{localize('send SWT')}}</div>
-                    <div tabindex="2" class="start-button" on-tap="_showShortcode" on-keypress="_showShortcode">{{localize('shortcode')}}</div> -->
                     <div tabindex="1" class="start-button" on-tap="_sendSwt" on-keypress="_sendSwt">send</div>
                     <div tabindex="2" class="start-button" on-tap="_showShortcode" on-keypress="_showShortcode">receive</div>
                 </div>
@@ -475,13 +476,13 @@ Example:
                             on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
-                    <paper-input tabindex="2" pattern="[0-9]*" data-numeric-input pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}"></paper-input>
+                    <paper-input tabindex="2" pattern="[0-9]*" data-numeric-input pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}" on-keyup="_checkShortCode"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
                     </div>
                     <div class="send-buttonbox">
                         <div tabindex="3" class="disagree" on-tap="_start" on-keyPress="_start"></div>
-                        <div tabindex="4" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
+                        <div tabindex="4" id="send" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
                             <div class="agree"></div>
                         </div>
                     </div>
@@ -845,15 +846,17 @@ Example:
             * @param {Object} event element clicked.
             */
             _checkPublicKey(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    if (this.sendDestination && this.amountToSend <= this.balance.swt.balanceSwt) {
-                        const length = this.sendDestination.length;
-                        if (length == 5) {
-                            this.sendToShortcode = this.sendDestination;
-                            this.dispatch('REQTOKEY', this.sendToShortcode);
-                            this._gettingPublicKey();
-                        } else {
-                            this.error = this.localize('shortcode is the wrong length');
+                if (this._checkBalance() && this._checkShortCode()) {
+                    if (event.keyCode === 13 || event.type == 'tap') {
+                        if (this.sendDestination && this.amountToSend <= this.balance.swt.balanceSwt) {
+                            const length = this.sendDestination.length;
+                            if (length == 5) {
+                                this.sendToShortcode = this.sendDestination;
+                                this.dispatch('REQTOKEY', this.sendToShortcode);
+                                this._gettingPublicKey();
+                            } else {
+                                this.error = this.localize('shortcode is the wrong length');
+                            }
                         }
                     }
                 }
@@ -862,6 +865,7 @@ Example:
             * shows waiting animation while we get the publick key for the given shortCode
             */
             _gettingPublicKey() {
+                this.$$('#send').classList.remove('enabled');
                 this.send = false;
                 this.looking = true;
                 this.updateStyles({
@@ -905,15 +909,51 @@ Example:
             }
             /**
             * Fires when the user enters each number into amount
+            * @return {boolean} if input is valid or not
             */
             _checkBalance() {
-                if (isNaN(this.amountToSend)) {
-                    this.error = this.localize('You didnt enter a number.');
-                } else {
+                    if (!this.sendDestination) {
+                        this.$$('#send').classList.remove('enabled');
+                    }
                     if (parseFloat(this.amountToSend) > parseFloat(this.balance.swt.balanceSwt)) {
                         this.error = this.localize('Your balance is too low.');
+                        this.$$('#send').classList.remove('enabled');
+                        return false;
                     } else {
-                        this.error = null;
+                        if (!this.sendDestination || this.sendDestination.length < 5 ) {
+                            this.error = null;
+                        } else if (this.error && this.sendDestination && this.sendDestination.length != 5) {
+                            this.error = 'Shortcode is too long';
+                        } else {
+                            this.error = null;
+                            this.$$('#send').classList.add('enabled');
+                        }
+                        return true;
+                    }
+            }
+            /**
+            * Fires when the user enters each number into shortcode
+            * @return {boolean} if input is valid or not
+            */
+            _checkShortCode() {
+                if (!this.amountToSend) {
+                    this.$$('#send').classList.remove('enabled');
+                }
+                if (isNaN(this.sendDestination)) {
+                    this.error = this.localize('You didnt enter a number.');
+                } else {
+                    if (this.sendDestination && this.sendDestination.length === 5) {
+                        if (this._checkBalance()) {
+                            this.$$('#send').classList.add('enabled');
+                            this.error = null;
+                        }
+                        return true;
+                    } else {
+                        if (this.sendDestination && this.sendDestination.length > 5) {
+                            this.error = 'Shortcode is too long';
+                        }
+                        this.$$('#send').classList.remove('enabled');
+                        return false;
                     }
                 }
             }
@@ -932,8 +972,8 @@ Example:
             * When changing status, entered values get reset
             */
             _resetValues() {
-                this.amountToSend = null;
                 this.sendDestination = null;
+                this.amountToSend = null;
                 this.showCountDown = false;
                 this.found = false;
                 this.notFound = false;
