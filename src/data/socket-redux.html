@@ -267,25 +267,6 @@
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
                 });
-                // Listen for changes on 'hashtagsChanged'
-                this.socket.on('hashtagsChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.hashtags = reply.data;
-                        this.dispatch('HASHTAGS', this.hashtags);
-                    }
-                });
-
-                this.socket.on('connect', () => {
-                    // Subscribe to hashtags
-                    this.socket.emit('subscribe', {
-                        channel: 'hashtags',
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            this.hashtags = reply.data;
-                            this.dispatch('HASHTAGS', this.hashtags);
-                        }
-                    });
-                });
 
                 // All handlers attached - please connect..
                 this.socket.connect();
