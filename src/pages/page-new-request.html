@@ -142,7 +142,9 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <display-create-request 
                 path="{{path}}"
-                route-entry="{{routeEntry}}">
+                route-entry="{{routeEntry}}"
+                hashtag="[[hashtag]]"
+                hashtag-fee="[[hashtagFee]]">
             </display-create-request>
         </div>
         </div>
@@ -176,6 +178,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
+                    * Hashtags contains all hashtag objects
+                    * @type {Object}
+                    */
+                    hashtags: {
+                        type: Object,
+                        statePath: 'hashtags',
+                        observer: '_filterHashtags',
+                    },
+                    /**
+                    * hashtag info represents the selected hashtag
+                    * @type {Number}
+                    */
+                    hashtagFee: {
+                        type: Number,
+                    },
+                    /**
                     * routeExit triggers the exit animations
                     * @type {Array}
                     */
@@ -206,6 +224,18 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * find the selected hashtag
+            */
+            _filterHashtags() {
+                if (this.hashtags) {
+                    let selectedHashtag = this.hashtags.filter((hashtag) => {
+                        return hashtag.address == this.route.path.split('/')[2];
+                    });
+                    this.hashtag = selectedHashtag[0];
+                    this.hashtagFee = selectedHashtag[0].hashtagFee/1e18;
+                }
             }
         }
         window.customElements.define(MyNewRequest.is, MyNewRequest);

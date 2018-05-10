@@ -255,7 +255,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <paper-input id="budget"  type="Number" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]" on-input="_checkBudget" value="{{budget}}"></paper-input>
                     <div class="currency">SWT</div>
                 </div>
-                <div class="fee"> + {{hashtagfee}} SWT {{localize('hashtagfee')}}</div>
+                <div class="fee"> + [[hashtagFee]] SWT {{localize('hashtagfee')}}</div>
                 <template is="dom-if" if="{{showError}}">
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
@@ -311,15 +311,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     balance: {
                         type: Number,
                         statePath: 'balance',
-                    },
-                    /**
-                    * hashtagfee is the fee owned by the hashtagowner on making a deal.
-                    This is currently dummy and should later be replaced.
-                    * @type {Number}
-                    */
-                    hashtagfee: {
-                        type: Number,
-                        value: 0.5,
                     },
                     /**
                     * Error
@@ -379,13 +370,12 @@ This code may only be used under the license found at https://github.com/swarmci
             * Verifies user input and displays total cost
             */
             _checkBudget() {
-                this._toggleButton();
-                this.totalcost = parseFloat(this.budget)+this.hashtagfee;
+                this.totalcost = (parseFloat(this.budget) + parseFloat(this.hashtagFee));
                 if (this.budget) {
                     this.showSum = true;
                     if (this.balance.swt.balanceSwt >= this.totalcost) {
                         this.error = '';
-                        if (this.request && this.budget) {
+                        if (this.budget) {
                             this.showSum = true;
                         } else {
                             this.showSum = false;
@@ -410,8 +400,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.request.length > 0 &&
                     this.budget &&
                     this.budget.length > 0 &&
-                    this.balance.swt.balanceSwt >= parseFloat(this.budget)+this.hashtagfee
+                    this.balance.swt.balanceSwt >= parseFloat(this.budget)+this.hashtagFee
                 ) {
+                    this._checkBudget();
                     this.$.agree.classList.add('enabled');
                     this.$.button.classList.add('active');
                     return true;
