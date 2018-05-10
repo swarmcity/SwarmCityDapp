@@ -235,6 +235,12 @@
                             confirmedTx: confirmedTx,
                         };
                     },
+                    ITEMDATAHASH: function(itemDataHash) {
+                        return {
+                            type: 'ITEMDATAHASH',
+                            itemDataHash: itemDataHash,
+                        };
+                    },
                 });
             }
 
@@ -303,12 +309,23 @@
                     if (reply.response == 200) {
                         this.avatarHash = reply.data;
                         this.dispatch('AVATARHASH', this.avatarHash);
+                        localStorage.setItem('avatarHash', this.avatarHash);
                     }
                 });
             }
 
             _itemToIpfs() {
-                console.log(this.itemToIpfs);
+                console.log('MET DE TREIN NAAR OOSTENDE')
+                this.socket.emit('ipfsAdd', {
+                    payload: this.itemToIpfs,
+                }, (reply) => {
+                    console.log(reply);
+                    if (reply.response == 200) {
+                        this.itemDataHash = reply.data;
+                        this.dispatch('ITEMDATAHASH', this.itemDataHash);
+                        console.log(this.itemDataHash);
+                    }
+                });
             }
 
             _detectIphone() {
