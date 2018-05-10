@@ -347,6 +347,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             itemDescription: itemDescription,
                         };
                     },
+                    ITEMFEE: function(itemFee) {
+                        return {
+                            type: 'ITEMFEE',
+                            itemFee: itemFee,
+                        };
+                    },
                 });
             }
             /**
@@ -370,6 +376,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * Verifies user input and displays total cost
             */
             _checkBudget() {
+                this._toggleButton();
                 this.totalcost = (parseFloat(this.budget) + parseFloat(this.hashtagFee));
                 if (this.budget) {
                     this.showSum = true;
@@ -402,7 +409,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.budget.length > 0 &&
                     this.balance.swt.balanceSwt >= parseFloat(this.budget)+this.hashtagFee
                 ) {
-                    this._checkBudget();
                     this.$.agree.classList.add('enabled');
                     this.$.button.classList.add('active');
                     return true;
@@ -419,6 +425,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this._toggleButton()) {
                     this.dispatch('ITEMBUDGET', this.budget);
                     this.dispatch('ITEMDESCRIPTION', this.request);
+                    this.dispatch('ITEMFEE', this.hashtagFee);
                     this.path = 'confirm-new-request';
                 }
             }
