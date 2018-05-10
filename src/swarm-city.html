@@ -2,7 +2,7 @@
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/faffys-animated-pages/faffys-animated-pages.html">
-<link rel="import" href="../bower_components/paper-styles/typography.html"> 
+<link rel="import" href="../bower_components/paper-styles/typography.html">
 <link rel="import" href="../bower_components/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="redux-state.html">
@@ -67,7 +67,6 @@
         padding: 0;
         margin: 0;
       }
-
     </style>
     <socket-redux></socket-redux>
     <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible" fallback-selection="404">
@@ -76,7 +75,7 @@
     <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
     <iron-a11y-keys id="a11y" keys="esc" on-keys-pressed="_onEscape"></iron-a11y-keys>
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
-    <sc-animations animations-array="{{animationsArray}}" ></sc-animations>
+    <sc-animations animations-array="{{animationsArray}}"></sc-animations>
     <faffys-animated-pages page="[[page]]" route="{{route}}" route-exit="{{routeExit}}" route-entry="{{routeEntry}}" animations="{{animations}}">
       <page-welcome id="welcome" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-welcome>
       <page-hashtag id="hashtag" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-hashtag>
@@ -99,7 +98,7 @@
       <page-show-private-key id="show-private-key" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-show-private-key>
       <page-email-success id="email-success" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-email-success>
       <page-download-success id="download-success" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-download-success>
-      <page-print-success id="print-success" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-print-success>      
+      <page-print-success id="print-success" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-print-success>
       <page-my-profile id="my-profile" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-my-profile>
       <page-make-backup-profile id="make-backup-profile" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-make-backup-profile>
       <page-download-success-profile id="download-success-profile" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-download-success-profile>
@@ -113,7 +112,7 @@
       <page-transaction-processing id="transaction-processing" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-transaction-processing>
       <page-new-request id="new-request" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-new-request>
       <page-new-request-processing id="new-request-processing" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-new-request-processing>
-      <page-new-hashtag id="new-hashtag" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-new-hashtag>      
+      <page-new-hashtag id="new-hashtag" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-new-hashtag>
       <page-cancel-request id="cancel-request" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-cancel-request>
       <page-detail id="detail" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-detail>
       <page-confirm-payout id="confirm-payout" route-exit="{{routeExit}}" route-entry="{{routeEntry}}"></page-confirm-payout>
@@ -216,6 +215,16 @@
       connectedCallback() {
         super.connectedCallback();
         this.$.a11y.target = document.querySelector('body');
+
+        // disable double tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+          let now = (new Date()).getTime();
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
       }
 
       /**
@@ -260,14 +269,14 @@
         if (entryFlowPages.includes(this.routeExit[1])) {
           if (this.routeExit[0] != this.routeExit[1]) {
             if (entryFlowPages.indexOf(this.routeExit[1])
-            - entryFlowPages.indexOf(this.routeExit[0]) == 1) {
+              - entryFlowPages.indexOf(this.routeExit[0]) == 1) {
               if (this.publicKey) {
                 this.set('route.path', 'hashtag-list');
               }
             }
           } else {
-                if (this.publicKey) {
-                  this.set('route.path', 'hashtag-list');
+            if (this.publicKey) {
+              this.set('route.path', 'hashtag-list');
             }
           }
         }
