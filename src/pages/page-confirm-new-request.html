@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-complete-request.html">
 
 <dom-module id="page-confirm-new-request">
     <template>
@@ -119,11 +120,13 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-
+        <display-complete-request
+            private-key="[[privateKey]]">
+        </display-complete-request>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title" id="title">{{localize('Post this request for')}} [[itemBudget]] SWT?</div>
-                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[hashtagfee]] 0.5 SWT {{localize('hashtagfee is included')}}.</div>
+                <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[itemFee]] SWT {{localize('hashtagfee is included')}}.</div>
             </div>
             <div class="flexer">
             </div>
@@ -195,6 +198,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'itemBudget',
                     },
                     /**
+                    * contains the request hashtagfee
+                    * @type {String}
+                    */
+                    itemFee: {
+                        type: String,
+                        statePath: 'itemFee',
+                    },
+                    /**
                     * routeExit triggers the exit animations
                     * @type {Array}
                     */
@@ -239,6 +250,12 @@ This code may only be used under the license found at https://github.com/swarmci
             _disagree() {
                 window.history.back();
             }
+            /**
+            * takes the user to the previous page
+            */
+            _totalSum() {
+                return parseFloat(this.itemBudget) + parseFloat(this.itemFee);
+            }
 
             /**
             * toggles the password unlock display
@@ -256,14 +273,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 else {
                     this.$.container.classList.remove('blur');
-                }
-            }
-            /**
-            * the transaction has been broadcast
-            */
-            _sent() {
-                if (this.status == 'SENT') {
-                    this.path = 'transaction-processing/';
                 }
             }
 
