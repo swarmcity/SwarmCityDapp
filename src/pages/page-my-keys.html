@@ -304,7 +304,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <img src="{{qrCodePrivateKey}}">
                             </div>
                         </template>
-                        <template is="dom-if" if="{{showCheckbox}}" restamp="true">
+                        <template is="dom-if" if="{{_showCheckbox()}}" restamp="true">
                             <paper-checkbox
                                 id="checkbox"
                                 noink
@@ -481,10 +481,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
-             * Only show the checkbox on iphone & new user flow creation
+             * Only show the checkbox on iphone&ipad while on new user flow creation
+            * @return {boolean} boolean
              */
             _showCheckbox() {
-                this.showCheckbox = this.iphone && this.routeEntry[0] != 'make-backup-profile';
+                return (navigator.userAgent.match(/ipad|ipod|iphone/i) &&
+                            this.routeEntry[0] != 'make-backup-profile');
             }
             /**
              * copies the public key to the desktop
@@ -582,7 +584,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.$$('#checkbox')
                 && this.$$('#checkbox').checked
                 && this.routeEntry[0] != 'make-backup-profile'
-                && this.iphone) {
+                && navigator.userAgent.match(/ipad|ipod|iphone/i)) {
                     this.showEnterbutton = true;
                 } else {
                     this.showEnterbutton = false;
