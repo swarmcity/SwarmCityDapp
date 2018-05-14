@@ -134,7 +134,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="header-bottom">
                     <div class="header-leftbottom" id="hashtagHeader">
                         <div id="hashtag" class="hashtag">
-                            <span class="hashtagsymbol">#</span>Pioneer
+                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
                         </div>
                         <div id="infolink" class="info-toggle">i</div>
                     </div>
@@ -187,6 +187,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_filterHashtags',
                     },
                     /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                    },
+                    /**
                     * hashtag info represents the selected hashtag
                     * @type {Number}
                     */
@@ -206,6 +213,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'new-request',
                     },
                 };
             }
@@ -235,6 +251,17 @@ This code may only be used under the license found at https://github.com/swarmci
                     });
                     this.hashtag = selectedHashtag[0];
                     this.hashtagFee = selectedHashtag[0].hashtagFee/1e18;
+                }
+            }
+
+            /**
+            * Load the correct entry animations
+            */
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        this._filterHashtags();
+                    }
                 }
             }
         }
