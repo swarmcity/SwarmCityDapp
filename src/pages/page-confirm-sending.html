@@ -31,48 +31,54 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-color: var(--sc-blue);
-                height: 100%;
-                width: 100%;
-                @apply --layout-vertical;
+                @apply --titlepage-closed-container;
             }
 
-            .container>div:nth-child(1) {
-                height: 70%;
-                @apply --layout-vertical;
+            .container .top {
+                @apply --titlepage-closed-container-top;
+            }
+
+            .container .bottom {
+                @apply --titlepage-closed-container-bottom;
+                @apply --layout-horizontal;
                 @apply --layout-center;
                 @apply --layout-center-justified;
-                box-sizing: border-box;
-                padding: 0 14vw;
             }
 
-            .container>div:nth-child(1)>div:nth-child(1) {
-                @apply --main-title1;
+            .container .title {
+                @apply --titlepage-title;
                 color: var(--sc-white);
-                text-align: center;
             }
 
-            .container>div:nth-child(1)>div:nth-child(2) {
-                @apply --small-light;
-                margin: 20px 0 0;
+            .container .subtitle {
+                @apply --titlepage-subtitle;
                 color: var(--sc-white);
-                text-align: center;
             }
 
-            .container>div:nth-child(2) {
-                box-sizing: border-box;
-                padding: 0 14vw;
-                @apply --layout-vertical;
-                @apply --layout-center;
-                @apply --layout-start-justified;
-                height: 30%;
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
             }
 
-            .container>div:nth-child(2)>div:nth-child(1) {
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
                 @apply --layout-horizontal;
-                @apply --layout-center-center;
+                @apply --layout-start;
+                @apply --layout-start-justified;
             }
 
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+            /* .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
                 @apply --xmark-grey4-normal;
                 cursor: pointer;
                 margin-right: 20px;
@@ -86,33 +92,36 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --vmark-blue-normal;
             }
 
-            .container[wide-layout]>div:nth-child(1) {
-                height: 55%;
-                padding: 0 12vw 7vh;
-                @apply --layout-start;
-                @apply --layout-end-justified;
-            }
-
-            .container[wide-layout]>div:nth-child(1)>div:nth-child(1) {
-                @apply --main-title1-wide;
-                text-align: left;
-            }
-
-            .container[wide-layout]>div:nth-child(1)>div:nth-child(2) {
-                @apply --small-light-wide;
-                text-align: left;
-            }
-
-            .container[wide-layout]>div:nth-child(2) {
-                height: 45%;
-                padding: 0 12vw;
-                @apply --layout-start;
-            }
-
             .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1):active,
             .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2):active {
                 @apply --button-active;
+            } */
+
+            .container .confirmers {
+                @apply --titlepage-confirmers;
             }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --confirm-blue-round-button;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --confirm-red-vmark;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+
 
             .blur {
                 @apply --unlock-blur;
@@ -139,16 +148,20 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
 
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div>
-                <div>{{localize('Youre about to send')}} <span class="yellow" > [[amountToSend]] SWT </span> {{localize('to')}} <span class="wordbreak">[[toUserName]]</span>.</div>
                 <div>{{localize('This can not be undone.')}}</div>
+            <div class="top">
+                <div class="title">{{localize('Youre about to send')}} <span class="yellow" > [[amountToSend]] SWT </span> {{localize('to')}} <span class="wordbreak">[[toUserName]]</span>.</div>
+                <div class="subtitle">{{localize('This cant be undone.')}}</div>
             </div>
-            <div>
-                <div>
+            <div class="flexer"></div>
+            <div class="bottom">
+                <div class="bottom" id="buttons">   
+                <div class="confirmers">
                     <div on-click="_disagree"></div>
                     <div on-click="_unlock">
                         <div></div>
                     </div>
+                </div>
                 </div>
                 <div>
                     <display-complete-transaction
