@@ -566,7 +566,7 @@ var abi = {
     "updated_at": 1508143498675
 }
 ,
-"hashtag": {
+"hashtagSimpleDeal": {
 
     "contract_name": "hashtagSimpleDeal",
     "abi": [
