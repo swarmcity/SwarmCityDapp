@@ -37,9 +37,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 70%;
                 @apply --layout-vertical;
                 @apply --layout-center;
-                @apply --layout-center-justified;
+                @apply --layout-start-justified;
                 box-sizing: border-box;
-                padding: 0 14vw;
+                padding: 20vh 14vw 0 14vw;
             }
 
             .title {
@@ -48,8 +48,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 text-align: center;
             }
 
+            .dividerbox {
+                width: 100%;
+                height: 6vh;
+            }
+
             .statusbox {
-                margin: 6vh 0 0 0;
                 color: var(--sc-white);
                 width: 100%;
                 max-width: 800px;
@@ -57,7 +61,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .bar {
                 @apply --layout-horizontal;
-                @apply --layout-start-justified;
+                @apply --layout-center-justified;
                 @apply --layout-center;
                 width: 100%;
                 margin: 0 0 2vh 0;
@@ -67,15 +71,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-flex;
                 @apply --body-default;
                 color: var(--sc-grey4);
-                margin-bottom: 1px;
+                padding-top: 18px;
+                height: 36px;
             }
 
-            .icon-send {
-                @apply --vmark-white-small;
+            .continue {
+                opacity: 1 !important;
             }
 
-            .icon-complete {
+            .icon-vmark {
                 @apply --vmark-white-small;
+                opacity: 0.2;
+            }
+
+            .icon-xmark {
+                @apply --xmark-grey4-small;
                 opacity: 0.2;
             }
 
@@ -93,12 +103,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center-center;
             }
 
-            .successbox {
+            .buttonbox {
                 @apply --icon-button-big;
+                opacity: 0.2;
             }
 
-            .success {
-                @apply --vmark-green-normal;
+            .icon-next {
+                @apply --next-grey4-normal;
+            }
+
+            .icon-previous {
+                @apply --xmark-grey4-normal;
             }
 
             .container[wide-layout] .top {
@@ -124,7 +139,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-            .successbox:active {
+            .buttonbox:active {
                 @apply --button-active;
             }
 
@@ -176,10 +191,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 animation: loadanimation 1.5s linear 0.6s infinite;
             }
 
+            .darkline {
+                background-color: var(--sc-grey4);
+                width: 100%;
+                height: 2px;
+
+
+            }
+
+            .failure-text {
+                margin-top: 20px;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .success {
+                .icon-next,
+                .icon-previous {
                     @apply --retina;
                 }
             }
@@ -189,32 +220,55 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title">{{localize('Your request is being processed.')}}</div>
+                <div class="title">{{localize('Your request is posted.')}}</div>
+                <div class="dividerbox"></div>
                 <div class="statusbox">
+
                     <div class="bar">
-                        <div class="statusinfo">{{localize('Create allowance')}}</div>
-                        <div class="icon-send"></div>
+
+                        <dom-if if="{{waiting}}">
+                            <template>
+                                <div class="loading">
+                                    <div class="smallpoint" id="point1"></div>
+                                    <div class="smallpoint" id="point2"></div>
+                                    <div class="smallpoint" id="point3"></div>
+                                </div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{success}}">
+                            <template>
+                                <div class="icon-vmark continue"></div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{failure}}">
+                            <template>
+                                <div class="icon-xmark continue"></div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{timeOut}}">
+                            <template>
+                                <div class="icon-xmark continue"></div>
+                            </template>
+                        </dom-if>
+
+
+
                     </div>
-                    <div class="bar">
-                        <div class="statusinfo">{{localize('Create request')}}</div>
-                        <div class="icon-receive">
-                            <div class="loading">
-                                <div class="smallpoint" id="point1"></div>
-                                <div class="smallpoint" id="point2"></div>
-                                <div class="smallpoint" id="point3"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bar">
-                        <div class="statusinfo">{{localize('Sending SWT to deal')}}</div>
-                        <div class="icon-complete"></div>
-                    </div>
+
+                    <dom-if if="{{timeOut}}">
+                        <template>
+                            <div class="darkline"></div>
+                            <div class="failure-text">{{localize('Something went wrong no TXhash was received.')}}</div>
+                        </template>
+                    </dom-if>
+
+
                 </div>
             </div>
             <div class="bottom">
                 <div class="choicebox">
-                    <div class="successbox" on-click="_success" on-keypress="_success" tabindex="1">
-                        <div class="success"></div>
+                    <div id="button" class="buttonbox" on-click="_next" on-keypress="_next" tabindex="1">
+                        <div id="icon" class="icon-next"></div>
                     </div>
                 </div>
             </div>
@@ -232,33 +286,56 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
+                    * Send new request metadata to IPFS
+                    * @type {Object}
                     */
-                    path: {
-                        type: String,
-                        observer: '_path',
+                    itemToIpfs: {
+                        type: Object,
+                        statePath: 'itemToIpfs',
+                        observer: '_itemToIpfs',
                     },
                     /**
-                    * routeExit triggers the exit animations
-                    * @type {Array}
+                    * IPFS hash of request metadata
+                    * @type {Object}
                     */
-                    routeExit: {
-                        type: Array,
-                        // observer: '_loadExitAnimations',
+                    itemDataHash: {
+                        type: Object,
+                        statePath: 'itemDataHash',
+                        observer: '_newItemDataHash',
                     },
                     /**
-                    * routeEntry triggers the entry animations
-                    * @type {Array}
+                    * txhash of broadcasted request
+                    * @type {Object}
                     */
-                    routeEntry: {
-                        type: Array,
-                        // observer: '_loadEntryAnimations',
+                    txHashRequest: {
+                        type: Object,
+                        statePath: 'txHashRequest',
+                        observer: '_newTxHashRequest',
+                    },
+                    /**
+                    * timer counting down until timeout
+                    * @type {Object}
+                    */
+                    timer: {
+                        type: Object,
+                    },
+                    /**
+                    * this is set to true when timer hits 0
+                    * @type {Boolean}
+                    */
+                    timeOut: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_timeOut',
                     },
                 };
             }
@@ -267,22 +344,93 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+
             /**
-            * takes the user to the conversion success page
+            * When new tx is broadcast, reset page & timer
             */
-            _success() {
-                this.path = 'hashtag/' + sessionStorage.getItem('hashtagID');
-                sessionStorage.removeItem('hashtagID');
+            _newBroadcast() {
+                this._resetValues();
+                this._startTimer();
             }
 
             /**
-            * changes the current path
+            * reset all page styling conditions
             */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
+            _resetValues() {
+                this.timeOut = false;
+                this.waiting = true;
+                this.success = false;
+                this.failure = false;
+                this.$.button.classList.remove('continue');
+                this.$.icon.classList.add('icon-next');
+            }
+
+            /**
+            * start the timeout timer
+            */
+            _startTimer() {
+                this.timer = setTimeout(() => {
+                    this.timeOut = true;
+                }, 30000);
+            }
+
+            /**
+            * once a txHashRequest is received, decide on the feedback
+            */
+            _newItemDataHash() {
+                clearTimeout(this.timer);
+                this.$.button.classList.add('continue');
+                switch (this.itemDataHash.response) {
+                    case 200: {
+                        this.success = true;
+                        this.failure = false;
+                        this.waiting = false;
+                        this.timeOut = false;
+                        this.$.icon.classList.remove('icon-previous');
+                        this.$.icon.classList.add('icon-next');
+                        break;
+                    }
+                    case 500: {
+                        this.waiting = false;
+                        this.failure = true;
+                        this.timeOut = false;
+                        this.$.icon.classList.remove('icon-next');
+                        this.$.icon.classList.add('icon-previous');
+                        break;
+                    }
                 }
-                this.path = null;
+            }
+
+            /**
+            * When new request is sent to IPFS, reset page & timer
+            */
+            _itemToIpfs() {
+                this._resetValues();
+                this._startTimer();
+            }
+
+            /**
+            * once timeout has been reached, show user timeout feedback
+            */
+            _timeOut() {
+                if (this.timeOut) {
+                    this.waiting = false;
+                    this.$.button.classList.add('continue');
+                    this.$.icon.classList.remove('icon-next');
+                    this.$.icon.classList.add('icon-previous');
+                }
+            }
+
+            /**
+            * takes the user back to my-wallet page
+            */
+            _next() {
+                if (!this.waiting) {
+                    if (sessionStorage.getItem('origin')) {
+                    this.set('route.path', sessionStorage.getItem('origin'));
+                    sessionStorage.removeItem('origin');
+                    }
+                }
             }
         }
         window.customElements
