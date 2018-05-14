@@ -114,6 +114,10 @@ The following custom properties and mixins are available for styling:
 
             .maintainer-pubkey {
                 @apply --small-light;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
                 color: var(--sc-grey3);
             }
 
@@ -155,36 +159,20 @@ The following custom properties and mixins are available for styling:
         <display-language language="{{language}}"></display-language>
         <div class="container" wide-layout$="{{wide}}">
             <div>
-                <div class="about-title">{{localize('About')}} #{{hashtagInfo.name}}</div>
-                <div class="about">{{hashtagInfo.description}}</div>
+                <div class="about-title">{{localize('About')}} #{{hashtag.name}}</div>
+                <div class="about">{{hashtag.description}}</div>
                 <div class="hashtagfee-title">{{localize('Hashtagfee')}}</div>
-                <div class="hashtagfee">{{hashtagInfo.hashtagfee}}</div>
+                <div class="hashtagfee">[[hashtagFee]] SWT</div>
                 <div class="maintainer-title">{{localize('Maintained by')}}</div>
                 <div class="maintainer">
                     <div class="maintainer-avatar">
-                        <img src="{{hashtagInfo.maintainer.avatar}}">
+                        <img src="{{hashtag.maintainer.avatar}}">
                     </div>
                     <div class="maintainer-info">
-                        <div class="maintainer-username">{{hashtagInfo.maintainer.username}}</div>
-                        <!-- <div class="maintainer-pubkey">{{hashtagInfo.maintainer.pubkey}}</div> -->
+                        <div class="maintainer-username">{{hashtag.maintainer.username}}</div>
+                        <div class="maintainer-pubkey">{{hashtag.maintainer.address}}</div>
                     </div>
                 </div>
-                <div class="contact-title">{{localize('Contact')}}</div>
-                <div class="contact">
-                    <template is="dom-repeat" items="{{hashtagInfo.contact}}">
-                        <div class="linkbox">
-                            <a href="{{item.link}}" target="_blank" class="links" rel="noopener">{{item.name}}</a>
-                        </div>
-                    </template>
-                </div>
-                <!-- <div class="info">{{localize('This hashtag is maintained by')}} {{hashtagInfo.maintainer}}</div>
-                <div class="commission">{{localize('The hashtag commission is')}} {{hashtagInfo.commission}} SWT.</div>
-                <div class="contact">{{localize('Contact')}}:</div>
-                <template is="dom-repeat" items="{{hashtagInfo.contact}}">
-                    <div class="linkbox">
-                        <a href="{{item.link}}" target="_blank" class="links" rel="noopener">{{item.name}}</a>
-                    </div>
-                </template> -->
             </div>
             <div class="arrowup">
                 <div class="arrowup-icon" on-click="_closeInfo"></div>
@@ -224,8 +212,16 @@ The following custom properties and mixins are available for styling:
                     * hashtag info represents the selected hashtag
                     * @type {Object}
                     */
-                    hashtagInfo: {
+                    hashtag: {
                         type: Object,
+                        observer: '_hashtagFee',
+                    },
+                    /**
+                    * hashtag info represents the selected hashtag
+                    * @type {Number}
+                    */
+                    hashtagFee: {
+                        type: Number,
                     },
                 };
             }
@@ -238,6 +234,12 @@ The following custom properties and mixins are available for styling:
             */
             _closeInfo() {
                 this.closeInfo = !this.closeInfo;
+            }
+            /**
+            * converts the fee from gwei to swt amount
+            */
+            _hashtagFee() {
+                this.hashtagFee = this.hashtag.hashtagFee/1e18;
             }
         } window.customElements.define(DisplayHashtagAbout.is, DisplayHashtagAbout);
     </script>

@@ -36,9 +36,9 @@ let initialState = {
     usingShortCode: false,
     language: 'en',
     fx: {
-        priceBtc: 99,
-        priceEur: 99,
-        priceUsd: 1.74,
+        priceBtc: 1,
+        priceEur: 1,
+        priceUsd: 1,
     },
     balance: {
         eth: 99,
@@ -58,31 +58,44 @@ let initialState = {
         dealsConflicted: 0,
     }],
     hashtags: [{
-        name: 'Pioneer1',
-        deals: 25,
-        id: '7c9v87bc98v7b',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo accumsan tempor. Duis vel libero ultricies, volutpat quam et, hendrerit tellus. Nulla lectus nisl, tempus vitae sapien a, auctor consequat lectus. Aenean in viverra felis.', // eslint-disable-line
-        hashtagfee: 0.05,
-        maintainer:
-        {avatar: '[[importPath]]../../images/defaultavatar.png',
-        username: 'Kars Rhyder',
-        pubkey: '0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09'},
-        contact: [
-            {name: 'hashtagman1@gmail.com', link: 'mailto:hashtagman1@gmail.com'},
-            {name: '@hashtag1 (Twitter)', link: 'http://twitter.com/@hashtag1'},
-        ],
-    },
-    {
+        name: 'Pioneer',
+        address: '0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e01',
+        location: '9q8yfr43d4',
+        short: 'a23d33',
+        stats: {'paidNoConflict': 230, 'resolved': 23, 'seekers': 224, 'providers': 56},
+        description: 'Pioneer is the first amazing hashtag',
+        maintainer: {
+            avatar: '[[importPath]]../../images/defaultavatar.png',
+            username: 'Piet Snot',
+            address: '0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09',
+        },
+        hashtagFee: 120000000000000000,
+    }, {
+        name: 'DevOps',
+        address: '0x369D787F3EcF4a0e57cafCFB2Db92134e1982e02',
+        location: '9q8yfr43s4',
+        short: 'a23d33',
+        stats: {'paidNoConflict': 69, 'resolved': 23, 'seekers': 42, 'providers': 12},
+        description: 'Here users pay developers for platform improvements',
+        maintainer: {
+            avatar: '[[importPath]]../../images/defaultavatar.png',
+            username: 'Mungo Weber',
+            address: '0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09',
+        },
+        hashtagFee: 6000000000000000000,
+    }, {
         name: 'NeedARide',
-        deals: 125,
-        id: '1c9v87bc98v7a',
-        description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed commodo accumsan tempor. Duis vel libero ultricies, volutpat quam et, hendrerit tellus. Nulla lectus nisl, tempus vitae sapien a, auctor consequat lectus. Aenean in viverra felis. Donec a quam commodo, commodo lacus vitae, porta ex. Aliquam efficitur, purus in congue porttitor, mauris tellus feugiat lacus, quis dignissim ligula enim in orci. Donec magna turpis, tempor nec elementum vitae, ullamcorper eget velit. Maecenas facilisis a sapien id consequat. Pellentesque eu nisi ac augue vehicula ornare quis eget enim. Phasellus eget feugiat justo. Fusce a dolor sit amet leo egestas mollis. Phasellus non sem tincidunt nibh tincidunt fermentum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vel laoreet libero.', // eslint-disable-line
-        hashtagfee: 0.05,
-        maintainer: '0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09',
-        contact: [
-            {name: 'hashtagman2@gmail.com', link: 'mailto:hashtagman2@gmail.com'},
-            {name: '@hashtag2 (Twitter)', link: 'http://twitter.com/@hashtag2'},
-        ],
+        address: '0x369D787F3EcF4a0e57cvfCFB2Db92134e1982e03',
+        location: '9q8yff43d4',
+        short: 'a23d33',
+        stats: {'paidNoConflict': 378, 'resolved': 23, 'seekers': 872, 'providers': 235},
+        description: 'Ridesharing on the blockchain',
+        maintainer: {
+            avatar: '[[importPath]]../../images/defaultavatar.png',
+            username: 'John Doe',
+            address: '0x369D787F3EcF4a0e57cDfCFB2Db92134e1982e09',
+        },
+        hashtagFee: 10000000000000000000,
     },
     ],
     itemCollection: [{
@@ -445,7 +458,7 @@ let reducer = function(state, action) {
                 reqipfs: reqipfs,
             });
         }
-        // A string containing the ipfs hash of an image
+        // A string containing the address of the recipient
         case 'TOADDRESS': {
             let toAddress = state.toAddress;
             toAddress = action.toAddress;
@@ -453,7 +466,7 @@ let reducer = function(state, action) {
                 toAddress: toAddress,
             });
         }
-        // A string containing the ipfs hash of an image
+        // A string containing the username of the recipient
         case 'TOUSERNAME': {
             let toUserName = state.toUserName;
             toUserName = action.toUserName;
@@ -461,12 +474,52 @@ let reducer = function(state, action) {
                 toUserName: toUserName,
             });
         }
-        // A string containing the ipfs hash of an image
+        // A string containing the amount to send
         case 'AMOUNTTOSEND': {
             let amountToSend = state.amountToSend;
             amountToSend = action.amountToSend;
             return Object.assign({}, state, {
                 amountToSend: amountToSend,
+            });
+        }
+        // A string containing the budget for a new request
+        case 'ITEMBUDGET': {
+            let itemBudget = state.itemBudget;
+            itemBudget = action.itemBudget;
+            return Object.assign({}, state, {
+                itemBudget: itemBudget,
+            });
+        }
+        // A string containing the description for a new request
+        case 'ITEMDESCRIPTION': {
+            let itemDescription = state.itemDescription;
+            itemDescription = action.itemDescription;
+            return Object.assign({}, state, {
+                itemDescription: itemDescription,
+            });
+        }
+        // A string containing the hashtag fee
+        case 'ITEMFEE': {
+            let itemFee = state.itemFee;
+            itemFee = action.itemFee;
+            return Object.assign({}, state, {
+                itemFee: itemFee,
+            });
+        }
+        // A string containing the hashtag fee
+        case 'ITEMTOIPFS': {
+            let itemToIpfs = state.itemToIpfs;
+            itemToIpfs = action.itemToIpfs;
+            return Object.assign({}, state, {
+                itemToIpfs: itemToIpfs,
+            });
+        }
+        // The IPFS hash with the new request item data
+        case 'ITEMDATAHASH': {
+            let itemDataHash = state.itemDataHash;
+            itemDataHash = action.itemDataHash;
+            return Object.assign({}, state, {
+                itemDataHash: itemDataHash,
             });
         }
     }

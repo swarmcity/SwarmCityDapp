@@ -396,7 +396,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <display-hashtag-about 
                         id="about" 
                         class="info" 
-                        hashtag-info="[[hashtag]]" 
+                        hashtag="[[hashtag]]" 
                         close-info="{{closeInfo}}">
                     </display-hashtag-about>
                 </template>
@@ -541,12 +541,11 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                     },
                     /**
-                    * highlightInfoToggle toggles
-                    * the background style of the show filter text link
-                    * @type {Boolean}
+                    * Hashtags contains all hashtag objects
+                    * @type {Object}
                     */
                     hashtags: {
-                        type: Array,
+                        type: Object,
                         statePath: 'hashtags',
                         observer: '_filterHashtags',
                     },
@@ -556,7 +555,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     route: {
                         type: String,
-                        observer: '_routeChanged',
                     },
                     /**
                     * the selected hashtag
@@ -592,22 +590,11 @@ This code may only be used under the license found at https://github.com/swarmci
             * find the selected hashtag
             */
             _filterHashtags() {
-                if (!this.hashtag) {
+                if (this.hashtags) {
                     let selectedHashtag = this.hashtags.filter((hashtag) => {
-                        return hashtag.id == this.route.path.split('/')[2];
+                        return hashtag.address == this.route.path.split('/')[2];
                     });
                     this.hashtag = selectedHashtag[0];
-                }
-            }
-            /**
-            * the pages route has changed
-            */
-            _routeChanged() {
-                // TODO: Reset the page on load, close the
-                // info and filter if they are open,
-                // if faded out, fade in
-                if (this.hashtags) {
-                    this._filterHashtags();
                 }
             }
             /**
@@ -1215,21 +1202,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$$('#itemsInvolved').animate(
-                                [
-                                    {'opacity': '1'},
-                                    {'opacity': '0'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
+                            if (this.$$('#itemsInvolved')) {
+                                this.$$('#itemsInvolved').animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
                             this.$.back.animate(
                                 [
                                     {'transform': 'translateX(0)', 'opacity': '1'},
@@ -1283,6 +1272,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
+                        this._filterHashtags();
                         // Here come the Entry Animations
                         if (this.routeExit[0] == 'hashtag-list') {
                             // Here come the Entry Animations, coming from page hashtag-list
@@ -1681,8 +1671,9 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeExit[0] == 'new-request') {
-                            // Here come the Entry Animations, coming from page My Profile
+                        if (this.routeExit[0] == 'new-request' ||
+                            this.routeExit[0] == 'new-request-processing') {
+                            // Here come the Entry Animations, coming from page new-request
                             this.$.fadeArea.animate(
                                 [
                                     {'opacity': '0'},
@@ -1698,21 +1689,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                     endDelay: 0,
                                 }
                             );
-                            this.$$('#itemsInvolved').animate(
-                                [
-                                    {'opacity': '0'},
-                                    {'opacity': '1'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 150,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
+                            if (this.$$('#itemsInvolved')) {
+                                this.$$('#itemsInvolved').animate(
+                                    [
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
                             this.$.hashtagHeader.animate(
                                 [
                                     {'opacity': '0'},

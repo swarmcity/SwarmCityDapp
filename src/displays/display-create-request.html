@@ -1,0 +1,461 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="display-create-request">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+        -->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                background-color: var(--sc-white);
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 20px 20px 0 0;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .inputs {
+                box-sizing: border-box;
+                padding: 0px 35px 40px 35px;
+            }
+
+            .container[wide-layout] .inputs {
+                padding: 0px 40px 40px 40px;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
+
+            paper-textarea {
+                text-indent: 1px;
+                box-sizing: border-box;
+                padding: 0 2px;
+                text-align: left;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-detail;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-textarea {
+                width: inherit;
+                max-width: 60vw;
+            }
+
+            paper-input {
+                text-indent: 1px;
+                width: 100%;
+                text-align: left;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                    margin-top: 5px;
+                }
+                --paper-input-container-input: {
+                    color: var(--sc-yellow);
+                    @apply --body-bold;
+                    font-size: 22px;
+                    margin-top: 5px;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+                --paper-input-container-focus-color: var(--sc-yellow);
+            }
+
+            .budget {
+                @apply --layout-flex;
+                max-width: 160px;
+            }
+
+            .container[wide-layout] .budget {
+                max-width: 250px;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .currency {
+                margin: 0 0 4px 15px;
+                @apply --body-bold;
+                color: var(--sc-yellow);
+            }
+
+            .infobox {
+                @apply --small-light;
+                border-top: 1px dotted var(--sc-grey2);
+                box-sizing: border-box;
+                padding: 20px 30px 18px 30px;
+                text-align: right;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .container[wide-layout] .infobox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
+            }
+
+            .cost {
+                @apply --body-default;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
+            }
+
+
+            .costwords {
+                margin: 3px 6px 0px 0px;
+                color: var(--sc-grey3);
+            }
+
+            .costbold {
+                @apply --main-title4;
+            }
+
+            .container[wide-layout] .costwords {
+                margin: 6px 10px 0px 0px;
+            }
+
+            .fee {
+                color: var(--sc-grey3);
+                @apply --small-light;
+                margin: 4px 0px 0px 0px;
+            }
+
+            .buttonbox {
+                margin: 20px 5px -35px 0px;
+            }
+
+            .container[wide-layout] .buttonbox {
+                margin: 5px 0px -40px 20px;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+                background-color: var(--sc-blue);
+            }
+
+            .active:active {
+                @apply --button-active;
+            }
+            
+            .agree {
+                @apply --next-white-normal;
+                opacity: 0.2;
+            }
+
+            .enabled {
+                opacity: 1;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .agree {
+                    @apply --retina;
+                }
+            }
+        </style>
+
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" id="container" wide-layout$="{{wide}}">
+            <div class="closebox">
+                <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+            </div>
+            <div class="inputs">
+                <paper-textarea id="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}" on-input="_toggleButton"></paper-textarea>
+                <div class="horizontal">
+                    <paper-input id="budget"  type="Number" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]" on-input="_checkBudget" value="{{budget}}"></paper-input>
+                    <div class="currency">SWT</div>
+                </div>
+                <div class="fee"> + [[hashtagFee]] SWT {{localize('hashtagfee')}}</div>
+                <template is="dom-if" if="{{showError}}">
+                    <div class="errorcontainer">
+                        <span id="error">{{error}}</span>
+                    </div>
+                </template>
+            </div>
+            <div class="infobox">
+                <template is="dom-if" if="{{showSum}}">
+                    <div class="cost">
+                        <div class="costwords">{{localize('Total cost:')}}</div>
+                        <div class="costbold">{{totalcost}} SWT</div>
+                    </div>
+                </template>
+                <div class="buttonbox">
+                    <div  id="button" class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
+                        <div id="agree" class="agree"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyCreateRequest extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-create-request';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Number}
+                    */
+                    balance: {
+                        type: Number,
+                        statePath: 'balance',
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_showError',
+                    },
+                    /**
+                    * routeEntry triggers the entry animations
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_reset',
+                    },
+                };
+            }
+            /**
+            * Redux action for setting the request metadata
+            */
+            static get actions() {
+                return Object.assign({
+                    ITEMBUDGET: function(itemBudget) {
+                        return {
+                            type: 'ITEMBUDGET',
+                            itemBudget: itemBudget,
+                        };
+                    },
+                    ITEMDESCRIPTION: function(itemDescription) {
+                        return {
+                            type: 'ITEMDESCRIPTION',
+                            itemDescription: itemDescription,
+                        };
+                    },
+                    ITEMFEE: function(itemFee) {
+                        return {
+                            type: 'ITEMFEE',
+                            itemFee: itemFee,
+                        };
+                    },
+                });
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Verifies user input and displays error message
+            */
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
+            }
+            /**
+            * Verifies user input and displays total cost
+            */
+            _checkBudget() {
+                this._toggleButton();
+                this.totalcost = (parseFloat(this.budget) + parseFloat(this.hashtagFee));
+                if (this.budget) {
+                    this.showSum = true;
+                    if (this.balance.swt.balanceSwt >= this.totalcost) {
+                        this.error = '';
+                        if (this.budget) {
+                            this.showSum = true;
+                        } else {
+                            this.showSum = false;
+                        }
+                    } else {
+                        this.error = this.localize('You have insufficient funds for an offer that size.');
+                        this.$.agree.classList.remove('enabled');
+                        this.$.button.classList.remove('active');
+                    }
+                } else {
+                    this.showSum = false;
+                    this.error = '';
+                }
+            }
+            /**
+            * Verifies user input and enables button
+             * @return {boolean} if input is valid or not
+            */
+            _toggleButton() {
+                if (
+                    this.request &&
+                    this.request.length > 0 &&
+                    this.budget &&
+                    this.budget.length > 0 &&
+                    this.balance.swt.balanceSwt >= parseFloat(this.budget)+this.hashtagFee
+                ) {
+                    this.$.agree.classList.add('enabled');
+                    this.$.button.classList.add('active');
+                    return true;
+                } else {
+                    this.$.agree.classList.remove('enabled');
+                    this.$.button.classList.remove('active');
+                    return false;
+                }
+            }
+            /**
+            * takes the user to confirm page
+            */
+            _confirm() {
+                if (this._toggleButton()) {
+                    this.dispatch('ITEMBUDGET', this.budget);
+                    this.dispatch('ITEMDESCRIPTION', this.request);
+                    this.dispatch('ITEMFEE', this.hashtagFee);
+                    this.path = 'confirm-new-request';
+                }
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.path = 'hashtag-list';
+                }
+            }
+            /**
+            * empties all input fields if not coming confirm-new-request page
+            */
+            _reset() {
+                if (
+                    !(this.routeEntry.includes('confirm-new-request') &&
+                    this.routeEntry.includes('new-request'))
+                ) {
+                    this.request = '';
+                    this.budget = '';
+                    this.totalcost = 0;
+                    this.showSum = false;
+                }
+            }
+        }
+        window.customElements.define(MyCreateRequest.is, MyCreateRequest);
+    </script>
+</dom-module>

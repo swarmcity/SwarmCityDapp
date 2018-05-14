@@ -14,9 +14,9 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-unlock.html">
-<link rel="import" href="../displays/display-complete-transaction.html">
+<link rel="import" href="../displays/display-complete-request.html">
 
-<dom-module id="page-confirm-sending">
+<dom-module id="page-confirm-new-request">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -40,9 +40,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container .bottom {
                 @apply --titlepage-closed-container-bottom;
-                @apply --layout-horizontal;
-                @apply --layout-center;
-                @apply --layout-center-justified;
             }
 
             .container .title {
@@ -65,9 +62,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] .bottom {
                 @apply --titlepage-closed-wide-container-bottom;
-                @apply --layout-horizontal;
-                @apply --layout-start;
-                @apply --layout-start-justified;
             }
 
             .container[wide-layout] .title {
@@ -77,25 +71,6 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] .subtitle {
                 @apply --titlepage-subtitle-wide;
             }
-
-            /* .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1) {
-                @apply --xmark-grey4-normal;
-                cursor: pointer;
-                margin-right: 20px;
-            }
-
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2) {
-                @apply --icon-button-big;
-            }
-
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
-                @apply --vmark-blue-normal;
-            }
-
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1):active,
-            .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2):active {
-                @apply --button-active;
-            } */
 
             .container .confirmers {
                 @apply --titlepage-confirmers;
@@ -110,71 +85,57 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --xmark-grey4-normal;
             }
 
+            .container .confirmers>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
             .container .confirmers>div:nth-child(2) {
-                @apply --confirm-blue-round-button;
+                @apply --icon-button-big;
+            }
+
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
             }
 
             .container .confirmers>div:nth-child(2)>div:nth-child(1) {
-                @apply --confirm-red-vmark;
+                @apply --vmark-blue-normal;
             }
 
             .flexer {
                 @apply --titlepage-flexer;
             }
-
-
-            .blur {
+            
+            .blur { 
                 @apply --unlock-blur;
-            }
-
-            .wordbreak {
-                word-break: break-word;
-            }
-
-            .yellow {
-                color: var(--sc-yellow);
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(1),
-                .container>div:nth-child(2)>div:nth-child(1)>div:nth-child(2)>div:nth-child(1) {
-                    @apply --retina;
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1){
+                    @apply --retina
                 }
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-
+        <display-complete-request
+            private-key="[[privateKey]]">
+        </display-complete-request>
         <div id="container" class="container" wide-layout$="{{wide}}">
-                <div>{{localize('This can not be undone.')}}</div>
             <div class="top">
-                <div class="title">{{localize('Youre about to send')}} <span class="yellow" > [[amountToSend]] SWT </span> {{localize('to')}} <span class="wordbreak">[[toUserName]]</span>.</div>
-                <div class="subtitle">{{localize('This cant be undone.')}}</div>
+                <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[itemFee]] SWT {{localize('hashtagfee is included')}}.</div>
             </div>
-            <div class="flexer"></div>
+            <div class="flexer">
+            </div>
             <div class="bottom">
-                <div class="bottom" id="buttons">   
-                <div class="confirmers">
+                <div class="confirmers" id="buttons">
                     <div on-click="_disagree"></div>
                     <div on-click="_unlock">
                         <div></div>
                     </div>
-                </div>
-                </div>
-                <div>
-                    <display-complete-transaction
-                        send="SWT"
-                        address="{{address}}"
-                        to-address="{{toAddress}}"
-                        amount-to-send="{{amountToSend}}"
-                        nonce="{{nonce}}"
-                        gas-price="{{gasPrice}}"
-                        private-key="{{privateKey}}"
-                        status="{{status}}"
-                        path="{{path}}">
-                    </display-complete-transaction>
                 </div>
             </div>
         </div>
@@ -190,13 +151,13 @@ This code may only be used under the license found at https://github.com/swarmci
     </template>
 
     <script>
-        class MyConfirmSending extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyConfirmNewRequest extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-confirm-sending';
+                return 'page-confirm-new-request';
             }
             static get properties() {
                 return {
@@ -227,31 +188,23 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     privateKey: {
                         type: String,
+                        observer: '_privateKey',
                     },
                     /**
-                    * the current gas price
-                    * @type {Number}
+                    * contains the request budget
+                    * @type {String}
                     */
-                    gasPrice: {
-                        type: Number,
-                        statePath: 'gasprice',
+                    itemBudget: {
+                        type: String,
+                        statePath: 'itemBudget',
                     },
                     /**
-                    * the current nonce
-                    * @type {Number}
+                    * contains the request hashtagfee
+                    * @type {String}
                     */
-                    nonce: {
-                        type: Number,
-                        statePath: 'nonce',
-                    },
-                    /**
-                    * status of the transaction sent or unsent
-                    * @type {Number}
-                    */
-                    status: {
-                        type: Text,
-                        value: 'UNSENT',
-                        observer: '_sent',
+                    itemFee: {
+                        type: String,
+                        statePath: 'itemFee',
                     },
                     /**
                     * routeExit triggers the exit animations
@@ -259,6 +212,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -266,39 +220,21 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
+                        observer: '_loadEntryAnimations',
                     },
                     /**
-                    * The address of the receiver
+                    * pageID is an id givven to every page specific
                     * @type {String}
                     */
-                    toAddress: {
+                    pageID: {
                         type: String,
-                        statePath: 'toAddress',
-                    },
-                    /**
-                    * The username of the receiver
-                    * @type {String}
-                    */
-                    toUserName: {
-                        type: String,
-                        statePath: 'toUserName',
-                    },
-                    /**
-                    * The amount to send
-                    * @type {Number}
-                    */
-                    amountToSend: {
-                        type: Number,
-                        statePath: 'amountToSend',
+                        value: 'confirm-new-request',
                     },
                 };
             }
-
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                this.address = storage.keyStore.address;
             }
             /**
             * triggered after the user selects a language
@@ -314,6 +250,13 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _disagree() {
                 window.history.back();
+            }
+            /**
+            * takes the user to the previous page
+            * @return {Number} the total cost of posting a request
+            */
+            _totalSum() {
+                return parseFloat(this.itemBudget) + parseFloat(this.itemFee);
             }
 
             /**
@@ -335,14 +278,89 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * the transaction has been broadcast
+            * Routes to new-request-processing
             */
-            _sent() {
-                if (this.status == 'SENT') {
-                    this.path = 'transaction-processing/';
+            _privateKey() {
+                if (this.privateKey != null) {
+                    this.set('route.path', 'new-request-processing');
+                }
+            }
+
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(0px)'},
+                                {'transform': 'translateX(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateX(0px)'},
+                                {'transform': 'translateX(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(50px)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateX(50px)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
                 }
             }
         }
-        window.customElements.define(MyConfirmSending.is, MyConfirmSending);
+        window.customElements.define(MyConfirmNewRequest.is, MyConfirmNewRequest);
     </script>
 </dom-module>

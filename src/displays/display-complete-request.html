@@ -1,0 +1,114 @@
+<!--
+@license
+Copyright (c) 2017 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+
+
+<!--
+
+Example:
+```
+<display-complete-request></display-complete-request>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-request` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-request">
+    <template>
+    </template>
+    <script>
+        class MyCompleteRequest extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-complete-request';
+            }
+            /**
+            * Redux actions for completing a request
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    ITEMTOIPFS: function(itemToIpfs) {
+                        return {
+                            type: 'ITEMTOIPFS',
+                            itemToIpfs: itemToIpfs,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_itemToIpfs',
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * The ipfs hash of the avatar
+                    * @type {Object}
+                    */
+                    avatarHash: {
+                        type: Object,
+                        statePath: 'avatarHash',
+                    },
+                    /**
+                    * The username of the user
+                    * @type {Object}
+                    */
+                    username: {
+                        type: Object,
+                        statePath: 'username',
+                    },
+                    /**
+                    * The description of the request
+                    * @type {Object}
+                    */
+                    itemDescription: {
+                        type: Object,
+                        statePath: 'itemDescription',
+                    },
+                };
+            }
+            /*
+            * makes the IPFS object of the new request and dispatches it
+            */
+            _itemToIpfs() {
+                if (this.privateKey) {
+                    let item = {
+                        'name': this.username,
+                        'avatar': localStorage.getItem('avatarHash'),
+                        'description': this.itemDescription,
+                    };
+                    this.dispatch('ITEMTOIPFS', JSON.stringify(item));
+                }
+            }
+        } window.customElements.define(MyCompleteRequest.is, MyCompleteRequest);
+    </script>
+</dom-module>
