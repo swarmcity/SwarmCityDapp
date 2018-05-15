@@ -8,6 +8,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
 <!--
     Displays and shared styles only
 -->
@@ -226,6 +227,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
+            * Redux action for setting the hashtag
+            */
+            static get actions() {
+                return Object.assign({
+                    HASHTAG: function(hashtag) {
+                        return {
+                            type: 'HASHTAG',
+                            hashtag: hashtag,
+                        };
+                    },
+                });
+            }
+            /**
             * Fired when the component is connected
             */
             connectedCallback() {
@@ -250,7 +264,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         return hashtag.address == this.route.path.split('/')[2];
                     });
                     this.hashtag = selectedHashtag[0];
-                    this.hashtagFee = selectedHashtag[0].hashtagFee/1e18;
+                    this.hashtagFee = this.hashtag.hashtagFee/1e18;
+                    this.dispatch('HASHTAG', this.hashtag);
                 }
             }
 
