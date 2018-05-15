@@ -1,6 +1,7 @@
 
 import {
   sha3,
+  addHexPrefix,
   privateToAddress,
   privateToPublic,
   publicToAddress,
@@ -26,6 +27,7 @@ import Contract from 'web3-eth-contract';
 import BN from 'bn.js';
 export {
   sha3,
+  addHexPrefix,
   privateToAddress,
   privateToPublic,
   publicToAddress,
