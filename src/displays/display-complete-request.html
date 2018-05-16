@@ -160,12 +160,18 @@ The following custom properties and mixins are available for styling:
             */
             _newItemDataHash() {
                 if (this.itemDataHash.response == 200) {
+                    
+                    // temporary hardcoded String
+                    let UUIDv4 = 'XardasIsTop!'
 
                     let itemBudgetWei = this.itemBudget * 1e18;
                     let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
 
-                    let itemHash = webpack.addHexPrefix(webpack.sha3('XardasIsTop!').toString('hex'));
-                    let itemHashBuffer = new webpack.Buffer.Buffer(itemHash.slice(2), 'hex');
+                    let itemHashBuffer = webpack.sha3(UUIDv4);
+                    let itemHash = webpack.addHexPrefix(itemHashBuffer.toString('hex'));
+
+                    // let itemHash = webpack.addHexPrefix(webpack.sha3('XardasIsTop!').toString('hex'));
+                    // let itemHashBuffer = new webpack.Buffer.Buffer(itemHash.slice(2), 'hex');
 
                     let simpleDealContract = new webpack.Contract(
                         abi.hashtagSimpleDeal.abi,
@@ -180,11 +186,16 @@ The following custom properties and mixins are available for styling:
                     let v = sig.v;
                     let r = `0x${sig.r.toString('hex')}`;
                     let s = `0x${sig.s.toString('hex')}`;
-                    
-                    debugger;
+
+                    console.log(itemHashBuffer);
+                    console.log(itemBudgetWei);
+                    console.log(this.itemDataHash.data);
+                    console.log(v);
+                    console.log(r);
+                    console.log(s);
 
                     let encodedSimpleDealTx = simpleDealContract.methods.makeDealForTwo(
-                        webpack.addHexPrefix(itemHash.toString('hex')),
+                        itemHash,
                         itemBudgetWei,
                         this.itemDataHash.data,
                         v,
