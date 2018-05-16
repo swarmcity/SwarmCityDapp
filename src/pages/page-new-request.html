@@ -36,7 +36,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
             }
 
-            .header {
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+
+            .container .header {
                 @apply --layout-vertical;
                 width: 100%;
                 box-sizing: border-box;
@@ -113,13 +121,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 cursor: pointer;
             }
 
-            display-create-request {
-                margin-top: 150px;
+            .container display-create-request {
+                margin: 150px 0px 0px 0px;
                 width: 95vw;
             }
 
             .container[wide-layout] display-create-request {
-                margin-top: 187px;
+                margin: 187px 10vw 0px 10vw;
                 width: 80vw;
                 max-width: 950px;
             }
@@ -142,6 +150,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
             <display-create-request 
+                id="displayrequest"
                 path="{{path}}"
                 route-entry="{{routeEntry}}"
                 hashtag="[[hashtag]]"
@@ -207,6 +216,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -270,12 +280,59 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             /**
+            * Load the correct exiy animations
+            */
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Here come the Exit Animations, going to page Hashtag
+                            this.$.displayrequest.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            /**
             * Load the correct entry animations
             */
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                         this._filterHashtags();
+                        if (this.routeExit[0] == 'hashtag') {
+                        // Coming from page Hashtag
+                            this.$.displayrequest.animate(
+                                [
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
                     }
                 }
             }
