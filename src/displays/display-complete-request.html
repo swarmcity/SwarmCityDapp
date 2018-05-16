@@ -160,21 +160,41 @@ The following custom properties and mixins are available for styling:
             */
             _newItemDataHash() {
                 if (this.itemDataHash.response == 200) {
-                    let offerValue = new webpack.BN(this.itemBudget, 10).mul(
-                        new webpack.BN('1000000000000000000', 10));
-                    const itemHash = webpack.addHexPrefix(webpack.sha3('XardasIsTop!').toString('hex'));
-                    let swtContract = new webpack.Contract(abi.miniMeToken.abi, '0x0adbc89464cb7fa752adcf3533514949a2547589');
+
+                    let itemBudgetWei = this.itemBudget * 1e18;
+                    let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
+
+                    let itemHash = webpack.addHexPrefix(webpack.sha3('XardasIsTop!').toString('hex'));
+                    let itemHashBuffer = new webpack.Buffer.Buffer(itemHash.slice(2), 'hex');
+
                     let simpleDealContract = new webpack.Contract(
                         abi.hashtagSimpleDeal.abi,
                         this.hashtag.address
                     );
+                    
+                    let sig = webpack.ecsign(
+                        itemHashBuffer,
+                        privateKeyBuffer
+                    );
+
+                    let v = sig.v;
+                    let r = `0x${sig.r.toString('hex')}`;
+                    let s = `0x${sig.s.toString('hex')}`;
+                    
+                    debugger;
+
                     let encodedSimpleDealTx = simpleDealContract.methods.makeDealForTwo(
-                        itemHash,
-                        offerValue,
+                        webpack.addHexPrefix(itemHash.toString('hex')),
+                        itemBudgetWei,
                         this.itemDataHash.data,
+                        v,
+                        r,
+                        s
                     ).encodeABI();
 
-                    let totalSum = offerValue + 1 / 2 * this.hashtag.hashtagFee;
+                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
+                    
+                    let swtContract = new webpack.Contract(abi.miniMeToken.abi, '0x0adbc89464cb7fa752adcf3533514949a2547589');
 
                     let encodedApproveAndCallTx = swtContract.methods.approveAndCall(
                         this.hashtag.address,
@@ -182,14 +202,10 @@ The following custom properties and mixins are available for styling:
                         encodedSimpleDealTx,
                     ).encodeABI();
 
-                    // ------------------------------------- //
-
-                    const privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
-
                     const txParams = {
                         nonce: this._toHex(this.nonce),
-                        gasPrice: this._toHex(21000000000),
-                        gasLimit: this._toHex(300000),
+                        gasPrice: 21000000000,
+                        gasLimit: 300000,
                         to: '0x0adbc89464cb7fa752adcf3533514949a2547589',
                         from: this.address,
                         value: '0x00',
@@ -198,7 +214,7 @@ The following custom properties and mixins are available for styling:
                     }
 
                     const tx = new webpack.ethereumTx(txParams)
-                    tx.sign(this.privateKeyBuffer);
+                    tx.sign(privateKeyBuffer);
                     const serializedTx = tx.serialize();
                     console.log(serializedTx.toString('hex'));
                 }
