@@ -22,10 +22,7 @@ import uuid from 'uuid';
 import Buffer from 'buffer';
 import QRCode from 'qrcode';
 import moment from 'moment';
-import {
-  ethereumTx,
-  Transaction
-} from 'ethereumjs-tx';
+import ethereumTx from 'ethereumjs-tx';
 import Contract from 'web3-eth-contract';
 import BN from 'bn.js';
 export {
@@ -53,5 +50,4 @@ export {
   ethereumTx,
   Contract,
   BN,
-  Transaction,
 };

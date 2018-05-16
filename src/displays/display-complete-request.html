@@ -47,7 +47,7 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    ITEMTOIPFS: function(itemToIpfs) {
+                    ITEMTOIPFS: function (itemToIpfs) {
                         return {
                             type: 'ITEMTOIPFS',
                             itemToIpfs: itemToIpfs,
@@ -172,35 +172,34 @@ The following custom properties and mixins are available for styling:
                         offerValue,
                         this.itemDataHash.data,
                     ).encodeABI();
-                    
-                    let totalSum = offerValue + 1/2 * this.hashtag.hashtagFee;
 
-                let encodedApproveAndCallTx = swtContract.methods.approveAndCall(
-                    '0x0adbc89464cb7fa752adcf3533514949a2547589', 
-                    totalSum, 
-                    encodedSimpleDealTx,
+                    let totalSum = offerValue + 1 / 2 * this.hashtag.hashtagFee;
+
+                    let encodedApproveAndCallTx = swtContract.methods.approveAndCall(
+                        '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                        totalSum,
+                        encodedSimpleDealTx,
                     ).encodeABI();
 
-                    // console.log(encodedApproveAndCallTx);
+                    // ------------------------------------- //
+                    
+                    
+                    const privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
 
-                const rawTx = {
-                    to: '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                    data: encodedApproveAndCallTx,
-                    nonce: this._toHex(this.nonce),
-                    gasPrice: this._toHex(300000000000),
-                    gasLimit: this._toHex(6999992),
-                    from: this.address,
-                };
-                //
-                var tx = new webpack.Transaction(rawTx);
-                const privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
-                tx.sign(privateKeyBuffer);
-                //
-                var serializedtx = webpack.addHexPrefix(tx.serialize().toString('hex'));
-                // emit it to the api > processTx
+                    const txParams = {
+                        nonce: this._toHex(this.nonce),
+                        gasPrice: this._toHex(210000000000),
+                        gasLimit: this._toHex(300000),
+                        to: '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                        value: '0x00',
+                        data: encodedApproveAndCallTx,
+                        chainId: 42,
+                    }
 
-                
-                
+                    const tx = new webpack.ethereumTx(txParams)
+                    tx.sign(privateKeyBuffer);
+                    const serializedTx = tx.serialize()
+                    console.log(serializedTx.toString('hex'));
                 }
             }
             /**
@@ -213,7 +212,7 @@ The following custom properties and mixins are available for styling:
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
                 return '0x' + result;
             }
-            
+
         } window.customElements.define(MyCompleteRequest.is, MyCompleteRequest);
     </script>
 </dom-module>
