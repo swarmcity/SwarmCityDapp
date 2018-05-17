@@ -47,10 +47,16 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    ITEMTOIPFS: function (itemToIpfs) {
+                    ITEMTOIPFS: function(itemToIpfs) {
                         return {
                             type: 'ITEMTOIPFS',
                             itemToIpfs: itemToIpfs,
+                        };
+                    },
+                    SENDSIGNEDTX: function(sendSignedTx) {
+                        return {
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
                         };
                     },
                 });
@@ -149,19 +155,6 @@ The following custom properties and mixins are available for styling:
                 };
             }
 
-            /**
-            * Redux action for sending a signed tx
-            */
-            static get actions() {
-                return Object.assign({
-                    SENDSIGNEDTX: function(sendSignedTx) {
-                        return {
-                            type: 'SENDSIGNEDTX',
-                            sendSignedTx: sendSignedTx,
-                        };
-                    },
-                });
-            }
             /*
             * Makes the IPFS object of the new request and dispatches it
             */
@@ -181,17 +174,12 @@ The following custom properties and mixins are available for styling:
             */
             _newItemDataHash() {
                 if (this.itemDataHash.response == 200) {
-
                     // temporary hardcoded String
-
                     const UUIDv4 = webpack.uuid.v4();
-
                     let itemBudgetWei = this.itemBudget * 1e18;
                     let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
-
                     let itemHashBuffer = webpack.sha3(UUIDv4);
                     let itemHashHex = webpack.addHexPrefix(itemHashBuffer.toString('hex'));
-
                     let UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
                     UUIDCollection[UUIDv4] = itemHashHex;
                     localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
@@ -219,9 +207,9 @@ The following custom properties and mixins are available for styling:
                         s
                     ).encodeABI();
 
-                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee/2;
+                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
                     let swtContract = new webpack.Contract(
-                        abi.miniMeToken.abi, 
+                        abi.miniMeToken.abi,
                         '0x0adbc89464cb7fa752adcf3533514949a2547589'
                     );
                     let rawApproveAndCall = swtContract.methods.approveAndCall(
@@ -239,12 +227,11 @@ The following custom properties and mixins are available for styling:
                         value: '0x00',
                         data: rawApproveAndCall,
                         chainId: 42,
-                    }
+                    };
 
-                    const tx = new webpack.ethereumTx(txParams)
+                    const tx = new webpack.EthereumTx(txParams);
                     tx.sign(privateKeyBuffer);
-                    const serializedTx = webpack.addHexPrefix(tx.serialize().toString('hex'));
-                    
+                    const serializedTx = tx.serialize().toString('hex');
                     this.dispatch('SENDSIGNEDTX', serializedTx);
                 }
             }
@@ -258,7 +245,6 @@ The following custom properties and mixins are available for styling:
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
                 return '0x' + result;
             }
-
         } window.customElements.define(MyCompleteRequest.is, MyCompleteRequest);
     </script>
 </dom-module>

@@ -144,7 +144,7 @@
                     */
                     signedTx: {
                         type: Object,
-                        statePath: 'signedTx',
+                        statePath: 'sendSignedTx',
                         observer: '_sendSignedTx',
                     },
                     /**
@@ -311,10 +311,9 @@
 
             _sendSignedTx() {
                 // Send a signed tx and get the txHash back
-                this.socket.emit('sendSignedTransaction', {
-                    payload: this.signedTx,
+                this.socket.emit('sendSignedTx', {
+                    tx: this.signedTx,
                 }, (reply) => {
-                    console.log(reply);
                 });
             }
 
@@ -329,7 +328,7 @@
                         localStorage.setItem('avatarHash', this.avatarHash);
                     }
                 });
-            }   
+            }
 
             _itemToIpfs() {
                 this.socket.emit('ipfsAdd', {
