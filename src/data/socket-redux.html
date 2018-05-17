@@ -139,6 +139,15 @@
                         observer: '_itemToIpfs',
                     },
                     /**
+                    * Send new signed tx to the blockchain
+                    * @type {Object}
+                    */
+                    signedTx: {
+                        type: Object,
+                        statePath: 'signedTx',
+                        observer: '_sendSignedTx',
+                    },
+                    /**
                     * usingShortCode will maintain a subscription while true
                     * @type {Boolean}
                     */
@@ -300,6 +309,15 @@
                 });
             }
 
+            _sendSignedTx() {
+                // Send a signed tx and get the txHash back
+                this.socket.emit('sendSignedTransaction', {
+                    payload: this.signedTx,
+                }, (reply) => {
+                    console.log(reply);
+                });
+            }
+
             _avatarChanged() {
                 // Send the user's base64 image and get the ipfsHash back
                 this.socket.emit('ipfsAdd', {
@@ -311,7 +329,7 @@
                         localStorage.setItem('avatarHash', this.avatarHash);
                     }
                 });
-            }
+            }   
 
             _itemToIpfs() {
                 this.socket.emit('ipfsAdd', {
