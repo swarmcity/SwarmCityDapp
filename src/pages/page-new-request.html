@@ -8,6 +8,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
 <!--
     Displays and shared styles only
 -->
@@ -35,7 +36,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
             }
 
-            .header {
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+
+            .container .header {
                 @apply --layout-vertical;
                 width: 100%;
                 box-sizing: border-box;
@@ -112,13 +121,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 cursor: pointer;
             }
 
-            display-create-request {
-                margin-top: 150px;
+            .container display-create-request {
+                margin: 150px 0px 0px 0px;
                 width: 95vw;
             }
 
             .container[wide-layout] display-create-request {
-                margin-top: 187px;
+                margin: 187px 10vw 0px 10vw;
                 width: 80vw;
                 max-width: 950px;
             }
@@ -134,13 +143,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="header-bottom">
                     <div class="header-leftbottom" id="hashtagHeader">
                         <div id="hashtag" class="hashtag">
-                            <span class="hashtagsymbol">#</span>Pioneer
+                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
                         </div>
                         <div id="infolink" class="info-toggle">i</div>
                     </div>
                 </div>
             </div>
             <display-create-request 
+                id="displayrequest"
                 path="{{path}}"
                 route-entry="{{routeEntry}}"
                 hashtag="[[hashtag]]"
@@ -187,6 +197,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_filterHashtags',
                     },
                     /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                    },
+                    /**
                     * hashtag info represents the selected hashtag
                     * @type {Number}
                     */
@@ -199,6 +216,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -206,8 +224,30 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'new-request',
                     },
                 };
+            }
+            /**
+            * Redux action for setting the hashtag
+            */
+            static get actions() {
+                return Object.assign({
+                    HASHTAG: function(hashtag) {
+                        return {
+                            type: 'HASHTAG',
+                            hashtag: hashtag,
+                        };
+                    },
+                });
             }
             /**
             * Fired when the component is connected
@@ -234,7 +274,66 @@ This code may only be used under the license found at https://github.com/swarmci
                         return hashtag.address == this.route.path.split('/')[2];
                     });
                     this.hashtag = selectedHashtag[0];
-                    this.hashtagFee = selectedHashtag[0].hashtagFee/1e18;
+                    this.hashtagFee = this.hashtag.hashtagFee/2e18;
+                    this.dispatch('HASHTAG', this.hashtag);
+                }
+            }
+
+            /**
+            * Load the correct exiy animations
+            */
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Here come the Exit Animations, going to page Hashtag
+                            this.$.displayrequest.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            /**
+            * Load the correct entry animations
+            */
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        this._filterHashtags();
+                        if (this.routeExit[0] == 'hashtag') {
+                        // Coming from page Hashtag
+                            this.$.displayrequest.animate(
+                                [
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
                 }
             }
         }

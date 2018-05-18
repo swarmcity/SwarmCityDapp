@@ -126,7 +126,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
-                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[itemFee]] SWT {{localize('hashtagfee is included')}}.</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[_calculatedFee()]] SWT {{localize('hashtagfee is included')}}.</div>
             </div>
             <div class="flexer">
             </div>
@@ -199,12 +199,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'itemBudget',
                     },
                     /**
-                    * contains the request hashtagfee
+                    * contains the current hashtag
                     * @type {String}
                     */
-                    itemFee: {
+                    hashtag: {
                         type: String,
-                        statePath: 'itemFee',
+                        statePath: 'hashtag',
                     },
                     /**
                     * routeExit triggers the exit animations
@@ -246,17 +246,24 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * takes the user to the previous page
+            * Takes the user to the previous page
             */
             _disagree() {
                 window.history.back();
             }
             /**
-            * takes the user to the previous page
+            * Adds the user budget and the hashtagfee
             * @return {Number} the total cost of posting a request
             */
             _totalSum() {
-                return parseFloat(this.itemBudget) + parseFloat(this.itemFee);
+                return parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee/2e18);
+            }
+            /**
+            * Returns the SWT size hashtagFee
+            * @return {Number} the total cost of posting a request
+            */
+            _calculatedFee() {
+                return parseFloat(this.hashtag.hashtagFee/2e18);
             }
 
             /**

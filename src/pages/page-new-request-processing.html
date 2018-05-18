@@ -28,43 +28,88 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-color: var(--sc-green);
-                height: 100%;
-                width: 100%;
-                @apply --layout-vertical;
+                @apply --titlepage-closed-container;
             }
 
-            .top {
-                height: 70%;
-                @apply --layout-vertical;
+            .container .top {
+                @apply --titlepage-closed-container-top;
+            }
+
+            .container .bottom {
+                @apply --titlepage-closed-container-bottom;
+                @apply --layout-horizontal;
                 @apply --layout-center;
-                @apply --layout-start-justified;
-                box-sizing: border-box;
-                padding: 20vh 14vw 0 14vw;
+                @apply --layout-center-justified;
             }
 
-            .title {
-                @apply --main-title1;
+            .container .title {
+                @apply --titlepage-title;
                 color: var(--sc-white);
-                text-align: center;
             }
 
-            .dividerbox {
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
+            }
+
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
+            }
+
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+
+            .container .dividerbox {
                 width: 100%;
-                height: 6vh;
+                height: 3vh;
             }
 
-            .statusbox {
+            .container[wide-layout] .dividerbox {
+                width: 100%;
+                height: 2vh;
+            }
+
+            .container .statusbox {
                 color: var(--sc-white);
                 width: 100%;
                 max-width: 800px;
             }
 
-            .bar {
+            .container .bar {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 @apply --layout-center;
                 width: 100%;
                 margin: 0 0 2vh 0;
+            }
+
+            .container[wide-layout] .bar {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+                margin: 0 0 4vh 0;
             }
 
             .statusinfo {
@@ -89,15 +134,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 opacity: 0.2;
             }
 
-            .bottom {
-                box-sizing: border-box;
-                padding: 0 14vw;
-                @apply --layout-vertical;
-                @apply --layout-center;
-                @apply --layout-start-justified;
-                height: 30%;
-            }
-
             .choicebox {
                 @apply --layout-horizontal;
                 @apply --layout-center-center;
@@ -113,32 +149,9 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .icon-previous {
-                @apply --xmark-grey4-normal;
+                @apply --prev-grey4-normal;
             }
-
-            .container[wide-layout] .top {
-                height: 65%;
-                padding: 0 12vw 7vh;
-                @apply --layout-start;
-                @apply --layout-end-justified;
-            }
-
-            .container[wide-layout] .title {
-                @apply --main-title1-wide;
-                text-align: left;
-            }
-
-            .container[wide-layout] .subtitle {
-                @apply --small-light-wide;
-                text-align: left;
-            }
-
-            .container[wide-layout] .bottom {
-                height: 35%;
-                padding: 0 12vw;
-                @apply --layout-start;
-            }
-
+            
             .buttonbox:active {
                 @apply --button-active;
             }
@@ -220,12 +233,34 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title">{{localize('Your request is posted.')}}</div>
+                
+                    <dom-if if="{{waiting}}">
+                        <template>
+                            <div class="title">{{localize('Processing')}}</div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{success}}">
+                        <template>
+                            <div class="title">{{localize('Your request is posted.')}}</div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{failure}}">
+                        <template>
+                            <div class="title">{{localize('Something went wrong.')}}</div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{timeOut}}">
+                        <template>
+                            <div class="title">{{localize('Something went wrong.')}}</div>
+                        </template>
+                    </dom-if>
+
+
+
                 <div class="dividerbox"></div>
                 <div class="statusbox">
 
                     <div class="bar">
-
                         <dom-if if="{{waiting}}">
                             <template>
                                 <div class="loading">
@@ -250,21 +285,26 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <div class="icon-xmark continue"></div>
                             </template>
                         </dom-if>
-
-
-
                     </div>
+
+                    <dom-if if="{{failure}}">
+                        <template>
+                            <div class="flexer"></div>
+                            <div class="darkline"></div>
+                            <div class="failure-text">{{txhash.data}}</div>
+                        </template>
+                    </dom-if>
 
                     <dom-if if="{{timeOut}}">
                         <template>
+                            <div class="flexer"></div>
                             <div class="darkline"></div>
                             <div class="failure-text">{{localize('Something went wrong no TXhash was received.')}}</div>
                         </template>
                     </dom-if>
-
-
                 </div>
             </div>
+            <div class="flexer"></div>
             <div class="bottom">
                 <div class="choicebox">
                     <div id="button" class="buttonbox" on-click="_next" on-keypress="_next" tabindex="1">

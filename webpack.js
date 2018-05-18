@@ -1,6 +1,7 @@
 
 import {
   sha3,
+  addHexPrefix,
   privateToAddress,
   privateToPublic,
   publicToAddress,
@@ -21,11 +22,12 @@ import uuid from 'uuid';
 import Buffer from 'buffer';
 import QRCode from 'qrcode';
 import moment from 'moment';
-import ethereumTx from 'ethereumjs-tx';
+import EthereumTx from 'ethereumjs-tx';
 import Contract from 'web3-eth-contract';
 import BN from 'bn.js';
 export {
   sha3,
+  addHexPrefix,
   privateToAddress,
   privateToPublic,
   publicToAddress,
@@ -45,7 +47,7 @@ export {
   Buffer,
   QRCode,
   moment,
-  ethereumTx,
+  EthereumTx,
   Contract,
   BN,
 };

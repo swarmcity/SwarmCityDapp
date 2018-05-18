@@ -5,7 +5,10 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../data/data-transaction.html">
 <link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+<script src="../data/abi.js"></script>
 
 
 <!--
@@ -27,6 +30,7 @@ The following custom properties and mixins are available for styling:
 -->
 <dom-module id="display-complete-request">
     <template>
+        <data-transaction id="transaction"></data-transaction>
     </template>
     <script>
         class MyCompleteRequest extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -47,6 +51,12 @@ The following custom properties and mixins are available for styling:
                         return {
                             type: 'ITEMTOIPFS',
                             itemToIpfs: itemToIpfs,
+                        };
+                    },
+                    SENDSIGNEDTX: function(sendSignedTx) {
+                        return {
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
                         };
                     },
                 });
@@ -94,10 +104,59 @@ The following custom properties and mixins are available for styling:
                         type: Object,
                         statePath: 'itemDescription',
                     },
+                    /**
+                    * contains the request budget
+                    * @type {String}
+                    */
+                    itemBudget: {
+                        type: String,
+                        statePath: 'itemBudget',
+                    },
+                    /**
+                    * IPFS hash of request metadata
+                    * @type {Object}
+                    */
+                    itemDataHash: {
+                        type: Object,
+                        statePath: 'itemDataHash',
+                        observer: '_newItemDataHash',
+                    },
+                    /**
+                    * Signed TX to send
+                    * @type {Object}
+                    */
+                    sendSignedTx: {
+                        type: Object,
+                    },
+                    /**
+                    * The hashtag we're posting a request on
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * Address is the ethereum address the transaction is to be sent from
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * The user's nonce
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
                 };
             }
+
             /*
-            * makes the IPFS object of the new request and dispatches it
+            * Makes the IPFS object of the new request and dispatches it
             */
             _itemToIpfs() {
                 if (this.privateKey) {
@@ -108,6 +167,82 @@ The following custom properties and mixins are available for styling:
                     };
                     this.dispatch('ITEMTOIPFS', JSON.stringify(item));
                 }
+            }
+
+            /*
+            * Proceed to sign the contract interaction
+            */
+            _newItemDataHash() {
+                if (this.itemDataHash.response == 200) {
+                    const UUIDv4 = webpack.uuid.v4();
+                    let itemBudgetWei = this.itemBudget * 1e18;
+                    let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
+                    let itemHashBuffer = webpack.sha3(UUIDv4);
+                    let itemHashHex = webpack.addHexPrefix(itemHashBuffer.toString('hex'));
+                    let UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
+                    UUIDCollection[UUIDv4] = itemHashHex;
+                    localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
+
+                    let simpleDealContract = new webpack.Contract(
+                        abi.hashtagSimpleDeal.abi,
+                        this.hashtag.address
+                    );
+
+                    let sig = webpack.ecsign(
+                        itemHashBuffer,
+                        privateKeyBuffer
+                    );
+
+                    let v = sig.v;
+                    let r = `0x${sig.r.toString('hex')}`;
+                    let s = `0x${sig.s.toString('hex')}`;
+
+                    let rawMakeDealForTwo = simpleDealContract.methods.makeDealForTwo(
+                        itemHashHex,
+                        itemBudgetWei,
+                        this.itemDataHash.data,
+                        v,
+                        r,
+                        s
+                    ).encodeABI();
+
+                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
+                    let swtContract = new webpack.Contract(
+                        abi.miniMeToken.abi,
+                        '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                    );
+                    let rawApproveAndCall = swtContract.methods.approveAndCall(
+                        this.hashtag.address,
+                        totalSum,
+                        rawMakeDealForTwo,
+                    ).encodeABI();
+
+                    const txParams = {
+                        nonce: this._toHex(this.nonce),
+                        gasPrice: 21000000000,
+                        gasLimit: 3000000,
+                        to: '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                        from: this.address,
+                        value: '0x00',
+                        data: rawApproveAndCall,
+                        chainId: 42,
+                    };
+
+                    const tx = new webpack.EthereumTx(txParams);
+                    tx.sign(privateKeyBuffer);
+                    const serializedTx = tx.serialize().toString('hex');
+                    this.dispatch('SENDSIGNEDTX', serializedTx);
+                }
+            }
+            /**
+            * to hex
+            * @param {string} dec - The data to convert
+            * @return {object}
+            */
+            _toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x' + result;
             }
         } window.customElements.define(MyCompleteRequest.is, MyCompleteRequest);
     </script>
