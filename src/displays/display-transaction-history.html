@@ -250,12 +250,12 @@ Example:
                         statePath: 'shownTx',
                     },
                     /**
-                    * txhash of broadcasted transaction
+                    * txHash of broadcasted transaction
                     * @type {Object}
                     */
-                    txhash: {
+                    txHash: {
                         type: Object,
-                        statePath: 'txhash',
+                        statePath: 'txHash',
                         observer: '_newTxHash',
                     },
                     /**
@@ -413,7 +413,7 @@ Example:
             }
 
             /**
-            * takes the user to txhash page on etherscan
+            * takes the user to txHash page on etherscan
             * @param {Object} event element clicked
             */
             _toEtherscan(event) {
@@ -455,12 +455,12 @@ Example:
             * Adds the new tx to the pending tx array
             */
             _newTxHash() {
-                if (this.txhash.response === 200) {
+                if (this.txHash.response === 200) {
                     let newNonce = Number(this.nonce) + 1;
                     this.dispatch('NONCE', newNonce);
                     let confirmed = false;
                     for (let shownTx of this.shownTx) {
-                        if (this.txhash.data.transactionHash === shownTx.transactionHash) {
+                        if (this.txHash.data.transactionHash === shownTx.transactionHash) {
                             confirmed = true;
                         }
                     }
@@ -474,7 +474,7 @@ Example:
                             from: this.address,
                             symbol: 'SWT',
                             to: this.toAddress,
-                            transactionHash: this.txhash.data.transactionHash,
+                            transactionHash: this.txHash.data.transactionHash,
                         });
                         this.dispatch('SHOWNTX', []);
                         this.dispatch('SHOWNTX', newShownTx);

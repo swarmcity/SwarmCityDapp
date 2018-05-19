@@ -112,6 +112,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 0 0 4vh 0;
             }
 
+            .title {
+                @apply --main-title1;
+                color: var(--sc-white);
+                text-align: center;
+            }
+
+            .bar {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+                margin: 0 0 2vh 0;
+            }
+
             .statusinfo {
                 @apply --layout-flex;
                 @apply --body-default;
@@ -125,12 +139,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .icon-vmark {
-                @apply --vmark-white-small;
+                @apply --vmark-white-normal;
                 opacity: 0.2;
             }
 
             .icon-xmark {
-                @apply --xmark-grey4-small;
+                @apply --xmark-grey4-normal;
                 opacity: 0.2;
             }
 
@@ -151,7 +165,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .icon-previous {
                 @apply --prev-grey4-normal;
             }
-            
+
             .buttonbox:active {
                 @apply --button-active;
             }
@@ -184,10 +198,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-end;
             }
 
-            .smallpoint {
-                margin: 0px 3px 0px 3px;
+            .container .smallpoint {
+                margin: 20px 3px 0px 3px;
                 width: 4px;
                 height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-white);
+            }
+
+            .container[wide-layout] .smallpoint {
+                margin: 20px 5px 0px 5px;
+                width: 5px;
+                height: 5px;
                 border-radius: 50%;
                 background-color: var(--sc-white);
             }
@@ -208,22 +230,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-color: var(--sc-grey4);
                 width: 100%;
                 height: 2px;
-
-
             }
 
-            .failure-text {
+            .container .failure-text {
                 margin-top: 20px;
                 @apply --body-bold;
                 color: var(--sc-grey4);
+                text-align: center;
+            }
 
+            .container[wide-layout] .failure-text {
+                text-align: left;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
                 .icon-next,
-                .icon-previous {
+                .icon-previous,
+                .icon-vmark,
+                .icon-xmark {
                     @apply --retina;
                 }
             }
@@ -233,29 +259,26 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                
-                    <dom-if if="{{waiting}}">
-                        <template>
-                            <div class="title">{{localize('Processing')}}</div>
-                        </template>
-                    </dom-if>
-                    <dom-if if="{{success}}">
-                        <template>
-                            <div class="title">{{localize('Your request is posted.')}}</div>
-                        </template>
-                    </dom-if>
-                    <dom-if if="{{failure}}">
-                        <template>
-                            <div class="title">{{localize('Something went wrong.')}}</div>
-                        </template>
-                    </dom-if>
-                    <dom-if if="{{timeOut}}">
-                        <template>
-                            <div class="title">{{localize('Something went wrong.')}}</div>
-                        </template>
-                    </dom-if>
-
-
+                <dom-if if="{{waiting}}">
+                    <template>
+                        <div class="title">{{localize('Processing')}}</div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{success}}">
+                    <template>
+                        <div class="title">{{localize('Your request is posted.')}}</div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{failure}}">
+                    <template>
+                        <div class="title">{{localize('Something went wrong.')}}</div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{timeOut}}">
+                    <template>
+                        <div class="title">{{localize('Something went wrong.')}}</div>
+                    </template>
+                </dom-if>
 
                 <div class="dividerbox"></div>
                 <div class="statusbox">
@@ -291,7 +314,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <template>
                             <div class="flexer"></div>
                             <div class="darkline"></div>
-                            <div class="failure-text">{{txhash.data}}</div>
+                            <div class="failure-text">{{errormsg}}</div>
                         </template>
                     </dom-if>
 
@@ -299,7 +322,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <template>
                             <div class="flexer"></div>
                             <div class="darkline"></div>
-                            <div class="failure-text">{{localize('Something went wrong no TXhash was received.')}}</div>
+                            <div class="failure-text">{{localize('There was a timeout.')}}</div>
                         </template>
                     </dom-if>
                 </div>
@@ -353,13 +376,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_newItemDataHash',
                     },
                     /**
-                    * txhash of broadcasted request
+                    * txHash of broadcasted item
                     * @type {Object}
                     */
-                    txHashRequest: {
+                    txHashItem: {
                         type: Object,
-                        statePath: 'txHashRequest',
-                        observer: '_newTxHashRequest',
+                        statePath: 'txHashItem',
+                        observer: '_newTxHashItem',
                     },
                     /**
                     * timer counting down until timeout
@@ -376,6 +399,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                         observer: '_timeOut',
+                    },
+                    /**
+                    * this is set to true when timer hits 0
+                    * @type {String}
+                    */
+                    errormsg: {
+                        type: String,
                     },
                 };
             }
@@ -415,28 +445,47 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             /**
-            * once a txHashRequest is received, decide on the feedback
+            * once a itemDataHash is received, show error if failure
             */
             _newItemDataHash() {
-                clearTimeout(this.timer);
-                this.$.button.classList.add('continue');
-                switch (this.itemDataHash.response) {
-                    case 200: {
-                        this.success = true;
-                        this.failure = false;
-                        this.waiting = false;
-                        this.timeOut = false;
-                        this.$.icon.classList.remove('icon-previous');
-                        this.$.icon.classList.add('icon-next');
-                        break;
-                    }
-                    case 500: {
-                        this.waiting = false;
-                        this.failure = true;
-                        this.timeOut = false;
-                        this.$.icon.classList.remove('icon-next');
-                        this.$.icon.classList.add('icon-previous');
-                        break;
+                if (this.itemDataHash.response == 500) {
+                    clearTimeout(this.timer);
+                    this.$.button.classList.add('continue');
+                    this.errormsg = this.itemDataHash.data;
+                    this.waiting = false;
+                    this.failure = true;
+                    this.timeOut = false;
+                    this.$.icon.classList.remove('icon-next');
+                    this.$.icon.classList.add('icon-previous');
+                }
+            }
+
+            /**
+            * once a txHashItem is received, decide on the feedback
+            */
+            _newTxHashItem() {
+                if (this.itemDataHash.response == 200) {
+                    clearTimeout(this.timer);
+                    this.$.button.classList.add('continue');
+                    switch (this.txHashItem.response) {
+                        case 200: {
+                            this.success = true;
+                            this.failure = false;
+                            this.waiting = false;
+                            this.timeOut = false;
+                            this.$.icon.classList.remove('icon-previous');
+                            this.$.icon.classList.add('icon-next');
+                            break;
+                        }
+                        case 500: {
+                            this.errormsg = this.itemDataHash.data;
+                            this.waiting = false;
+                            this.failure = true;
+                            this.timeOut = false;
+                            this.$.icon.classList.remove('icon-next');
+                            this.$.icon.classList.add('icon-previous');
+                            break;
+                        }
                     }
                 }
             }
@@ -467,8 +516,8 @@ This code may only be used under the license found at https://github.com/swarmci
             _next() {
                 if (!this.waiting) {
                     if (sessionStorage.getItem('hashtag')) {
-                    this.set('route.path', '/hashtag/' + sessionStorage.getItem('hashtag'));
-                    sessionStorage.removeItem('hashtag');
+                        this.set('route.path', '/hashtag/' + sessionStorage.getItem('hashtag'));
+                        sessionStorage.removeItem('hashtag');
                     }
                 }
             }

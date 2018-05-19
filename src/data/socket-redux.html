@@ -232,10 +232,16 @@
                             avatarHash: avatarHash,
                         };
                     },
-                    TXHASH: function(txhash) {
+                    TXHASH: function(txHash) {
                         return {
                             type: 'TXHASH',
-                            txhash: txhash,
+                            txHash: txHash,
+                        };
+                    },
+                    TXHASHITEM: function(txHashItem) {
+                        return {
+                            type: 'TXHASHITEM',
+                            txHashItem: txHashItem,
                         };
                     },
                     CONFIRMEDTX: function(confirmedTx) {
@@ -314,6 +320,8 @@
                 this.socket.emit('sendSignedTx', {
                     tx: this.signedTx,
                 }, (reply) => {
+                    this.txHashItem = reply;
+                    this.dispatch('TXHASHITEM', this.txHashItem);
                 });
             }
 
@@ -436,14 +444,8 @@
                     shortCode: this.reqtokey,
                     tx: this.broadcast,
                 }, (reply) => {
-                    if (reply.response === 200) {
-                        this.txHash = reply;
-                        this.dispatch('TXHASH', this.txHash);
-                    }
-                    if (reply.response === 500) {
-                        this.txHash = reply;
-                        this.dispatch('TXHASH', this.txHash);
-                    }
+                    this.txHash = reply;
+                    this.dispatch('TXHASH', this.txHash);
                 });
             }
 
