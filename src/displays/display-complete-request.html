@@ -228,10 +228,12 @@ The following custom properties and mixins are available for styling:
                         chainId: 42,
                     };
 
-                    const tx = new webpack.EthereumTx(txParams);
-                    tx.sign(privateKeyBuffer);
-                    const serializedTx = tx.serialize().toString('hex');
-                    this.dispatch('SENDSIGNEDTX', serializedTx);
+                    this.$.transaction.signRawTx(txParams, this.privateKey)
+                        .then((serializedTx) => {
+                            this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                        }).catch((err) => {
+                            this.error = err;
+                        });
                 }
             }
             /**
