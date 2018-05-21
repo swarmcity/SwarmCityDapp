@@ -11,6 +11,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
 
 <!--
     Displays and shared styles only
@@ -235,10 +236,55 @@ This code may only be used under the license found at https://github.com/swarmci
                 opacity: 1;
             }
 
+            .smallgrey {
+                @apply --small-light;
+                margin-top: 25px;
+                color: var(--sc-grey3);
+            }
+
+            .location-box {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+            .range-description {
+                @apply --body-default;
+                margin-top: 5px;
+            }
+
+            .sliderbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 800px;
+            }
+
+            paper-slider {
+                @apply --layout-flex;
+                --paper-slider-knob-color: var(--sc-yellow);
+                --paper-slider-active-color: var(--sc-yellow);
+            }
+
+            .container[wide-layout] paper-slider {
+                max-width: 40vw;
+            }
+
+            .pin-icon {
+                @apply --locationmarker-grey4-small;
+                margin-right: -15px;
+            }
+
+            .globe-icon {
+                @apply --globe-grey4-small;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .agree {
+                .agree, .pin-icon, .globe-icon {
                     @apply --retina;
                 }
             }
@@ -261,6 +307,20 @@ This code may only be used under the license found at https://github.com/swarmci
                         <span id="error">{{error}}</span>
                     </div>
                 </template>
+                <div class="smallgrey">Where is the request relevant?</div>
+
+                <div class="location-box">
+                    <div class="range-description">[[rangeDescription]]</div>
+                    <div class="sliderbox">
+                        <div class="pin-icon"></div>
+                        <paper-slider .class="slider" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
+                        <div class="globe-icon"></div>
+                    </div>
+                    <div class="arrowup">
+                        <div class="arrowup-icon" on-click="_closeSlider"></div>
+                    </div>
+                </div>
+
             </div>
             <div class="infobox">
                 <template is="dom-if" if="{{showSum}}">
@@ -327,6 +387,30 @@ This code may only be used under the license found at https://github.com/swarmci
                     routeEntry: {
                         type: Array,
                         observer: '_reset',
+                    },
+                    /**
+                    * Value is the value of the slider
+                    * @type {Number}
+                    */
+                    value: {
+                        type: Number,
+                        value: 6,
+                        observer: '_calcRange',
+                    },
+                    /**
+                    * rangeDescription is the description of the range
+                    * @type {String}
+                    */
+                    rangeDescription: {
+                        type: String,
+                    },
+                    /**
+                    * range is the range the user selected in slider
+                    * @type {Number}
+                    */
+                    range: {
+                        type: Number,
+                        notify: true,
                     },
                 };
             }
@@ -446,6 +530,50 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.budget = '';
                     this.totalcost = 0;
                     this.showSum = false;
+                }
+            }
+            /**
+            * When the slider is shown set the default description
+            */
+            _setDesc() {
+                this.rangeDescription = this.localize('world wide');
+                this.value = 1;
+            }
+
+            /**
+            * Determine what the selected range is
+            */
+            _calcRange() {
+                const x = this.value;
+                switch (true) {
+                    case (x < 2):
+                        this.rangeDescription = this.localize('world wide');
+                        this.range = 10000000000000000000;
+                        break;
+                    case (x < 3):
+                        this.rangeDescription =
+                            this.localize('within +/- 1000km from your location');
+                        this.range = 1000000;
+                        break;
+                    case (x < 4):
+                        this.rangeDescription =
+                            this.localize('within +/- 100km from your location');
+                        this.range = 100000;
+                        break;
+                    case (x < 5):
+                        this.rangeDescription =
+                            this.localize('within +/- 10km from your location');
+                        this.range = 10000;
+                        break;
+                    case (x < 6):
+                        this.rangeDescription =
+                            this.localize('within +/- 1km from your location');
+                        this.range = 1000;
+                        break;
+                    case (x < 7):
+                        this.rangeDescription =
+                            this.localize('within +/- 0.5km from your location');
+                        this.range = 500;
                 }
             }
         }
