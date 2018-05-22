@@ -567,7 +567,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     case (7):
                         this.itemGeohash = null;
                         break;
-                    }
+                }
                 this.dispatch('ITEMGEOHASH', this.itemGeohash);
             }
             /**
@@ -587,8 +587,10 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _reset() {
                 if (
-                    !(this.routeEntry.includes('confirm-new-request') &&
-                        this.routeEntry.includes('new-request'))
+                    !((this.routeEntry.includes('confirm-new-request')
+                        || this.routeEntry.includes('location')
+                    ) && this.routeEntry.includes('new-request'))
+
                 ) {
                     this.request = '';
                     this.budget = '';
@@ -605,21 +607,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._setRangeDescription();
                 if (this.chosenValue != 7) {
                     navigator.permissions.query({'name': 'geolocation'})
-                    .then((permission) => {
-                        if (permission.state != 'granted') {
-                            this.path = 'location';
-                        } else {
-                            this.$.location.getLocation()
-                            .then((latlon) => {
-                                return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
-                            })
-                            .then((data) => {
-                                this.geohash = data;
-                                this.dispatch('GEOHASH', data);
-                                this._getItemGeohash();
-                            });
-                        }
-                    });
+                        .then((permission) => {
+                            if (permission.state != 'granted') {
+                                this.path = 'location';
+                            } else {
+                                this.$.location.getLocation()
+                                    .then((latlon) => {
+                                        return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
+                                    })
+                                    .then((data) => {
+                                        this.geohash = data;
+                                        this.dispatch('GEOHASH', data);
+                                        this._getItemGeohash();
+                                    });
+                            }
+                        });
                 } else {
                     this.dispatch('ITEMGEOHASH', null);
                 }
