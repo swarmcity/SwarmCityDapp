@@ -370,8 +370,9 @@
             */
             _drawFile() {
                 if (this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context) {
-                    let px = this.endX * (1 + (2-this.scale));
-                    let py = this.endY * (1 + (2-this.scale));
+                    let myscale = (this.canvasHeight/this.image.height)*this.scale;
+                    let px = 2*this.endX / (myscale);
+                    let py = 2*this.endY / (myscale);
                     let rad = this.angle * Math.PI / 180;
                     let nx = px * Math.cos(-rad) - py * Math.sin(-rad);
                     let ny = px * Math.sin(-rad) + py * Math.cos(-rad);
@@ -380,10 +381,10 @@
                     this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
                     this.context.save();
                     this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
-                    this.context.scale(this.scale, this.scale);
+                    this.context.scale(myscale, myscale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - this.image.width * 0.5 + nx,
-                    - this.image.height * 0.5 + ny);
+                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx),
+                        - 0.5*(this.image.height - ny));
                     this.context.restore();
                     this.context.globalAlpha = 0.5;
                     this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -394,10 +395,10 @@
                     this.context.clip();
                     this.context.globalAlpha = 1;
                     this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
-                    this.context.scale(this.scale, this.scale);
+                    this.context.scale(myscale, myscale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - this.image.width * 0.5 + nx,
-                    - this.image.height * 0.5 + ny);
+                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx),
+                         - 0.5*(this.image.height - ny));
                     this.context.restore();
                     this.context.save();
                     this.context.globalAlpha = 1;
@@ -429,6 +430,7 @@
             * @param {event} event The event from the on-change
             */
             _panStart(event) {
+                event.preventDefault();
                 this.mouseDown = true;
                 if (event.clientX===undefined) {
                         this.startX = event.touches[0].clientX - this.endX;
