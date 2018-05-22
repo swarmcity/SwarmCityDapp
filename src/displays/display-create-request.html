@@ -12,6 +12,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../data/data-location.html">
 
 <!--
     Displays and shared styles only
@@ -226,7 +227,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .active:active {
                 @apply --button-active;
             }
-            
+
             .agree {
                 @apply --next-white-normal;
                 opacity: 0.2;
@@ -284,21 +285,26 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .agree, .pin-icon, .globe-icon {
+                .agree,
+                .pin-icon,
+                .globe-icon {
                     @apply --retina;
                 }
             }
         </style>
 
+        <data-location id="location"></data-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="closebox">
                 <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
             </div>
             <div class="inputs">
-                <paper-textarea id="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}" on-input="_toggleButton" autofocus></paper-textarea>
+                <paper-textarea id="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}" on-input="_toggleButton"
+                    autofocus></paper-textarea>
                 <div class="horizontal">
-                    <paper-input id="budget"  type="Number" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]" on-input="_checkBudget" value="{{budget}}"></paper-input>
+                    <paper-input id="budget" type="Number" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]"
+                        on-input="_checkBudget" value="{{budget}}"></paper-input>
                     <div class="currency">SWT</div>
                 </div>
                 <div class="fee"> + [[hashtagFee]] SWT {{localize('hashtagfee')}}</div>
@@ -313,7 +319,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="range-description">[[rangeDescription]]</div>
                     <div class="sliderbox">
                         <div class="pin-icon"></div>
-                        <paper-slider .class="slider" min="1" max="6" value="{{value}}" on-immediate-value-change="_calcRange" expand></paper-slider>
+                        <paper-slider .class="slider" min="1" max="7" value="{{chosenValue}}" immediate-value="{{choosingValue}}"></paper-slider>
                         <div class="globe-icon"></div>
                     </div>
                     <div class="arrowup">
@@ -330,7 +336,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                 </template>
                 <div class="buttonbox">
-                    <div  id="button" class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
+                    <div id="button" class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
                         <div id="agree" class="agree"></div>
                     </div>
                 </div>
@@ -373,6 +379,21 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'balance',
                     },
                     /**
+                    * Geohash is the user's current geohash
+                    * @type {Object}
+                    */
+                    geohash: {
+                        type: Object,
+                        statePath: 'geohash',
+                    },
+                    /**
+                    * ItemGeohash is the item's geohash
+                    * @type {Object}
+                    */
+                    itemGeohash: {
+                        type: Object,
+                    },
+                    /**
                     * Error
                     * @type {String}
                     */
@@ -392,10 +413,19 @@ This code may only be used under the license found at https://github.com/swarmci
                     * Value is the value of the slider
                     * @type {Number}
                     */
-                    value: {
+                    choosingValue: {
                         type: Number,
-                        value: 6,
-                        observer: '_calcRange',
+                        observer: '_setRangeDescription',
+                    },
+                    /**
+                    * chosenValue changes after we moved the slider
+                    * this is when we check for location sharing permission
+                    * @type {Number}
+                    */
+                    chosenValue: {
+                        type: Number,
+                        observer: '_checkPermissions',
+                        value: 7,
                     },
                     /**
                     * rangeDescription is the description of the range
@@ -403,14 +433,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     rangeDescription: {
                         type: String,
-                    },
-                    /**
-                    * range is the range the user selected in slider
-                    * @type {Number}
-                    */
-                    range: {
-                        type: Number,
-                        notify: true,
                     },
                 };
             }
@@ -429,6 +451,18 @@ This code may only be used under the license found at https://github.com/swarmci
                         return {
                             type: 'ITEMDESCRIPTION',
                             itemDescription: itemDescription,
+                        };
+                    },
+                    ITEMGEOHASH: function(itemGeohash) {
+                        return {
+                            type: 'ITEMGEOHASH',
+                            itemGeohash: itemGeohash,
+                        };
+                    },
+                    GEOHASH: function(geohash) {
+                        return {
+                            type: 'GEOHASH',
+                            geohash: geohash,
                         };
                     },
                 });
@@ -485,7 +519,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.request.length > 0 &&
                     this.budget &&
                     this.budget.length > 0 &&
-                    this.balance.swt.balanceSwt >= parseFloat(this.budget)+this.hashtagFee
+                    this.balance.swt.balanceSwt >= parseFloat(this.budget) + this.hashtagFee
                 ) {
                     this.$.agree.classList.add('enabled');
                     this.$.button.classList.add('active');
@@ -503,16 +537,46 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this._toggleButton()) {
                     this.dispatch('ITEMBUDGET', this.budget);
                     this.dispatch('ITEMDESCRIPTION', this.request);
+                    this.dispatch('ITEMGEOHASH', this.itemGeohash);
                     this.path = 'confirm-new-request';
                 }
+            }
+            /**
+            * Takes the user's geohash and slider value to generate an item geohash
+            */
+            _getItemGeohash() {
+                switch (this.chosenValue) {
+                    case (1):
+                        this.itemGeohash = this.geohash.slice(0, 8);
+                        break;
+                    case (2):
+                        this.itemGeohash = this.geohash.slice(0, 6);
+                        break;
+                    case (3):
+                        this.itemGeohash = this.geohash.slice(0, 4);
+                        break;
+                    case (4):
+                        this.itemGeohash = this.geohash.slice(0, 3);
+                        break;
+                    case (5):
+                        this.itemGeohash = this.geohash.slice(0, 2);
+                        break;
+                    case (6):
+                        this.itemGeohash = this.geohash.slice(0, 1);
+                        break;
+                    case (7):
+                        this.itemGeohash = null;
+                        break;
+                    }
+                this.dispatch('ITEMGEOHASH', this.itemGeohash);
             }
             /**
             * takes the user to originating page
             */
             _close() {
-                if (sessionStorage.getItem('origin')) {
-                    this.path = sessionStorage.getItem('origin');
-                    sessionStorage.removeItem('origin');
+                if (sessionStorage.getItem('hashtag')) {
+                    this.path = 'hashtag/' + sessionStorage.getItem('hashtag');
+                    sessionStorage.removeItem('hashtag');
                 }
                 else {
                     this.path = 'hashtag-list';
@@ -524,56 +588,74 @@ This code may only be used under the license found at https://github.com/swarmci
             _reset() {
                 if (
                     !(this.routeEntry.includes('confirm-new-request') &&
-                    this.routeEntry.includes('new-request'))
+                        this.routeEntry.includes('new-request'))
                 ) {
                     this.request = '';
                     this.budget = '';
                     this.totalcost = 0;
                     this.showSum = false;
+                    this.chosenValue = 7;
                 }
             }
             /**
-            * When the slider is shown set the default description
+            * After a range has been chosen, check for permissions
+            * If correct permissions, get the user's current geohash
             */
-            _setDesc() {
-                this.rangeDescription = this.localize('world wide');
-                this.value = 1;
+            _checkPermissions() {
+                this._setRangeDescription();
+                if (this.chosenValue != 7) {
+                    navigator.permissions.query({'name': 'geolocation'})
+                    .then((permission) => {
+                        if (permission.state != 'granted') {
+                            this.path = 'location';
+                        } else {
+                            this.$.location.getLocation()
+                            .then((latlon) => {
+                                return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
+                            })
+                            .then((data) => {
+                                this.geohash = data;
+                                this.dispatch('GEOHASH', data);
+                                this._getItemGeohash();
+                            });
+                        }
+                    });
+                }
             }
 
             /**
-            * Determine what the selected range is
+            * Instantly update the slider with correct range description
             */
-            _calcRange() {
-                const x = this.value;
-                switch (true) {
-                    case (x < 2):
-                        this.rangeDescription = this.localize('world wide');
-                        this.range = 10000000000000000000;
-                        break;
-                    case (x < 3):
+            _setRangeDescription() {
+                switch (this.choosingValue) {
+                    case (1):
                         this.rangeDescription =
-                            this.localize('within +/- 1000km from your location');
-                        this.range = 1000000;
+                            'within 25m from your location';
                         break;
-                    case (x < 4):
+                    case (2):
                         this.rangeDescription =
-                            this.localize('within +/- 100km from your location');
-                        this.range = 100000;
+                            'within 1km from your location';
                         break;
-                    case (x < 5):
+                    case (3):
                         this.rangeDescription =
-                            this.localize('within +/- 10km from your location');
-                        this.range = 10000;
+                            'within 10km from your location';
                         break;
-                    case (x < 6):
+                    case (4):
                         this.rangeDescription =
-                            this.localize('within +/- 1km from your location');
-                        this.range = 1000;
+                            'within 100km from your location';
                         break;
-                    case (x < 7):
+                    case (5):
                         this.rangeDescription =
-                            this.localize('within +/- 0.5km from your location');
-                        this.range = 500;
+                            'within 250km from your location';
+                        break;
+                    case (6):
+                        this.rangeDescription =
+                            'within 1000km from your location';
+                        break;
+                    case (7):
+                        this.rangeDescription =
+                            'Worldwide';
+                        break;
                 }
             }
         }

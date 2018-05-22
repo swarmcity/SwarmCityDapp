@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../data/data-location.html">
+<link rel="import" href="../redux-state.html">
 <!--
 
 Example:
@@ -62,11 +63,11 @@ The following custom properties and mixins are available for styling:
             </div>
     </template>
     <script>
-        class DisplayGeolocation extends Polymer.mixinBehaviors([
+        class DisplayGeolocation extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
-        ) {
+        )) {
             static get is() {
                 return 'display-geolocation';
             }
@@ -85,6 +86,19 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /**
+            * Redux action for setting the geoHash
+            */
+            static get actions() {
+                return Object.assign({
+                    GEOHASH: function(geoHash) {
+                        return {
+                            type: 'GEOHASH',
+                            geoHash: geoHash,
+                        };
+                    },
+                });
+            }
+            /**
              * Get s the users location cinverts it tio a geo hash
              * and saves it to local storage
             * @param {Object} event element clicked.
@@ -97,9 +111,8 @@ The following custom properties and mixins are available for styling:
                         return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
                     })
                     .then((data) => {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.user.location = data;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.geohash = data;
+                        this.dispatch('GEOHASH', data);
                     })
                     .then(() => {
                         window.history.back();
