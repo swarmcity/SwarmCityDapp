@@ -1,0 +1,89 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+<!--
+
+Example:
+```
+<display-get-hashtag></display-get-hashtag>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--agree-blue` | Mixin applied to the agree button | `{}}` |
+
+
+-->
+<dom-module id="display-get-hashtag">
+    <script>
+        class MyDisplayGetHashtag extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-get-hashtag';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Route is the current URL
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_getHashtag',
+                    },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                };
+            }
+            /**
+            * Redux action for sending the hashtag request
+            */
+            static get actions() {
+                return Object.assign({
+                    HASHTAG: function(hashtag) {
+                        return {
+                            type: 'HASHTAG',
+                            hashtag: hashtag,
+                        };
+                    },
+                });
+            }
+            /**
+            * Decide if the current url contains a hashtag address
+            * If so and not yet loaded, send data request to socket
+            */
+            _getHashtag() {
+                let tail = this.route.path.split('/')[this.route.path.split('/').length - 2];
+                if (webpack.isValidAddress(tail) &&
+                    ((this.hashtag && (this.hashtag.address != tail)) || !this.hashtag)
+                ) {
+                    this.hashtag = {
+                        request: tail,
+                    };
+                    this.dispatch('HASHTAG', this.hashtag);
+                }
+            }
+        }
+        window.customElements.define(MyDisplayGetHashtag.is, MyDisplayGetHashtag);
+    </script>
+</dom-module>
