@@ -2,6 +2,7 @@
 import {
   sha3,
   addHexPrefix,
+  isValidAddress,
   privateToAddress,
   privateToPublic,
   publicToAddress,
@@ -28,6 +29,7 @@ import BN from 'bn.js';
 export {
   sha3,
   addHexPrefix,
+  isValidAddress,
   privateToAddress,
   privateToPublic,
   publicToAddress,
