@@ -434,6 +434,23 @@ This code may only be used under the license found at https://github.com/swarmci
                     rangeDescription: {
                         type: String,
                     },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_setHashtagValues',
+                    },
+                    /**
+                    * the hashtag fee of selected hashtag
+                    * @type {String}
+                    */
+                    hashtagFee: {
+                        type: String,
+                        value: '0',
+                    },
                 };
             }
             /**
@@ -519,7 +536,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.request.length > 0 &&
                     this.budget &&
                     this.budget.length > 0 &&
-                    this.balance.swt.balanceSwt >= parseFloat(this.budget) + this.hashtagFee
+                    this.balance.swt.balanceSwt >= parseFloat(this.budget) + this.hashtag.hashtagFee
                 ) {
                     this.$.agree.classList.add('enabled');
                     this.$.button.classList.add('active');
@@ -583,6 +600,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 else {
                     this.path = 'hashtag-list';
+                }
+            }
+            /**
+            * When hashtag property is filled, set correct values
+            */
+            _setHashtagValues() {
+                if (this.hashtag) {
+                    this.hashtagFee = this.hashtag.hashtagFee / 1e18;
                 }
             }
             /**
