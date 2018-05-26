@@ -5,7 +5,9 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
 <!--
 
 Example:
@@ -13,6 +15,21 @@ Example:
 <display-simpledeal-involved></display-simpledeal-involved>
 ```
 
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-simpledeal-involved-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-simpledeal-involved-top-container` | Mixin applied to the container | `{}` |
+| `--display-simpledeal-involved-time` | Mixin applied to the time | `{}` |
+| `--display-simpledeal-involved-name` | Mixin applied to the name | `{}` |
+| `--display-simpledeal-involved-description` | Mixin applied to the description | `{}` |
+| `--display-simpledeal-involved-for` | Mixin applied to the word for | `{}` |
+| `--display-simpledeal-involved-amount` | Mixin applied to the amount | `{}` |
 -->
 <dom-module id="display-simpledeal-involved">
     <template>
@@ -22,19 +39,12 @@ Example:
             }
 
             .container {
-                width: 100%;
                 box-sizing: border-box;
-                padding: 10px 0 30px 0;
-            }
-
-
-            .container[wide-layout] {
-                padding: 0px 10vw 20px;
+                width: 100%;
             }
 
             .box {
                 @apply --layout-vertical;
-                @apply --layout-start;
                 background-color: var(--sc-white);
                 max-width: 100%;
                 box-sizing: border-box;
@@ -44,60 +54,55 @@ Example:
                 margin: 0px 10px 4px 10px;
             }
 
-            .box:active {
-                @apply --button-active;
-            }
-
-            .conflict-box {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                background-color: var(--sc-white);
+            .empty {
+                width: 100%;
                 box-sizing: border-box;
-                padding: 20px 20px 20px 40px;
-                cursor: pointer;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-                margin: 0px 10px 4px 10px;
-                cursor: pointer;
+                padding: 30px 10vw;
+                word-wrap: break-word;
+                @apply --body-default;
+                color: var(--sc-grey3);
             }
 
-            .container[wide-layout] .box {
-                max-width: 68vw;
-            }
-
-            .container[wide-layout] .conflict-box {
-                max-width: 68vw;
-            }
-
-            .box:active {
-                @apply --button-active;
+            .container[wide-layout] .empty {
+                padding: 0;
             }
 
             .top {
-                width: 100%;
+                @apply --layout-horizontal;
+            }
+
+            .avatarandmeta {
+                @apply --layout-flex;
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
             }
 
             .bottom {
-                width: 100%;
                 @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                margin-top: 10px;
+                @apply --layout-end;
             }
 
-            .container[wide-layout] .bottom {
-                margin-top: 5px;
+            .avatar {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-image: url("../../images/defaultavatar.png");
+                background-size: 24px;
             }
 
-            .content {
-                @apply --body-default;
-                color: var(--sc-grey4);
-            }
-
-            .datedescript {
-                @apply --layout-flex;
+            .container[wide-layout] .avatar {
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
+                background-size: 20px;
             }
 
             .date {
@@ -112,83 +117,26 @@ Example:
                 color: var(--sc-grey4);
             }
 
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
             .replyicon {
                 @apply --reply-grey4-mini;
             }
 
-
-            .chatcount {
-                @apply --small-bold;
-                margin: 2px 2px 0px 0px;
-                color: var(--sc-blue);
-            }
-
-            .chaticon {
-                @apply --chat-blue-mini;
-            }
-
-            .avatarandmeta {
+            .datedescript {
                 @apply --layout-flex;
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                margin-top: 4px;
+
             }
 
-            .container[wide-layout] .avatarandmeta {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-                margin-top: 10px;
-            }
-
-            .meta {
-                @apply --layout-center-justified;
+            .description {
                 @apply --layout-vertical;
-            }
-
-            .avatarbox {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                cursor: pointer;
-                margin: 2px 10px 0px 0px;
-            }
-
-            .container[wide-layout] .avatarbox {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                cursor: pointer;
-                margin-right: 10px;
-            }
-
-            .avatar-seeker {
-                z-index: 2;
-            }
-
-            .avatar-provider {
-                z-index: 1;
-                margin-left: -7px;
-            }
-
-            .avatar-hashtagowner {
-                z-index: 0;
-                margin-left: -5px;
-            }
-
-            img {
-                width: 24px;
-                height: 24px;
-                cursor: pointer;
-                border-radius: 50%;
-                background-size: 24px;
-            }
-
-            .container[wide-layout] img {
-                width: 20px;
-                height: 20px;
-                cursor: pointer;
-                border-radius: 50%;
-                background-size: 20px;
+                @apply --layout-end-justified;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                padding-right: 10px;
             }
 
             .pricebox {
@@ -209,140 +157,65 @@ Example:
                 color: var(--sc-yellow);
             }
 
-            .userandstatus {
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-                box-sizing:border-box;
-                padding: 0px 10px 0px 0px;
+
+            .container[wide-layout] .for {
+                @apply --body-bold;
+                font-size: 10px;
+                line-height: 10px;
             }
 
-            .container[wide-layout] .userandstatus {
-                @apply --layout-horizontal;
-                @apply --layout-start;
-                @apply --layout-start-justified;
+            .container[wide-layout] {
+                padding: 0px 10vw;
             }
 
-            .vertics {
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-                margin-bottom: 6px;
-            }
-
-            .container[wide-layout] .vertics {
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-                margin-bottom: 0px;
-            }
-
-            .user {
-                @apply --small-bold;
-                color: var(--sc-blue);
-            }
-
-            .iamuseeker {
-                color: var(--sc-grey4);
-            }
-
-            .status {
-                @apply --small-light;
-                color: var(--sc-grey3);
-                margin: 0px 0px 0px 0px;
-            }
-
-            .container[wide-layout] .status {
-                margin: 0px 0px 0px 15px;
-            }
-
-            .container[wide-layout] .statusconflict {
-                margin: 0px 0px 0px 5px;
-            }
-
-            .replytotalandavatar {
-                @apply --layout-horizontal;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-            }
-
-            .ireplied {
-                margin-left: 5px;
-            }
-
-            .countandicon {
-                @apply --layout-horizontal;
-            }
-
-            .grey-link {
-                @apply --text-button-small;
-                padding: 12px 18px;
-                background-color: rgba(0, 0, 0, 0.02);
-            }
-
-            .extralinkmargins {
-                margin: 15px 0px 0px 0px;
-            }
-
-            .indeal {
-                @apply --small-bold;
-            }
-
-            .greenfont {
-                color: var(--sc-green);
-            }
-
-            .redfont {
-                color: var(--sc-red);
+            .container[wide-layout] .box {
+                max-width: 68vw;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .chaticon,
                 .replyicon {
                     @apply --retina;
                 }
             }
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" id="container" wide-layout$="{{wide}}">
+        <display-language language="{{language}}"></display-language>
+        <data-simpledeal id="sort"></data-simpledeal>
+        <div class="container" wide-layout$="{{wide}}">
 
-            <div class="box">
-                <div class="top">
-                    <div class="datedescript">
-                        <div class="content truncate">They say the government mislead the youth.</div>
-                        <div class="date">
-                            5 minutes ago
+            <template is="dom-repeat" items="{{items}}">
+                <div tabindex="5" class="box" on-tap="_next" on-KeyPress="_next">
+                    <div class="top">
+                        <div class="datedescript">
+                            <div class="description">[[item.description]]</div>
+                            <div class="date">
+                                5 minutes ago
+                            </div>
                         </div>
+                        <div class="replycount">[[item.offers]]</div>
+                        <div class="replyicon"></div>
                     </div>
-                    <div class="replytotalandavatar">
-                        <div class="countandicon">
-                            <div class="replycount">4</div>
-                            <div class="replyicon"></div>
+                    <div class="bottom">
+                        <div class="avatarandmeta">
+                            <div class="avatar"></div>
+                            <div class="meta">
+                                <div class="user">[[item.name]] · [[item.reputation]] SWR</div>
+                            </div>
                         </div>
-                        <img class="avatar-seeker ireplied" src="{{avatar}}">
-                    </div>
-                </div>
-                <div class="bottom">
-                    <div class="avatarandmeta">
-                        <div class="avatarbox">
-                            <img class="avatar-seeker" src="[[provider.avatar]]">
+
+                        <div class="pricebox">
+                            <div class="for">SWT</div>
+                            <div class="price">[[item.balance]]</div>
                         </div>
-                        <div class="meta">
-                        <div class="userandstatus">
-                            <div class="user">[[provider.username]] · [[provider.rep]] </div>
-                            <div class="status replied"> {{localize('You replied to this request')}}</div>
-                        </div>
-                        </div>
-                    </div>
-                    <div class="pricebox">
-                        <div class="for">SWT</div>
-                        <div class="price">5500</div>
+
                     </div>
                 </div>
-            </div>
+            </template>
+
+
+        </div>
     </template>
     <script>
         class MySimpledealInvolved extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -356,7 +229,7 @@ Example:
             static get properties() {
                 return {
                     /**
-                    * Language is the user's language
+                    * Language is the users selected or determined language
                     * @type {String}
                     */
                     language: {
@@ -364,19 +237,52 @@ Example:
                         statePath: 'language',
                     },
                     /**
-                    * Path signals to the parent to change the path
-                    * @type {String}
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
                     */
                     path: {
                         type: String,
                         value: null,
                         notify: true,
                     },
+                    /**
+                    * Hashtag is the hashtag we're one
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_getItemsInvolved',
+                    },
+                    /**
+                    * publicKey is the user's address
+                    * @type {Object}
+                    */
+                    publicKey: {
+                        type: Object,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * Items are all the hashtag's items the user is involved with
+                    * @type {Object}
+                    */
+                    items: {
+                        type: Object,
+                    },
                 };
             }
+            /**
+            * Populates the items Object with the hashtag items the user is involved with
+            */
+            _getItemsInvolved() {
+                if (this.hashtag && this.hashtag.address) {
+                    this.$.sort.getHashtagItems(this.hashtag, this.publicKey)
+                        .then((items) => {
+                            this.items = items.involved;
+                        });
+                }
+            }
         }
-
-        window.customElements
-            .define(MySimpledealInvolved.is, MySimpledealInvolved);
+        window.customElements.define(MySimpledealInvolved.is, MySimpledealInvolved);
     </script>
 </dom-module>
