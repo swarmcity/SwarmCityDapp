@@ -73,12 +73,17 @@ The following custom properties and mixins are available for styling:
             * If so and not yet loaded, send data request to socket
             */
             _getHashtag() {
-                let tail = this.route.path.split('/')[this.route.path.split('/').length - 2];
-                if (webpack.isValidAddress(tail) &&
-                    ((this.hashtag && (this.hashtag.address != tail)) || !this.hashtag)
-                ) {
+                let urlAddress;
+
+                for (let el of this.route.path.split('/')) {
+                    if (webpack.isValidAddress(el)) {
+                        urlAddress = el;
+                    }
+                }
+
+                if ((this.hashtag && (this.hashtag.urlAddress != urlAddress)) || !this.hashtag) {
                     this.hashtag = {
-                        request: tail,
+                        request: urlAddress,
                     };
                     this.dispatch('HASHTAG', this.hashtag);
                 }

@@ -16,6 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-hashtag-about.html">
 <link rel="import" href="../displays/display-create-request.html">
+<link rel="import" href="../displays/display-get-hashtag.html">
 
 <dom-module id="page-new-request">
     <template>
@@ -133,6 +134,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <app-location route="{{route}}"></app-location>
+        <display-get-hashtag route="[[route]]"></display-get-hashtag>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="header">
@@ -152,9 +154,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <display-create-request 
                 id="displayrequest"
                 path="{{path}}"
-                route-entry="{{routeEntry}}"
-                hashtag="[[hashtag]]"
-                hashtag-fee="[[hashtagFee]]">
+                route-entry="{{routeEntry}}">
             </display-create-request>
         </div>
         </div>
@@ -194,7 +194,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtags: {
                         type: Object,
                         statePath: 'hashtags',
-                        observer: '_filterHashtags',
                     },
                     /**
                     * the selected hashtag
@@ -202,13 +201,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     hashtag: {
                         type: Object,
-                    },
-                    /**
-                    * hashtag info represents the selected hashtag
-                    * @type {Number}
-                    */
-                    hashtagFee: {
-                        type: Number,
+                        statePath: 'hashtag',
                     },
                     /**
                     * routeExit triggers the exit animations
@@ -237,27 +230,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             /**
-            * Redux action for setting the hashtag
-            */
-            static get actions() {
-                return Object.assign({
-                    HASHTAG: function(hashtag) {
-                        return {
-                            type: 'HASHTAG',
-                            hashtag: hashtag,
-                        };
-                    },
-                });
-            }
-            /**
             * Fired when the component is connected
             */
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                if (!sessionStorage.getItem('hashtag')) {
-                    sessionStorage.setItem('hashtag', this.route.path.split('/')[2]);
-                }
             }
             /**
             * changes the current path
@@ -267,19 +244,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
-            }
-            /**
-            * find the selected hashtag
-            */
-            _filterHashtags() {
-                if (this.hashtags) {
-                    let selectedHashtag = this.hashtags.filter((hashtag) => {
-                        return hashtag.address == this.route.path.split('/')[2];
-                    });
-                    this.hashtag = selectedHashtag[0];
-                    this.hashtagFee = this.hashtag.hashtagFee/2e18;
-                    this.dispatch('HASHTAG', this.hashtag);
-                }
             }
 
             /**
@@ -317,7 +281,6 @@ This code may only be used under the license found at https://github.com/swarmci
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
-                        this._filterHashtags();
                         if (this.routeExit[0] == 'hashtag') {
                         // Coming from page Hashtag
                             this.$.displayrequest.animate(
