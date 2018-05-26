@@ -1,0 +1,382 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-simpledeal-involved></display-simpledeal-involved>
+```
+
+-->
+<dom-module id="display-simpledeal-involved">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 10px 0 30px 0;
+            }
+
+
+            .container[wide-layout] {
+                padding: 0px 10vw 20px;
+            }
+
+            .box {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                background-color: var(--sc-white);
+                max-width: 100%;
+                box-sizing: border-box;
+                padding: 24px 30px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+            }
+
+            .box:active {
+                @apply --button-active;
+            }
+
+            .conflict-box {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding: 20px 20px 20px 40px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .box {
+                max-width: 68vw;
+            }
+
+            .container[wide-layout] .conflict-box {
+                max-width: 68vw;
+            }
+
+            .box:active {
+                @apply --button-active;
+            }
+
+            .top {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+            }
+
+            .bottom {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                margin-top: 10px;
+            }
+
+            .container[wide-layout] .bottom {
+                margin-top: 5px;
+            }
+
+            .content {
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+            .datedescript {
+                @apply --layout-flex;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+                margin-top: 4px;
+            }
+
+            .replycount {
+                @apply --small-bold;
+                margin-top: 2px;
+                color: var(--sc-grey4);
+            }
+
+            .replyicon {
+                @apply --reply-grey4-mini;
+            }
+
+
+            .chatcount {
+                @apply --small-bold;
+                margin: 2px 2px 0px 0px;
+                color: var(--sc-blue);
+            }
+
+            .chaticon {
+                @apply --chat-blue-mini;
+            }
+
+            .avatarandmeta {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                margin-top: 4px;
+            }
+
+            .container[wide-layout] .avatarandmeta {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                margin-top: 10px;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
+            }
+
+            .avatarbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                cursor: pointer;
+                margin: 2px 10px 0px 0px;
+            }
+
+            .container[wide-layout] .avatarbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .avatar-seeker {
+                z-index: 2;
+            }
+
+            .avatar-provider {
+                z-index: 1;
+                margin-left: -7px;
+            }
+
+            .avatar-hashtagowner {
+                z-index: 0;
+                margin-left: -5px;
+            }
+
+            img {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 24px;
+            }
+
+            .container[wide-layout] img {
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 20px;
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+                text-align: right;
+            }
+
+            .price {
+                @apply --main-title4;
+                color: var(--sc-yellow);
+                line-height: 24px;
+            }
+
+            .for {
+                @apply --smallest-bold;
+                color: var(--sc-yellow);
+            }
+
+            .userandstatus {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                box-sizing:border-box;
+                padding: 0px 10px 0px 0px;
+            }
+
+            .container[wide-layout] .userandstatus {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .vertics {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                margin-bottom: 6px;
+            }
+
+            .container[wide-layout] .vertics {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                margin-bottom: 0px;
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .iamuseeker {
+                color: var(--sc-grey4);
+            }
+
+            .status {
+                @apply --small-light;
+                color: var(--sc-grey3);
+                margin: 0px 0px 0px 0px;
+            }
+
+            .container[wide-layout] .status {
+                margin: 0px 0px 0px 15px;
+            }
+
+            .container[wide-layout] .statusconflict {
+                margin: 0px 0px 0px 5px;
+            }
+
+            .replytotalandavatar {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .ireplied {
+                margin-left: 5px;
+            }
+
+            .countandicon {
+                @apply --layout-horizontal;
+            }
+
+            .grey-link {
+                @apply --text-button-small;
+                padding: 12px 18px;
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+
+            .extralinkmargins {
+                margin: 15px 0px 0px 0px;
+            }
+
+            .indeal {
+                @apply --small-bold;
+            }
+
+            .greenfont {
+                color: var(--sc-green);
+            }
+
+            .redfont {
+                color: var(--sc-red);
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .chaticon,
+                .replyicon {
+                    @apply --retina;
+                }
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" id="container" wide-layout$="{{wide}}">
+
+            <div class="box">
+                <div class="top">
+                    <div class="datedescript">
+                        <div class="content truncate">They say the government mislead the youth.</div>
+                        <div class="date">
+                            5 minutes ago
+                        </div>
+                    </div>
+                    <div class="replytotalandavatar">
+                        <div class="countandicon">
+                            <div class="replycount">4</div>
+                            <div class="replyicon"></div>
+                        </div>
+                        <img class="avatar-seeker ireplied" src="{{avatar}}">
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="avatarandmeta">
+                        <div class="avatarbox">
+                            <img class="avatar-seeker" src="[[provider.avatar]]">
+                        </div>
+                        <div class="meta">
+                        <div class="userandstatus">
+                            <div class="user">[[provider.username]] · [[provider.rep]] </div>
+                            <div class="status replied"> {{localize('You replied to this request')}}</div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="pricebox">
+                        <div class="for">SWT</div>
+                        <div class="price">5500</div>
+                    </div>
+                </div>
+            </div>
+    </template>
+    <script>
+        class MySimpledealInvolved extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-involved';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user's language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                };
+            }
+        }
+
+        window.customElements
+            .define(MySimpledealInvolved.is, MySimpledealInvolved);
+    </script>
+</dom-module>
