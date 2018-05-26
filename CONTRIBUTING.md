@@ -48,7 +48,7 @@ Pay attention to the PORTS sections, to make sure that your dockers are connecte
 
 ## virtualbox
 
-The default 20Gb used by docker is not enough, you will need to increase the disk space, to allow storing the chain data (around 31Gb for rinkeby/kovan as of May 2017).
+The default 20Gb used by docker is not enough, you will need to increase the disk space, to allow storing the chain data (around 31Gb for rinkeby/kovan as of May 2018).
 
 Windows 7 (docker toolbox): You might need to open ports manually on the ‘default’ machine (the one that docker uses)
 ![](https://i.imgur.com/nhlKpGA.png)

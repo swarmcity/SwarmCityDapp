@@ -45,22 +45,6 @@
                         type: Object,
                     },
                     /**
-                    * show the hashtags
-                    * @type {Array}
-                    */
-                    hashtags: {
-                        type: Array,
-                    },
-                    /**
-                    * location
-                    * @type {Array}
-                    */
-                    location: {
-                        type: String,
-                        statePath: 'location',
-                        observer: '_locationChanged',
-                    },
-                    /**
                     * publickey is the wallet pubkey
                     * @type {String}
                     */
@@ -68,14 +52,6 @@
                         type: String,
                         statePath: 'publicKey',
                         observer: '_publickeyChanged',
-                    },
-                    /**
-                    * gasprice is the recommended gasprice
-                    * as given by the ETH network
-                    * @type {Number}
-                    */
-                    gasprice: {
-                        type: Number,
                     },
                     /**
                     * nonce is the current nonce for the wallet's pubkey
@@ -164,6 +140,15 @@
                         type: Array,
                         statePath: 'confirmedTx',
                     },
+                    /**
+                    * An Object containing the data for a hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_getHashtag',
+                    },
                 };
             }
             /**
@@ -182,18 +167,6 @@
                         return {
                             type: 'FX',
                             fx: fx,
-                        };
-                    },
-                    HASHTAGS: function(hashtags) {
-                        return {
-                            type: 'HASHTAGS',
-                            hashtags: hashtags,
-                        };
-                    },
-                    GASPRICE: function(gasprice) {
-                        return {
-                            type: 'GASPRICE',
-                            gasprice: gasprice,
                         };
                     },
                     NONCE: function(nonce) {
@@ -256,6 +229,12 @@
                             itemDataHash: itemDataHash,
                         };
                     },
+                    HASHTAG: function(hashtag) {
+                        return {
+                            type: 'HASHTAG',
+                            hashtag: hashtag,
+                        };
+                    },
                 });
             }
 
@@ -274,24 +253,19 @@
             ready() {
                 super.ready();
                 this._detectIphone();
-                // Listen for changes on 'txReceipt'
-                this.socket.on('txReceiptChanged', (reply) => {
-                    if (reply.response == 200) {
-                        // Do somthing
-                    }
-                });
-                // Listen for changes on 'balanceChanged'
+                // Get push updates of the user's balance
                 this.socket.on('balanceChanged', (reply) => {
                     if (reply.response == 200) {
                         this.balance = reply.data;
                         this.dispatch('BALANCE', this.balance);
                     }
                 });
-                // Listen for changes on 'fxChanged'
+                // Listen for changes in the exchange rates
                 this.socket.on('fxChanged', (reply) => {
                     this.fx = reply;
                     this.dispatch('FX', this.fx);
                 });
+                // Get push updates of the user's nonce
                 this.socket.on('nonceChanged', (reply) => {
                     this.nonce = reply.data.nonce;
                     this.dispatch('NONCE', this.nonce);
@@ -301,6 +275,10 @@
                 this.socket.connect();
             }
 
+            /**
+            * Send an IPFS hash of a base64 avatar
+            * Get the corresponding bas64 back and store it as the user's avatar
+            */
             _reqipfs() {
                 this.socket.emit('ipfscat', {
                     hash: this.reqipfs,
@@ -410,19 +388,6 @@
                 });
             }
 
-            _locationChanged() {
-                switch (this.location) {
-                    case '/hashtag/1c9v87bc98v7a/':
-                        // the number here '1c9v87bc98v7a'is the hashtag id
-                        // now we know which page the user is on request the collection...
-                        // of items and save them to redux in ITEMCOLLECTION
-                        break;
-                    case '/hashtag/7c9v87bc98v7b/':
-                    // the number here '7c9v87bc98v7b'is the hashtag id
-                    // now we know which page the user is on request the collection...
-                    // of items and save them to redux in ITEMCOLLECTION
-                }
-            }
             _reqToKey() {
                 this.socket.emit('readShortCode', {
                     shortCode: this.reqtokey,
@@ -448,6 +413,25 @@
                     this.dispatch('TXHASH', this.txHash);
                 });
             }
+
+            // Subscribe to a certain hashtag
+            _getHashtag() {
+                if (this.hashtag.request) {
+                    this.socket.emit('subscribe', {
+                        channel: 'hashtagItems',
+                        args: {
+                            address: this.hashtag.request,
+                        },
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this.hashtag = JSON.parse(reply.data);
+                            this.hashtag.address = '0xeba08e7a1d8145b25c78b473fbc35aa24973d908';
+                            this.dispatch('HASHTAG', this.hashtag);
+                        }
+                    });
+                }
+            }
+
 
             // fired when entering needing a shortCode
             _usingShortCode() {
