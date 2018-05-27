@@ -672,27 +672,27 @@ var abi = {
                         "type": "uint8"
                     },
                     {
-                        "name": "fee",
+                        "name": "_hashtagFee",
                         "type": "uint256"
                     },
                     {
-                        "name": "dealValue",
+                        "name": "_dealValue",
                         "type": "uint256"
                     },
                     {
-                        "name": "providerRep",
+                        "name": "_providerRep",
                         "type": "uint256"
                     },
                     {
-                        "name": "seekerRep",
+                        "name": "_seekerRep",
                         "type": "uint256"
                     },
                     {
-                        "name": "provider",
+                        "name": "_provider",
                         "type": "address"
                     },
                     {
-                        "name": "ipfsMetadata",
+                        "name": "_ipfsMetadata",
                         "type": "string"
                     }
                 ],
@@ -1077,6 +1077,11 @@ var abi = {
                     {
                         "indexed": false,
                         "name": "totalValue",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "name": "seekerRep",
                         "type": "uint256"
                     }
                 ],
