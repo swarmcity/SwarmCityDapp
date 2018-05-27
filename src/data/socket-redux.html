@@ -430,7 +430,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     }, (reply) => {
                         if (reply.response == 200) {
                             let address = this.hashtag.request;
-                            console.log(JSON.parse(reply.data));
                             this.hashtag = JSON.parse(reply.data);
                             // ============= START MOCK DATA ======================================
                             // this.hashtag = {
@@ -544,6 +543,14 @@ This code may only be used under the license found at https://github.com/swarmci
                             // };
 
                             // // ============= END MOCK DATA ======================================
+                            this.hashtag.address = address;
+                            this.dispatch('HASHTAG', this.hashtag);
+                        }
+                    });
+                    this.socket.on('hashtagItemsChanged', (reply) => {
+                        if (reply.response == 200) {
+                            let address = this.hashtag.address;
+                            this.hashtag = JSON.parse(JSON.parse(reply.data));
                             this.hashtag.address = address;
                             this.dispatch('HASHTAG', this.hashtag);
                         }
