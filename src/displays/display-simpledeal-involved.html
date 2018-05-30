@@ -94,7 +94,6 @@ The following custom properties and mixins are available for styling:
                 cursor: pointer;
                 border-radius: 50%;
                 margin-right: 10px;
-                background-image: url("../../images/defaultavatar.png");
                 background-size: 24px;
             }
 
@@ -119,7 +118,13 @@ The following custom properties and mixins are available for styling:
 
             .user {
                 @apply --small-bold;
-                color: var(--sc-blue);
+                color: var(--sc-grey4);
+                margin-top: 6px;
+            }
+
+            .status {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
             }
 
             .replyicon {
@@ -137,6 +142,14 @@ The following custom properties and mixins are available for styling:
                 @apply --body-default;
                 color: var(--sc-grey4);
                 padding-right: 10px;
+            }
+
+            img {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 30px;
             }
 
             .pricebox {
@@ -186,7 +199,7 @@ The following custom properties and mixins are available for styling:
         <div class="container" wide-layout$="{{wide}}">
 
             <template is="dom-repeat" items="{{items}}">
-                <div tabindex="5" class="box" on-tap="_next" on-KeyPress="_next">
+                <div tabindex="5" class="box">
                     <div class="top">
                         <div class="datedescript">
                             <div class="description">[[item.description]]</div>
@@ -194,20 +207,24 @@ The following custom properties and mixins are available for styling:
                                 5 minutes ago
                             </div>
                         </div>
-                        <div class="replycount">[[item.offers]]</div>
+                        <div class="replycount">0</div>
                         <div class="replyicon"></div>
                     </div>
                     <div class="bottom">
                         <div class="avatarandmeta">
-                            <div class="avatar"></div>
+
+                            <div class="avatar">
+                                <img class="item-avatar-seeker" src="[[item.avatar]]">
+                            </div>
                             <div class="meta">
-                                <div class="user">[[item.name]] · [[item.reputation]] SWR</div>
+                                <div class="user">[[item.seeker.username]] · [[item.seeker.rep]] SWR</div>
+                                <div class="status">No provider selected</div>
                             </div>
                         </div>
 
                         <div class="pricebox">
                             <div class="for">SWT</div>
-                            <div class="price">[[item.balance]]</div>
+                            <div class="price">[[item.value]]</div>
                         </div>
 
                     </div>
@@ -268,18 +285,81 @@ The following custom properties and mixins are available for styling:
                     */
                     items: {
                         type: Object,
+                        value: [],
+                        observer: '_getAvatar',
+                    },
+                    /**
+                    * an ipfsHash to resolve
+                    * @type {Object}
+                    */
+                    ipfsHashArray: {
+                        type: Object,
+                        statePath: 'ipfsHashArray',
+                        observer: '_getAvatar',
                     },
                 };
+            }
+            /**
+            * Redux action for sending an IPFS resolve request
+            */
+            static get actions() {
+                return Object.assign({
+                    IPFSHASHARRAY: function(ipfsHashArray) {
+                        return {
+                            type: 'IPFSHASHARRAY',
+                            ipfsHashArray: ipfsHashArray,
+                        };
+                    },
+                });
             }
             /**
             * Populates the items Object with the hashtag items the user is involved with
             */
             _getItemsInvolved() {
                 if (this.hashtag && this.hashtag.address) {
-                    this.$.sort.getHashtagItems(this.hashtag, this.publicKey)
+                    this.$.sort.getHashtagItemsInvolved(this.hashtag, this.publicKey)
                         .then((items) => {
-                            this.items = items.involved;
+                            this.items = items;
+                            if (!localStorage.getItem('IPFSResolver')) {
+                                localStorage.setItem('IPFSResolver', '{}');
+                            }
+                            let store = JSON.parse(localStorage.getItem('IPFSResolver'));
+                            let arr = this.ipfsHashArray ? this.ipfsHashArray : [];
+                            for (let item of items) {
+                                if (!(item.seeker.avatarHash in store)) {
+                                    if (!arr.includes(item.seeker.avatarHash)) {
+                                        arr.push(item.seeker.avatarHash);
+                                    }
+                                }
+                            }
+                            this.dispatch('IPFSHASHARRAY', arr);
                         });
+                }
+            }
+            /**
+            * Updates the items array with an avatar for each item
+            */
+            _getAvatar() {
+                if (!localStorage.getItem('IPFSResolver')) {
+                    localStorage.setItem('IPFSResolver', '{}');
+                }
+                let store = JSON.parse(localStorage.getItem('IPFSResolver'));
+                for (let i = 0; i < this.items.length; i++) {
+                    if (!this.items[i].avatar) {
+                        if (this.items[i].seeker.avatarHash in store) {
+                            this.items[i].avatar = store[this.items[i].seeker.avatarHash];
+                        } else {
+                            this.items[i].avatar = '../../images/defaultavatar.png';
+                        }
+                    } else {
+                        if (this.items[i].avatar == '../../images/defaultavatar.png') {
+                            if (store != null) {
+                                if (this.items[i].seeker.avatarHash in store) {
+                                    this.items[i].avatar = store[this.items[i].seeker.avatarHash];
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

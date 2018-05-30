@@ -111,6 +111,24 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_reqipfs',
                     },
                     /**
+                    * An ipfs hash we want to resolve over the API
+                    * @type {Array}
+                    */
+                    ipfsHash: {
+                        type: String,
+                        statePath: 'ipfsHash',
+                        observer: '_ipfsHashResolve',
+                    },
+                    /**
+                    * An array of IPFS hashes we want to resolve
+                    * @type {Array}
+                    */
+                    ipfsHashArray: {
+                        type: String,
+                        statePath: 'ipfsHashArray',
+                        observer: '_ipfsHashArray',
+                    },
+                    /**
                     * Send new request metadata to IPFS
                     * @type {Object}
                     */
@@ -240,6 +258,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             hashtag: hashtag,
                         };
                     },
+                    IPFSHASHARRAY: function(ipfsHashArray) {
+                        return {
+                            type: 'IPFSHASHARRAY',
+                            ipfsHashArray: ipfsHashArray,
+                        };
+                    },
                 });
             }
 
@@ -296,6 +320,46 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
                     }
                 });
+            }
+
+            _ipfsHashResolve() {
+                if (!localStorage.getItem('IPFSResolver')) {
+                    localStorage.setItem('IPFSResolver', '{}');
+                }
+                let store = JSON.parse(localStorage.getItem('IPFSResolver'));
+                if (!(this.ipfsHash in store)) {
+                    this.socket.emit('ipfscat', {
+                        hash: this.ipfsHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            store[this.ipfsHash] = reply.data;
+                            localStorage.setItem('IPFSResolver', JSON.stringify(store));
+                        }
+                    });
+                }
+            }
+
+            _ipfsHashArray() {
+                if (this.ipfsHashArray && this.ipfsHashArray.length > 0) {
+                    if (!localStorage.getItem('IPFSResolver')) {
+                        localStorage.setItem('IPFSResolver', '{}');
+                    }
+                    let store = JSON.parse(localStorage.getItem('IPFSResolver'));
+                    if (!(this.ipfsHashArray[0] in store)) {
+                        this.socket.emit('ipfscat', {
+                            hash: this.ipfsHashArray[0],
+                        }, (reply) => {
+                            if (reply.response == 200) {
+                                store[this.ipfsHashArray[0]] = reply.data;
+                                localStorage.setItem('IPFSResolver', JSON.stringify(store));
+                                let arr = this.ipfsHashArray;
+                                arr.splice(0, 1);
+                                this.dispatch('IPFSHASHARRAY', []);
+                                this.dispatch('IPFSHASHARRAY', arr);
+                            }
+                        });
+                    }
+                }
             }
 
             _sendSignedTx() {
@@ -431,118 +495,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         if (reply.response == 200) {
                             let address = this.hashtag.request;
                             this.hashtag = JSON.parse(reply.data);
-                            // ============= START MOCK DATA ======================================
-                            // this.hashtag = {
-                            //     'name': 'Settler',
-                            //     'stats': {
-                            //         'paidNoConflict': 69,
-                            //         'resolved': 23,
-                            //         'seekers': 42,
-                            //         'providers': 12,
-                            //     },
-                            //     'description': 'Settler is the first amazing hashtag',
-                            //     'maintainer': {
-                            //         'avatar': 'base64',
-                            //         'username': 'Mungo Weber',
-                            //         'address': '0x3847F87F3EcF4a0e57djF73B2Db92134e1983ef5',
-                            //     },
-                            //     'hashtagFee': 500000000000000000,
-                            //     'items': [
-                            //         {
-                            //             'itemHash': '4a9v87bd98m1w',
-                            //             'seeker': {
-                            //                 'username': 'Harry Humble',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
-                            //                 'rep': 4,
-                            //             },
-                            //             'value': 12000000000000000000,
-                            //             'description': 'INVOLVED',
-                            //             'dateTime': 1510715824,
-                            //             'location': 'guywguzvzzpg',
-                            //         },
-                            //         {
-                            //             'itemHash': '4a9v87bd98m1w',
-                            //             'seeker': {
-                            //                 'username': 'Harry Humble',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
-                            //                 'rep': 4,
-                            //             },
-                            //             'value': 12000000000000000000,
-                            //             'description': 'INVOLVED',
-                            //             'dateTime': 1510715824,
-                            //             'location': 'guywguzvzzpg',
-                            //         },
-                            //         {
-                            //             'itemHash': '4a9v87bd98msw',
-                            //             'seeker': {
-                            //                 'username': 'Peter Pan',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
-                            //                 'rep': 15,
-                            //             },
-                            //             'value': 8000000000000000000,
-                            //             'description': 'INVOLVED',
-                            //             'dateTime': 1510715234,
-                            //             'location': 'guyfguzvzzpg',
-                            //         },
-                            //         {
-                            //             'itemHash': '4a9v87bd92m1w',
-                            //             'seeker': {
-                            //                 'username': 'Don Juan',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x249D787F3EcF4a0e57cDfCFB2Db92134e1982ee8',
-                            //                 'rep': 42,
-                            //             },
-                            //             'value': 34000000000000000000,
-                            //             'description': 'Hit Flurkel where it hurts',
-                            //             'dateTime': 1510715834,
-                            //             'location': 'guyhguzvzzpg',
-                            //         },
-                            //         {
-                            //             'itemHash': '4a9v87bd92m1w',
-                            //             'seeker': {
-                            //                 'username': 'Don Juan',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x249D787F3EcF4a0e57cDfCFB2Db92134e1982ee8',
-                            //                 'rep': 42,
-                            //             },
-                            //             'value': 34000000000000000000,
-                            //             'description': 'Hit Flurkel where it hurts',
-                            //             'dateTime': 1510715834,
-                            //             'location': 'guyhguzvzzpg',
-                            //         },
-                            //         {
-                            //             'itemHash': '4a9v87bd92m1w',
-                            //             'seeker': {
-                            //                 'username': 'Don Juan',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x249D787F3EcF4a0e57cDfCFB2Db92134e1982ee8',
-                            //                 'rep': 42,
-                            //             },
-                            //             'value': 34000000000000000000,
-                            //             'description': 'Hit Flurkel where it hurts',
-                            //             'dateTime': 1510715834,
-                            //             'location': 'guyhguzvzzpg',
-                            //         },
-                            //         {
-                            //             'itemHash': '4a9v87bd92m1w',
-                            //             'seeker': {
-                            //                 'username': 'Don Juan',
-                            //                 'avatar': 'base64',
-                            //                 'address': '0x249D787F3EcF4a0e57cDfCFB2Db92134e1982ee8',
-                            //                 'rep': 42,
-                            //             },
-                            //             'value': 34000000000000000000,
-                            //             'description': 'Hit Flurkel where it hurts',
-                            //             'dateTime': 1510715834,
-                            //             'location': 'guyhguzvzzpg',
-                            //         },
-                            //     ],
-                            // };
-
-                            // // ============= END MOCK DATA ======================================
                             this.hashtag.address = address;
                             this.dispatch('HASHTAG', this.hashtag);
                         }
@@ -557,7 +509,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     });
                 }
             }
-
 
             // fired when entering needing a shortCode
             _usingShortCode() {
