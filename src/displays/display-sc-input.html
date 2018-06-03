@@ -66,6 +66,9 @@ Example:
         ],
             Polymer.Element
         ) {
+            constructor() {
+                super();
+            }
             static get is() {
                 return 'display-sc-input';
             }
@@ -127,6 +130,7 @@ Example:
                     addattr: {
                         type: String,
                         notify: true,
+                        observer: '_checkAutoFocus',
                     },
                 };
             }
@@ -135,12 +139,25 @@ Example:
             */
             connectedCallback() {
                 super.connectedCallback();
-                if (this.addattr==='autofocus') {
-                    this.$$('#input').$.input.focus();
-                }
                 if (this.addattr==='data-numeric-input') {
                     this.$$('#input').setAttribute('data-numeric-input', '');
                 }
+            }
+            /**
+            * initiate 'autofocus' on the paper-elemnt upon component reload
+            */
+            _checkAutoFocus() {
+                if (this.addattr==='autofocus') {
+                    setTimeout(() => {
+                        this.$$('#input').focus();
+                    }, 500);
+                }
+            }
+            /**
+            * Trigger focus on the paper-input
+            */
+            focusInput() {
+                this.$$('#input').focus();
             }
             /**
             * Checks for enter key input
