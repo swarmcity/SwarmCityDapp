@@ -1,3 +1,8 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
 <script src="environment.min.js"></script>
@@ -104,6 +109,15 @@
                         type: String,
                         statePath: 'reqipfs',
                         observer: '_reqipfs',
+                    },
+                    /**
+                    * An ipfs hash we want to resolve over the API
+                    * @type {Array}
+                    */
+                    ipfsHash: {
+                        type: String,
+                        statePath: 'ipfsHash',
+                        observer: '_ipfsHashResolve',
                     },
                     /**
                     * Send new request metadata to IPFS
@@ -235,6 +249,12 @@
                             hashtag: hashtag,
                         };
                     },
+                    IPFSHASH: function(ipfsHash) {
+                        return {
+                            type: 'IPFSHASH',
+                            ipfsHash: ipfsHash,
+                        };
+                    },
                 });
             }
 
@@ -291,6 +311,23 @@
                         this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
                     }
                 });
+            }
+
+            _ipfsHashResolve() {
+                let store = JSON.parse(localStorage.getItem('IPFS'));
+                if (!(this.ipfsHash in store) && typeof(this.ipfsHash) == 'string') {
+                    this.socket.emit('ipfscat', {
+                        hash: this.ipfsHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            store[this.ipfsHash] = reply.data;
+                            let resolved = {};
+                            resolved[this.ipfsHash] = reply.data;
+                            this.dispatch('IPFSHASH', resolved);
+                            localStorage.setItem('IPFS', JSON.stringify(store));
+                        }
+                    });
+                }
             }
 
             _sendSignedTx() {
@@ -424,14 +461,22 @@
                         },
                     }, (reply) => {
                         if (reply.response == 200) {
+                            let address = this.hashtag.request;
                             this.hashtag = JSON.parse(reply.data);
-                            this.hashtag.address = '0xeba08e7a1d8145b25c78b473fbc35aa24973d908';
+                            this.hashtag.address = address;
+                            this.dispatch('HASHTAG', this.hashtag);
+                        }
+                    });
+                    this.socket.on('hashtagItemsChanged', (reply) => {
+                        if (reply.response == 200) {
+                            let address = this.hashtag.address;
+                            this.hashtag = JSON.parse(JSON.parse(reply.data));
+                            this.hashtag.address = address;
                             this.dispatch('HASHTAG', this.hashtag);
                         }
                     });
                 }
             }
-
 
             // fired when entering needing a shortCode
             _usingShortCode() {

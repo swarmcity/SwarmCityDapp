@@ -1,0 +1,374 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
+<!--
+
+Example:
+```
+<display-simpledeal-involved></display-simpledeal-involved>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-simpledeal-involved-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-simpledeal-involved-top-container` | Mixin applied to the container | `{}` |
+| `--display-simpledeal-involved-time` | Mixin applied to the time | `{}` |
+| `--display-simpledeal-involved-name` | Mixin applied to the name | `{}` |
+| `--display-simpledeal-involved-description` | Mixin applied to the description | `{}` |
+| `--display-simpledeal-involved-for` | Mixin applied to the word for | `{}` |
+| `--display-simpledeal-involved-amount` | Mixin applied to the amount | `{}` |
+-->
+<dom-module id="display-simpledeal-involved">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                width: 100%;
+            }
+
+            .box {
+                @apply --layout-vertical;
+                background-color: var(--sc-white);
+                max-width: 100%;
+                box-sizing: border-box;
+                padding: 24px 30px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+            }
+
+            .empty {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 30px 10vw;
+                word-wrap: break-word;
+                @apply --body-default;
+                color: var(--sc-grey3);
+            }
+
+            .container[wide-layout] .empty {
+                padding: 0;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+            }
+
+            .avatarandmeta {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
+            }
+
+            .bottom {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .avatar {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 24px;
+            }
+
+            .container[wide-layout] .avatar {
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
+                background-size: 20px;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+                margin-top: 4px;
+            }
+
+            .replycount {
+                @apply --small-bold;
+                margin-top: 2px;
+                color: var(--sc-grey4);
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-grey4);
+                margin-top: 6px;
+            }
+
+            .status {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+            }
+
+            .replyicon {
+                @apply --reply-grey4-mini;
+            }
+
+            .datedescript {
+                @apply --layout-flex;
+
+            }
+
+            .description {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                padding-right: 10px;
+            }
+
+            img {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 30px;
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+                text-align: right;
+            }
+
+            .price {
+                @apply --main-title4;
+                color: var(--sc-yellow);
+                line-height: 24px;
+            }
+
+            .for {
+                @apply --smallest-bold;
+                color: var(--sc-yellow);
+            }
+
+
+            .container[wide-layout] .for {
+                @apply --body-bold;
+                font-size: 10px;
+                line-height: 10px;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 10vw;
+            }
+
+            .container[wide-layout] .box {
+                max-width: 68vw;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .replyicon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <data-simpledeal id="sort"></data-simpledeal>
+        <div class="container" wide-layout$="{{wide}}">
+
+            <template is="dom-repeat" items="{{items}}">
+                <div tabindex="5" class="box">
+                    <div class="top">
+                        <div class="datedescript">
+                            <div class="description">[[item.description]]</div>
+                            <div class="date">
+                                [[_formatDate(item.dateTime)]]
+                            </div>
+                        </div>
+                        <div class="replycount">0</div>
+                        <div class="replyicon"></div>
+                    </div>
+                    <div class="bottom">
+                        <div class="avatarandmeta">
+
+                            <div class="avatar">
+                                <img class="item-avatar-seeker" src="[[item.seeker.avatar]]">
+                            </div>
+                            <div class="meta">
+                                <div class="user">[[item.seeker.username]] · [[item.seeker.rep]] SWR</div>
+                                <div class="status">No provider selected</div>
+                            </div>
+                        </div>
+
+                        <div class="pricebox">
+                            <div class="for">SWT</div>
+                            <div class="price">[[item.value]]</div>
+                        </div>
+
+                    </div>
+                </div>
+            </template>
+
+
+        </div>
+    </template>
+    <script>
+        class MySimpledealInvolved extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-involved';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Hashtag is the hashtag we're one
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_getItemsInvolved',
+                    },
+                    /**
+                    * publicKey is the user's address
+                    * @type {Object}
+                    */
+                    publicKey: {
+                        type: Object,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * Items are all the hashtag's items the user is involved with
+                    * @type {Object}
+                    */
+                    items: {
+                        type: Object,
+                        value: [],
+                    },
+                    /**
+                    * A seeker's avatarHash to be resolved
+                    * @type {Object}
+                    */
+                    ipfsHash: {
+                        type: Object,
+                        statePath: 'ipfsHash',
+                        observer: '_updateAvatar',
+                    },
+                };
+            }
+            /**
+            * Redux action for sending an IPFS resolve request
+            */
+            static get actions() {
+                return Object.assign({
+                    IPFSHASH: function(ipfsHash) {
+                        return {
+                            type: 'IPFSHASH',
+                            ipfsHash: ipfsHash,
+                        };
+                    },
+                });
+            }
+            /**
+            * Populates the items Object with the hashtag items the user is involved with
+            */
+            _getItemsInvolved() {
+                if (this.hashtag && this.hashtag.address) {
+                    this.$.sort.getHashtagItemsInvolved(this.hashtag, this.publicKey)
+                        .then((items) => {
+                            this.set('items', items);
+                            this._dispatchAvatarHash();
+                        });
+                }
+            }
+            /**
+            * If ipfHash has resolved, we check for a corresponding key in the items list
+            * and update the item with the new avatar base64 value.
+            */
+            _updateAvatar() {
+                if (typeof (this.ipfsHash) == 'object') {
+                    for (let i = 0; i < this.items.length; i++) {
+                        if (this.ipfsHash.hasOwnProperty(this.items[i].seeker.avatarHash)) {
+                            this.set(`items.${i}.seeker.avatar`,
+                                this.ipfsHash[this.items[i].seeker.avatarHash]);
+                        }
+                    }
+                    this._dispatchAvatarHash();
+                }
+            }
+            /**
+            * For every item we check if its avatarHash has been resolved in localstorage
+            * If it hasn't, dispatch its avatarHash to resolve it.
+            * This function will get called as many times as there are unresolved avatarHashes.
+            */
+            _dispatchAvatarHash() {
+                let store = JSON.parse(localStorage.getItem('IPFS'));
+                for (let item of this.items) {
+                    if (item.seeker.avatar == '../../images/defaultavatar.png' &&
+                        !(store[item.seeker.avatarHash] == '../../images/defaultavatar.png')
+                    ) {
+                        this.dispatch('IPFSHASH', item.seeker.avatarHash);
+                        break;
+                    }
+                }
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+        }
+
+        window.customElements.define(MySimpledealInvolved.is, MySimpledealInvolved);
+    </script>
+</dom-module>
