@@ -1,0 +1,160 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<!--
+
+Example:
+```
+<display-sc-input></display-sc-input>
+```
+
+-->
+<dom-module id="display-sc-input">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+            }            
+
+            paper-input {
+                width: 100%;
+                /*max-width: 400px;*/
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+        </style>
+        <paper-input
+            id="input"
+            type="{{type}}" 
+            label="{{label}}" 
+            allowed-pattern="{{allowedpattern}}" 
+            pattern="{{pattern}}" 
+            value="{{value}}"
+            on-keydown="_checkForEnter">
+        </paper-input>
+    </template>
+    <script>
+        class ScInput extends Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        ) {
+            static get is() {
+                return 'display-sc-input';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * The 'label' of the paper input
+                    * @type {String}
+                    */
+                    label: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * The 'allowed-pattern' of the paper input
+                    * @type {String}
+                    */
+                    allowedpattern: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * The 'pattern' of the paper input
+                    * @type {String}
+                    */
+                    pattern: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * The 'value' of the paper input
+                    * @type {String}
+                    */
+                    value: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * The 'type' of the paper input
+                    * @type {String}
+                    */
+                    type: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * The 'style' of the paper input
+                    * @type {String}
+                    */
+                    addattr: {
+                        type: String,
+                        notify: true,
+                    },
+                };
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                if (this.addattr==='autofocus') {
+                    this.$$('#input').$.input.focus();
+                }
+                if (this.addattr==='data-numeric-input') {
+                    this.$$('#input').setAttribute('data-numeric-input', '');
+                }
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    setTimeout(()=>{
+                            this.$$('#input').focus();
+                            this.$$('#input').blur();
+                        }, 20);
+                }
+            }
+        }
+        window.customElements.define(ScInput.is, ScInput);
+    </script>
+</dom-module>
