@@ -120,15 +120,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_ipfsHashResolve',
                     },
                     /**
-                    * An array of IPFS hashes we want to resolve
-                    * @type {Array}
-                    */
-                    ipfsHashArray: {
-                        type: String,
-                        statePath: 'ipfsHashArray',
-                        observer: '_ipfsHashArray',
-                    },
-                    /**
                     * Send new request metadata to IPFS
                     * @type {Object}
                     */
@@ -258,10 +249,10 @@ This code may only be used under the license found at https://github.com/swarmci
                             hashtag: hashtag,
                         };
                     },
-                    IPFSHASHARRAY: function(ipfsHashArray) {
+                    IPFSHASH: function(ipfsHash) {
                         return {
-                            type: 'IPFSHASHARRAY',
-                            ipfsHashArray: ipfsHashArray,
+                            type: 'IPFSHASH',
+                            ipfsHash: ipfsHash,
                         };
                     },
                 });
@@ -323,42 +314,19 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _ipfsHashResolve() {
-                if (!localStorage.getItem('IPFSResolver')) {
-                    localStorage.setItem('IPFSResolver', '{}');
-                }
-                let store = JSON.parse(localStorage.getItem('IPFSResolver'));
-                if (!(this.ipfsHash in store)) {
+                let store = JSON.parse(localStorage.getItem('IPFS'));
+                if (!(this.ipfsHash in store) && typeof(this.ipfsHash) == 'string') {
                     this.socket.emit('ipfscat', {
                         hash: this.ipfsHash,
                     }, (reply) => {
                         if (reply.response == 200) {
                             store[this.ipfsHash] = reply.data;
-                            localStorage.setItem('IPFSResolver', JSON.stringify(store));
+                            let resolved = {};
+                            resolved[this.ipfsHash] = reply.data;
+                            this.dispatch('IPFSHASH', resolved);
+                            localStorage.setItem('IPFS', JSON.stringify(store));
                         }
                     });
-                }
-            }
-
-            _ipfsHashArray() {
-                if (this.ipfsHashArray && this.ipfsHashArray.length > 0) {
-                    if (!localStorage.getItem('IPFSResolver')) {
-                        localStorage.setItem('IPFSResolver', '{}');
-                    }
-                    let store = JSON.parse(localStorage.getItem('IPFSResolver'));
-                    if (!(this.ipfsHashArray[0] in store)) {
-                        this.socket.emit('ipfscat', {
-                            hash: this.ipfsHashArray[0],
-                        }, (reply) => {
-                            if (reply.response == 200) {
-                                store[this.ipfsHashArray[0]] = reply.data;
-                                localStorage.setItem('IPFSResolver', JSON.stringify(store));
-                                let arr = this.ipfsHashArray;
-                                arr.splice(0, 1);
-                                this.dispatch('IPFSHASHARRAY', []);
-                                this.dispatch('IPFSHASHARRAY', arr);
-                            }
-                        });
-                    }
                 }
             }
 

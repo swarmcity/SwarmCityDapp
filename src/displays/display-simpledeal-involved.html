@@ -204,7 +204,7 @@ The following custom properties and mixins are available for styling:
                         <div class="datedescript">
                             <div class="description">[[item.description]]</div>
                             <div class="date">
-                                5 minutes ago
+                                [[_formatDate(item.dateTime)]]
                             </div>
                         </div>
                         <div class="replycount">0</div>
@@ -214,7 +214,7 @@ The following custom properties and mixins are available for styling:
                         <div class="avatarandmeta">
 
                             <div class="avatar">
-                                <img class="item-avatar-seeker" src="[[item.avatar]]">
+                                <img class="item-avatar-seeker" src="[[item.seeker.avatar]]">
                             </div>
                             <div class="meta">
                                 <div class="user">[[item.seeker.username]] · [[item.seeker.rep]] SWR</div>
@@ -286,16 +286,15 @@ The following custom properties and mixins are available for styling:
                     items: {
                         type: Object,
                         value: [],
-                        observer: '_getAvatar',
                     },
                     /**
-                    * an ipfsHash to resolve
+                    * A seeker's avatarHash to be resolved
                     * @type {Object}
                     */
-                    ipfsHashArray: {
+                    ipfsHash: {
                         type: Object,
-                        statePath: 'ipfsHashArray',
-                        observer: '_getAvatar',
+                        statePath: 'ipfsHash',
+                        observer: '_updateAvatar',
                     },
                 };
             }
@@ -304,10 +303,10 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    IPFSHASHARRAY: function(ipfsHashArray) {
+                    IPFSHASH: function(ipfsHash) {
                         return {
-                            type: 'IPFSHASHARRAY',
-                            ipfsHashArray: ipfsHashArray,
+                            type: 'IPFSHASH',
+                            ipfsHash: ipfsHash,
                         };
                     },
                 });
@@ -319,50 +318,57 @@ The following custom properties and mixins are available for styling:
                 if (this.hashtag && this.hashtag.address) {
                     this.$.sort.getHashtagItemsInvolved(this.hashtag, this.publicKey)
                         .then((items) => {
-                            this.items = items;
-                            if (!localStorage.getItem('IPFSResolver')) {
-                                localStorage.setItem('IPFSResolver', '{}');
-                            }
-                            let store = JSON.parse(localStorage.getItem('IPFSResolver'));
-                            let arr = this.ipfsHashArray ? this.ipfsHashArray : [];
-                            for (let item of items) {
-                                if (!(item.seeker.avatarHash in store)) {
-                                    if (!arr.includes(item.seeker.avatarHash)) {
-                                        arr.push(item.seeker.avatarHash);
-                                    }
-                                }
-                            }
-                            this.dispatch('IPFSHASHARRAY', arr);
+                            this.set('items', items);
+                            this._dispatchAvatarHash();
                         });
                 }
             }
             /**
-            * Updates the items array with an avatar for each item
+            * If ipfHash has resolved, we check for a corresponding key in the items list
+            * and update the item with the new avatar base64 value.
             */
-            _getAvatar() {
-                if (!localStorage.getItem('IPFSResolver')) {
-                    localStorage.setItem('IPFSResolver', '{}');
+            _updateAvatar() {
+                if (typeof (this.ipfsHash) == 'object') {
+                    for (let i = 0; i < this.items.length; i++) {
+                        if (this.ipfsHash.hasOwnProperty(this.items[i].seeker.avatarHash)) {
+                            this.set(`items.${i}.seeker.avatar`,
+                                this.ipfsHash[this.items[i].seeker.avatarHash]);
+                        }
+                    }
+                    this._dispatchAvatarHash();
                 }
-                let store = JSON.parse(localStorage.getItem('IPFSResolver'));
-                for (let i = 0; i < this.items.length; i++) {
-                    if (!this.items[i].avatar) {
-                        if (this.items[i].seeker.avatarHash in store) {
-                            this.items[i].avatar = store[this.items[i].seeker.avatarHash];
-                        } else {
-                            this.items[i].avatar = '../../images/defaultavatar.png';
-                        }
-                    } else {
-                        if (this.items[i].avatar == '../../images/defaultavatar.png') {
-                            if (store != null) {
-                                if (this.items[i].seeker.avatarHash in store) {
-                                    this.items[i].avatar = store[this.items[i].seeker.avatarHash];
-                                }
-                            }
-                        }
+            }
+            /**
+            * For every item we check if its avatarHash has been resolved in localstorage
+            * If it hasn't, dispatch its avatarHash to resolve it.
+            * This function will get called as many times as there are unresolved avatarHashes.
+            */
+            _dispatchAvatarHash() {
+                let store = JSON.parse(localStorage.getItem('IPFS'));
+                for (let item of this.items) {
+                    if (item.seeker.avatar == '../../images/defaultavatar.png' &&
+                        !(store[item.seeker.avatarHash] == '../../images/defaultavatar.png')
+                    ) {
+                        this.dispatch('IPFSHASH', item.seeker.avatarHash);
+                        break;
                     }
                 }
             }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
         }
+
         window.customElements.define(MySimpledealInvolved.is, MySimpledealInvolved);
     </script>
 </dom-module>
