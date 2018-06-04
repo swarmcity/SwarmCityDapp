@@ -362,26 +362,6 @@ Example:
                 cursor: pointer;
             }
 
-            .nxt {
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
-                @apply --small-bold;
-                position: fixed;
-                top: 6px;
-                right: 10px;
-                cursor: pointer;
-            }
-
-            .prv {
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
-                @apply --small-bold;
-                position: fixed;
-                top: 5px;
-                right: 80px;
-                cursor: pointer;
-            }
-
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -393,9 +373,6 @@ Example:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
-
-            <div class="prv" on-click="_previous"><--</div>
-            <div class="nxt" on-click="_next">--></div>
             <template is="dom-if" if="{{postReply}}">
                 <div class="reply-box">
                     <div class="reply-horizontal">
@@ -562,64 +539,6 @@ Example:
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 this.noReplies = true;
-            }
-
-            _next() {
-                if (this.noReplies) {
-                    this.noReplies = !this.noReplies;
-                    this.showReplies = !this.showReplies;
-                }
-                else if (this.showReplies) {
-                    this.showReplies = !this.showReplies;
-                    this.postReply = !this.postReply;
-                }
-                else if (this.postReply) {
-                    this.postReply = !this.postReply;
-                    this.selectedMe = !this.selectedMe;
-                }
-                else if (this.selectedMe) {
-                    this.selectedMe = !this.selectedMe;
-                    this.providerSelected = !this.providerSelected;
-                    this.repliedByMe = !this.repliedByMe;
-                }
-                else if (this.providerSelected && this.repliedByMe) {
-                    this.repliedByMe = !this.repliedByMe;
-                }
-                else if (this.providerSelected && !this.repliedByMe) {
-                    this.providerSelected = !this.providerSelected;
-                    this.acceptedMe = !this.acceptedMe;
-                }
-            }
-
-            _previous() {
-                if (this.acceptedMe) {
-                    this.providerSelected = !this.providerSelected;
-                    this.acceptedMe = !this.acceptedMe;
-                }
-                else if (this.providerSelected && !this.repliedByMe) {
-                    this.repliedByMe = !this.repliedByMe;
-                }
-                else if (this.providerSelected && this.repliedByMe) {
-                    this.selectedMe = !this.selectedMe;
-                    this.providerSelected = !this.providerSelected;
-                    this.repliedByMe = !this.repliedByMe;
-                }
-                else if (this.repliedByMe) {
-                    this.repliedByMe = !this.repliedByMe;
-                    this.selectedMe = !this.selectedMe;
-                }
-                else if (this.selectedMe) {
-                    this.selectedMe = !this.selectedMe;
-                    this.postReply = !this.postReply;
-                }
-                else if (this.postReply) {
-                    this.postReply = !this.postReply;
-                    this.showReplies = !this.showReplies;
-                }
-                else if (this.showReplies) {
-                    this.showReplies = !this.showReplies;
-                    this.noReplies = !this.noReplies;
-                }
             }
         }
 
