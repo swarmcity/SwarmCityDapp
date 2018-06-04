@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../displays/display-simpledeal-items.html">
 <link rel="import" href="../displays/display-simpledeal-involved.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <!--
 
 Example:
@@ -31,10 +32,61 @@ The following custom properties and mixins are available for styling:
                 display: block;
             }
 
+            .middle {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                height: 47px;
+                margin: 0px 10px;
+                padding-bottom: 15px;
+            }
+
+            .container[wide-layout] .middle {
+                margin: 0 21vw 0 11vw;
+            }
+
+            .filterbox {
+                @apply --small-bold;
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                height: 25px;
+                color: var(--sc-grey3);
+                cursor: pointer;
+                background-color: rgba(0, 0, 0, 0.035);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .counterbox {
+                @apply --small-bold;
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                height: 25px;
+                color: var(--sc-blue);
+                cursor: pointer;
+                background-color: var(--sc-white);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
         </style>
-        <display-simpledeal-involved></display-simpledeal-involved>
-        <!-- <p>Here comes filter</p>
-        <display-simpledeal-items></display-simpledeal-items> -->
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <display-simpledeal-involved count={{count}}></display-simpledeal-involved>
+            <div class="middle">
+                <div class="filterbox">filter deals</div>
+                <div class="flex"></div>
+                <template is="dom-if" if="{{showCounter}}">
+                    <div class="counterbox">[[count]] active</div>
+                </template>
+            </div>
+            <display-simpledeal-items></display-simpledeal-items>
+        </div>
     </template>
     <script>
         class MyHashtagSimpledeal extends Polymer.mixinBehaviors([
@@ -56,7 +108,31 @@ The following custom properties and mixins are available for styling:
                         value: null,
                         notify: true,
                     },
+                    /**
+                    * showCounter decides whether to show the new item counter
+                    * @type {Boolean}
+                    */
+                    showCounter: {
+                        type: Boolean,
+                        value: false,
+
+                    },
+                    /**
+                    * count is the amount items the user is involved in
+                    * @type {Number}
+                    */
+                    count: {
+                        type: Boolean,
+                        observer: '_isInvolved',
+                    },
                 };
+            }
+            /**
+            * This functions returns the showcounter boolean depending on the amount of
+            * items the user is involved in.
+            */
+            _isInvolved() {
+                this.showCounter = this.count >= 1 ? true : false;
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
