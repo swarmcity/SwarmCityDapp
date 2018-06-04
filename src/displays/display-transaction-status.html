@@ -11,16 +11,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <!--
     Displays and shared styles only
 -->
-
-<link rel="import" href="display-sc-input.html">
-
-
-Example:
-```
-<display-transaction-status></display-transaction-status>
-```
-
--->
 <dom-module id="display-transaction-status">
     <template>
         <style include="shared-styles">
@@ -111,10 +101,6 @@ Example:
 
             .container[wide-layout] .send-box {
                 @apply --layout-start;
-                width: 100%;
-            }
-
-            display-sc-input {
                 width: 100%;
             }
 
@@ -481,11 +467,11 @@ Example:
             <template is="dom-if" if="{{send}}">
                 <div class="send-box">
                     <div class="totalamountinput">
-                        <display-sc-input tabindex="1" type="Number" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowedpattern="[0-9\.\,]" value="{{amountToSend}}" 
-                             on-keyup="_checkBalance"></display-sc-input>
+                        <paper-input tabindex="1" type="Number" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]" value="{{amountToSend}}" 
+                             on-keyup="_checkBalance"></paper-input>
                         <div class="SWT">SWT</div>
                     </div>
-                    <display-sc-input tabindex="2" pattern="[0-9]*" addattr="data-numeric-input" pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}" on-keyup="_checkShortCode"></display-sc-input>
+                    <paper-input tabindex="2" pattern="[0-9]*" data-numeric-input pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}" type="txt" value="{{sendDestination}}" on-keyup="_checkShortCode"></paper-input>
                     <div class="errorcontainer">
                         <span id="error">{{error}}</span>
                     </div>
@@ -855,10 +841,6 @@ Example:
             * @param {Object} event element clicked.
             */
             _checkPublicKey(event) {
-                setTimeout(()=>{
-                    this.$$('.send-destination').focus();
-                    this.$$('.send-destination').blur();
-                }, 20);
                 if (this._checkBalance() && this._checkShortCode()) {
                     if (event.keyCode === 13 || event.type == 'tap') {
                         if (this.sendDestination && this.amountToSend <= this.balance.swt.balanceSwt) {
