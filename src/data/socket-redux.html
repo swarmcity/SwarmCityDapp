@@ -442,13 +442,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
             _broadcast() {
-                this.socket.emit('replyShortCode', {
-                    shortCode: this.reqtokey,
-                    tx: this.broadcast,
-                }, (reply) => {
-                    this.txHash = reply;
-                    this.dispatch('TXHASH', this.txHash);
-                });
+                    if (this.reqtokey != null) {
+                    this.socket.emit('replyShortCode', {
+                        shortCode: this.reqtokey,
+                        tx: this.broadcast,
+                    }, (reply) => {
+                        this.txHash = reply;
+                        this.dispatch('TXHASH', this.txHash);
+                    });
+                }
             }
 
             // Subscribe to a certain hashtag
