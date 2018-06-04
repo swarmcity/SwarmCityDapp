@@ -83,8 +83,8 @@ The following custom properties and mixins are available for styling:
 
             .counterbox {
                 @apply --small-bold;
-                @apply --layout-vertical;
-                @apply --layout-center-justified;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
                 height: 25px;
                 color: var(--sc-blue);
                 cursor: pointer;
@@ -92,6 +92,10 @@ The following custom properties and mixins are available for styling:
                 border-radius: 3px;
                 box-sizing: border-box;
                 padding: 0px 10px;
+            }
+
+            .icon-scroll {
+                @apply --arrowup-blue-small;
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -101,15 +105,17 @@ The following custom properties and mixins are available for styling:
                     <span class="hashtagsymbol">#</span>{{hashtag.name}}
                 </div>
             </div>
-        <display-simpledeal-involved count={{count}}></display-simpledeal-involved>
-        <div class="middle">
-            <div class="filterbox">filter deals</div>
-            <div class="flex"></div>
-            <template is="dom-if" if="{{showCounter}}">
-                <div class="counterbox">[[count]] active</div>
-            </template>
-        </div>
-        <display-simpledeal-items></display-simpledeal-items>
+            <display-simpledeal-involved path={{path}} count={{count}}></display-simpledeal-involved>
+            <div class="middle">
+                <div class="filterbox">filter deals</div>
+                <div class="flex"></div>
+                <template is="dom-if" if="{{showCounter}}">
+                    <div class="counterbox" on-tap="_backToTop">[[count]] active
+                        <div class="icon-scroll"></div>
+                    </div>
+                </template>
+            </div>
+            <display-simpledeal-items path={{path}}></display-simpledeal-items>
         </div>
     </template>
     <script>
@@ -164,6 +170,21 @@ The following custom properties and mixins are available for styling:
             */
             _isInvolved() {
                 this.showCounter = this.count >= 1 ? true : false;
+            }
+            /**
+            * takes the user back to the top of the page
+            * @param {Object} event element clicked.
+            */
+            _backToTop() {
+                let scrollDuration = 1000;
+                let scrollStep = -window.scrollY / (scrollDuration / 15);
+                let scrollInterval = setInterval(function () {
+                    if (window.scrollY != 0) {
+                        window.scrollBy(0, scrollStep);
+                    }
+                    else clearInterval(scrollInterval);
+                },
+                    15);
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
