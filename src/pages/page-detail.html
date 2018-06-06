@@ -31,6 +31,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 display: block;
                 max-width: 100%;
                 --max-width: 800px;
+
+                animation: bgcolors 60s linear infinite;
             }
 
             .container {
@@ -225,6 +227,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-grey4);
             }
 
+            .loaderimg {
+                background: url("../../images/detail-loader-mobile.png") no-repeat center center fixed;
+                background-size: 100%;
+                width: 100%;
+                height: 100%;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -237,59 +246,70 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-get-item route={{route}}></display-get-item>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
-            <dom-if if="{{publicKey}}">
-                <template>
-                    <div class="header">
-                        <display-my-info path="{{path}}" route="{{route}}">
-                        </display-my-info>
+
+        <dom-if if="{{loading}}">
+            <template>
+                <div class="loaderimg">
+            </template>
+        </dom-if>
+
+        <dom-if if="{{!loading}}">
+            <template>
+                <div class="container" wide-layout$="{{wide}}">
+                    <dom-if if="{{publicKey}}">
+                        <template>
+                            <div class="header">
+                                <display-my-info path="{{path}}" route="{{route}}">
+                                </display-my-info>
+                            </div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{!publicKey}}">
+                        <template>
+                            <div class="top-margin"></div>
+                        </template>
+                    </dom-if>
+
+                    <div class="title">
+                        <div class="namebox">
+                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
+                        </div>
                     </div>
-                </template>
-            </dom-if>
-            <dom-if if="{{!publicKey}}">
-                <template>
-                    <div class="top-margin"></div>
-                </template>
-            </dom-if>
 
-            <div class="title">
-                <div class="namebox">
-                    <span class="hashtagsymbol">#</span>{{hashtag.name}}
-                </div>
-            </div>
+                    <div class="itembox">
+                        <div class="closebox">
+                            <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+                        </div>
 
-            <div class="itembox">
-                <div class="closebox">
-                    <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
-                </div>
-
-                <div class="description">
-                    [[hashtagItem.description]]
-                </div>
-                <div class="date">
-                    [[_formatDate(hashtagItem.dateTime)]]
-                </div>
-                <div class="seeker">
-                    <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
-                    <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
-                    <div class="pricebox">
-                        <div class="unit">SWT</div>
-                        <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                        <div class="description">
+                            [[hashtagItem.description]]
+                        </div>
+                        <div class="date">
+                            [[_formatDate(hashtagItem.dateTime)]]
+                        </div>
+                        <div class="seeker">
+                            <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
+                            <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            <div class="pricebox">
+                                <div class="unit">SWT</div>
+                                <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                            </div>
+                        </div>
+                        <div class="linkbox">
+                            <span class="link">shareable link</span>
+                        </div>
+                    </div>
+                    <div class="dealstate">
+                        <template is="dom-if" if="{{myRequest}}">
+                            <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
+                        </template>
+                        <template is="dom-if" if="{{!myRequest}}">
+                            <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
+                        </template>
                     </div>
                 </div>
-                <div class="linkbox">
-                    <span class="link">shareable link</span>
-                </div>
-            </div>
-            <div class="dealstate">
-                <template is="dom-if" if="{{myRequest}}">
-                    <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
-                </template>
-                <template is="dom-if" if="{{!myRequest}}">
-                    <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
-                </template>
-            </div>
-        </div>
+            </template>
+        </dom-if>
     </template>
     <script>
         class MyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -302,9 +322,21 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
+                    },
+                    /**
+                    * Loading is true when the page data isn't fully loaded yet
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: true,
                     },
                     /**
                     * Path is the current or requested path
@@ -353,6 +385,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: {
                         type: Object,
                         statePath: 'hashtag',
+                        observer: '_loadPage'
                     },
                     /**
                     * the hashtag item we've subscribed to
@@ -361,6 +394,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
+                        observer: '_loadPage',
                     },
                     /**
                     * A seeker's avatarHash to be resolved
@@ -377,7 +411,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    IPFSHASH: function(ipfsHash) {
+                    IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
@@ -417,7 +451,22 @@ This code may only be used under the license found at https://github.com/swarmci
             _formatValue(value) {
                 return value / 1e18;
             }
-
+            /**
+            * Toggles betweeen loading & loaded state
+            */
+            _loadPage() {
+                if (this.hashtag &&
+                    this.hashtag.address &&
+                    this.hashtagItem &&
+                    this.hashtagItem.itemHash &&
+                    this.hashtagItem.itemHash == this.route.path.split('/')[3] &&
+                    this.hashtagItem.seeker.avatar
+                ) {
+                    this.loading = false;
+                } else {
+                    this.loading = true;
+                }
+            }
             /**
             * changes the current path
             */
