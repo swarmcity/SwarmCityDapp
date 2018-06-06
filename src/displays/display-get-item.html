@@ -5,13 +5,12 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
-<script src="../data/webpack.min.js"></script>
-<dom-module id="display-get-hashtag">
-    
+<dom-module id="display-get-item">
+
     <script>
-            class MyDisplayGetHashtag extends new ReduxMixin(Polymer.Element) {
+        class MyDisplayGetItem extends new ReduxMixin(Polymer.Element) {
             static get is() {
-                return 'display-get-hashtag';
+                return 'display-get-item';
             }
             static get properties() {
                 return {
@@ -21,15 +20,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     route: {
                         type: Object,
-                        observer: '_getHashtagAddress',
+                        observer: '_getItemHash',
                     },
                     /**
                     * the selected hashtag
                     * @type {Object}
                     */
-                    hashtag: {
+                    hashtagItem: {
                         type: Object,
-                        statePath: 'hashtag',
                     },
                 };
             }
@@ -38,10 +36,10 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    HASHTAG: function(hashtag) {
+                    HASHTAGITEM: function (hashtagItem) {
                         return {
-                            type: 'HASHTAG',
-                            hashtag: hashtag,
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
                         };
                     },
                 });
@@ -50,25 +48,20 @@ This code may only be used under the license found at https://github.com/swarmci
             * Decide if the current url contains a hashtag address
             * If so and not yet loaded, send data request to socket
             */
-            _getHashtagAddress() {
-                let urlAddress = false;
-
-                for (let el of this.route.path.split('/')) {
-                    if (webpack.isValidAddress(el)) {
-                        urlAddress = el;
+            _getItemHash() {
+                if (this.route.path.split('/')[1] == 'detail') {
+                    let itemHash = this.route.path.split('/')[3];
+                    let hashtagAddress = this.route.path.split('/')[2]
+                    this.hashtagItem = {
+                        request: {
+                            hashtagAddress,
+                            itemHash,
+                        }
                     }
-                }
-
-                if (urlAddress &&
-                    ((this.hashtag && (this.hashtag.address != urlAddress)) || !this.hashtag)) {
-                        this.hashtag = {
-                            request: urlAddress,
-                        };
-                        this.dispatch('HASHTAG', this.hashtag);
-                urlAddress = false;
+                    this.dispatch('HASHTAGITEM', this.hashtagItem);
                 }
             }
         }
-        window.customElements.define(MyDisplayGetHashtag.is, MyDisplayGetHashtag);
+        window.customElements.define(MyDisplayGetItem.is, MyDisplayGetItem);
     </script>
 </dom-module>
