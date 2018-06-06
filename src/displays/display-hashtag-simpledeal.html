@@ -33,38 +33,39 @@ The following custom properties and mixins are available for styling:
                 display: block;
             }
 
+            .container {
+                width: 100%;
+                box-sizing:border-box;
+                padding: 0px;
+            }
+
             .middle {
                 width: 100%;
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 @apply --layout-end;
-                margin: 0px 10px;
-                padding-bottom: 15px;
-
-                position: -webkit-sticky;
-                position: sticky;
-                top: 141px;
+                box-sizing: border-box;
+                padding: 10px 10px 10px 10px;
             }
 
             .container[wide-layout] .middle {
-                margin: 0 10vw 0 10vw;
-                position: -webkit-sticky;
-                position: sticky;
-                top: 174px;
+                margin: 20px 10vw 20px 10vw;
             }
 
             .title {
+                width: 100%;
                 box-sizing: border-box;
-                margin: 0 40px 0 40px;
-                padding-top: 107px;    
-                position: -webkit-sticky;
-                position: sticky;
-                top: 0px;
+                padding: 0 40px 0px 40px;
+                position: fixed;
+                background-image: url(../../images/bg-header3.png);
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
             }
 
             .container[wide-layout] .title {
-                margin: 0 10vw 0 10vw;
-                padding-top: 120px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 10vw 10px 10vw;
             }
 
             .filterbox {
@@ -78,7 +79,7 @@ The following custom properties and mixins are available for styling:
                 border-radius: 3px;
                 box-sizing: border-box;
                 padding: 0px 10px;
-                margin: 10px 0px 0px 30px;
+                margin: 0px;
             }
 
             .container[wide-layout] .filterbox {
@@ -95,15 +96,14 @@ The following custom properties and mixins are available for styling:
                 @apply --main-title2;
                 font-size: 30px;
                 color: var(--sc-grey4);
-                padding: 0px;
-                /* margin-bottom: 20px; */
+                padding: 0px 0px 10px 0px;
             }
 
             .container[wide-layout] .namebox {
                 @apply --main-title2;
-                font-size: 36px;
+                font-size: 26px;
                 margin: 0px;
-                padding: 20px 0px 0px 0px;
+                padding: 10px 0px 0px 0px;
             }
 
 
@@ -134,6 +134,18 @@ The following custom properties and mixins are available for styling:
             display-simpledeal-items {
                 width: 100%;
             }
+
+            .totalmiddle {
+                box-sizing:border-box;
+                padding: 46px 0px 0px 0px;
+            }
+
+
+            .container[wide-layout] .totalmiddle {
+                box-sizing:border-box;
+                padding: 56px 0px 0px 0px;
+            }
+
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
@@ -142,17 +154,19 @@ The following custom properties and mixins are available for styling:
                     <span class="hashtagsymbol">#</span>{{hashtag.name}}
                 </div>
             </div>
-            <display-simpledeal-involved path={{path}} count={{count}}></display-simpledeal-involved>
-            <div class="middle">
-                <div class="filterbox">filter deals</div>
-                <div class="flex"></div>
-                <template is="dom-if" if="{{showCounter}}">
-                    <div class="counterbox" on-tap="_backToTop">[[count]] active
-                        <div class="icon-scroll"></div>
-                    </div>
-                </template>
+            <div class="totalmiddle">
+                <display-simpledeal-involved path={{path}} count={{count}}></display-simpledeal-involved>
+                <div class="middle">
+                    <div class="filterbox">filter deals</div>
+                    <div class="flex"></div>
+                    <template is="dom-if" if="{{showCounter}}">
+                        <div class="counterbox" on-tap="_backToTop">[[count]] active
+                            <div class="icon-scroll"></div>
+                        </div>
+                    </template>
+                </div>
+                <display-simpledeal-items path={{path}}></display-simpledeal-items>
             </div>
-            <display-simpledeal-items path={{path}}></display-simpledeal-items>
         </div>
     </template>
     <script>
