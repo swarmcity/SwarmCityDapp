@@ -147,104 +147,10 @@ The following custom properties and mixins are available for styling:
                     hashtag: {
                         type: Object,
                         statePath: 'hashtag',
-                        observer: '_getItems',
-                    },
-                    /**
-                    * publicKey is the user's address
-                    * @type {Object}
-                    */
-                    publicKey: {
-                        type: Object,
-                        statePath: 'publicKey',
-                    },
-                    /**
-                    * Items are all the hashtag's items the user is involved with
-                    * @type {Object}
-                    */
-                    items: {
-                        type: Object,
-                        value: [],
-                    },
-                    /**
-                    * A seeker's avatarHash to be resolved
-                    * @type {Object}
-                    */
-                    ipfsHash: {
-                        type: Object,
-                        statePath: 'ipfsHash',
-                        observer: '_updateAvatar',
                     },
                 };
             }
-            /**
-            * Redux action for sending an IPFS resolve request
-            */
-            static get actions() {
-                return Object.assign({
-                    IPFSHASH: function(ipfsHash) {
-                        return {
-                            type: 'IPFSHASH',
-                            ipfsHash: ipfsHash,
-                        };
-                    },
-                });
-            }
-            /**
-            * Populates the items Object with the hashtag items the user is involved with
-            */
-            _getItems() {
-                if (this.hashtag && this.hashtag.address) {
-                    this.$.sort.getHashtagItems(this.hashtag, this.publicKey)
-                        .then((items) => {
-                            this.set('items', items);
-                            this._dispatchAvatarHash();
-                        });
-                }
-            }
-            /**
-            * If ipfHash has resolved, we check for a corresponding key in the items list
-            * and update the item with the new avatar base64 value.
-            */
-            _updateAvatar() {
-                if (typeof (this.ipfsHash) == 'object') {
-                    for (let i = 0; i < this.items.length; i++) {
-                        if (this.ipfsHash.hasOwnProperty(this.items[i].seeker.avatarHash)) {
-                            this.set(`items.${i}.seeker.avatar`,
-                                this.ipfsHash[this.items[i].seeker.avatarHash]);
-                        }
-                    }
-                    this._dispatchAvatarHash();
-                }
-            }
-            /**
-            * For every item we check if its avatarHash has been resolved in localstorage
-            * If it hasn't, dispatch its avatarHash to resolve it.
-            * This function will get called as many times as there are unresolved avatarHashes.
-            */
-            _dispatchAvatarHash() {
-                let store = JSON.parse(localStorage.getItem('IPFS'));
-                for (let item of this.items) {
-                    if (item.seeker.avatar == '../../images/defaultavatar.png' &&
-                        !(store[item.seeker.avatarHash] == '../../images/defaultavatar.png')
-                    ) {
-                        this.dispatch('IPFSHASH', item.seeker.avatarHash);
-                        break;
-                    }
-                }
-            }
-            /**
-            * formats epoch
-            * @param {DateTime} dateTime epoch in javascript milliseconds
-            * @return {string} formatted date string
-            */
-            _formatDate(dateTime) {
-                let milliseconds = dateTime * 1000;
-                if (webpack.moment().valueOf() - milliseconds < 86400000) {
-                    return webpack.moment(milliseconds).fromNow();
-                } else {
-                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
-                }
-            }
+
         }
 
         window.customElements.define(MySimpledealTitle.is, MySimpledealTitle);
