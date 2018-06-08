@@ -37,7 +37,13 @@ The following custom properties and mixins are available for styling:
             .container {
                 width: 100%;
                 box-sizing:border-box;
-                padding: 0px;
+                padding: 0px 0px 0px 0px;
+                height: 80vh;
+                overflow: auto;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 0px 0px 0px;                
             }
 
             .middle {
@@ -46,12 +52,18 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center-justified;
                 @apply --layout-end;
                 box-sizing: border-box;
-                padding: 10px 10px 10px 10px;
+                padding: 10px 40px 10px 40px;
+                position: sticky;
+                top: 46px;
+                background-image: url(../../images/bg-header3.png);
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
             }
 
             .container[wide-layout] .middle {
                 max-width: 78vw;
                 padding: 20px 0vw 20px 10vw;
+                top: 56px;
             }
 
            
@@ -68,8 +80,6 @@ The following custom properties and mixins are available for styling:
                 box-sizing: border-box;
                 padding: 0px 10px;
                 margin: 0px;
-                position: sticky;
-                top:300px;
             }
 
             .container[wide-layout] .filterbox {
@@ -103,21 +113,15 @@ The following custom properties and mixins are available for styling:
                 width: 100%;
             }
 
-            .totalmiddle {
-                box-sizing:border-box;
-                padding: 46px 0px 0px 0px;
-            }
-
-
-            .container[wide-layout] .totalmiddle {
-                box-sizing:border-box;
-                padding: 56px 0px 0px 0px;
+           .stupid-solution {
+                margin-top: 46px;
+                /* border:1px solid blue; */
             }
 
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="totalmiddle">
+            <div class="stupid-solution"></div>
                 <display-simpledeal-involved path={{path}} count={{count}}></display-simpledeal-involved>
                 <div class="middle">
                     <div class="filterbox">filter deals</div>
@@ -129,7 +133,6 @@ The following custom properties and mixins are available for styling:
                     </template>
                 </div>
                 <display-simpledeal-items path={{path}}></display-simpledeal-items>
-            </div>
         </div>
     </template>
     <script>
@@ -189,15 +192,17 @@ The following custom properties and mixins are available for styling:
             * takes the user back to the top of the page
             */
             _backToTop() {
-                let scrollDuration = 500;
-                let scrollStep = -window.scrollY / (scrollDuration / 15);
-                let scrollInterval = setInterval(function() {
-                    if (window.scrollY != 0) {
-                        window.scrollBy(0, scrollStep);
-                    }
-                    else clearInterval(scrollInterval);
-                },
-                    15);
+                let c = this.$.container.scrollTop;
+                console.log (c);
+                // let scrollDuration = 500;
+                // let scrollStep = -window.scrollY / (scrollDuration / 15);
+                // let scrollInterval = setInterval(function() {
+                //     if (window.scrollY != 0) {
+                //         window.scrollBy(0, scrollStep);
+                //     }
+                //     else clearInterval(scrollInterval);
+                // },
+                //     15);
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
