@@ -16,6 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-hashtag-about.html">
 <link rel="import" href="../displays/display-create-request.html">
+<link rel="import" href="../displays/display-simpledeal-title.html">
 
 <dom-module id="page-new-request">
     <template>
@@ -43,117 +44,89 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-
-            .container .header {
-                @apply --layout-vertical;
-                width: 100%;
+            .header {
+                @apply --layout-horizontal;
+                background-image: url(../../images/bg-header3.png);
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
                 box-sizing: border-box;
-                padding: 40px 0 0 0;
-                background-image: var(--sc-bg);
+                padding: 40px 40px 20px 40px;
+                width: 100%;
                 position: fixed;
                 top: 0;
-                z-index: 4;
+                z-index: 99;
             }
 
             .container[wide-layout] .header {
                 box-sizing: border-box;
-                padding: 50px 0 20px 0;
+                padding: 50px 10vw 20px 10vw;
             }
 
-            .header-top {
-                @apply --layout-horizontal;
+            .topleft {
+                @apply --layout-vertical;
                 @apply --layout-start;
                 @apply --layout-start-justified;
-                box-sizing: border-box;
-                padding: 0 40px;
-                height: 50px;
-            }
-
-            .container[wide-layout] .header-top {
-                height: 70px;
-                box-sizing: border-box;
-                padding: 0px 10vw 0px;
-            }
-
-            .header-bottom {
-                @apply --layout-start;
-                @apply --layout-horizontal;
-                @apply --layout-wrap;
-                box-sizing: border-box;
-                padding: 14px 40px 8px 40px;
-                width: 100%;
-            }
-
-            .container[wide-layout] .header-bottom {
-                box-sizing: border-box;
-                padding: 10px 10vw 0px;
-            }
-
-            .header-leftbottom {
-                @apply --layout-horizontal;
                 @apply --layout-flex;
-                @apply --layout-start-justified;
+            }
+
+            .topright {
                 @apply --layout-end;
+                @apply --layout-vertical;
             }
 
-
-            .hashtag {
-                @apply --main-title2;
-                font-size: 30px;
-                color: var(--sc-grey4);
-                transition: font-size 0.10s;
+            .container-simpledeal {
+                width: 100%;
+                margin: 106px 0px 0px 0px;
             }
 
-            .hashtagsymbol {
-                font-weight: 800;
-                font-size: 27px;
-                margin-right: 2px;
-            }
-
-            .info-toggle {
-                @apply --small-bold;
-                @apply --layout-center;
-                color: var(--sc-blue);
-                border-bottom: 2px dotted var(--sc-blue);
-                margin: 0px 0px 8px 10px;
-                box-sizing: border-box;
-                padding: 1px 3px;
-                cursor: pointer;
+            .container[wide-layout] .container-simpledeal {
+                width: 100%;
+                margin: 120px 0px 0px 0px;
             }
 
             .container display-create-request {
-                margin: 150px 0px 0px 0px;
-                width: 95vw;
+                width: 100vw;
+                box-sizing:border-box;
+                padding: 46px 10px 0px 10px;
             }
 
             .container[wide-layout] display-create-request {
-                margin: 187px 10vw 0px 10vw;
                 width: 80vw;
+                box-sizing:border-box;
+                padding: 56px 10vw 0px 10vw;
                 max-width: 950px;
             }
+
+            display-simpledeal-title {
+                position: fixed;
+                width: 100%;
+                z-index: 90;
+            }
+
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="header">
-                <div class="header-top">
-                    <display-my-info avatarSmall path="{{path}}" route="[[route]]">
-                    </display-my-info>
+                <div class="topleft">
+                        <display-my-info path="{{path}}" route="{{route}}" id="displaymyinfo">
+                        </display-my-info>
                 </div>
-                <div class="header-bottom">
-                    <div class="header-leftbottom" id="hashtagHeader">
-                        <div id="hashtag" class="hashtag">
-                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
-                        </div>
-                        <div id="infolink" class="info-toggle">i</div>
+                <div class="topright">
+                    <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back">
                     </div>
                 </div>
             </div>
-            <display-create-request 
+            <div class="container-simpledeal">
+                <display-simpledeal-title>
+                </display-simpledeal-title>
+                <display-create-request 
                 id="displayrequest"
                 path="{{path}}"
                 route-entry="{{routeEntry}}">
-            </display-create-request>
+                </display-create-request>
+                
+            </div>
         </div>
         </div>
     </template>

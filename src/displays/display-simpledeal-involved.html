@@ -54,6 +54,11 @@ The following custom properties and mixins are available for styling:
                 margin: 0px 10px 4px 10px;
             }
 
+            .container[wide-layout] .box {
+                margin: 0px 10px 4px 0px;
+            }
+
+
             .empty {
                 width: 100%;
                 box-sizing: border-box;
@@ -199,7 +204,7 @@ The following custom properties and mixins are available for styling:
         <div class="container" wide-layout$="{{wide}}">
 
             <template is="dom-repeat" items="{{items}}">
-                <div tabindex="5" class="box">
+                <div tabindex="5" class="box" on-tap="_toItem">
                     <div class="top">
                         <div class="datedescript">
                             <div class="description">[[item.description]]</div>
@@ -288,6 +293,15 @@ The following custom properties and mixins are available for styling:
                         value: [],
                     },
                     /**
+                    * the parent will receive the amount of items the user is involved in
+                    * @type {Object}
+                    */
+                    count: {
+                        type: Number,
+                        value: 0,
+                        notify: true,
+                    },
+                    /**
                     * A seeker's avatarHash to be resolved
                     * @type {Object}
                     */
@@ -319,6 +333,7 @@ The following custom properties and mixins are available for styling:
                     this.$.sort.getHashtagItemsInvolved(this.hashtag, this.publicKey)
                         .then((items) => {
                             this.set('items', items);
+                            this.count = this.items.length;
                             this._dispatchAvatarHash();
                         });
                 }
@@ -366,6 +381,9 @@ The following custom properties and mixins are available for styling:
                 } else {
                     return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
                 }
+            }
+            _toItem(event) {
+                this.path = 'detail/' + this.hashtag.address + '/' + event.model.__data.item.itemHash;
             }
         }
 

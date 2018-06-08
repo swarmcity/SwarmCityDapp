@@ -29,9 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 width: 100vw;
-                height: 100%;
                 background-image: var(--sc-bg);
-                overflow: auto;
             }
 
             .dealbtn {
@@ -49,9 +47,15 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .header {
                 @apply --layout-horizontal;
-                background-image: var(--sc-bg);
+                background-image: url(../../images/bg-header3.png);
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
                 box-sizing: border-box;
                 padding: 40px 40px 20px 40px;
+                width: 100%;
+                position: fixed;
+                top: 0;
+                z-index: 99;
             }
 
             .container[wide-layout] .header {
@@ -75,6 +79,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-flex;
             }
 
+            .container-simpledeal {
+                width: 100%;
+                margin: 106px 0px 0px 0px;
+                border: 1px solid green;
+            }
+
+            .container[wide-layout] .container-simpledeal {
+                width: 100%;
+                margin: 120px 0px 0px 0px;
+            }
+
             .back {
                 cursor: pointer;
                 @apply --arrowleft-grey3-small;
@@ -83,6 +98,12 @@ This code may only be used under the license found at https://github.com/swarmci
             .back:active {
                 @apply --button-active;
             }
+
+            display-simpledeal-title {
+                position: fixed;
+                width: 100%;
+            }
+
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -96,45 +117,33 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="dealbtn" id="dealButton">
-                <display-deal-btn 
-                    route="[[route]]" 
-                    path="{{path}}">
+                <display-deal-btn route="[[route]]" path="{{path}}">
                 </display-deal-btn>
             </div>
-            <div class="header">
+            <div class="header" id="header">
                 <div class="topleft">
                     <template is="dom-if" if="{{!publicKey}}">
                         <div class="createbox">
-                            <div 
-                                tabindex="1" 
-                                class="createlink" 
-                                on-tap="_toCreateAccount" 
-                                on-KeyPress="_toCreateAccount">
+                            <div tabindex="1" class="createlink" on-tap="_toCreateAccount" on-KeyPress="_toCreateAccount">
                                 {{localize('create account')}}
                             </div>
                         </div>
                     </template>
-                    <template 
-                        is="dom-if" 
-                        if="{{publicKey}}">
-                        <display-my-info 
-                            path="{{path}}" 
-                            route="{{route}}" 
-                            id="displaymyinfo">
+                    <template is="dom-if" if="{{publicKey}}">
+                        <display-my-info path="{{path}}" route="{{route}}" id="displaymyinfo">
                         </display-my-info>
                     </template>
                 </div>
                 <div class="topright">
-                    <div 
-                        tabindex="2" 
-                        class="back" 
-                        on-tap="_back" 
-                        id="back" 
-                        on-KeyPress="_back">
+                    <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back">
                     </div>
                 </div>
             </div>
-            <display-hashtag-simpledeal></display-hashtag-simpledeal>
+            <div class="container-simpledeal">
+                <display-simpledeal-title>
+                </display-simpledeal-title>
+                <display-hashtag-simpledeal path={{path}}></display-hashtag-simpledeal>
+            </div>
         </div>
     </template>
     <script>

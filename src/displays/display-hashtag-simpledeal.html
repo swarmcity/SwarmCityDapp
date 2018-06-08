@@ -6,7 +6,10 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../displays/display-simpledeal-items.html">
+<link rel="import" href="../displays/display-simpledeal-title.html">
 <link rel="import" href="../displays/display-simpledeal-involved.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../redux-state.html">
 <!--
 
 Example:
@@ -31,17 +34,113 @@ The following custom properties and mixins are available for styling:
                 display: block;
             }
 
+            .container {
+                width: 100%;
+                box-sizing:border-box;
+                padding: 0px 0px 0px 0px;
+                height: 80vh;
+                overflow: auto;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 0px 0px 0px;                
+            }
+
+            .middle {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                box-sizing: border-box;
+                padding: 10px 40px 10px 40px;
+                position: sticky;
+                top: 46px;
+                background-image: url(../../images/bg-header3.png);
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+            }
+
+            .container[wide-layout] .middle {
+                max-width: 78vw;
+                padding: 20px 0vw 20px 10vw;
+                top: 56px;
+            }
+
+           
+
+            .filterbox {
+                @apply --small-bold;
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                height: 25px;
+                color: var(--sc-grey3);
+                cursor: pointer;
+                background-color: rgba(0, 0, 0, 0.035);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+                margin: 0px;
+            }
+
+            .container[wide-layout] .filterbox {
+                margin: 0px;
+                padding: 0px 10px;
+            }
+
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .counterbox {
+                @apply --small-bold;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                height: 25px;
+                color: var(--sc-blue);
+                cursor: pointer;
+                background-color: var(--sc-white);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
+
+            .icon-scroll {
+                @apply --arrowup-blue-small;
+            }
+
+            display-simpledeal-items {
+                width: 100%;
+            }
+
+           .stupid-solution {
+                margin-top: 46px;
+                /* border:1px solid blue; */
+            }
+
         </style>
-        <display-simpledeal-involved></display-simpledeal-involved>
-        <!-- <p>Here comes filter</p>
-        <display-simpledeal-items></display-simpledeal-items> -->
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="stupid-solution"></div>
+                <display-simpledeal-involved path={{path}} count={{count}}></display-simpledeal-involved>
+                <div class="middle">
+                    <div class="filterbox">filter deals</div>
+                    <div class="flex"></div>
+                    <template is="dom-if" if="{{showCounter}}">
+                        <div class="counterbox" on-tap="_backToTop">[[count]] active
+                            <div class="icon-scroll"></div>
+                        </div>
+                    </template>
+                </div>
+                <display-simpledeal-items path={{path}}></display-simpledeal-items>
+        </div>
     </template>
     <script>
-        class MyHashtagSimpledeal extends Polymer.mixinBehaviors([
+        class MyHashtagSimpledeal extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
-        ) {
+        )) {
             static get is() {
                 return 'display-hashtag-simpledeal';
             }
@@ -56,7 +155,54 @@ The following custom properties and mixins are available for styling:
                         value: null,
                         notify: true,
                     },
+                    /**
+                    * showCounter decides whether to show the new item counter
+                    * @type {Boolean}
+                    */
+                    showCounter: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * count is the amount items the user is involved in
+                    * @type {Number}
+                    */
+                    count: {
+                        type: Boolean,
+                        observer: '_isInvolved',
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
                 };
+            }
+            /**
+            * This functions returns the showcounter boolean depending on the amount of
+            * items the user is involved in.
+            */
+            _isInvolved() {
+                this.showCounter = this.count >= 1 ? true : false;
+            }
+            /**
+            * takes the user back to the top of the page
+            */
+            _backToTop() {
+                let c = this.$.container.scrollTop;
+                console.log (c);
+                // let scrollDuration = 500;
+                // let scrollStep = -window.scrollY / (scrollDuration / 15);
+                // let scrollInterval = setInterval(function() {
+                //     if (window.scrollY != 0) {
+                //         window.scrollBy(0, scrollStep);
+                //     }
+                //     else clearInterval(scrollInterval);
+                // },
+                //     15);
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);

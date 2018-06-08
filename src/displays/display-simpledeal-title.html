@@ -1,0 +1,156 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
+<!--
+
+Example:
+```
+<display-simpledeal-title></display-simpledeal-title>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-simpledeal-title-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-simpledeal-title-top-container` | Mixin applied to the container | `{}` |
+| `--display-simpledeal-title-time` | Mixin applied to the time | `{}` |
+| `--display-simpledeal-title-name` | Mixin applied to the name | `{}` |
+| `--display-simpledeal-title-description` | Mixin applied to the description | `{}` |
+| `--display-simpledeal-title-for` | Mixin applied to the word for | `{}` |
+| `--display-simpledeal-title-amount` | Mixin applied to the amount | `{}` |
+-->
+<dom-module id="display-simpledeal-title">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 40px 0px 40px;
+                background-image: url(../../images/bg-header3.png);
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+                @apply(--layout-horizontal);
+                @apply(--layout-start-justified);
+                @apply(--layout-center);
+            }
+
+            .container[wide-layout] {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0 10vw 10px 10vw;
+            }
+
+
+            .namebox {
+                @apply --main-title2;
+                font-size: 30px;
+                color: var(--sc-grey4);
+                padding: 0px 0px 10px 0px;
+            }
+
+            .container[wide-layout] .namebox {
+                @apply --main-title2;
+                font-size: 26px;
+                margin: 0px;
+                padding: 10px 0px 0px 0px;
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                margin-right: 2px;
+            }
+
+            .info-toggle {
+                @apply --small-bold;
+                @apply --layout-center;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin: 0px 0px 8px 10px;
+                box-sizing: border-box;
+                padding: 1px 3px;
+                cursor: pointer;
+            }
+
+
+            .container[wide-layout] .info-toggle {
+                margin: 8px 0px 0px 10px;
+            }
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .replyicon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <data-simpledeal id="sort"></data-simpledeal>
+        <div class="container" wide-layout$="{{wide}}">
+                <div class="namebox">
+                    <span class="hashtagsymbol">#</span>{{hashtag.name}}
+                </div>
+                <div id="infolink" class="info-toggle">i</div> 
+        </div>
+    </template>
+    <script>
+        class MySimpledealTitle extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-title';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Hashtag is the hashtag we're one
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                };
+            }
+        }
+        window.customElements.define(MySimpledealTitle.is, MySimpledealTitle);
+    </script>
+</dom-module>
