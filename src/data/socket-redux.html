@@ -163,6 +163,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'hashtag',
                         observer: '_getHashtag',
                     },
+                    /**
+                    * An Object containing the data for a hashtagItem
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                        observer: '_getHashtagItem',
+                    },
                 };
             }
             /**
@@ -249,6 +258,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             hashtag: hashtag,
                         };
                     },
+                    HASHTAGITEM: function(hashtagItem) {
+                        return {
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
+                        };
+                    },
                     IPFSHASH: function(ipfsHash) {
                         return {
                             type: 'IPFSHASH',
@@ -315,7 +330,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _ipfsHashResolve() {
                 let store = JSON.parse(localStorage.getItem('IPFS'));
-                if (!(this.ipfsHash in store) && typeof(this.ipfsHash) == 'string') {
+                if (!(this.ipfsHash in store) && typeof (this.ipfsHash) == 'string') {
                     this.socket.emit('ipfscat', {
                         hash: this.ipfsHash,
                     }, (reply) => {
@@ -442,13 +457,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
             _broadcast() {
-                this.socket.emit('replyShortCode', {
-                    shortCode: this.reqtokey,
-                    tx: this.broadcast,
-                }, (reply) => {
-                    this.txHash = reply;
-                    this.dispatch('TXHASH', this.txHash);
-                });
+                if (this.reqtokey != null) {
+                    this.socket.emit('replyShortCode', {
+                        shortCode: this.reqtokey,
+                        tx: this.broadcast,
+                    }, (reply) => {
+                        this.txHash = reply;
+                        this.dispatch('TXHASH', this.txHash);
+                    });
+                }
             }
 
             // Subscribe to a certain hashtag
@@ -473,6 +490,37 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.hashtag = JSON.parse(JSON.parse(reply.data));
                             this.hashtag.address = address;
                             this.dispatch('HASHTAG', this.hashtag);
+                        }
+                    });
+                }
+            }
+
+            // Subscribe to a certain hashtagItem
+            _getHashtagItem() {
+                if (this.hashtagItem.request) {
+                    this.socket.emit('subscribe', {
+                        channel: 'hashtagItem',
+                        args: {
+                            address: this.hashtagItem.request.hashtagAddress,
+                            itemHash: this.hashtagItem.request.itemHash,
+                        },
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this.hashtagItem = JSON.parse(reply.data);
+
+                            if (!localStorage.getItem('IPFS')) {
+                                localStorage.setItem('IPFS', '{}');
+                            }
+                            let store = JSON.parse(localStorage.getItem('IPFS'));
+
+                            if (this.hashtagItem.seeker.avatarHash in store) {
+                                this.hashtagItem.seeker.avatar =
+                                    store[this.hashtagItem.seeker.avatarHash];
+                            } else {
+                                this.hashtagItem.seeker.avatar =
+                                    '../../images/defaultavatar.png';
+                            }
+                            this.dispatch('HASHTAGITEM', this.hashtagItem);
                         }
                     });
                 }

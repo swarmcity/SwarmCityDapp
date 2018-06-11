@@ -17,6 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-dealstate-detail.html">
 <link rel="import" href="../displays/display-dealstate-mydetail.html">
+<link rel="import" href="../displays/display-get-item.html">
 
 <dom-module id="page-detail">
     <template>
@@ -30,6 +31,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 display: block;
                 max-width: 100%;
                 --max-width: 800px;
+
+                animation: bgcolors 60s linear infinite;
             }
 
             .container {
@@ -38,19 +41,27 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 width: 100%;
                 min-height: 100vh;
-                padding-top: 10vh;
             }
 
             .container[wide-layout] {
                 box-sizing: border-box;
-                padding: 10vh 20vw 12vh 12vw;
+                padding: 0 20vw 12vh 12vw;
+            }
+
+            .header {
+                @apply --layout-horizontal;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 40px 40px 20px 40px;
+            }
+
+            .container[wide-layout] .header {
+                box-sizing: border-box;
+                padding: 50px 10vw 20px 10vw;
             }
 
             display-my-info {
-                box-sizing: border-box;
-                padding: 0 14vw 5vh 14vw;
-                width: 100%;
-                max-width: var(--max-width);
+                @apply --layout-flex;
             }
 
             .container[wide-layout] display-my-info {
@@ -71,12 +82,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 0 5vw;
             }
 
+            .itembox {
+                box-sizing: border-box;
+                padding: 10px 10px 25px 30px;
+                margin: 0 10px;
+                background-color: var(--sc-white);
+            }
+
             .closebox {
                 @apply --layout-horizontal;
                 @apply --layout-end-justified;
-                background-color: var(--sc-white);
                 box-sizing: border-box;
-                padding-top: 3vh;
                 width: 100%;
                 max-width: var(--max-width);
             }
@@ -88,41 +104,19 @@ This code may only be used under the license found at https://github.com/swarmci
             .close {
                 @apply --xmark-grey3-small;
                 cursor: pointer;
-                margin-right: 5vw;
             }
 
             .close:active {
                 @apply --button-active;
             }
 
-            .top {
-                @apply --layout-horizontal;
-            }
-
-            .meta {
-                @apply --layout-center-justified;
-                @apply --layout-vertical;
-                @apply --layout-flex;
-            }
-
-            .bottom {
-                margin-top: 12px;
-                @apply --layout-horizontal;
-            }
-
-            .avatar {
+            .seeker-avatar {
                 width: 50px;
                 height: 50px;
                 cursor: pointer;
                 border-radius: 50%;
                 margin-right: 10px;
-                background-image: url("../../images/defaultavatar.png");
                 background-size: 50px;
-            }
-
-            .date {
-                @apply --small-light;
-                color: var(--sc-grey4);
             }
 
             .user {
@@ -155,22 +149,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-end-justified;
             }
 
-            .price {
+            .unit {
+                @apply --small-bold;
+                color: var(--sc-yellow);
+            }
 
+            .value {
                 @apply --main-title3;
                 color: var(--sc-yellow);
             }
 
-            .for {
-                @apply --body-bold;
-                color: var(--sc-yellow);
-            }
-
             .linkbox {
-                @apply --layout-vertical;
-                @apply --layout-end-justified;
-                box-sizing: border-box;
-                height: 65px;
+                margin-top: 15px;
             }
 
             .link {
@@ -188,11 +178,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100%;
             }
 
-            .switch {
-                @apply --layout-horizontal;
-                box-sizing: border-box;
-                padding: 0 0 5vh 0;
-            }
             .tempswitch {
                 @apply --layout-horizontal;
                 @apply --layout-center-center;
@@ -201,6 +186,52 @@ This code may only be used under the license found at https://github.com/swarmci
                 top: 5px;
                 left: 5px;
                 cursor: pointer;
+            }
+
+            .container[wide-layout] .namebox {
+                margin: 0 21vw 40px 11vw;
+            }
+
+            .namebox {
+                @apply --main-title2;
+                font-size: 30px;
+                color: var(--sc-grey4);
+                padding: 0px 10px 0px 40px;
+                margin-bottom: 20px;
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                font-size: 27px;
+                margin-right: 2px;
+            }
+
+            .date {
+                @apply --small-light;
+                color: var(--sc-grey3b);
+                margin-top: 4px;
+            }
+
+            .seeker {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                margin-top: 12px;
+                width: 100%;
+            }
+
+            .seeker-info {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                @apply --small-bold;
+                color: var(--sc-grey4);
+            }
+
+            .loaderimg {
+                background: url("../../images/detail-loader-mobile.png") no-repeat center center fixed;
+                background-size: 100%;
+                width: 100%;
+                height: 100%;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -213,54 +244,72 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <app-location route="{{route}}"></app-location>
+        <display-get-item route={{route}}></display-get-item>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
-            <div class="tempswitch" on-click="_switch"> “( ͡° ͜ʖ ͡°)”</div>
-            <dom-if if="{{publicKey}}">
-                <template>
-                    <display-my-info></display-my-info>
-                </template>
-            </dom-if>
-            <dom-if if="{{!publicKey}}">
-                <template>
-                        <div class="top-margin"></div>
-                </template>
-            </dom-if>
-            
-            <div class="closebox">
-                <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
-            </div>
-            <div class="page-content">
-                <div class="top">
-                    <div class="avatar"></div>
-                    <div class="meta">
-                        <div class="date">Yesterday, 18:21</div>
-                        <div class="user">Sally Singer · 1 SWR</div>
+
+        <dom-if if="{{loading}}">
+            <template>
+                <div class="loaderimg">
+            </template>
+        </dom-if>
+
+        <dom-if if="{{!loading}}">
+            <template>
+                <div class="container" wide-layout$="{{wide}}">
+                    <dom-if if="{{publicKey}}">
+                        <template>
+                            <div class="header">
+                                <display-my-info path="{{path}}" route="{{route}}">
+                                </display-my-info>
+                            </div>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{!publicKey}}">
+                        <template>
+                            <div class="top-margin"></div>
+                        </template>
+                    </dom-if>
+
+                    <div class="title">
+                        <div class="namebox">
+                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
+                        </div>
+                    </div>
+
+                    <div class="itembox">
+                        <div class="closebox">
+                            <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+                        </div>
+
+                        <div class="description">
+                            [[hashtagItem.description]]
+                        </div>
+                        <div class="date">
+                            [[_formatDate(hashtagItem.dateTime)]]
+                        </div>
+                        <div class="seeker">
+                            <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
+                            <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            <div class="pricebox">
+                                <div class="unit">SWT</div>
+                                <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                            </div>
+                        </div>
+                        <div class="linkbox">
+                            <span class="link">shareable link</span>
+                        </div>
+                    </div>
+                    <div class="dealstate">
+                        <template is="dom-if" if="{{myRequest}}">
+                            <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
+                        </template>
+                        <template is="dom-if" if="{{!myRequest}}">
+                            <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
+                        </template>
                     </div>
                 </div>
-                <div class="bottom">
-                    <div class="description">Ride from literon busstop to protest</div>
-                </div>
-                <div class="hashtag">#pioneer</div>
-                <div class="switch">
-                    <div class="linkbox">
-                        <span class="link">shareable link</span>
-                    </div>
-                    <div class="pricebox">
-                        <div class="for">for</div>
-                        <div class="price">5 SWT</div>
-                    </div>
-                </div>
-            </div>
-            <div class="dealstate">
-                <template is="dom-if" if="{{myRequest}}">
-                    <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
-                </template>
-                <template is="dom-if" if="{{!myRequest}}">
-                    <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
-                </template>
-            </div>
-        </div>
+            </template>
+        </dom-if>
     </template>
     <script>
         class MyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -273,9 +322,21 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
+                    },
+                    /**
+                    * Loading is true when the page data isn't fully loaded yet
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: true,
                     },
                     /**
                     * Path is the current or requested path
@@ -317,7 +378,46 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Array,
                         // observer: '_loadEntryAnimations',
                     },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_loadPage',
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                        observer: '_loadPage',
+                    },
+                    /**
+                    * A seeker's avatarHash to be resolved
+                    * @type {Object}
+                    */
+                    ipfsHash: {
+                        type: Object,
+                        statePath: 'ipfsHash',
+                    },
                 };
+            }
+            /**
+            * Redux action for sending an IPFS resolve request
+            */
+            static get actions() {
+                return Object.assign({
+                    IPFSHASH: function(ipfsHash) {
+                        return {
+                            type: 'IPFSHASH',
+                            ipfsHash: ipfsHash,
+                        };
+                    },
+                });
             }
 
             connectedCallback() {
@@ -328,20 +428,45 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to originating page
             */
             _close() {
-                if (typeof sessionStorage.getItem('hashtagID') === 'string'
-                    || sessionStorage.getItem('hashtagID') instanceof String) {
-                    this.path = 'hashtag/' + sessionStorage.getItem('hashtagID');
-                    sessionStorage.removeItem('hashtagID');
-                }
-                else {
-                    this.set('route.path', 'hashtag-list');
+                this.set('route.path', `hashtag/${this.hashtag.address}`);
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
                 }
             }
-
-            _switch() {
-                this.myRequest = !this.myRequest;
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
             }
-
+            /**
+            * Toggles betweeen loading & loaded state
+            */
+            _loadPage() {
+                if (this.hashtag &&
+                    this.hashtag.address &&
+                    this.hashtagItem &&
+                    this.hashtagItem.itemHash &&
+                    this.hashtagItem.itemHash == this.route.path.split('/')[3] &&
+                    this.hashtagItem.seeker.avatar
+                ) {
+                    this.loading = false;
+                } else {
+                    this.loading = true;
+                }
+            }
             /**
             * changes the current path
             */

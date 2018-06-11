@@ -43,6 +43,42 @@
                     resolve(items);
                 });
             }
+            /**
+            * Filter the hashtag object to return a formatted list of items the user is not involved in
+            * @return {items} The array with items the user is not involved in
+            * @argument {object} hashtag
+            * @argument {String} userAddress
+            */
+            getHashtagItems(hashtag, userAddress) {
+                return new Promise((resolve, reject) => {
+                    let items = Object.values(hashtag.items)
+                        // only return items the user is involved with
+                        .filter((item) => {
+                            return item.seeker.address != userAddress;
+                        })
+                        .map((item) => {
+                            // format the item value to human readable amount
+                            item.value = item.value / 1e18;
+                            // resolve the seeker avatar via the localstorage IPFS cache
+                            // ff not cached, use the default avatar image
+                            if (!localStorage.getItem('IPFS')) {
+                                localStorage.setItem('IPFS', '{}');
+                            }
+                            let store = JSON.parse(localStorage.getItem('IPFS'));
+                            if (item.seeker.avatarHash in store) {
+                                item.seeker.avatar = store[item.seeker.avatarHash];
+                            } else {
+                                item.seeker.avatar = '../../images/defaultavatar.png';
+                            }
+                            return item;
+                            // sort the array by date, newest first
+                        })
+                        .sort((a, b) => {
+                            return parseInt(b.dateTime) - parseInt(a.dateTime);
+                        });
+                    resolve(items);
+                });
+            }
         } window.customElements.define(DataSimpledeal.is, DataSimpledeal);
     </script>
 </dom-module>
