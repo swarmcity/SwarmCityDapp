@@ -1,0 +1,205 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
+<!--
+
+Example:
+```
+<title></title>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `title` | Mixin applied to the avatar | `{}` |
+| `title` | Mixin applied to the container | `{}` |
+| `title` | Mixin applied to the time | `{}` |
+| `title` | Mixin applied to the name | `{}` |
+| `title` | Mixin applied to the description | `{}` |
+| `title` | Mixin applied to the word for | `{}` |
+| `title` | Mixin applied to the amount | `{}` |
+-->
+<dom-module id="display-simpledeal-title">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+            .container {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 40px 0px 40px;
+            }
+
+            .container[wide-layout] {
+                padding: 20px 10vw 0px 10vw;
+            }
+
+            .namebox {
+                @apply --main-title2;
+                font-size: 30px;
+                color: var(--sc-grey4);
+                /* padding: 0px 10px 0px 40px;
+                margin-bottom: 20px; */
+            }
+
+            .container[wide-layout] .namebox {
+                /* margin: 0 21vw 40px 11vw; */
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                font-size: 27px;
+                margin-right: 2px;
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <data-simpledeal id="sort"></data-simpledeal>
+
+
+        <div class="container" wide-layout$="{{wide}}">
+                <div class="namebox">
+                        <span class="hashtagsymbol">#</span>{{hashtag.name}}
+                    </div>
+            <!--
+
+            <template is="dom-repeat" items="{{items}}">
+                <div tabindex="5" class="box" on-tap="_toItem">
+                    <div class="top">
+                        <div class="datedescript">
+                            <div class="description">[[item.description]]</div>
+                            <div class="date">
+                                [[_formatDate(item.dateTime)]]
+                            </div>
+                        </div>
+                        <div class="replycount">0</div>
+                        <div class="replyicon"></div>
+                    </div>
+                    <div class="bottom">
+                        <div class="avatarandmeta">
+
+                            <div class="avatar">
+                                <img class="item-avatar-seeker" src="[[item.seeker.avatar]]">
+                            </div>
+                            <div class="meta">
+                                <div class="user">[[item.seeker.username]] · [[item.seeker.rep]] SWR</div>
+                                <div class="status">No provider selected</div>
+                            </div>
+                        </div>
+
+                        <div class="pricebox">
+                            <div class="for">SWT</div>
+                            <div class="price">[[item.value]]</div>
+                        </div>
+
+                    </div>
+                </div>
+            </template>
+
+
+         -->
+        </div>
+        </template>
+    <script>
+        class MySimpledealTitle extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-title';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Hashtag is the hashtag we're one
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * publicKey is the user's address
+                    * @type {Object}
+                    */
+                    publicKey: {
+                        type: Object,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * Items are all the hashtag's items the user is involved with
+                    * @type {Object}
+                    */
+                    items: {
+                        type: Object,
+                        value: [],
+                    },
+                    /**
+                    * the parent will receive the amount of items the user is involved in
+                    * @type {Object}
+                    */
+                    count: {
+                        type: Number,
+                        value: 0,
+                        notify: true,
+                    },
+                    /**
+                    * A seeker's avatarHash to be resolved
+                    * @type {Object}
+                    */
+                    ipfsHash: {
+                        type: Object,
+                        statePath: 'ipfsHash',
+
+                    },
+                };
+            }
+            /**
+            * Redux action for sending an IPFS resolve request
+            */
+            // static get actions() {
+            //     return Object.assign({
+            //         IPFSHASH: function(ipfsHash) {
+            //             return {
+            //                 type: 'IPFSHASH',
+            //                 ipfsHash: ipfsHash,
+            //             };
+            //         },
+            //     });
+            // }
+        }
+
+        window.customElements.define(MySimpledealTitle.is, MySimpledealTitle);
+    </script>
+</dom-module>
