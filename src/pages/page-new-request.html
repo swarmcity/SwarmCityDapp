@@ -16,7 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-hashtag-about.html">
 <link rel="import" href="../displays/display-create-request.html">
-
+<link rel="import" href="../displays/display-simpledeal-title.html">
 <dom-module id="page-new-request">
     <template>
         <!--
@@ -43,59 +43,29 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
             }
 
-
-            .container .header {
-                @apply --layout-vertical;
+            .header {
                 width: 100%;
+                @apply --layout-horizontal;
+                background-image: url('../../images/bg-header3.png');
                 box-sizing: border-box;
-                padding: 40px 0 0 0;
-                background-image: var(--sc-bg);
-                position: fixed;
-                top: 0;
-                z-index: 4;
+                padding: 40px 40px 20px 40px;
+                position:fixed;
+                min-height: 107px;
+                z-index: 99;
             }
 
             .container[wide-layout] .header {
                 box-sizing: border-box;
-                padding: 50px 0 20px 0;
+                padding: 50px 10vw 20px 10vw;
+                min-height: 120px;
             }
 
-            .header-top {
-                @apply --layout-horizontal;
+            .topleft {
+                @apply --layout-vertical;
                 @apply --layout-start;
                 @apply --layout-start-justified;
-                box-sizing: border-box;
-                padding: 0 40px;
-                height: 50px;
-            }
-
-            .container[wide-layout] .header-top {
-                height: 70px;
-                box-sizing: border-box;
-                padding: 0px 10vw 0px;
-            }
-
-            .header-bottom {
-                @apply --layout-start;
-                @apply --layout-horizontal;
-                @apply --layout-wrap;
-                box-sizing: border-box;
-                padding: 14px 40px 8px 40px;
-                width: 100%;
-            }
-
-            .container[wide-layout] .header-bottom {
-                box-sizing: border-box;
-                padding: 10px 10vw 0px;
-            }
-
-            .header-leftbottom {
-                @apply --layout-horizontal;
                 @apply --layout-flex;
-                @apply --layout-start-justified;
-                @apply --layout-end;
             }
-
 
             .hashtag {
                 @apply --main-title2;
@@ -110,50 +80,41 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-right: 2px;
             }
 
-            .info-toggle {
-                @apply --small-bold;
-                @apply --layout-center;
-                color: var(--sc-blue);
-                border-bottom: 2px dotted var(--sc-blue);
-                margin: 0px 0px 8px 10px;
-                box-sizing: border-box;
-                padding: 1px 3px;
-                cursor: pointer;
+
+            .container .requestcontainer {
+                width: 100%;
+                margin-top: 106px;
             }
 
-            .container display-create-request {
-                margin: 150px 0px 0px 0px;
-                width: 95vw;
+            .container[wide-layout] .requestcontainer {
+                margin-top: 120px; 
             }
 
-            .container[wide-layout] display-create-request {
-                margin: 187px 10vw 0px 10vw;
-                width: 80vw;
-                max-width: 950px;
+
+            display-simpledeal-title {
+                width: 100%;
+                position: fixed;
+                z-index: 99;
             }
+
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="header">
-                <div class="header-top">
+                <div class="topleft">
                     <display-my-info avatarSmall path="{{path}}" route="[[route]]">
                     </display-my-info>
                 </div>
-                <div class="header-bottom">
-                    <div class="header-leftbottom" id="hashtagHeader">
-                        <div id="hashtag" class="hashtag">
-                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
-                        </div>
-                        <div id="infolink" class="info-toggle">i</div>
-                    </div>
-                </div>
             </div>
-            <display-create-request 
-                id="displayrequest"
-                path="{{path}}"
-                route-entry="{{routeEntry}}">
-            </display-create-request>
+            <div class="requestcontainer">
+                <display-simpledeal-title></display-simpledeal-title>
+                <display-create-request 
+                    id="displayrequest"
+                    path="{{path}}"
+                    route-entry="{{routeEntry}}">
+                </display-create-request>
+            </div>
         </div>
         </div>
     </template>
