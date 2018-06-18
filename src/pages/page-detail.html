@@ -274,7 +274,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </template>
                     </dom-if>
                     <display-simpledeal-title></display-simpledeal-title>
-                    <div class="detail-container">
+                    <div class="detail-container" id="detailcontainer">
                         <div class="itembox">
                             <div class="closebox">
                                 <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
@@ -369,7 +369,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
-                        // observer: '_loadExitAnimations',
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -377,7 +377,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        // observer: '_loadEntryAnimations',
+                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * hashtag is the currently loaded hashtag
@@ -477,6 +477,64 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
+
+            /**
+            * Load the correct exiy animations
+            */
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Here come the Exit Animations, going to page Hashtag
+                            this.$.detailcontainer.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            /**
+            * Load the correct entry animations
+            */
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        if (this.routeExit[0] == 'hashtag') {
+                        // Coming from page Hashtag
+                            this.$.detailcontainer.animate(
+                                [
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
         }
         window.customElements.define(MyDetail.is, MyDetail);
     </script>
