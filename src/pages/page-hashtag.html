@@ -36,8 +36,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .dealbtn {
                 position: fixed;
-                bottom: 50px;
-                right: 30px;
+                bottom: 10vh;
+                right: 10vw;
                 z-index: 55;
             }
 
@@ -54,6 +54,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 40px 40px 20px 40px;
                 position:fixed;
+                z-index: 999;
                 min-height: 107px;
             }
 
@@ -95,6 +96,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
             }
             .createlink {
+                /* @apply --text-button-small; */
                 border: 0;
                 border-radius: 2px;
                 background-color: rgba(255, 255, 255, 0.25);
@@ -121,6 +123,15 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] display-hashtag-simpledeal {
                 margin-top: 120px; 
             }
+
+            display-simpledeal-title {
+                width: 100%;
+                position: fixed;
+                top: 106px;
+                z-index: 999;
+            }
+
+
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -156,7 +167,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                 </div>
             </div>
-            <display-hashtag-simpledeal path={{path}}></display-hashtag-simpledeal>
+            <display-simpledeal-title id="simpledealtitle"></display-simpledeal-title>
+            <display-hashtag-simpledeal path={{path}} id="simpledealdisplay"></display-hashtag-simpledeal>
         </div>
     </template>
     <script>
@@ -208,6 +220,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -215,6 +228,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
+                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * pageID is an id givven to every page specific
@@ -269,6 +283,67 @@ This code may only be used under the license found at https://github.com/swarmci
                         // Here come the Exit Animations
                         switch (this.routeExit[1]) {
                             case ('hashtag-list'):
+                                this.$.back.animate(
+                                    [
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
+                                        {'transform': 'translateX(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.dealButton.animate(
+                                    [
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.simpledealdisplay.animate(
+                                    [
+                                        {'transform': 'translateX(0px)', 'opacity': '1'},
+                                        {'transform': 'translateX(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.simpledealtitle.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                break;
                             case ('my-profile'):
                             case ('my-wallet'):
                             case ('new-request'):
@@ -317,6 +392,67 @@ This code may only be used under the license found at https://github.com/swarmci
                         // Here come the Entry Animations
                         switch (this.routeExit[0]) {
                             case ('hashtag-list'):
+                                this.$.back.animate(
+                                    [
+                                        {'transform': 'translateX(20px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.dealButton.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.simpledealdisplay.animate(
+                                    [
+                                        {'transform': 'translateX(10px)', 'opacity': '0'},
+                                        {'transform': 'translateX(0px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.simpledealtitle.animate(
+                                    [
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                break;
                             case ('my-profile'):
                             case ('my-wallet'):
                                 this.$.back.animate(
@@ -338,6 +474,21 @@ This code may only be used under the license found at https://github.com/swarmci
                                     [
                                         {'transform': 'translateY(0px)', 'opacity': '0'},
                                         {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.simpledealdisplay.animate(
+                                    [
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
