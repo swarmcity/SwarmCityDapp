@@ -345,6 +345,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     avatar: {
                         type: String,
                         value: '[[importPath]]../../images/defaultavatar.png',
+                        observer: '_updateAvatar',
                     },
                     /**
                     * toggles the unlock display
@@ -379,6 +380,11 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * method to update avatar username and publickey
+            */
+            _updateAvatar() {
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 if (storage.user.avatar) {
                     this.avatar = storage.user.avatar;
@@ -563,6 +569,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations
+                    this._updateAvatar();
                 }
             }
         }
