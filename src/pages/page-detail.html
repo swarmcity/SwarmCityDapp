@@ -16,7 +16,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
 <link rel="import" href="../displays/display-dealstate-detail.html">
-<link rel="import" href="../displays/display-dealstate-mydetail.html">
 <link rel="import" href="../displays/display-get-item.html">
 <link rel="import" href="../displays/display-simpledeal-title.html">
 
@@ -43,20 +42,16 @@ This code may only be used under the license found at https://github.com/swarmci
                 /* padding: 0 20vw 12vh 12vw; */
             }
 
-            .header {
+            display-my-info {
                 @apply --layout-horizontal;
-                background-image: var(--sc-bg);
                 box-sizing: border-box;
                 padding: 40px 40px 20px 40px;
-                
-
             }
 
-            .container[wide-layout] .header {
+            .container[wide-layout] display-my-info{
                 box-sizing: border-box;
                 padding: 50px 10vw 20px 10vw;
-            }
-
+            }   
 
             .container .detail-container {
                 width: 100%;
@@ -71,10 +66,9 @@ This code may only be used under the license found at https://github.com/swarmci
             .container .itembox {
                 width: 100%;
                 background-color: var(--sc-white);
-                box-sizing:border-box;
+                box-sizing: border-box;
                 padding: 10px 10px 35px 20px;
-                border-bottom: 1px dashed rgba(51, 51, 51, 0.08) ;
-
+                border-bottom: 1px dashed rgba(51, 51, 51, 0.08);
             }
 
             .container[wide-layout] .itembox {
@@ -87,10 +81,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 width: 100%;
                 z-index: 99;
-            }
-
-            .container[wide-layout] .top-margin {
-                height: 10vh;
             }
 
             .close {
@@ -125,11 +115,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: -10px 10px 0 10px;
             }
 
-
             .container[wide-layout] .description {
                 margin: -10px 20px 0 10px;
             }
-
 
             .pricebox {
                 @apply --layout-vertical;
@@ -165,12 +153,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-grey2);
             }
 
-            .container .dealstate {
+            display-dealstate-detail {
                 width: 100%;
                 background-color: var(--sc-white);
             }
 
-            .container[wide-layout] .dealstate {
+            .container[wide-layout] display-dealstate-detail {
                 max-width: 68vw;
             }
 
@@ -212,7 +200,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
                 width: 100%;
-                box-sizing:border-box;
+                box-sizing: border-box;
                 padding: 15px 15px 0 10px;
             }
 
@@ -260,26 +248,16 @@ This code may only be used under the license found at https://github.com/swarmci
         <dom-if if="{{!loading}}">
             <template>
                 <div class="container" wide-layout$="{{wide}}">
-                    <dom-if if="{{publicKey}}">
-                        <template>
-                            <div class="header">
-                                <display-my-info path="{{path}}" route="{{route}}">
-                                </display-my-info>
-                            </div>
-                        </template>
-                    </dom-if>
-                    <dom-if if="{{!publicKey}}">
-                        <template>
-                            <div class="top-margin"></div>
-                        </template>
-                    </dom-if>
+
+                    <display-my-info path="{{path}}" route="{{route}}"></display-my-info>
+
                     <display-simpledeal-title></display-simpledeal-title>
+
                     <div class="detail-container" id="detailcontainer">
                         <div class="itembox">
                             <div class="closebox">
                                 <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
                             </div>
-
                             <div class="description">
                                 [[hashtagItem.description]]
                             </div>
@@ -298,19 +276,12 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <span class="link">shareable link</span>
                             </div>
                         </div>
-                        <div class="dealstate">
-                            <template is="dom-if" if="{{myRequest}}">
-                                <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
-                            </template>
-                            <template is="dom-if" if="{{!myRequest}}">
-                                <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
-                            </template>
-                        </div>
+                        <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
                     </div>
-
                 </div>
             </template>
         </dom-if>
+
     </template>
     <script>
         class MyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -346,22 +317,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
-                    },
-                    /**
-                    * myRequest represents true if user posted this request
-                    * @type {Boolean}
-                    */
-                    myRequest: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * PublicKey represents the user's public key
-                    * @type {String}
-                    */
-                    publicKey: {
-                        type: String,
-                        statePath: 'publicKey',
                     },
                     /**
                     * routeExit triggers the exit animations
@@ -412,7 +367,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    IPFSHASH: function(ipfsHash) {
+                    IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
@@ -482,15 +437,15 @@ This code may only be used under the license found at https://github.com/swarmci
             * Load the correct exiy animations
             */
             _loadExitAnimations() {
-            if (this.routeExit[0] != this.routeExit[1]) {
+                if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
                         if (this.routeExit[1] == 'hashtag') {
                             // Here come the Exit Animations, going to page Hashtag
                             this.$.detailcontainer.animate(
                                 [
-                                    {'transform': 'translateY(0px)', 'opacity': '1'},
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    { 'transform': 'translateY(0px)', 'opacity': '1' },
+                                    { 'transform': 'translateY(50px)', 'opacity': '0' },
                                 ],
                                 {
                                     fill: 'forwards',
@@ -514,11 +469,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                         if (this.routeExit[0] == 'hashtag') {
-                        // Coming from page Hashtag
+                            // Coming from page Hashtag
                             this.$.detailcontainer.animate(
                                 [
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    { 'transform': 'translateY(50px)', 'opacity': '0' },
+                                    { 'transform': 'translateY(0px)', 'opacity': '1' },
                                 ],
                                 {
                                     fill: 'forwards',
