@@ -124,7 +124,7 @@
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="top">
+            <div class="top" id="container_inner">
 
                 <div class="rotate-icon" on-click="_rotate"></div>
                 <input type="file" name="file" id="file" class="file" on-change="_fileSelected" accept=".jpg, .jpeg, .png, .gif" />
@@ -337,6 +337,17 @@
             * Fired when the element is first loaded
             */
             _firstLoad() {
+                let element = this.$$('#file');
+                let container = this.$$('#container_inner');
+                container.removeChild(element);
+                let inputfile = document.createElement('input');
+                inputfile.type='file';
+                inputfile.name='file';
+                inputfile.id='file';
+                inputfile.classList.add('file');
+                inputfile.addEventListener('change', (event) => this._fileSelected(event));
+                inputfile.accept='.jpg, .jpeg, .png, .gif';
+                container.appendChild(inputfile);
                 let image = new Image();
                 image.onload = () => {
                     this.image = image;
