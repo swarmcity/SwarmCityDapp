@@ -1,0 +1,178 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="display-simpledeal-itemreplies">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                display: block;
+            }
+
+            .box {
+                box-sizing: border-box;
+                padding: 0px 10px 25px 20px;
+                background-color: var(--sc-white);
+                @apply --layout-vertical;
+                width: 100%;
+                box-sizing: border-box;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .box {
+                max-width: 68vw;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey2);
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                margin-top: 2px;
+            }
+
+            .price {
+                @apply --small-bold;
+                text-align: right;
+                color: var(--sc-grey4);
+                white-space: nowrap;
+                margin: 5px 10px 0 0;
+            }
+
+            .description {
+                text-align: justify;
+                text-justify: inter-word;
+                @apply --layout-flex;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                margin-top: 5px;
+                box-sizing: border-box;
+                padding-right: 25px;
+            }
+            
+            .bottom {
+                @apply --layout-horizontal;
+                margin-top: 15px;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-repeat" items="{{hashtagItem.replies}}">
+                <div class="box">
+                    <div class="top">
+                        <div class="description">
+                            [[item.description]]
+                        </div>
+                        <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+                    </div>
+                    <div class="bottom">
+                        <iron-image style="width:30px; height:30px; margin-right: 10px;" sizing="cover" preload fade src="http://ipfs.swarm.ciy/8888/[[item.avatarHash]]"
+                            placeholder="../images/defaultavatar.png">
+                        </iron-image>
+                        <div class="bottom-vertical">
+                            <div class="date">[[_formatDate(item.dateTime)]]</div>
+                            <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+    </template>
+    <script>
+        class MySimpledealItemreplies extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-itemreplies';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+        }
+        window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
+    </script>
+</dom-module>
