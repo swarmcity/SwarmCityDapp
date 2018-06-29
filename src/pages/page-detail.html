@@ -15,9 +15,9 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-my-info.html">
-<link rel="import" href="../displays/display-dealstate-detail.html">
 <link rel="import" href="../displays/display-get-item.html">
 <link rel="import" href="../displays/display-simpledeal-title.html">
+<link rel="import" href="../displays/display-simpledeal-detail.html">
 
 <dom-module id="page-detail">
     <template>
@@ -37,250 +37,27 @@ This code may only be used under the license found at https://github.com/swarmci
                 min-height: 100vh;
             }
 
-            .container[wide-layout] {
-                box-sizing: border-box;
-                /* padding: 0 20vw 12vh 12vw; */
-            }
-
             display-my-info {
                 @apply --layout-horizontal;
                 box-sizing: border-box;
                 padding: 40px 40px 20px 40px;
             }
 
-            .container[wide-layout] display-my-info{
+            .container[wide-layout] display-my-info {
                 box-sizing: border-box;
                 padding: 50px 10vw 20px 10vw;
-            }   
-
-            .container .detail-container {
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0px 10px 25px 10px;
             }
 
-            .container[wide-layout] .detail-container {
-                padding: 0px 10vw 25px 10vw;
-            }
-
-            .container .itembox {
-                width: 100%;
-                background-color: var(--sc-white);
-                box-sizing: border-box;
-                padding: 10px 10px 35px 20px;
-                border-bottom: 1px dashed rgba(51, 51, 51, 0.08);
-            }
-
-            .container[wide-layout] .itembox {
-                max-width: 68vw;
-            }
-
-            .closebox {
-                @apply --layout-horizontal;
-                @apply --layout-end-justified;
-                box-sizing: border-box;
-                width: 100%;
-                z-index: 99;
-            }
-
-            .close {
-                @apply --xmark-grey2-small;
-                cursor: pointer;
-            }
-
-            .close:active {
-                @apply --button-active;
-            }
-
-            .seeker-avatar {
-                width: 40px;
-                height: 40px;
-                cursor: pointer;
-                border-radius: 50%;
-                margin-right: 10px;
-                background-size: 40px;
-            }
-
-            .user {
-                @apply --small-bold;
-                color: var(--sc-blue);
-            }
-
-            .container .description {
-                @apply --layout-flex;
-                @apply --layout-vertical;
-                @apply --layout-end-justified;
-                @apply --body-detail;
-                color: var(--sc-grey4);
-                margin: -10px 10px 0 10px;
-            }
-
-            .container[wide-layout] .description {
-                margin: -10px 20px 0 10px;
-            }
-
-            .pricebox {
-                @apply --layout-vertical;
-                @apply --layout-end;
-                @apply --layout-start-justified;
-                @apply --layout-flex;
-            }
-
-            .container[wide-layout] .pricebox {
-                @apply --layout-end-justified;
-            }
-
-            .unit {
-                @apply --small-bold;
-                color: var(--sc-yellow);
-            }
-
-            .value {
-                @apply --main-title3;
-                color: var(--sc-yellow);
-            }
-
-            .linkbox {
-                width: 100%;
-                box-sizing: border-box;
-                padding: 20px 20px 0px 10px;
-            }
-
-            .link {
-                @apply --small-bold;
-                color: var(--sc-grey3);
-                text-decoration: none;
-                border-bottom: 2px dotted var(--sc-grey2);
-            }
-
-            display-dealstate-detail {
-                width: 100%;
-                background-color: var(--sc-white);
-            }
-
-            .container[wide-layout] display-dealstate-detail {
-                max-width: 68vw;
-            }
-
-            .tempswitch {
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
-                @apply --small-bold;
-                position: fixed;
-                top: 5px;
-                left: 5px;
-                cursor: pointer;
-            }
-
-            .container[wide-layout] .namebox {
-                margin: 0 21vw 40px 11vw;
-            }
-
-            .namebox {
-                @apply --main-title2;
-                font-size: 30px;
-                color: var(--sc-grey4);
-                padding: 0px 10px 0px 40px;
-                margin-bottom: 20px;
-            }
-
-            .hashtagsymbol {
-                font-weight: 800;
-                font-size: 27px;
-                margin-right: 2px;
-            }
-
-            .date {
-                @apply --small-light;
-                color: var(--sc-grey3b);
-                margin: 4px 10px 0 10px;
-            }
-
-            .seeker {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 15px 15px 0 10px;
-            }
-
-            .seeker-info {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-                @apply --small-bold;
-                color: var(--sc-grey4);
-            }
-
-            .loaderimg {
-                background: url("../../images/detail-loader-mobile.png") no-repeat center center fixed;
-                background-size: 100%;
-                width: 100%;
-                height: 100%;
-            }
-
-            .detail-container {
-                width: 100%;
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-            }
-
-            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-            only screen and (min--moz-device-pixel-ratio: 1.5),
-            only screen and (min-resolution: 240dpi) {
-                .icon,
-                .close {
-                    @apply --retina;
-                }
-            }
         </style>
         <app-location route="{{route}}"></app-location>
         <display-get-item route={{route}}></display-get-item>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
-        <dom-if if="{{loading}}">
-            <template>
-                <div class="loaderimg">
-            </template>
-        </dom-if>
-
-        <dom-if if="{{!loading}}">
-            <template>
-                <div class="container" wide-layout$="{{wide}}">
-
-                    <display-my-info path="{{path}}" route="{{route}}"></display-my-info>
-
-                    <display-simpledeal-title></display-simpledeal-title>
-
-                    <div class="detail-container" id="detailcontainer">
-                        <div class="itembox">
-                            <div class="closebox">
-                                <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
-                            </div>
-                            <div class="description">
-                                [[hashtagItem.description]]
-                            </div>
-                            <div class="date">
-                                [[_formatDate(hashtagItem.dateTime)]]
-                            </div>
-                            <div class="seeker">
-                                <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
-                                <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
-                                <div class="pricebox">
-                                    <div class="unit">SWT</div>
-                                    <div class="value">[[_formatValue(hashtagItem.value)]]</div>
-                                </div>
-                            </div>
-                            <div class="linkbox">
-                                <span class="link">shareable link</span>
-                            </div>
-                        </div>
-                        <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
-                    </div>
-                </div>
-            </template>
-        </dom-if>
+        <div class="container" wide-layout$="{{wide}}">
+            <display-my-info path="{{path}}" route="{{route}}"></display-my-info>
+            <display-simpledeal-title></display-simpledeal-title>
+            <display-simpledeal-detail path="{{path}}"></display-simpledeal-detail>
+        </div>
 
     </template>
     <script>
@@ -301,14 +78,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: {
                         type: String,
                         statePath: 'language',
-                    },
-                    /**
-                    * Loading is true when the page data isn't fully loaded yet
-                    * @type {Boolean}
-                    */
-                    loading: {
-                        type: Boolean,
-                        value: true,
                     },
                     /**
                     * Path is the current or requested path
@@ -341,7 +110,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: {
                         type: Object,
                         statePath: 'hashtag',
-                        observer: '_loadPage',
                     },
                     /**
                     * the hashtag item we've subscribed to
@@ -350,7 +118,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
-                        observer: '_loadPage',
                     },
                     /**
                     * A seeker's avatarHash to be resolved
@@ -381,49 +148,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
-            * takes the user to originating page
-            */
-            _close() {
-                this.set('route.path', `hashtag/${this.hashtag.address}`);
-            }
-            /**
-            * formats epoch
-            * @param {DateTime} dateTime epoch in javascript milliseconds
-            * @return {string} formatted date string
-            */
-            _formatDate(dateTime) {
-                let milliseconds = dateTime * 1000;
-                if (webpack.moment().valueOf() - milliseconds < 86400000) {
-                    return webpack.moment(milliseconds).fromNow();
-                } else {
-                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
-                }
-            }
-            /**
-            * formats the item value
-            * @param {String} value item value in wei
-            * @return {string} value in human readable format
-            */
-            _formatValue(value) {
-                return value / 1e18;
-            }
-            /**
-            * Toggles betweeen loading & loaded state
-            */
-            _loadPage() {
-                if (this.hashtag &&
-                    this.hashtag.address &&
-                    this.hashtagItem &&
-                    this.hashtagItem.itemHash &&
-                    this.hashtagItem.itemHash == this.route.path.split('/')[3] &&
-                    this.hashtagItem.seeker.avatar
-                ) {
-                    this.loading = false;
-                } else {
-                    this.loading = true;
-                }
-            }
-            /**
             * changes the current path
             */
             _path() {
@@ -432,7 +156,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
-
             /**
             * Load the correct exiy animations
             */
