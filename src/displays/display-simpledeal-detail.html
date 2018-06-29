@@ -174,6 +174,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .seeker-owner {
                 color: var(--sc-grey4);
             }
 
@@ -339,7 +343,18 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                         <div class="seeker">
                             <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
-                            <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+
+                            <dom-if if="{{!isSeeker}}">
+                                <template>
+                                    <div id="seeker" class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                                </template>
+                            </dom-if>
+                            <dom-if if="{{isSeeker}}">
+                                <template>
+                                    <div id="seeker" class="seeker-info seeker-owner">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                                </template>
+                            </dom-if>
+
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
                                 <div class="value">[[_formatValue(hashtagItem.value)]]</div>
@@ -382,6 +397,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         notify: true,
                     },
                     /**
+                    * isSeeker boolean is true if the user is the owner
+                    * @type {Boolean}
+                    */
+                    isSeeker: {
+                        type: Boolean,
+                    },
+                    /**
                     * hashtag is the currently loaded hashtag
                     * @type {Object}
                     */
@@ -406,6 +428,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: true,
                     },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
                 };
             }
             connectedCallback() {
@@ -425,6 +455,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.hashtagItem.itemHash &&
                     this.hashtagItem.itemHash == this.route.path.split('/')[3]) {
                     this.loadingItem = false;
+                    this.isSeeker =
+                        this.hashtagItem.seeker.address == this.publicKey ? true : false;
                 } else {
                     this.loadingItem = true;
                 }
