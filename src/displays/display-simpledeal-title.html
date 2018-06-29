@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../redux-state.html">
 <!--
 
@@ -35,6 +36,7 @@ The following custom properties and mixins are available for styling:
             :host {
                 display: block;
             }
+
             .container {
                 width: 100%;
                 box-sizing: border-box;
@@ -47,6 +49,23 @@ The following custom properties and mixins are available for styling:
             .container[wide-layout] {
                 padding: 0px 10vw 15px 10vw;
             }
+            
+            .hashtagloading {
+                height: 16px;
+                width: 120px;
+                background-color: var(--sc-grey2);
+                border-radius: 8px;
+                margin: 10px 0px 26px 28px;
+                opacity: 0.5;
+            }
+
+            .container[wide-layout] .hashtagloading {
+                height: 16px;
+                width: 120px;
+                background-color: var(--sc-grey2);
+                border-radius: 8px;
+                margin: 12px 0px 24px 2px;
+            }
 
             .namebox {
                 @apply --main-title2;
@@ -54,14 +73,12 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-grey4);
             }
 
-            .container[wide-layout] .namebox {
-            }
-
             .hashtagsymbol {
                 font-weight: 800;
                 font-size: 27px;
                 margin-right: 2px;
             }
+
             .info-toggle {
                 @apply --small-bold;
                 @apply --layout-center;
@@ -72,17 +89,25 @@ The following custom properties and mixins are available for styling:
                 padding: 1px 3px;
                 cursor: pointer;
             }
-
         </style>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <data-simpledeal id="sort"></data-simpledeal>
+        <app-location route="{{route}}"></app-location>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="namebox">
-                <span class="hashtagsymbol">#</span>{{hashtag.name}}
-            </div>
-            <div id="infolink" class="info-toggle">i</div>
+            <dom-if if="{{loadingHashtag}}">
+                <template>
+                    <div class="hashtagloading"></div>
+                </template>
+            </dom-if>
+            <dom-if if="{{!loadingHashtag}}">
+                <template>
+                    <div class="namebox">
+                        <span class="hashtagsymbol">#</span>{{hashtag.name}}
+                    </div>
+                    <div id="infolink" class="info-toggle">i</div>
+
+                </template>
+            </dom-if>
         </div>
-        </template>
+    </template>
     <script>
         class MySimpledealTitle extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -101,8 +126,23 @@ The following custom properties and mixins are available for styling:
                     hashtag: {
                         type: Object,
                         statePath: 'hashtag',
+                        observer: '_load',
+                    },
+                    /**
+                    * loadingHashtag is the currently loaded hashtag object
+                    * @type {Object}
+                    */
+                    loadingHashtag: {
+                        type: Boolean,
+                        value: true,
                     },
                 };
+            }
+            /**
+            * Toggles betweeen loading & loaded state
+            */
+            _load() {
+                this.loadingHashtag = this.hashtag.address == this.route.path.split('/')[2] ? false : true;
             }
         }
 
