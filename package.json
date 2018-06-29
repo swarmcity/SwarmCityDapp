@@ -29,7 +29,9 @@
     "start": "node server.js",
     "test:integration": "polymer build",
     "webpack": "webpack",
-    "build": "polymer build",
+    "build": "node --max-old-space-size=4096 ./node_modules/.bin/polymer build && npm run move && npm run delbuild",
+    "move": "mv ./build/es6-bundled/* ./ && npm run delbuild",
+    "delbuild": "if [ -d 'build/'; then rm -Rf build/; fi",
     "serve": "polymer serve"
   },
   "dependencies": {
