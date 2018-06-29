@@ -141,7 +141,7 @@
                     on-touchmove="_panMove">
                     Your browser does not support HTML5 Canvas.
                 </canvas>
-                <paper-slider id="slider" step="0.01" value="{{scale}}" min="0.0" max="1.0" on-immediate-value-change="_getScale"></paper-slider>
+                <paper-slider id="slider" step="0.01" value="{{scale}}" min="{{minImageScale}}" max="1.0" on-immediate-value-change="_getScale"></paper-slider>
                 <div class="blacktext">{{localize('scroll to zoom')}} - {{localize('drag to move')}}</div>
 
                 <label for="file" onclick="">
@@ -204,6 +204,7 @@
                     */
                     routeEntry: {
                         type: Array,
+                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * The image
@@ -221,6 +222,14 @@
                         type: Number,
                         value: 0.5,
                         observer: '_drawFile',
+                    },
+                    /**
+                    * The minimum value of the image scale
+                    * @type {Number}
+                    */
+                    minImageScale: {
+                        type: Number,
+                        value: 0.4,
                     },
                     /**
                     * The angle the image is rotated
@@ -480,6 +489,10 @@
                         this.endY = event.clientY - this.startY;
                     }
                 }
+            }
+
+            _loadEntryAnimations() {
+                this._firstLoad();
             }
 
             /**

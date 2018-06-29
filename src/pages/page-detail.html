@@ -18,6 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-dealstate-detail.html">
 <link rel="import" href="../displays/display-dealstate-mydetail.html">
 <link rel="import" href="../displays/display-get-item.html">
+<link rel="import" href="../displays/display-simpledeal-title.html">
 
 <dom-module id="page-detail">
     <template>
@@ -29,15 +30,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 100%;
                 width: 100vw;
                 display: block;
-                max-width: 100%;
-                --max-width: 800px;
-
-                animation: bgcolors 60s linear infinite;
             }
 
             .container {
-                @apply --layout-start-justified;
-                @apply --layout-start;
                 background-image: var(--sc-bg);
                 width: 100%;
                 min-height: 100vh;
@@ -45,7 +40,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] {
                 box-sizing: border-box;
-                padding: 0 20vw 12vh 12vw;
+                /* padding: 0 20vw 12vh 12vw; */
             }
 
             .header {
@@ -53,6 +48,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 box-sizing: border-box;
                 padding: 40px 40px 20px 40px;
+                
+
             }
 
             .container[wide-layout] .header {
@@ -60,33 +57,28 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 50px 10vw 20px 10vw;
             }
 
-            display-my-info {
-                @apply --layout-flex;
-            }
 
-            .container[wide-layout] display-my-info {
-                padding: 0 0 5vh 0;
-            }
-
-            .page-content {
-                @apply --layout-vertical;
-                @apply --layout-flex;
-                background-color: var(--sc-white);
-                box-sizing: border-box;
+            .container .detail-container {
                 width: 100%;
-                padding: 0 14vw;
-                max-width: var(--max-width);
-            }
-
-            .container[wide-layout] .page-content {
-                padding: 0 5vw;
-            }
-
-            .itembox {
                 box-sizing: border-box;
-                padding: 10px 10px 25px 30px;
-                margin: 0 10px;
+                padding: 0px 10px 25px 10px;
+            }
+
+            .container[wide-layout] .detail-container {
+                padding: 0px 10vw 25px 10vw;
+            }
+
+            .container .itembox {
+                width: 100%;
                 background-color: var(--sc-white);
+                box-sizing:border-box;
+                padding: 10px 10px 35px 20px;
+                border-bottom: 1px dashed rgba(51, 51, 51, 0.08) ;
+
+            }
+
+            .container[wide-layout] .itembox {
+                max-width: 68vw;
             }
 
             .closebox {
@@ -94,7 +86,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-end-justified;
                 box-sizing: border-box;
                 width: 100%;
-                max-width: var(--max-width);
+                z-index: 99;
             }
 
             .container[wide-layout] .top-margin {
@@ -102,7 +94,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .close {
-                @apply --xmark-grey3-small;
+                @apply --xmark-grey2-small;
                 cursor: pointer;
             }
 
@@ -111,12 +103,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .seeker-avatar {
-                width: 50px;
-                height: 50px;
+                width: 40px;
+                height: 40px;
                 cursor: pointer;
                 border-radius: 50%;
                 margin-right: 10px;
-                background-size: 50px;
+                background-size: 40px;
             }
 
             .user {
@@ -124,19 +116,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-blue);
             }
 
-            .description {
+            .container .description {
                 @apply --layout-flex;
                 @apply --layout-vertical;
                 @apply --layout-end-justified;
                 @apply --body-detail;
                 color: var(--sc-grey4);
+                margin: -10px 10px 0 10px;
             }
 
-            .hashtag {
-                @apply --body-bold;
-                margin-top: 5px;
-                color: var(--sc-grey4);
+
+            .container[wide-layout] .description {
+                margin: -10px 20px 0 10px;
             }
+
 
             .pricebox {
                 @apply --layout-vertical;
@@ -160,7 +153,9 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .linkbox {
-                margin-top: 15px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 20px 20px 0px 10px;
             }
 
             .link {
@@ -170,12 +165,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-grey2);
             }
 
-            .dealstate {
-                margin-top: 1.5px;
+            .container .dealstate {
+                width: 100%;
                 background-color: var(--sc-white);
-                width: 100%;
-                max-width: var(--max-width);
-                width: 100%;
+            }
+
+            .container[wide-layout] .dealstate {
+                max-width: 68vw;
             }
 
             .tempswitch {
@@ -209,14 +205,15 @@ This code may only be used under the license found at https://github.com/swarmci
             .date {
                 @apply --small-light;
                 color: var(--sc-grey3b);
-                margin-top: 4px;
+                margin: 4px 10px 0 10px;
             }
 
             .seeker {
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
-                margin-top: 12px;
                 width: 100%;
+                box-sizing:border-box;
+                padding: 15px 15px 0 10px;
             }
 
             .seeker-info {
@@ -232,6 +229,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-size: 100%;
                 width: 100%;
                 height: 100%;
+            }
+
+            .detail-container {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -269,44 +273,41 @@ This code may only be used under the license found at https://github.com/swarmci
                             <div class="top-margin"></div>
                         </template>
                     </dom-if>
+                    <display-simpledeal-title></display-simpledeal-title>
+                    <div class="detail-container" id="detailcontainer">
+                        <div class="itembox">
+                            <div class="closebox">
+                                <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+                            </div>
 
-                    <div class="title">
-                        <div class="namebox">
-                            <span class="hashtagsymbol">#</span>{{hashtag.name}}
-                        </div>
-                    </div>
-
-                    <div class="itembox">
-                        <div class="closebox">
-                            <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
-                        </div>
-
-                        <div class="description">
-                            [[hashtagItem.description]]
-                        </div>
-                        <div class="date">
-                            [[_formatDate(hashtagItem.dateTime)]]
-                        </div>
-                        <div class="seeker">
-                            <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
-                            <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
-                            <div class="pricebox">
-                                <div class="unit">SWT</div>
-                                <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                            <div class="description">
+                                [[hashtagItem.description]]
+                            </div>
+                            <div class="date">
+                                [[_formatDate(hashtagItem.dateTime)]]
+                            </div>
+                            <div class="seeker">
+                                <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
+                                <div class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                                <div class="pricebox">
+                                    <div class="unit">SWT</div>
+                                    <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                                </div>
+                            </div>
+                            <div class="linkbox">
+                                <span class="link">shareable link</span>
                             </div>
                         </div>
-                        <div class="linkbox">
-                            <span class="link">shareable link</span>
+                        <div class="dealstate">
+                            <template is="dom-if" if="{{myRequest}}">
+                                <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
+                            </template>
+                            <template is="dom-if" if="{{!myRequest}}">
+                                <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
+                            </template>
                         </div>
                     </div>
-                    <div class="dealstate">
-                        <template is="dom-if" if="{{myRequest}}">
-                            <display-dealstate-mydetail path="{{path}}"></display-dealstate-mydetail>
-                        </template>
-                        <template is="dom-if" if="{{!myRequest}}">
-                            <display-dealstate-detail path="{{path}}"></display-dealstate-detail>
-                        </template>
-                    </div>
+
                 </div>
             </template>
         </dom-if>
@@ -368,7 +369,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeExit: {
                         type: Array,
-                        // observer: '_loadExitAnimations',
+                        observer: '_loadExitAnimations',
                     },
                     /**
                     * routeEntry triggers the entry animations
@@ -376,7 +377,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        // observer: '_loadEntryAnimations',
+                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * hashtag is the currently loaded hashtag
@@ -475,6 +476,63 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+
+            /**
+            * Load the correct exiy animations
+            */
+            _loadExitAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Here come the Exit Animations, going to page Hashtag
+                            this.$.detailcontainer.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            /**
+            * Load the correct entry animations
+            */
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        if (this.routeExit[0] == 'hashtag') {
+                        // Coming from page Hashtag
+                            this.$.detailcontainer.animate(
+                                [
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 200,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
             }
         }
         window.customElements.define(MyDetail.is, MyDetail);

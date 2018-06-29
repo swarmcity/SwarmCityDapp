@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../displays/display-simpledeal-items.html">
 <link rel="import" href="../displays/display-simpledeal-involved.html">
+<link rel="import" href="../displays/display-simpledeal-title.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../redux-state.html">
 <!--
@@ -33,17 +34,24 @@ The following custom properties and mixins are available for styling:
                 display: block;
             }
 
+            .container {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 52px 0px 0px 0px;
+            }
+
             .middle {
                 @apply --layout-horizontal;
                 @apply --layout-center-justified;
                 @apply --layout-end;
-                height: 47px;
-                margin: 0px 10px;
-                padding-bottom: 15px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 36px 15px 36px;
             }
 
             .container[wide-layout] .middle {
-                margin: 0 21vw 0 11vw;
+                padding: 0px 0 10px 10vw;
+                max-width: 78vw;
             }
 
             .filterbox {
@@ -63,23 +71,7 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-flex;
             }
 
-            .container[wide-layout] .namebox {
-                margin: 0 21vw 40px 11vw;
-            }
-
-            .namebox {
-                @apply --main-title2;
-                font-size: 30px;
-                color: var(--sc-grey4);
-                padding: 0px 10px 0px 40px;
-                margin-bottom: 20px;
-            }
-
-            .hashtagsymbol {
-                font-weight: 800;
-                font-size: 27px;
-                margin-right: 2px;
-            }
+    
 
             .counterbox {
                 @apply --small-bold;
@@ -97,12 +89,13 @@ The following custom properties and mixins are available for styling:
             .icon-scroll {
                 @apply --arrowup-blue-small;
             }
+
+
+
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="namebox">
-                <span class="hashtagsymbol">#</span>{{hashtag.name}}
-            </div>
             <display-simpledeal-involved path={{path}} count={{count}}></display-simpledeal-involved>
             <div class="middle">
                 <div class="filterbox">filter deals</div>
