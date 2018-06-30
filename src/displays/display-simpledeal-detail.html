@@ -16,6 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
 <link rel="import" href="../displays/display-button-reply.html">
+<link rel="import" href="../displays/display-button-cancel.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -309,6 +310,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 right: 10vw;
                 bottom: 16vh;
             }
+            
+            display-button-cancel {
+                margin: 30px auto;
+                width: 175px;
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -371,13 +377,17 @@ This code may only be used under the license found at https://github.com/swarmci
                             <span class="link">shareable link</span>
                         </div>
                     </div>
+
                     <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
-                    <display-simpledeal-reply></display-simpledeal-reply>
                     <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
-                        <display-button-reply on-tap="_reply"></display-button-reply>
+                        <display-button-reply></display-button-reply>
+                    </template>
+                    <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                        <display-button-cancel></display-button-cancel>
                     </template>
                     </div>
                 </template>
+
             </dom-if>
 
     </template>
@@ -513,6 +523,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                     return replied ? false : true;
                 }
+            }
+            /**
+            * Set the conditions for showing the cancel button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showCancelButton(item) {
+                return (item.seeker && item.seeker.address == this.publicKey);
             }
         }
         window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);
