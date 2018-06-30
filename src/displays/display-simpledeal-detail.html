@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
+<link rel="import" href="../displays/display-button-reply.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -297,6 +298,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-color: var(--sc-white);
             }
 
+            display-button-reply {
+                position: fixed;
+                bottom: 10vh;
+                right: 10vw;
+            }
+
+            .container[wide-layout] display-button-reply {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -358,8 +371,11 @@ This code may only be used under the license found at https://github.com/swarmci
                             <span class="link">shareable link</span>
                         </div>
                     </div>
-                    <!-- HIER KOMEN DE REPLIES DISPLAYS -->
                     <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
+                    <display-simpledeal-reply></display-simpledeal-reply>
+                    <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
+                        <display-button-reply on-tap="_reply"></display-button-reply>
+                    </template>
                     </div>
                 </template>
             </dom-if>
@@ -478,6 +494,25 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+            /**
+            * Set the conditions for showing the reply button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showReplyButton(item) {
+                if (item.seeker &&
+                    item.seeker.address == this.publicKey) {
+                    return false;
+                } else if (item.replies) {
+                    let replied = false;
+                    for (let replier of item.replies) {
+                        if (replier.address == this.publicKey) {
+                            replied = true;
+                        }
+                    }
+                    return replied ? false : true;
+                }
             }
         }
         window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);

@@ -14,7 +14,6 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
-<link rel="import" href="../displays/display-button-reply.html">
 <link>
 
 <dom-module id="display-simpledeal-itemreplies">
@@ -85,17 +84,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 15px;
             }
 
-            display-button-reply {
-                position: fixed;
-                bottom: 10vh;
-                right: 10vw;
-            }
-
-            .container[wide-layout] display-button-reply {
-                bottom: auto;
-                right: 10vw;
-                bottom: 16vh;
-            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -124,9 +112,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                 </div>
-            </template>
-            <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
-                <display-button-reply on-tap="_reply"></display-button-reply>
             </template>
     </template>
     <script>
@@ -200,26 +185,6 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _formatValue(value) {
                 return value / 1e18;
-            }
-
-            /**
-            * Set the conditions for showing the reply button
-            * @param {Object} item the hashtagItem object
-            * @return {Boolean} true when button should be visible
-            */
-            _showReplyButton(item) {
-                if (item.seeker &&
-                    item.seeker.address == this.publicKey) {
-                    return false;
-                } else if (item.replies) {
-                    let replied = false;
-                    for (let replier of item.replies) {
-                        if (replier.address == this.publicKey) {
-                            replied = true;
-                        }
-                    }
-                    return replied ? false : true;
-                }
             }
 
             /**
