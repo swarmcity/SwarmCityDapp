@@ -348,18 +348,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                         <div class="seeker">
                             <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
-
-                            <dom-if if="{{!isSeeker}}">
-                                <template>
-                                    <div id="seeker" class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
-                                </template>
-                            </dom-if>
-                            <dom-if if="{{isSeeker}}">
-                                <template>
-                                    <div id="seeker" class="seeker-info seeker-owner">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
-                                </template>
-                            </dom-if>
-
+                            <div id="seeker" class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
                                 <div class="value">[[_formatValue(hashtagItem.value)]]</div>
@@ -402,13 +391,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         notify: true,
-                    },
-                    /**
-                    * isSeeker boolean is true if the user is the owner
-                    * @type {Boolean}
-                    */
-                    isSeeker: {
-                        type: Boolean,
                     },
                     /**
                     * hashtag is the currently loaded hashtag
@@ -462,8 +444,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.hashtagItem.itemHash &&
                     this.hashtagItem.itemHash == this.route.path.split('/')[3]) {
                     this.loadingItem = false;
-                    this.isSeeker =
-                        this.hashtagItem.seeker.address == this.publicKey ? true : false;
+                    if (this.hashtagItem.seeker.address == this.publicKey) {
+                        this.async(() => {
+                            this.$$('#seeker').classList.add('seeker-owner');
+                        });
+                    } else {
+                        this.async(() => {
+                            this.$$('#seeker').classList.remove('seeker-owner');
+                        });
+                    }
                 } else {
                     this.loadingItem = true;
                 }
