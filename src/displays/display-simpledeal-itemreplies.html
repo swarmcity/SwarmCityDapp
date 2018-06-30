@@ -14,6 +14,8 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-button-reply.html">
+<link>
 
 <dom-module id="display-simpledeal-itemreplies">
     <template>
@@ -73,10 +75,16 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding-right: 25px;
             }
-            
+
             .bottom {
                 @apply --layout-horizontal;
                 margin-top: 15px;
+            }
+
+            display-button-reply {
+                position: fixed;
+                bottom: 50px;
+                right: 25px;
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -90,8 +98,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
                     </div>
                     <div class="bottom">
-                        <iron-image style="width:30px; height:30px; margin-right: 10px;" sizing="cover" preload fade
-                            placeholder="../images/defaultavatar.png">
+                        <iron-image style="width:30px; height:30px; margin-right: 10px;" sizing="cover" preload fade placeholder="../images/defaultavatar.png">
                         </iron-image>
                         <div class="bottom-vertical">
                             <div class="date">[[_formatDate(item.dateTime)]]</div>
@@ -99,6 +106,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                 </div>
+            </template>
+            <template is="dom-if" if="[[_showReplyButton()]]">
+                <display-button-reply on-tap="_reply"></display-button-reply>
             </template>
     </template>
     <script>
@@ -171,6 +181,10 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+
+            _reply() {
+                console.log('tap!');
             }
         }
         window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
