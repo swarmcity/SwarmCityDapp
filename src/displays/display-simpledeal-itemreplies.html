@@ -57,12 +57,16 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 2px;
             }
 
+            .replier {
+                color: var(--sc-grey4);
+            }
+
             .price {
                 @apply --small-bold;
                 text-align: right;
                 color: var(--sc-grey4);
                 white-space: nowrap;
-                margin: 5px 10px 0 0;
+                margin: 7px 10px 0 0;
             }
 
             .description {
@@ -83,8 +87,14 @@ This code may only be used under the license found at https://github.com/swarmci
 
             display-button-reply {
                 position: fixed;
-                bottom: 50px;
-                right: 25px;
+                bottom: 10vh;
+                right: 10vw;
+            }
+
+            .container[wide-layout] display-button-reply {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -102,12 +112,20 @@ This code may only be used under the license found at https://github.com/swarmci
                         </iron-image>
                         <div class="bottom-vertical">
                             <div class="date">[[_formatDate(item.dateTime)]]</div>
-                            <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
+
+                            <template is="dom-if" if="[[!_isReplier(item)]]">
+                                <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
+                            </template>
+
+                            <template is="dom-if" if="[[_isReplier(item)]]">
+                                <div class="user replier">[[item.username]] · [[item.reputation]] SWR</div>
+                            </template>
+
                         </div>
                     </div>
                 </div>
             </template>
-            <template is="dom-if" if="[[_showReplyButton()]]">
+            <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
                 <display-button-reply on-tap="_reply"></display-button-reply>
             </template>
     </template>
@@ -154,6 +172,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
+
                 };
             }
             connectedCallback() {
@@ -183,8 +202,35 @@ This code may only be used under the license found at https://github.com/swarmci
                 return value / 1e18;
             }
 
+            /**
+            * Set the conditions for showing the reply button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showReplyButton(item) {
+                if (item.seeker &&
+                    item.seeker.address == this.publicKey) {
+                    return false;
+                } else if (item.replies) {
+                    let replied = false;
+                    for (let replier of item.replies) {
+                        if (replier.address == this.publicKey) {
+                            replied = true;
+                        }
+                    }
+                    return replied ? false : true;
+                }
+            }
+
+            /**
+            * Here we check if a reply is owned by the current user
+            * @param {Object} reply a hashtagItem reply
+            * @return {Boolean} true when user owns this reply
+            */
+            _isReplier(reply) {
+                return reply.address == this.publicKey;
+            }
             _reply() {
-                console.log('tap!');
             }
         }
         window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
