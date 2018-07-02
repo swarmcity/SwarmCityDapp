@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../redux-state.html">
 <!--
 
@@ -31,15 +32,51 @@ The following custom properties and mixins are available for styling:
                 display: block;
             }
 
-            .container[wide-layout] .send-box {
-                @apply --layout-start;
+            .container {
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
+            }
+
+            .provider {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
                 width: 100%;
             }
 
-            paper-input {
-                width: 100%;
-                max-width: 400px;
+            .inputbox {
+                @apply --layout-vertical;
+            }
+
+            .choice {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                padding: 30px 0;
+            }
+
+            img {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                margin-right: 10px;
+            }
+
+            .price {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            paper-textarea {
+                text-indent: 2px;
+                margin-top: 5px;
+                box-sizing: border-box;
+                min-width: 200px;
+                text-align: left;
                 @apply --sc-paper-input;
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-blue);
+                --paper-input-container-focus: @apply --body-bold;
                 --paper-input-container-label: {
                     @apply --body-default;
                 }
@@ -56,97 +93,19 @@ The following custom properties and mixins are available for styling:
                     @apply --body-default;
                 }
             }
-
-            .totalamountinput {
-                width: 100%;
-                max-width: 400px;
-                @apply --layout-horizontal;
-                @apply --layout-end;
-                @apply --layout-start-justified;
-            }
-
-            .totalamountinput paper-input {
-                @apply --layout-flex;
-            }
-
-            .totalamountinput .SWT {
-                @apply --small-bold;
-                box-sizing: border-box;
-                padding: 5px 0px 5px 5px;
-            }
-
-            .send-buttonbox {
-                margin-top: 20px;
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
-            }
-
-            .container[wide-layout] .send-buttonbox {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-center;
-            }
-
-            .disagree {
-                @apply --xmark-grey4-small;
-                cursor: pointer;
-                margin-right: 10px;
-            }
-
-            .disagree:active {
-                @apply --button-active;
-            }
-
-            .round-button {
-                @apply --icon-button-big;
-                opacity: 0.5;
-            }
-
-            .enabled {
-                cursor: pointer;
-                opacity: 1;
-            }
-
-            .enabled:active {
-                @apply --button-active;
-            }
-
-            .agree {
-                @apply --next-blue-normal;
-            }
-
-            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-            only screen and (min--moz-device-pixel-ratio: 1.5),
-            only screen and (min-resolution: 240dpi) {
-                .shortCode-code-close,
-                .code-close,
-                .disagree,
-                .agree {
-                    @apply --retina;
-                }
-            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="send-box">
-                <div class="totalamountinput">
-                    <paper-input tabindex="1" type="Number" id="sendInput" class="send-amount" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"
-                        value="{{amountToSend}}" on-keyup="_checkBalance"></paper-input>
-                    <div class="SWT">SWT</div>
+            <div class="provider">
+                <img src="{{avatar}}">
+                <div class="inputbox">
+                    <paper-textarea label="Your reply" type="txt" value="{{reply}}" autofocus></paper-textarea>
+                    <div class="price">for [[_formatValue(hashtagItem.value)]] SWT </div>
                 </div>
-                <paper-textarea id="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}" on-input="_toggleButton"
-                    autofocus></paper-textarea>
-                <paper-input tabindex="2" pattern="[0-9]*" data-numeric-input pattern="[0-9]{10}" class="send-destination" label="{{localize('Receivers shortcode')}}"
-                    type="txt" value="{{sendDestination}}" on-keyup="_checkShortCode"></paper-input>
-                <div class="errorcontainer">
-                    <span id="error">{{error}}</span>
-                </div>
-                <div class="send-buttonbox">
-                    <div tabindex="3" class="disagree" on-up="_toReplies"></div>
-                    <div tabindex="4" id="send" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
-                        <div class="agree"></div>
-                    </div>
-                </div>
+            </div>
+            <div class="choice">
+                <display-button-disagree on-up="_toReplies"></display-button-disagree>
+                <display-button-confirm on-up="_toReplies"></display-button-confirm>
             </div>
         </div>
 
@@ -171,6 +130,22 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                         reflectToAttribute: true,
                     },
+                    /**
+                    * Avatar represents the user's base64 of their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
                 };
             }
 
@@ -178,8 +153,19 @@ The following custom properties and mixins are available for styling:
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+            /**
+            * Changes the current view to show all replies
+            */
             _toReplies() {
                 this.stateChange = 'replies';
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
             }
         }
         window.customElements.define(MyDisplayInputReply.is, MyDisplayInputReply);
