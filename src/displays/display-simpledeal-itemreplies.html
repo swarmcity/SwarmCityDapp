@@ -27,33 +27,37 @@ This code may only be used under the license found at https://github.com/swarmci
                 display: block;
             }
 
+            .top {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
             .box {
-                box-sizing: border-box;
-                padding: 0px 10px 25px 20px;
-                background-color: var(--sc-white);
-                @apply --layout-vertical;
                 width: 100%;
+                @apply --layout-vertical;
                 box-sizing: border-box;
-                cursor: pointer;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
             }
 
             .container[wide-layout] .box {
+                box-sizing: border-box;
+                padding: 20px 30px 15px 30px;
                 max-width: 68vw;
             }
 
-            .top {
-                @apply --layout-horizontal;
-            }
 
             .date {
                 @apply --smallest-light;
                 color: var(--sc-grey2);
+                margin: 4px 0px 0px 0px;
             }
 
             .user {
                 @apply --small-bold;
                 color: var(--sc-blue);
-                margin-top: 2px;
+                @apply --layout-flex;
             }
 
             .replier {
@@ -65,55 +69,102 @@ This code may only be used under the license found at https://github.com/swarmci
                 text-align: right;
                 color: var(--sc-grey4);
                 white-space: nowrap;
-                margin: 7px 10px 0 0;
+                margin: 0px 0px 0px 10px;
+                /* border: 2px solid var(--sc-grey1); */
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
             }
 
             .description {
-                text-align: justify;
-                text-justify: inter-word;
                 @apply --layout-flex;
                 @apply --body-default;
                 color: var(--sc-grey4);
-                margin-top: 5px;
                 box-sizing: border-box;
-                padding-right: 25px;
             }
 
             .bottom {
                 @apply --layout-horizontal;
-                margin-top: 15px;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                margin-top: 10px;
+            }
+
+            .container .noreplies {
+                width: 100%;
+                color: var(--sc-grey2);
+                text-align: center;
+            }
+
+            .container[wide-layout] .noreplies {
+                text-align: left;
+            }
+
+            iron-image {
+                height: 24px;
+                width: 24px;
+                min-height: 24px;
+                min-width: 24px;
+                margin-right: 10px;
+            }
+
+            .vmarkmini {
+                @apply --vmark-grey4-mini;
+                opacity: 0.1;
+                margin-right: 2px;
+            }
+
+            .container .spacer {
+                width: 100%;
+                height:15px;
+                background-color: var(--sc-white);
+            }
+
+            .container[wide-layout] .spacer {
+                width: 100%;
+                height:10px;
+                background-color: var(--sc-white);
             }
 
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="[[_noReplies(hashtagItem)]]">
+                <div class="box">
+                    <div class="noreplies">No replies yet.</div>
+                </div>
+            </template>
+            <div class="spacer"></div>
             <template is="dom-repeat" items="{{hashtagItem.replies}}">
                 <div class="box">
                     <div class="top">
                         <div class="description">
                             [[item.description]]
                         </div>
-                        <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+                        <div class="price"><div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT</div>
                     </div>
+
+                    <div class="date">[[_formatDate(item.dateTime)]]</div>
+
                     <div class="bottom">
-                        <iron-image style="width:30px; height:30px; margin-right: 10px;" sizing="cover" preload fade placeholder="../images/defaultavatar.png">
+                        <iron-image sizing="cover" preload fade placeholder="../images/defaultavatar.png">
                         </iron-image>
-                        <div class="bottom-vertical">
-                            <div class="date">[[_formatDate(item.dateTime)]]</div>
 
-                            <template is="dom-if" if="[[!_isReplier(item)]]">
-                                <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
-                            </template>
+                        <template is="dom-if" if="[[!_isReplier(item)]]">
+                            <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
+                        </template>
 
-                            <template is="dom-if" if="[[_isReplier(item)]]">
-                                <div class="user replier">[[item.username]] · [[item.reputation]] SWR</div>
-                            </template>
+                        <template is="dom-if" if="[[_isReplier(item)]]">
+                            <div class="user replier">[[item.username]] · [[item.reputation]] SWR</div>
+                        </template>
 
-                        </div>
+
                     </div>
                 </div>
             </template>
-    </template>
+            <div class="spacer"></div>
+
+        </template>
     <script>
         class MySimpledealItemreplies extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -194,6 +245,15 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _isReplier(reply) {
                 return reply.address == this.publicKey;
+            }
+
+            /**
+            * Here we check if there are any replies
+            * @param {Object} item a hashtagItem
+            * @return {Boolean} true when user owns this reply
+            */
+            _noReplies(item) {
+                return (!item.replies || item.replies.length == 0);
             }
         }
         window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
