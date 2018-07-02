@@ -165,35 +165,20 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <img src="{{avatar}}">
-                <dom-if if="{{blue}}">
-                    <template>
-                        <paper-input 
-                            tabindex="1"
-                            id="input"
-                            class="input-blue" 
-                            label="{{localize('password?')}}" 
-                            type="password" 
-                            value="{{password}}" 
-                            on-tap="_changeInput"
-                            on-keydown="_checkForEnter">
-                        </paper-input>
-                    </template>
-                </dom-if>
-                <dom-if if="{{white}}">
-                    <template>
-                        <paper-input
-                            tabindex="1" 
-                            id="input"
-                            class="input-white" 
-                            label="{{localize('password?')}}" 
-                            addAttr="autofocus" 
-                            type="password" 
-                            value="{{password}}" 
-                            on-tap="_changeInput" 
-                            on-keydown="_checkForEnter">
-                        </paper-input>
-                    </template>
-                </dom-if>
+            <dom-if if="{{blue}}">
+                <template>
+                    <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}" type="password" value="{{password}}"
+                        on-tap="_changeInput" on-keydown="_checkForEnter">
+                    </paper-input>
+                </template>
+            </dom-if>
+            <dom-if if="{{white}}">
+                <template>
+                    <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}" addAttr="autofocus" type="password"
+                        value="{{password}}" on-tap="_changeInput" on-keydown="_checkForEnter">
+                    </paper-input>
+                </template>
+            </dom-if>
             {{error}}
             <div class="buttonbox">
                 <div tabindex="2" class="disagree" on-tap="_disagree" on-keyPress="_disagree"></div>
@@ -348,9 +333,9 @@ The following custom properties and mixins are available for styling:
             _openDisplay() {
                 window.scrollTo(0, 0);
                 this.error = '';
-                setTimeout(()=>{
+                this.async(() => {
                     this.$$('#input').focus();
-                }, 1);
+                });
             }
             /**
             * Toggles the visibility of this display

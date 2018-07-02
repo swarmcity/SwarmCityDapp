@@ -48,7 +48,11 @@ The following custom properties and mixins are available for styling:
                 background-size: 50px;
             }
 
-            .container>img {
+            .container[wide-layout] .top-margin {
+                height: 10vh;
+            }
+
+            img {
                 width: 40px;
                 height: 40px;
                 cursor: pointer;
@@ -56,7 +60,7 @@ The following custom properties and mixins are available for styling:
                 background-size: 40px;
             }
 
-            .container[wide-layout]>img {
+            .container[wide-layout] img {
                 width: 50px;
                 height: 50px;
                 background-size: 50px;
@@ -72,12 +76,12 @@ The following custom properties and mixins are available for styling:
                 margin-left: 20px;
             }
 
-            .container div:nth-child(2)>div:nth-child(1) {
+            #username {
                 @apply --small-bold;
                 cursor: pointer;
             }
 
-            .container div:nth-child(2)>div:nth-child(2) {
+            #balance {
                 @apply --main-title4;
                 color: var(--sc-yellow);
                 cursor: pointer;
@@ -86,15 +90,25 @@ The following custom properties and mixins are available for styling:
         </style>
 
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        
-            <div class="container" wide-layout$="{{wide}}">
-                <img id="image" on-click="_toProfile" src="{{avatar}}">
 
-                <div class="totalbox">
-                    <div id="username"  on-click="_toProfile">{{username}}</div>
-                    <div id="balance" on-click="_toWallet">{{balance.swt.balanceSwt}} SWT</div>
-                </div>
-            </div>
+        <div class="container" wide-layout$="{{wide}}">
+
+            <dom-if if="{{!publicKey}}">
+                <template>
+                    <div class="top-margin"></div>
+                </template>
+            </dom-if>
+
+            <dom-if if="{{publicKey}}">
+                <template>
+                    <img id="image" on-click="_toProfile" src="{{avatar}}">
+                    <div class="totalbox">
+                        <div id="username" on-click="_toProfile">{{username}}</div>
+                        <div id="balance" on-click="_toWallet">{{balance.swt.balanceSwt}} SWT</div>
+                    </div>
+                </template>
+            </dom-if>
+        </div>
     </template>
     <script>
         class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -147,14 +161,23 @@ The following custom properties and mixins are available for styling:
                     route: {
                         type: Object,
                     },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
                 };
             }
 
             /**
             * Fired when the component first loads
             */
-            ready() {
-                super.ready();
+
+            connectedCallback() {
+                super.connectedCallback();
                 this.importHref('src/pages/page-my-profile.html');
                 this.importHref('src/pages/page-my-wallet.html');
             }
@@ -164,99 +187,99 @@ The following custom properties and mixins are available for styling:
             _toProfile() {
                 sessionStorage.setItem('origin', this.route.path);
                 this.path = 'my-profile/';
-                let middleCalc = (window.innerWidth/2)-60+'px';
+                let middleCalc = (window.innerWidth / 2) - 60 + 'px';
                 if (this.wide) {
-                        this.$.image.animate(
-                            [
-                                {'transform': 'translate(0px,0px) scale(1, 1)'},
-                                {'transform': 'translate(20px,50px) scale(1.8, 1.8)'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#username').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#balance').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
+                    this.$.image.animate(
+                        [
+                            {'transform': 'translate(0px,0px) scale(1, 1)'},
+                            {'transform': 'translate(20px,50px) scale(1.8, 1.8)'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#username').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#balance').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
                 } else {
                     this.$.image.animate(
-                            [
-                                {'transform': 'translate(0px,0px) scale(1, 1)'},
-                                {'transform': 'translate('+middleCalc+',85px) scale(2.25, 2.25)'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#username').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#balance').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
+                        [
+                            {'transform': 'translate(0px,0px) scale(1, 1)'},
+                            {'transform': 'translate(' + middleCalc + ',85px) scale(2.25, 2.25)'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#username').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#balance').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
                 }
             }
             /**
@@ -266,97 +289,97 @@ The following custom properties and mixins are available for styling:
                 sessionStorage.setItem('origin', this.route.path);
                 this.path = 'my-wallet/';
                 if (this.wide) {
-                        Polymer.dom(this.root).querySelector('#image').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#username').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#balance').animate(
-                            [
-                                {'transform': 'translate(0px,0px) scale(1, 1)'},
-                                {'transform': 'translate(-72px,28px) scale(1.6085, 1.6085)'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
+                    this.$$('#image').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#username').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#balance').animate(
+                        [
+                            {'transform': 'translate(0px,0px) scale(1, 1)'},
+                            {'transform': 'translate(-72px,28px) scale(1.6085, 1.6085)'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
                 } else {
-                    Polymer.dom(this.root).querySelector('#image').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#username').animate(
-                            [
-                                {'opacity': '1'},
-                                {'opacity': '0'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        Polymer.dom(this.root).querySelector('#balance').animate(
-                            [
-                                {'transform': 'translate(0px,0px) scale(1, 1)'},
-                                {'transform': 'translate(-54px,37px) scale(1.6085,1.6085)'},
-                            ],
-                            {
-                                fill: 'backwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
+                    this.$$('#image').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#username').animate(
+                        [
+                            {'opacity': '1'},
+                            {'opacity': '0'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
+                    this.$$('#balance').animate(
+                        [
+                            {'transform': 'translate(0px,0px) scale(1, 1)'},
+                            {'transform': 'translate(-54px,37px) scale(1.6085,1.6085)'},
+                        ],
+                        {
+                            fill: 'backwards',
+                            duration: 300,
+                            iterations: 1,
+                            iterationStart: 0,
+                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            delay: 0,
+                            endDelay: 0,
+                        }
+                    );
                 }
             }
         }

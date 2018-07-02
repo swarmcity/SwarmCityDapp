@@ -1,0 +1,75 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-button-cancel></display-button-cancel>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-button-cancel` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-button-cancel">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .button {
+                @apply --text-button-small;
+                color: var(--sc-red2);
+                cursor: pointer;
+                box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -webkit-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -moz-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -o-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+            }
+
+            .container[wide-layout] .button {
+                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="button">
+                cancel this request
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyDisplayButtonCancel extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-button-cancel';
+            }
+        }
+        window.customElements.define(MyDisplayButtonCancel.is, MyDisplayButtonCancel);
+    </script>
+</dom-module>
