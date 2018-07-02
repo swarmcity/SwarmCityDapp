@@ -8,6 +8,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../redux-state.html">
 
 <!--
@@ -17,6 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
 <link rel="import" href="../displays/display-button-reply.html">
 <link rel="import" href="../displays/display-button-cancel.html">
+<link rel="import" href="../displays/display-input-reply.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -312,7 +314,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 right: 10vw;
                 bottom: 16vh;
             }
-            
+
             display-button-cancel {
                 margin: 30px auto;
                 width: 175px;
@@ -380,13 +382,19 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="repliescontainer">
+
+                    <template is="dom-if" if="[[_getState('replies', state)]]">
                         <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
                         <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
-                            <display-button-reply></display-button-reply>
+                            <display-button-reply on-up="_reply"></display-button-reply>
                         </template>
                         <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
                             <display-button-cancel></display-button-cancel>
                         </template>
+                    </template>
+                    <template is="dom-if" if="[[_getState('input', state)]]">
+                        <display-input-reply state-change="{{stateChange}}"></display-input-reply>
+                    </template>
                     </div>
                 </template>
             </dom-if>
@@ -452,6 +460,21 @@ This code may only be used under the license found at https://github.com/swarmci
                     publicKey: {
                         type: String,
                         statePath: 'publicKey',
+                    },
+                    /**
+                    * State contains the current view.
+                    * @type {String}
+                    */
+                    state: {
+                        type: String,
+                        value: 'replies',
+                    },
+                    /**
+                    * stateChange is the intermediary property for changing the state
+                    * @type {String}
+                    */
+                    stateChange: {
+                        observer: '_stateChange',
                     },
                 };
             }
@@ -527,12 +550,34 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
+            * Changes the state with its passed value.
+            * We need this extra value due to errors with changing state directly
+            * from within a dom-if
+            */
+            _stateChange() {
+                this.state = this.stateChange;
+            }
+            /**
             * Set the conditions for showing the cancel button
             * @param {Object} item the hashtagItem object
             * @return {Boolean} true when button should be visible
             */
             _showCancelButton(item) {
                 return (item.seeker && item.seeker.address == this.publicKey);
+            }
+            /**
+            * Set the view to write a reply
+            */
+            _reply() {
+                this.stateChange = 'input';
+            }
+            /**
+            * Switch between visible views
+            * @param {String} state the current state
+            * @return {Boolean} true when give state should be visible
+            */
+            _getState(state) {
+                return state == this.state;
             }
         }
         window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);
