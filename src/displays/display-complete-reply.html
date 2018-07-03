@@ -1,0 +1,77 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../data/data-transaction.html">
+<link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+<script src="../data/abi.js"></script>
+
+
+<!--
+
+Example:
+```
+<display-complete-reply></display-complete-reply>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-reply` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-reply">
+    <template>
+        <data-transaction id="transaction"></data-transaction>
+    </template>
+    <script>
+        class MyCompleteReply extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-complete-reply';
+            }
+            /**
+            * Redux actions for sending a reply
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    REPLYREQUEST: function (replyrequest) {
+                        return {
+                            type: 'REPLYREQUEST',
+                            replyrequest: replyrequest,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_hoi'
+                    },
+                };
+            }
+            _hoi() {
+                if (this.privateKey) {
+                    console.log(this.privateKey);
+                }
+            }
+        } window.customElements.define(MyCompleteReply.is, MyCompleteReply);
+    </script>
+</dom-module>
