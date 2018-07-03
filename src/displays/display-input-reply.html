@@ -8,6 +8,13 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-button-disagree.html">
+<link rel="import" href="../displays/display-button-confirm.html">
 <!--
 
 Example:
@@ -105,10 +112,9 @@ The following custom properties and mixins are available for styling:
             </div>
             <div class="choice">
                 <display-button-disagree on-up="_toReplies"></display-button-disagree>
-                <display-button-confirm on-up="_toReplies"></display-button-confirm>
+                <display-button-confirm on-up="_unlock"></display-button-confirm>
             </div>
         </div>
-
     </template>
     <script>
         class MyDisplayInputReply extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -146,6 +152,15 @@ The following custom properties and mixins are available for styling:
                         type: Object,
                         statePath: 'hashtagItem',
                     },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
                 };
             }
 
@@ -166,6 +181,12 @@ The following custom properties and mixins are available for styling:
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+            /**
+            * toggles the password unlock display
+            */
+            _unlock() {
+                this.toggleUnlock = !this.toggleUnlock;
             }
         }
         window.customElements.define(MyDisplayInputReply.is, MyDisplayInputReply);

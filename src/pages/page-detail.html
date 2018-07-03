@@ -18,6 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-get-item.html">
 <link rel="import" href="../displays/display-simpledeal-title.html">
 <link rel="import" href="../displays/display-simpledeal-detail.html">
+<link rel="import" href="../displays/display-unlock.html">
 
 <dom-module id="page-detail">
     <template>
@@ -42,7 +43,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 box-sizing: border-box;
                 padding: 40px 40px 20px 40px;
-                position:fixed;
+                position: fixed;
                 z-index: 999;
                 min-height: 107px;
                 width: 100%;
@@ -58,34 +59,41 @@ This code may only be used under the license found at https://github.com/swarmci
             .container display-simpledeal-title {
                 width: 100%;
                 z-index: 999;
-                margin-top: 106px; 
+                margin-top: 106px;
                 position: fixed;
             }
 
             .container[wide-layout] display-simpledeal-title {
-                margin-top: 120px; 
+                margin-top: 120px;
             }
 
             .container display-simpledeal-detail {
                 width: 100%;
-                margin-top: 158px; 
+                margin-top: 158px;
             }
 
             .container[wide-layout] display-simpledeal-detail {
-                margin-top: 172px; 
+                margin-top: 172px;
             }
 
-
+            .blur {
+                @apply --unlock-blur;
+            }
         </style>
         <app-location route="{{route}}"></app-location>
         <display-get-item route={{route}}></display-get-item>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <display-my-info path="{{path}}" route="{{route}}"></display-my-info>
             <display-simpledeal-title></display-simpledeal-title>
-            <display-simpledeal-detail path="{{path}}"></display-simpledeal-detail>
+            <display-simpledeal-detail path="{{path}}" toggle-unlock="{{toggleUnlock}}"></display-simpledeal-detail>
         </div>
-
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
     <script>
         class MyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -146,6 +154,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         statePath: 'hashtagItem',
                     },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        observer: '_blur',
+                    },
                 };
             }
 
@@ -163,6 +179,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = null;
             }
             /**
+            * blurs the current page
+            */
+            _blur() {
+                console.log(this.toggleUnlock);
+                if (this.toggleUnlock) {
+                    this.privateKey = null;
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
             * Load the correct exiy animations
             */
             _loadExitAnimations() {
@@ -173,8 +202,8 @@ This code may only be used under the license found at https://github.com/swarmci
                             // Here come the Exit Animations, going to page Hashtag
                             this.$.detailcontainer.animate(
                                 [
-                                    {'transform': 'translateY(0px)', 'opacity': '1'},
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    { 'transform': 'translateY(0px)', 'opacity': '1' },
+                                    { 'transform': 'translateY(50px)', 'opacity': '0' },
                                 ],
                                 {
                                     fill: 'forwards',
@@ -201,8 +230,8 @@ This code may only be used under the license found at https://github.com/swarmci
                             // Coming from page Hashtag
                             this.$.detailcontainer.animate(
                                 [
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    { 'transform': 'translateY(50px)', 'opacity': '0' },
+                                    { 'transform': 'translateY(0px)', 'opacity': '1' },
                                 ],
                                 {
                                     fill: 'forwards',
