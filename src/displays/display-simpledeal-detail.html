@@ -9,6 +9,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../redux-state.html">
 
 <!--
@@ -370,7 +371,10 @@ This code may only be used under the license found at https://github.com/swarmci
                             [[_formatDate(hashtagItem.dateTime)]]
                         </div>
                         <div class="seeker">
-                            <img class="seeker-avatar" src="[[hashtagItem.seeker.avatar]]">
+
+                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://www.swarmdev.city/img/[[hashtagItem.seeker.avatarHash]]"
+                                placeholder="../images/defaultavatar.png">
+                            </iron-image>
                             <div id="seeker" class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
@@ -383,22 +387,22 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                     <div class="repliescontainer">
 
-                    <template is="dom-if" if="[[_getState('replies', state)]]">
-                        <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
-                        <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
-                            <display-button-reply on-up="_reply"></display-button-reply>
+                        <template is="dom-if" if="[[_getState('replies', state)]]">
+                            <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
+                            <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
+                                <display-button-reply on-up="_reply"></display-button-reply>
+                            </template>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
                         </template>
-                        <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
-                            <display-button-cancel></display-button-cancel>
+                        <template is="dom-if" if="[[_getState('input', state)]]">
+                            <display-input-reply state-change="{{stateChange}}"></display-input-reply>
                         </template>
-                    </template>
-                    <template is="dom-if" if="[[_getState('input', state)]]">
-                        <display-input-reply state-change="{{stateChange}}"></display-input-reply>
-                    </template>
                     </div>
                 </template>
             </dom-if>
-        </div>
+            </div>
 
     </template>
     <script>
