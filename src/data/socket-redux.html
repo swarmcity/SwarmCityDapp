@@ -172,6 +172,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'hashtagItem',
                         observer: '_getHashtagItem',
                     },
+                    /**
+                    * A reply to be added to a hashtagItem
+                    * @type {Object}
+                    */
+                    replyRequest: {
+                        type: Object,
+                        statePath: 'replyRequest',
+                        observer: '_sendReply',
+                    },
                 };
             }
             /**
@@ -454,6 +463,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.tokey.found = false;
                         this.dispatch('TOKEY', this.tokey);
                     }
+                });
+            }
+            _sendReply() {
+                this.socket.emit('replyRequest', {
+                    reply: this.replyRequest,
+                }, (reply) => {
                 });
             }
             _broadcast() {

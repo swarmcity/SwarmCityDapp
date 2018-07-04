@@ -184,14 +184,14 @@ The following custom properties and mixins are available for styling:
                 <div tabindex="2" class="disagree" on-tap="_disagree" on-keyPress="_disagree"></div>
                 <dom-if if="{{blue}}">
                     <template>
-                        <div tabindex="3" class="submit submit-blue" on-tap="_getPrivKey" on-keyPress="_getPrivKey">
+                        <div tabindex="3" class="submit submit-blue" on-up="_getPrivKey">
                             <div class="icon-submit-blue"></div>
                         </div>
                     </template>
                 </dom-if>
                 <dom-if if="{{white}}">
                     <template>
-                        <div tabindex="3" class="submit submit-white" on-tap="_getPrivKey" on-keyPress="_getPrivKey">
+                        <div tabindex="3" class="submit submit-white" on-up="_getPrivKey">
                             <div class="icon-submit-white"></div>
                         </div>
                     </template>
@@ -333,9 +333,9 @@ The following custom properties and mixins are available for styling:
             _openDisplay() {
                 window.scrollTo(0, 0);
                 this.error = '';
-                this.async(() => {
+                setTimeout(()=>{
                     this.$$('#input').focus();
-                });
+                }, 1);
             }
             /**
             * Toggles the visibility of this display
@@ -367,14 +367,14 @@ The following custom properties and mixins are available for styling:
             * @param {Object} event element clicked.
             */
             _getPrivKey(event) {
-                if (this.password && (event.keyCode === 13 || event.type == 'tap')) {
+                if (this.password) {
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     this.keyStore = storage.keyStore;
                     // check password && if correct populate private key property
                     this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
                         .then((privateKey) => {
-                            this.privateKey = privateKey.toString('hex');
                             this.toggleUnlock = !this.toggleUnlock;
+                            this.privateKey = privateKey.toString('hex');
                             this.password = '';
                             this.$.wallet.makeQRCode(this.privateKey)
                                 .then((qrCodePrivateKey) => {
