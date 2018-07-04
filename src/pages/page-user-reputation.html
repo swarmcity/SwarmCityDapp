@@ -1,0 +1,62 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-user-reputation">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                width: 100vw;
+                max-width: 100%;
+                min-height: 100vh;
+                background-image: var(--sc-bg);
+                display: block;
+            }
+
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+        </div>
+    </template>
+
+    <script>
+        class MyUserReputation extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-user-reputation';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                };
+            }
+            ready() {
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                super.ready();
+            }
+        }
+        window.customElements.define(MyUserReputation.is, MyUserReputation);
+    </script>
+</dom-module>
