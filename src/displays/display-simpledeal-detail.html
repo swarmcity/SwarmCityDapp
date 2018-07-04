@@ -8,7 +8,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../redux-state.html">
 
@@ -373,9 +372,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="seeker">
 
                             <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://www.swarmdev.city/img/[[hashtagItem.seeker.avatarHash]]"
-                                placeholder="../images/defaultavatar.png">
+                                placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                             </iron-image>
-                            <div id="seeker" class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
                                 <div class="value">[[_formatValue(hashtagItem.value)]]</div>
@@ -499,6 +498,12 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _close() {
                 this.path = `hashtag/${this.route.path.split('/')[2]}`;
+            }
+            /**
+            * takes the user to the user reputation page
+            */
+            _toUserReputation() {
+                this.path = `user-reputation/${this.hashtagItem.seeker.address}/${this.hashtagItem.seeker.avatarHash}/${this.hashtagItem.seeker.username}`; // eslint-disable-line
             }
             /**
             * Toggles betweeen loading & loaded state
