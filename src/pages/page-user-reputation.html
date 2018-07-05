@@ -23,6 +23,10 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
         <style include="shared-styles">
             :host {
+
+            }
+
+            .container {
                 height: 100%;
                 width: 100vw;
                 max-width: 100%;
@@ -31,42 +35,101 @@ This code may only be used under the license found at https://github.com/swarmci
                 display: block;
             }
 
-            .closebox {
+            .container[wide-layout] {
+
+            }
+
+            .container .closebox {
+                width: 100%;
                 @apply --layout-horizontal;
                 @apply --layout-end-justified;
                 box-sizing: border-box;
-                padding: 55px 34px 0 0;
+                padding: 0;
+                position: fixed;
+            }
+
+
+            .container[wide-layout] .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 0px;
+                max-width: 100%;
+                background-color:red;
             }
 
             .close {
-                @apply --xmark-grey3b-small;
+                @apply --xmark-grey3-small;
                 cursor: pointer;
+                @apply --close;
+
             }
 
-            .userbox {
+            .container .userbox {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 80px 0px 20px 0px;
                 @apply --layout-vertical;
-                @apply --layout-center;
+                @apply --layout-center-center;
             }
 
-            .avatar {
+            .container[wide-layout] .userbox {
+                padding: 80px 10vw 20px 10vw;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+            }
+
+            .container .avatar {
                 margin-top: 25px;
                 width: 80px;
                 height: 80px;
+                min-width: 80px;
+                min-height: 80px;
                 cursor: pointer;
                 border-radius: 50%;
                 background-size: 40px;
             }
 
-            .username {
+            .container[wide-layout] .avatar {
+                margin-top: 0px;
+            }
+
+            .container .userinfo {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-center-justified;
+                margin-left: 0px;
+            }
+
+            .container[wide-layout] .userinfo {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-center-justified;
+                margin-left: 30px;
+            }
+
+            .container .username {
                 @apply --body-bold;
                 margin-top: 15px;
                 color: var(--sc-grey4);
             }
 
-            .linkbox {
+            .container[wide-layout] .username {
+                @apply --main-title4;
+                margin-top: 0px;
+                color: var(--sc-grey4);
+            }
+
+            .container .linkbox {
                 margin-top: 10px;
-                width: 100%;
                 text-align: center;
+            }
+
+            .container[wide-layout] .linkbox {
+                margin-top: 0px;
+                text-align: left;
             }
 
             .link {
@@ -76,9 +139,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 cursor: pointer;
             }
 
-            display-user-reputation {
-                margin: 50px 0 0 50px;
-            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -89,6 +149,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="closebox">
                 <div class="close" on-up="_close"></div>
@@ -96,9 +157,11 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="userbox">
                 <iron-image class="avatar" sizing="cover" preload fade src="https://www.swarmdev.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png">
                 </iron-image>
-                <div class="username">{{username}}</div>
-                <div class="linkbox">
-                    <span class="link"on-up="_toEtherscan">show on etherscan</span>
+                <div class="userinfo">
+                    <div class="username">{{username}}</div>
+                    <div class="linkbox">
+                        <span class="link"on-up="_toEtherscan">show on etherscan</span>
+                    </div>
                 </div>
             </div>
             <display-user-reputation user-address="{{userAddress}}"></display-user-reputation>
