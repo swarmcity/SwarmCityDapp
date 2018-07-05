@@ -149,7 +149,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="date">[[_formatDate(item.dateTime)]]</div>
 
                     <div class="bottom">
-                        <iron-image sizing="cover" preload fade src="https://www.swarmdev.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png">
+                        <iron-image sizing="cover" preload fade src="https://www.swarmdev.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                         </iron-image>
 
                         <template is="dom-if" if="[[!_isReplier(item)]]">
@@ -256,6 +256,13 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _noReplies(item) {
                 return (!item.replies || item.replies.length == 0);
+            }
+            /**
+            * takes the user to the selected user reputation page
+            * @param {Object} event object clicked containing the specific replier item
+            */
+            _toUserReputation(event) {
+                this.path = `user-reputation/${event.model.__data.item.address}/${event.model.__data.item.avatarHash}/${event.model.__data.item.username}`; // eslint-disable-line
             }
         }
         window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
