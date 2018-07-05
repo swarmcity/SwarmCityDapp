@@ -181,6 +181,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'replyRequest',
                         observer: '_sendReply',
                     },
+                    /**
+                    * The selected user's reputation balance
+                    * @type {Object}
+                    */
+                    userReputation: {
+                        type: Object,
+                        statePath: 'userReputation',
+                        observer: '_getUserReputation',
+                    },
                 };
             }
             /**
@@ -277,6 +286,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
+                        };
+                    },
+                    USERREPUTATION: function(userReputation) {
+                        return {
+                            type: 'USERREPUTATION',
+                            userReputation: userReputation,
                         };
                     },
                 });
@@ -510,6 +525,41 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
+            // Get a certain user's reputation balance by address
+            _getUserReputation() {
+                // if (this.userReputation.request) {
+                //     this.socket.emit('userReputation', {
+                //         address: this.userReputation.request,
+                //     }, (reply) => {
+                //     });
+                // }
+                /* eslint-disable */
+                // --------------- BEGIN TEMPORARY REPLIES DATA ---------------
+                if (this.userReputation.request) {
+                    let mockRepData = [
+                        {
+                            "name": "Settler",
+                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
+                            "seekerRep": 1,
+                            "providerRep": 0,
+                        }, {
+                            "name": "DevOps",
+                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
+                            "seekerRep": 9,
+                            "providerRep": 12,
+                        }, {
+                            "name": "SwarmCitySwag",
+                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
+                            "seekerRep": 4,
+                            "providerRep": 2,
+                        }
+                    ];
+                    this.dispatch('USERREPUTATION', mockRepData);
+                }
+                // --------------- END TEMPORARY REPLIES DATA ---------------
+                /* eslint-enable */
+            }
+
             // Subscribe to a certain hashtagItem
             _getHashtagItem() {
                 if (this.hashtagItem.request) {
@@ -538,7 +588,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
                             /* eslint-disable */
                             // --------------- BEGIN TEMPORARY REPLIES DATA ---------------
-
                             this.hashtagItem.replies = [{
                                 username: "E.T. The Extra Testicle!",
                                 avatarHash: "QmTKMG3aYCKnabDX3LKrYzLFPaCLoWEmXdGTR2CZjUEfZS",
@@ -588,7 +637,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                 description: "I can help you with that",
                                 dateTime: 152821532,
                             },]
-
                             // --------------- END TEMPORARY REPLIES DATA ---------------
                             /* eslint-enable */
 
