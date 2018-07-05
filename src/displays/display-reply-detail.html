@@ -1,0 +1,171 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<!--
+
+Example:
+```
+<display-reply-detail></display-reply-detail>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-reply-detail` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-reply-detail">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .back {
+                @apply --icon-button-mini;
+            }
+
+            .back:active {
+                @apply --button-active;
+            }
+
+            .back-icon {
+                @apply --arrowleft-grey3-small;
+            }
+
+            iron-image {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                min-height: 24px;
+                min-width: 24px;
+                margin-right: 10px;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .back-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="back" on-up="_toReplies">
+                <div class="back-icon"></div>
+            </div>
+            <div class="descriptionbox">
+                <div class="description">[[selectedReply.description]]</div>
+                <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+            </div>
+            <div class="date">
+                [[_formatDate(selectedReply.dateTime)]]
+            </div>
+            <div class="providerbox">
+                <div class="avatar">
+                    <iron-image sizing="cover" preload fade src="https://www.swarmdev.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                </div>
+                <div class="username">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDisplayReplyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-reply-detail';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * State contains the current view
+                    * @type {String}
+                    */
+                    stateChange: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * selectedReply contains the reply the user wants to see in detail
+                    * @type {Object}
+                    */
+                    selectedReply: {
+                        type: Object,
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                };
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * toggles the password unlock display
+            */
+            _unlock() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Changes the current view to show all replies
+            */
+            _toReplies() {
+                this.stateChange = 'replies';
+            }
+        }
+        window.customElements.define(MyDisplayReplyDetail.is, MyDisplayReplyDetail);
+    </script>
+</dom-module>

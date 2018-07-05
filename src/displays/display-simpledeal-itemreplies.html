@@ -177,7 +177,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
 
                             <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
-                                <div class="choose">
+                                <div class="choose" on-up="_replyDetail">
                                     <div class="choose-icon"></div>
                                 </div>
                             </template>
@@ -236,6 +236,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
+                    /**
+                    * State contains the current view
+                    * @type {String}
+                    */
+                    stateChange: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * selectedReply contains the reply the user wants to see in detail
+                    * @type {Object}
+                    */
+                    selectedReply: {
+                        type: Object,
+                        notify: true,
+                    },
                 };
             }
             /**
@@ -289,6 +305,14 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _toUserReputation(event) {
                 this.path = `user-reputation/${event.model.__data.item.address}/${event.model.__data.item.avatarHash}/${event.model.__data.item.username}`; // eslint-disable-line
+            }
+            /**
+            * show the reply detail
+            * @param {Object} event object clicked containing the specific replier item
+            */
+            _replyDetail(event) {
+                this.stateChange = 'detail';
+                this.selectedReply = event.model.__data.item;
             }
         }
         window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
