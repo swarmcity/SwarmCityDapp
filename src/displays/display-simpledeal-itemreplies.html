@@ -118,16 +118,35 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container .spacer {
                 width: 100%;
-                height:15px;
+                height: 15px;
                 background-color: var(--sc-white);
             }
 
             .container[wide-layout] .spacer {
                 width: 100%;
-                height:10px;
+                height: 10px;
                 background-color: var(--sc-white);
             }
 
+            .choose {
+                @apply --icon-button-mini;
+            }
+
+            .choose:active {
+                @apply --button-active;
+            }
+
+            .choose-icon {
+                @apply --next-blue-small;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .choose-icon {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -143,17 +162,25 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="description">
                             [[item.description]]
                         </div>
-                        <div class="price"><div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT</div>
+                        <div class="price">
+                            <div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT</div>
                     </div>
 
                     <div class="date">[[_formatDate(item.dateTime)]]</div>
 
                     <div class="bottom">
-                        <iron-image sizing="cover" preload fade src="https://www.swarmdev.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
+                        <iron-image sizing="cover" preload fade src="https://www.swarmdev.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png"
+                            on-up="_toUserReputation">
                         </iron-image>
 
                         <template is="dom-if" if="[[!_isReplier(item)]]">
                             <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
+
+                            <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                                <div class="choose">
+                                    <div class="choose-icon"></div>
+                                </div>
+                            </template>
                         </template>
 
                         <template is="dom-if" if="[[_isReplier(item)]]">
@@ -165,7 +192,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
             <div class="spacer"></div>
 
-        </template>
+    </template>
     <script>
         class MySimpledealItemreplies extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -239,6 +266,14 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _isReplier(reply) {
                 return reply.address == this.publicKey;
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(hashtagItem) {
+                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
             }
             /**
             * Here we check if there are any replies
