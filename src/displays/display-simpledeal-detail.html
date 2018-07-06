@@ -18,8 +18,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
 <link rel="import" href="../displays/display-button-reply.html">
 <link rel="import" href="../displays/display-button-cancel.html">
-<link rel="import" href="../displays/display-input-reply.html">
-<link rel="import" href="../displays/display-reply-detail.html">
+<link rel="import" href="../displays/display-simpledeal-input-reply.html">
+<link rel="import" href="../displays/display-simpledeal-reply-detail.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -386,7 +386,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="repliescontainer">
-
+                        
+                        <!-- The defaut, all replies view -->
                         <template is="dom-if" if="[[_getState('replies', state)]]">
                             <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}" selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
                             <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
@@ -396,12 +397,21 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <display-button-cancel></display-button-cancel>
                             </template>
                         </template>
+
+                        <!-- The reply input view -->
                         <template is="dom-if" if="[[_getState('input', state)]]">
-                            <display-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-input-reply>
+                            <display-simpledeal-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-simpledeal-input-reply>
                         </template>
+
+                        <!-- The detailed view of a reply, with option to select the replier as provider -->
                         <template is="dom-if" if="[[_getState('detail', state)]]">
-                            <display-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}" selected-reply="{{selectedReply}}"></display-reply-detail>
+                            <display-simpledeal-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"
+                                selected-reply="{{selectedReply}}"></display-simpledeal-reply-detail>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
                         </template>
+
                     </div>
                 </template>
             </dom-if>
