@@ -79,6 +79,10 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
+            /**
+            * We collect all & encrypt all necessary data, prepare the selectProvider object
+            * and dispatch it to redux
+            */
             _selectProvider() {
                 if (this.privateKey) {
                     let itemHash = this.route.path.split('/')[3];
@@ -89,6 +93,16 @@ The following custom properties and mixins are available for styling:
                             uuid = key;
                         }
                     }
+                    console.log(this.selectedReply);
+
+
+                    let secret = webpack.encryptWithPublicKey(
+                        this.selectedReply.publicKey,
+                        uuid,
+                    );
+
+                    console.log(secret);
+
                     this.selectProvider = {
                         itemHash: itemHash,
                         hashtagAddress: this.route.path.split('/')[2],
