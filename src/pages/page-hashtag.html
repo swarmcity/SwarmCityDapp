@@ -145,10 +145,12 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="dealbtn" id="dealButton">
-                <display-deal-btn route="[[route]]" path="{{path}}">
-                </display-deal-btn>
-            </div>
+            <template is="dom-if" if="{{!loadingHashtag}}">
+                <div class="dealbtn" id="dealButton">
+                    <display-deal-btn route="[[route]]" path="{{path}}">
+                    </display-deal-btn>
+                </div>
+            </template>
             <div class="header">
                 <div class="topleft">
                     <template is="dom-if" if="{{!publicKey}}">
@@ -246,6 +248,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     scrollToHeight: {
                         type: Number,
                     },
+                    /**
+                    * loadingHashtag is the currently loaded hashtag object
+                    * @type {Object}
+                    */
+                    loadingHashtag: {
+                        type: Boolean,
+                        value: true,
+                    },
                 };
             }
 
@@ -280,6 +290,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                     this.path = null;
                 }
+            }
+            /**
+            * Toggles betweeen loading & loaded state
+            */
+            _load() {
+                this.loadingHashtag = this.hashtag.address == this.route.path.split('/')[2] ? false : true;
             }
 
             /**
