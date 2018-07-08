@@ -93,24 +93,20 @@ The following custom properties and mixins are available for styling:
                             uuid = key;
                         }
                     }
-                    console.log(this.selectedReply);
-
-
-                    let secret = webpack.encryptWithPublicKey(
+                    
+                    webpack.encryptWithPublicKey(
                         this.selectedReply.publicKey,
                         uuid,
-                    );
-
-                    console.log(secret);
-
-                    this.selectProvider = {
-                        itemHash: itemHash,
-                        hashtagAddress: this.route.path.split('/')[2],
-                        selectee: {
-                            secret: "<String>", // the ID of the deal (not the hash) encrypted with the publicKey of the selected provider (see documentation below on how to encrypt data with a public key)
-                            address: this.selectedReply.address,
-                        },
-                    };
+                    ).then(secret => {
+                        this.selectProvider = {
+                            itemHash: itemHash,
+                            hashtagAddress: this.route.path.split('/')[2],
+                            selectee: {
+                                secret: secret,
+                                address: this.selectedReply.address,
+                            },
+                        };
+                    });
                 }
             }
         } window.customElements.define(MyCompleteSelectProvider.is, MyCompleteSelectProvider);
