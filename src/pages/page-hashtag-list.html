@@ -103,33 +103,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-flex;
             }
 
-            .createbox {
-                @apply --layout-flex;
-                @apply --layout-horizontal;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-            }
-            .createlink {
-                /* @apply --text-button-small; */
-                border: 0;
-                border-radius: 2px;
-                background-color: rgba(255, 255, 255, 0.25);
-                cursor: pointer;
-                color: var(--sc-grey3);
-
-                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-
-                @apply --small-light;
-                padding: 9px 14px;
-            }
-
-            .createlink:active {
-                @apply --button-active;
-            }
-
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -143,19 +116,11 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="header">
                 <div class="topleft">
-                    <template is="dom-if" if="{{!publicKey}}">
-                        <div class="createbox">
-                            <div tabindex="1" class="createlink" on-tap="_toCreateAccount" on-KeyPress="_toCreateAccount">{{localize('create account')}}
-                            </div>
-                        </div>
-                    </template>
-                    <template is="dom-if" if="{{publicKey}}">
-                            <display-my-info
-                            path="{{path}}" 
-                            route="{{route}}"
-                            id="displaymyinfo">
-                        </display-my-info>
-                    </template>
+                    <display-my-info
+                        path="{{path}}" 
+                        route="{{route}}"
+                        id="displaymyinfo">
+                    </display-my-info>
                 </div>
                 <div class="topright">
                     <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back"></div>
@@ -288,16 +253,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-            /**
-            * go to the page create account
-            * @param {Object} event element clicked.
-            */
-            _toCreateAccount(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    sessionStorage.setItem('origin', this.route.path);
-                    this.path = 'create-account/';
-                }
-            }
 
             _loadExitAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
