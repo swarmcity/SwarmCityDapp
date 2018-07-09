@@ -1,0 +1,184 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-user-reputation.html">
+
+<dom-module id="page-user-reputation">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                width: 100vw;
+                max-width: 100%;
+                min-height: 100vh;
+                background-image: var(--sc-bg);
+                display: block;
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 55px 34px 0 0;
+            }
+
+            .close {
+                @apply --xmark-grey3b-small;
+                cursor: pointer;
+            }
+
+            .userbox {
+                @apply --layout-vertical;
+                @apply --layout-center;
+            }
+
+            .avatar {
+                margin-top: 25px;
+                width: 80px;
+                height: 80px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 40px;
+            }
+
+            .username {
+                @apply --body-bold;
+                margin-top: 15px;
+                color: var(--sc-grey4);
+            }
+
+            .linkbox {
+                margin-top: 10px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .link {
+                @apply --small-bold;
+                border-bottom: 2px dotted var(--sc-blue);
+                color: var(--sc-blue);
+                cursor: pointer;
+            }
+
+            display-user-reputation {
+                margin: 50px 0 0 50px;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="closebox">
+                <div class="close" on-up="_close"></div>
+            </div>
+            <div class="userbox">
+                <iron-image class="avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png">
+                </iron-image>
+                <div class="username">{{username}}</div>
+                <div class="linkbox">
+                    <span class="link"on-up="_toEtherscan">show on etherscan</span>
+                </div>
+            </div>
+            <display-user-reputation user-address="{{userAddress}}"></display-user-reputation>
+        </div>
+    </template>
+
+    <script>
+        class MyUserReputation extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-user-reputation';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The current user selected language
+                    * @type {Object}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * The avatarHash of the user we look up
+                    * @type {String}
+                    */
+                    avatarHash: {
+                        type: String,
+                    },
+                    /**
+                    * The username of the user we look up
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                    },
+                    /**
+                    * Route is the current URL
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_routeChanged',
+                    },
+                    /**
+                    * The address of the user we look up
+                    * @type {String}
+                    */
+                    userAddress: {
+                        type: String,
+                    },
+                };
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                window.history.back();
+            }
+            /**
+            * set the values from the route on route change
+            */
+            _routeChanged() {
+                if (
+                    this.route.path.split('/')[1] == 'user-reputation') {
+                    this.userAddress = this.route.path.split('/')[2];
+                    this.avatarHash = this.route.path.split('/')[3];
+                    this.username = this.route.path.split('/')[4];
+                }
+            }
+            /**
+            * takes the user to the selected user balance on etherscan
+            */
+            _toEtherscan() {
+                window.open(`https://kovan.etherscan.io/address/${this.userAddress}`, '_blank');
+            }
+        }
+        window.customElements.define(MyUserReputation.is, MyUserReputation);
+    </script>
+</dom-module>

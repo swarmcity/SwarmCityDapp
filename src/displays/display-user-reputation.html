@@ -1,0 +1,142 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="display-user-reputation">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .rep-box {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+            }
+
+            .name {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                margin-top: 5px;
+            }
+
+            .seekerrep {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+            }
+
+            .bluetext {
+                @apply --body-detail;
+                font-size: 20px;
+                line-height: 24px;
+                color: var(--sc-blue);
+            }
+
+            .providerrep {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-repeat" items="{{userReputation}}" id="domRepeat">
+                <div class="rep-box">
+                    <div class="name">#{{item.name}}</div>
+                    <div class="horizontal">
+                        <div class="seekerrep">
+                            <div class="bluetext">{{item.seekerRep}} SWR</div>
+                            <div class="greytext">as a Seeker</div>
+                        </div>
+                        <div class="providerrep">
+                            <div class="bluetext">{{item.providerRep}} SWR</div>
+                            <div class="greytext">as a Provider</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+    <script>
+        class MyDisplayUserReputation extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-user-reputation';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * The selected user's reputation balance
+                    * @type {Object}
+                    */
+                    userReputation: {
+                        type: Object,
+                        statePath: 'userReputation',
+                    },
+                    /**
+                    * The address of the user we look up
+                    * @type {String}
+                    */
+                    userAddress: {
+                        type: String,
+                        observer: '_userChanged',
+                    },
+                };
+            }
+            /**
+            * Redux action for requesting a user's reputation balance
+            * @param {Object} Object
+            */
+            static get actions() {
+                return Object.assign({
+                    USERREPUTATION: function(userReputation) {
+                        return {
+                            type: 'USERREPUTATION',
+                            userReputation: userReputation,
+                        };
+                    },
+                });
+            }
+            /**
+            * Emit new user balance request over redux
+            */
+            _userChanged() {
+                let requestUserReputation = {
+                    request: this.userAddress,
+                };
+                this.dispatch('USERREPUTATION', requestUserReputation);
+            }
+        }
+        window.customElements.define(MyDisplayUserReputation.is, MyDisplayUserReputation);
+    </script>
+</dom-module>

@@ -8,7 +8,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../redux-state.html">
 
@@ -19,7 +18,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
 <link rel="import" href="../displays/display-button-reply.html">
 <link rel="import" href="../displays/display-button-cancel.html">
-<link rel="import" href="../displays/display-input-reply.html">
+<link rel="import" href="../displays/display-simpledeal-input-reply.html">
+<link rel="import" href="../displays/display-simpledeal-reply-detail.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -307,12 +307,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 opacity: 0.15;
             }
 
-            .repliescontainer {
+            .states {
                 box-sizing: border-box;
                 width: 100%;
             }
 
-            .container[wide-layout] .repliescontainer {
+            .container[wide-layout] .states {
                 max-width: 68vw;
             }
 
@@ -386,10 +386,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                         <div class="seeker">
 
-                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://www.swarmdev.city/img/[[hashtagItem.seeker.avatarHash]]"
-                                placeholder="../images/defaultavatar.png">
+                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seeker.avatarHash]]"
+                                placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                             </iron-image>
-                            <div id="seeker" class="seeker-info">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
                                 <div class="value">[[_formatValue(hashtagItem.value)]]</div>
@@ -399,10 +399,11 @@ This code may only be used under the license found at https://github.com/swarmci
                             <span class="link">shareable link</span>
                         </div>
                     </div>
-                    <div class="repliescontainer">
-
+                    <div class="states">
+                        
+                        <!-- The default, all replies view -->
                         <template is="dom-if" if="[[_getState('replies', state)]]">
-                            <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
+                            <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}" selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
                             <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
                                 <display-button-reply on-up="_reply"></display-button-reply>
                             </template>
@@ -410,9 +411,21 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <display-button-cancel></display-button-cancel>
                             </template>
                         </template>
+
+                        <!-- The reply input view -->
                         <template is="dom-if" if="[[_getState('input', state)]]">
-                            <display-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" reply="{{reply}}"></display-input-reply>
+                            <display-simpledeal-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-simpledeal-input-reply>
                         </template>
+
+                        <!-- The detailed view of a reply, with option to select the replier as provider -->
+                        <template is="dom-if" if="[[_getState('detail', state)]]">
+                            <display-simpledeal-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"
+                                selected-reply="{{selectedReply}}"></display-simpledeal-reply-detail>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
+                        </template>
+
                     </div>
                 </template>
             </dom-if>
@@ -503,12 +516,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         notify: true,
                     },
                     /**
-                    * The reply string
-                    * @type {String}
+                    * routeExit will trigger the display reset whenever we routed away
+                    * @type {Array}
                     */
-                    reply: {
-                        type: String,
-                        notify: true,
+                    routeEntry: {
+                        type: Array,
+                        observer: '_reset',
                     },
                 };
             }
@@ -521,6 +534,12 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _close() {
                 this.path = `hashtag/${this.route.path.split('/')[2]}`;
+            }
+            /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                this.path = `user-reputation/${this.hashtagItem.seeker.address}/${this.hashtagItem.seeker.avatarHash}/${this.hashtagItem.seeker.username}`; // eslint-disable-line
             }
             /**
             * Toggles betweeen loading & loaded state
@@ -612,6 +631,12 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _getState(state) {
                 return state == this.state;
+            }
+            /**
+            * Reset the display to default state
+            */
+            _reset() {
+                this.stateChange = 'replies';
             }
         }
         window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);

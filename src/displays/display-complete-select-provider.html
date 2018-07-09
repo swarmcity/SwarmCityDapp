@@ -1,0 +1,114 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+
+
+<!--
+
+Example:
+```
+<display-complete-select-provider></display-complete-select-provider>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-select-provider` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-select-provider">
+    <template>
+        <app-location route="{{route}}"></app-location>
+    </template>
+    <script>
+        class MyCompleteSelectProvider extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-complete-select-provider';
+            }
+            /**
+            * Redux actions for choosing a provider
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    SELECTPROVIDER: function(selectProvider) {
+                        return {
+                            type: 'SELECTPROVIDER',
+                            selectProvider: selectProvider,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_selectProvider',
+                    },
+                    /**
+                    * selectedReply contains the reply the user wants to see in detail
+                    * @type {Object}
+                    */
+                    selectedReply: {
+                        type: Object,
+                    },
+                    /**
+                    * Route is the current URL
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                };
+            }
+            /**
+            * We collect all & encrypt all necessary data, prepare the selectProvider object
+            * and dispatch it to redux
+            */
+            _selectProvider() {
+                if (this.privateKey) {
+                    let itemHash = this.route.path.split('/')[3];
+                    let UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection'));
+                    let uuid;
+                    for (let key in UUIDCollection) {
+                        if (UUIDCollection[key] == itemHash) {
+                            uuid = key;
+                        }
+                    }
+                    webpack.encryptWithPublicKey(
+                        this.selectedReply.publicKey,
+                        uuid,
+                    ).then((secret) => {
+                        this.selectProvider = {
+                            itemHash: itemHash,
+                            hashtagAddress: this.route.path.split('/')[2],
+                            selectee: {
+                                secret: secret,
+                                address: this.selectedReply.address,
+                            },
+                        };
+                        this.dispatch('SELECTPROVIDER', this.selectProvider);
+                    });
+                }
+            }
+        } window.customElements.define(MyCompleteSelectProvider.is, MyCompleteSelectProvider);
+    </script>
+</dom-module>
