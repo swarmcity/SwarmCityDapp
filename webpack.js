@@ -26,10 +26,10 @@ import moment from 'moment';
 import EthereumTx from 'ethereumjs-tx';
 import Contract from 'web3-eth-contract';
 import BN from 'bn.js';
-import { 
-  encryptWithPublicKey, 
-  decryptWithPrivateKey, 
-} from 'eth-crypto'; 
+import {
+  encryptWithPublicKey,
+  decryptWithPrivateKey,
+} from 'eth-crypto';
 export {
   sha3,
   addHexPrefix,
@@ -56,6 +56,6 @@ export {
   EthereumTx,
   Contract,
   BN,
-  encryptWithPublicKey, 
+  encryptWithPublicKey,
   decryptWithPrivateKey,
 };
