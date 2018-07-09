@@ -1,0 +1,216 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<!--
+
+Example:
+```
+<display-simpledeal-detail-selected></display-simpledeal-detail-selected>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-simpledeal-detail-selected` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-simpledeal-detail-selected">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
+            }
+
+            iron-image {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                min-height: 24px;
+                min-width: 24px;
+                margin-right: 10px;
+            }
+
+            .descriptionbox {
+                @apply --layout-horizontal;
+                margin-top: 25px;
+            }
+
+            .description {
+                @apply --layout-flex;
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+            .price {
+                @apply --body-bold;
+                text-align: right;
+                color: var(--sc-grey4);
+                white-space: nowrap;
+                margin: 0px 0px 0px 20px;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey2);
+                margin: 4px 0px 0px 0px;
+            }
+
+            .providerbox {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                margin-top: 10px;
+            }
+
+            .username {
+                @apply --small-bold;
+                @apply --layout-flex;
+                color: var(--sc-blue);
+            }
+
+            .vertical {
+                @apply --layout-vertical;
+            }
+
+            .replier {
+                color: var(--sc-grey4);
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="descriptionbox">
+                <div class="description">[[selectedReply.description]]</div>
+                <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+            </div>
+            <div class="providerbox">
+                <div class="avatar">
+                    <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                </div>
+                <div class="vertical">
+                    <div class="date">
+                        [[_formatDate(selectedReply.dateTime)]]
+                    </div>
+
+                    <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                        <div class="username">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
+                    </template>
+
+                    <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
+                        <div class="username replier">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDisplaySimpledealDetailSelected extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-detail-selected';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * State contains the current view
+                    * @type {String}
+                    */
+                    stateChange: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * selectedReply contains the reply the user wants to see in detail
+                    * @type {Object}
+                    */
+                    selectedReply: {
+                        type: Object,
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
+            /**
+            * Changes the current view to show all replies
+            */
+            _toReplies() {
+                this.stateChange = 'replies';
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(hashtagItem) {
+                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
+            }
+        }
+        window.customElements.define(
+            MyDisplaySimpledealDetailSelected.is,
+            MyDisplaySimpledealDetailSelected
+        );
+    </script>
+</dom-module>

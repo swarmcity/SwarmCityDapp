@@ -20,6 +20,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-button-cancel.html">
 <link rel="import" href="../displays/display-simpledeal-input-reply.html">
 <link rel="import" href="../displays/display-simpledeal-reply-detail.html">
+<link rel="import" href="../displays/display-simpledeal-detail-selected.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -369,7 +370,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             </div>
                         </div>
                     </div>
-               </template>
+                </template>
             </dom-if>
             <dom-if if="{{!loadingItem}}">
                 <template>
@@ -389,7 +390,15 @@ This code may only be used under the license found at https://github.com/swarmci
                             <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seeker.avatarHash]]"
                                 placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                             </iron-image>
-                            <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+
+                            <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                                <div id="seeker" class="seeker-info seeker-owner" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            </template>
+
+                            <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
+                                <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            </template>
+
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
                                 <div class="value">[[_formatValue(hashtagItem.value)]]</div>
@@ -400,7 +409,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </div>
                     <div class="states">
-                        
+
                         <!-- The default, all replies view -->
                         <template is="dom-if" if="[[_getState('replies', state)]]">
                             <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}" selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
@@ -426,10 +435,17 @@ This code may only be used under the license found at https://github.com/swarmci
                             </template>
                         </template>
 
+
+                        <template is="dom-if" if="[[_getState('selected', state)]]">
+                            <display-simpledeal-detail-selected selected-reply="{{selectedReply}}"></display-simpledeal-detail-selected>
+                        </template>
+
+
+
                     </div>
                 </template>
             </dom-if>
-            </div>
+        </div>
 
     </template>
     <script>
@@ -548,20 +564,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.hashtagItem.itemHash &&
                     this.hashtagItem.itemHash == this.route.path.split('/')[3]) {
                     this.loadingItem = false;
-                    if (this.hashtagItem.seeker.address == this.publicKey) {
-                        this.async(() => {
-                            this.$$('#seeker').classList.add('seeker-owner');
-                        });
-                    } else {
-                        this.async(() => {
-                            this.$$('#seeker').classList.remove('seeker-owner');
-                        });
+                    if (this.hashtagItem.selectee &&
+                        (this.hashtagItem.selectee.address == this.publicKey ||
+                            this.hashtagItem.seeker.address == this.publicKey)) {
+                        this.state = 'selected';
+                        for (let i = 0; i < this.hashtagItem.replies.length; i++) {
+                            if (this.hashtagItem.replies[i].address == this.hashtagItem.selectee.address) {
+                                this.selectedReply = this.hashtagItem.replies[i];
+                            }
+                        }
                     }
                 } else {
                     this.loadingItem = true;
                 }
             }
-
             /**
             * formats epoch
             * @param {DateTime} dateTime epoch in javascript milliseconds
@@ -601,6 +617,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                     return replied ? false : true;
                 }
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(hashtagItem) {
+                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
             }
             /**
             * Changes the state with its passed value.
