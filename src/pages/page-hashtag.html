@@ -121,10 +121,12 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="dealbtn" id="dealButton">
-                <display-deal-btn route="[[route]]" path="{{path}}">
-                </display-deal-btn>
-            </div>
+            <template is="dom-if" if="{{!loadingHashtag}}">
+                <div class="dealbtn" id="dealButton">
+                    <display-deal-btn route="[[route]]" path="{{path}}">
+                    </display-deal-btn>
+                </div>
+            </template>
             <div class="header">
                 <div class="topleft">
                     <display-my-info path="{{path}}" route="{{route}}" id="displaymyinfo">
@@ -206,6 +208,21 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'hashtag',
                     },
+                    /**
+                    * scrollToHeight is the scrollheight page hashtag should scroll to
+                    * @type {Number}
+                    */
+                    scrollToHeight: {
+                        type: Number,
+                    },
+                    /**
+                    * loadingHashtag is the currently loaded hashtag object
+                    * @type {Object}
+                    */
+                    loadingHashtag: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
 
@@ -236,9 +253,10 @@ This code may only be used under the license found at https://github.com/swarmci
             /**
             * Load the correct exit animations
             */
-            _loadExitAnimations() {
+            _loadExitAnimations() {                
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
+                        this.scrollToHeight = window.pageYOffset;
                         // Here come the Exit Animations
                         switch (this.routeExit[1]) {
                             case ('hashtag-list'):
@@ -257,21 +275,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.dealButton.animate(
-                                    [
-                                        {'transform': 'translateY(20px)', 'opacity': '1'},
-                                        {'transform': 'translateY(0px)', 'opacity': '0'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 150,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 150,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
                                 this.$.simpledealdisplay.animate(
                                     [
                                         {'transform': 'translateX(0px)', 'opacity': '1'},
@@ -288,6 +308,55 @@ This code may only be used under the license found at https://github.com/swarmci
                                     }
                                 );
                                 this.$.simpledealtitle.animate(
+                                    [
+                                        {'opacity': '1'},
+                                        {'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                break;
+                                case ('detail'):
+                                this.$.back.animate(
+                                    [
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 150,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
+                                this.$.simpledealdisplay.animate(
                                     [
                                         {'opacity': '1'},
                                         {'opacity': '0'},
@@ -321,10 +390,27 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.dealButton.animate(
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 150,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
+                                this.$.simpledealtitle.animate(
                                     [
-                                        {'transform': 'translateY(20px)', 'opacity': '1'},
-                                        {'transform': 'translateY(0px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -363,6 +449,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
+                        window.scrollTo(0,this.scrollToHeight);
                         // Here come the Entry Animations
                         switch (this.routeExit[0]) {
                             case ('hashtag-list'):
@@ -381,21 +468,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.dealButton.animate(
-                                    [
-                                        {'transform': 'translateY(0px)', 'opacity': '0'},
-                                        {'transform': 'translateY(20px)', 'opacity': '1'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
                                 this.$.simpledealdisplay.animate(
                                     [
                                         {'transform': 'translateX(10px)', 'opacity': '0'},
@@ -427,13 +516,43 @@ This code may only be used under the license found at https://github.com/swarmci
                                     }
                                 );
                                 break;
-                            case ('my-profile'):
-                            case ('my-wallet'):
-                            case ('new-request'):
+                                case ('detail'):
                                 this.$.back.animate(
                                     [
-                                        {'transform': 'translateX(20px)', 'opacity': '0'},
-                                        {'transform': 'translateX(0)', 'opacity': '1'},
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
+                                this.$.simpledealdisplay.animate(
+                                    [
+                                        {'opacity': '0'},
+                                        {'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -445,10 +564,46 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.dealButton.animate(
+                                break;
+                            case ('my-profile'):
+                            case ('my-wallet'):
+                            case ('new-request'):
+                                this.$.back.animate(
                                     [
-                                        {'transform': 'translateY(0px)', 'opacity': '0'},
-                                        {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        {'transform': 'translateY(30px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0)', 'opacity': '1'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
+                                this.$.simpledealtitle.animate(
+                                    [
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
                                     ],
                                     {
                                         fill: 'forwards',
@@ -494,21 +649,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                         endDelay: 0,
                                     }
                                 );
-                                this.$.dealButton.animate(
-                                    [
-                                        {'transform': 'translateY(0px)', 'opacity': '0'},
-                                        {'transform': 'translateY(200px)', 'opacity': '1'},
-                                    ],
-                                    {
-                                        fill: 'forwards',
-                                        duration: 300,
-                                        iterations: 1,
-                                        iterationStart: 0,
-                                        easing: 'cubic-bezier(0.42,0,0.58,1)',
-                                        delay: 0,
-                                        endDelay: 0,
-                                    }
-                                );
+                                if(!this.loadingHashtag){
+                                    this.$$('#dealButton').animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(200px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                }
                                 break;
                         }
                     }
