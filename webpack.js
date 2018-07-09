@@ -52,6 +52,4 @@ export {
   EthereumTx,
   Contract,
   BN,
-  encryptWithPublicKey,
-  decryptWithPrivateKey,
 };
