@@ -535,7 +535,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     routeEntry: {
                         type: Array,
-                        observer: '_reset',
                     },
                 };
             }
@@ -562,11 +561,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.hashtagItem.itemHash &&
                     this.hashtagItem.itemHash == this.route.path.split('/')[3]) {
                     this.loadingItem = false;
-                    console.log(this.publicKey);
                     if (this.hashtagItem.selectee &&
                         (this.hashtagItem.selectee.address == this.publicKey ||
                             this.hashtagItem.seeker.address == this.publicKey)) {
-                        this.state = 'selected';
+                        this.stateChange = 'selected';
+                    } else {
+                        this.stateChange = 'replies';
                     }
                 } else {
                     this.loadingItem = true;
@@ -643,18 +643,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.stateChange = 'input';
             }
             /**
-            * Switch between visible views
+            * Switch between visible
+            * @param {String} view the view that can be shown
             * @param {String} state the current state
             * @return {Boolean} true when give state should be visible
             */
-            _getState(state) {
-                return state == this.state;
-            }
-            /**
-            * Reset the display to default state
-            */
-            _reset() {
-                this.stateChange = 'replies';
+            _getState(view, state) {
+                return view == state;
             }
         }
         window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);
