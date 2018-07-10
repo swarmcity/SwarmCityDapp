@@ -174,7 +174,7 @@ The following custom properties and mixins are available for styling:
                     <div class="white-text">[[hashtagItem.seeker.username]] selected you to make a deal. Do you accept?</div>
                     <div class="choice">
                         <display-button-disagree on-up="_toReplies"></display-button-disagree>
-                        <display-button-confirm on-up="_unlock"></display-button-confirm>
+                        <display-button-confirm on-up="_fund"></display-button-confirm>
                     </div>
                 </template>
                 <template is="dom-if" if="[[!_isReplier(hashtagItem.selectee.reply, publicKey)]]">
@@ -223,6 +223,15 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         statePath: 'publicKey',
                     },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
                 };
             }
             /**
@@ -260,6 +269,12 @@ The following custom properties and mixins are available for styling:
             */
             _isReplier(reply, publicKey) {
                 return reply ? reply.address == publicKey : false;
+            }
+            /**
+            * Change the route to confirm funding page
+            */
+            _fund() {
+                this.path = 'confirm-funding';
             }
         }
         window.customElements.define(

@@ -1,0 +1,172 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../data/data-transaction.html">
+<link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+<script src="../data/abi.js"></script>
+
+
+<!--
+
+Example:
+```
+<display-complete-funding></display-complete-funding>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-funding` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-funding">
+    <template>
+        <data-transaction id="transaction"></data-transaction>
+    </template>
+    <script>
+        class MyDisplayCompleteFunding extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-complete-funding';
+            }
+            /**
+            * Redux actions for completing a request
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    SENDSIGNEDTX: function(sendSignedTx) {
+                        return {
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_fundDeal',
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * address represents the user's public key
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * The hashtag we're posting a request on
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * The user's nonce
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
+                };
+            }
+            _fundDeal() {
+                if (this.privateKey) {
+                    let swtContract = new webpack.Contract(
+                        abi.miniMeToken.abi,
+                        '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                    );
+                    let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
+                    let simpleDealContract = new webpack.Contract(
+                        abi.hashtagSimpleDeal.abi,
+                        this.hashtag.address
+                    );
+                    webpack.decryptWithPrivateKey(
+                        this.privateKey,
+                        this.hashtagItem.selectee.secret,
+                    ).then((secret) => {
+
+                        let rawFundDeal = simpleDealContract.methods.fundDeal(
+                            secret,
+                        ).encodeABI();
+
+                        let totalSum = this.hashtagItem.value + this.hashtag.hashtagFee / 2;
+
+                        let rawApproveAndCall = swtContract.methods.approveAndCall(
+                            this.hashtag.address,
+                            totalSum,
+                            rawFundDeal,
+                        ).encodeABI();
+
+                        const txParams = {
+                            nonce: this._toHex(this.nonce),
+                            gasPrice: 1000000000,
+                            gasLimit: 3000000,
+                            to: '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                            from: this.address,
+                            value: '0x00',
+                            data: rawApproveAndCall,
+                            chainId: 42,
+                        };
+
+                        this.$.transaction.signRawTx(txParams, this.privateKey)
+                            .then((serializedTx) => {
+                                this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                            }).catch((err) => {
+                                this.error = err;
+                            });
+
+                    });
+                }
+            }
+            /**
+            * to hex
+            * @param {string} dec - The data to convert
+            * @return {object}
+            */
+            _toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x' + result;
+            }
+
+        } window.customElements.define(MyDisplayCompleteFunding.is, MyDisplayCompleteFunding);
+    </script>
+</dom-module>
