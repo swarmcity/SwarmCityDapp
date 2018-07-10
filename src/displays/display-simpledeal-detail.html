@@ -435,12 +435,10 @@ This code may only be used under the license found at https://github.com/swarmci
                             </template>
                         </template>
 
-
+                        <!-- The view if there is a selectee, either user is chosen or has chosen-->
                         <template is="dom-if" if="[[_getState('selected', state)]]">
-                            <display-simpledeal-detail-selected selected-reply="{{selectedReply}}"></display-simpledeal-detail-selected>
+                            <display-simpledeal-detail-selected></display-simpledeal-detail-selected>
                         </template>
-
-
 
                     </div>
                 </template>
@@ -564,15 +562,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.hashtagItem.itemHash &&
                     this.hashtagItem.itemHash == this.route.path.split('/')[3]) {
                     this.loadingItem = false;
+                    console.log(this.publicKey);
                     if (this.hashtagItem.selectee &&
                         (this.hashtagItem.selectee.address == this.publicKey ||
                             this.hashtagItem.seeker.address == this.publicKey)) {
                         this.state = 'selected';
-                        for (let i = 0; i < this.hashtagItem.replies.length; i++) {
-                            if (this.hashtagItem.replies[i].address == this.hashtagItem.selectee.address) {
-                                this.selectedReply = this.hashtagItem.replies[i];
-                            }
-                        }
                     }
                 } else {
                     this.loadingItem = true;

@@ -98,33 +98,32 @@ The following custom properties and mixins are available for styling:
             }
 
             .replier {
+                @apply --small-bold;
+                @apply --layout-flex;
                 color: var(--sc-grey4);
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="descriptionbox">
-                <div class="description">[[selectedReply.description]]</div>
+                <div class="description">[[hashtagItem.selectee.reply.description]]</div>
                 <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+            </div>
+            <div class="date">
+                [[_formatDate(hashtagItem.selectee.reply.dateTime)]]
             </div>
             <div class="providerbox">
                 <div class="avatar">
-                    <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.selectee.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
                     </iron-image>
                 </div>
-                <div class="vertical">
-                    <div class="date">
-                        [[_formatDate(selectedReply.dateTime)]]
-                    </div>
+                <template is="dom-if" if="[[!_isReplier(hashtagItem.selectee.reply, publicKey)]]">
+                    <div class="username">[[hashtagItem.selectee.reply.username]] · [[hashtagItem.selectee.reply.rep]] SWR</div>
+                </template>
 
-                    <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
-                        <div class="username">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
-                    </template>
-
-                    <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
-                        <div class="username replier">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
-                    </template>
-                </div>
+                <template is="dom-if" if="[[_isReplier(hashtagItem.selectee.reply, publicKey)]]">
+                    <div class="replier">[[hashtagItem.selectee.reply.username]] · [[hashtagItem.selectee.reply.rep]] SWR</div>
+                </template>
             </div>
         </div>
     </template>
@@ -154,13 +153,6 @@ The following custom properties and mixins are available for styling:
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
-                    },
-                    /**
-                    * selectedReply contains the reply the user wants to see in detail
-                    * @type {Object}
-                    */
-                    selectedReply: {
-                        type: Object,
                     },
                     /**
                     * PublicKey represents the user's public key
@@ -204,8 +196,8 @@ The following custom properties and mixins are available for styling:
             * @param {Object} hashtagItem the hashtagItem (request)
             * @return {Boolean} true when user owns this request
             */
-            _isSeeker(hashtagItem) {
-                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
+            _isReplier(reply, publicKey) {
+                return reply.address == publicKey;
             }
         }
         window.customElements.define(
