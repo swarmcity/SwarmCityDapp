@@ -113,7 +113,6 @@ The following custom properties and mixins are available for styling:
                         abi.miniMeToken.abi,
                         '0x0adbc89464cb7fa752adcf3533514949a2547589'
                     );
-                    let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
                     let simpleDealContract = new webpack.Contract(
                         abi.hashtagSimpleDeal.abi,
                         this.hashtag.address
@@ -122,19 +121,15 @@ The following custom properties and mixins are available for styling:
                         this.privateKey,
                         this.hashtagItem.selectee.secret,
                     ).then((secret) => {
-                        debugger;
                         let rawFundDeal = simpleDealContract.methods.fundDeal(
                             secret,
                         ).encodeABI();
-
                         let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
-
                         let rawApproveAndCall = swtContract.methods.approveAndCall(
                             this.hashtag.address,
                             totalSum,
                             rawFundDeal,
                         ).encodeABI();
-
                         const txParams = {
                             nonce: this._toHex(this.nonce),
                             gasPrice: 1000000000,
@@ -145,14 +140,12 @@ The following custom properties and mixins are available for styling:
                             data: rawApproveAndCall,
                             chainId: 42,
                         };
-
                         this.$.transaction.signRawTx(txParams, this.privateKey)
                             .then((serializedTx) => {
                                 this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
                             }).catch((err) => {
                                 this.error = err;
                             });
-
                     });
                 }
             }
@@ -166,7 +159,6 @@ The following custom properties and mixins are available for styling:
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
                 return '0x' + result;
             }
-
         } window.customElements.define(MyDisplayCompleteFunding.is, MyDisplayCompleteFunding);
     </script>
 </dom-module>
