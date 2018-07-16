@@ -46,7 +46,7 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
@@ -117,12 +117,27 @@ The following custom properties and mixins are available for styling:
                         abi.hashtagSimpleDeal.abi,
                         this.hashtag.address
                     );
+                    let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
                     webpack.decryptWithPrivateKey(
                         this.privateKey,
                         this.hashtagItem.selectee.secret,
                     ).then((secret) => {
+                        let secretHashBuffer = webpack.sha3(secret);
+                        let secretHashHex = webpack.addHexPrefix(secretHashBuffer.toString('hex'));
+
+                        let sig = webpack.ecsign(
+                            secretHashBuffer,
+                            privateKeyBuffer
+                        );
+                        let v = sig.v;
+                        let r = `0x${sig.r.toString('hex')}`;
+                        let s = `0x${sig.s.toString('hex')}`;
                         let rawFundDeal = simpleDealContract.methods.fundDeal(
                             secret,
+                            secretHashHex,
+                            v,
+                            r,
+                            s
                         ).encodeABI();
                         let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
                         let rawApproveAndCall = swtContract.methods.approveAndCall(
