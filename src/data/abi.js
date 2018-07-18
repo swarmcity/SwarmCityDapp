@@ -1103,7 +1103,7 @@ var abi = {
                         type: "string"
                     },
                     {
-                        name: "_dealsig",
+                        name: "_msgHash",
                         type: "bytes32"
                     },
                     {
