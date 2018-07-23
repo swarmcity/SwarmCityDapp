@@ -830,26 +830,21 @@ var abi = {
                 inputs: [
                     {
                         indexed: false,
-                        name: "providerAddress",
+                        name: "seeker",
                         type: "address"
                     },
                     {
                         indexed: false,
-                        name: "owner",
+                        name: "provider",
                         type: "address"
                     },
                     {
                         indexed: false,
                         name: "itemHash",
                         type: "bytes32"
-                    },
-                    {
-                        indexed: false,
-                        name: "ipfsMetadata",
-                        type: "string"
                     }
                 ],
-                name: "FundDeal",
+                name: "FundItem",
                 type: "event"
             },
             {
@@ -1045,7 +1040,7 @@ var abi = {
                         type: "string"
                     }
                 ],
-                name: "fundDeal",
+                name: "fundItem",
                 outputs: [],
                 payable: false,
                 stateMutability: "nonpayable",
@@ -1059,7 +1054,53 @@ var abi = {
                         type: "bytes32"
                     }
                 ],
-                name: "payout",
+                name: "payoutItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "cancelItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "disputeItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        name: "_seekerFraction",
+                        type: "uint256"
+                    }
+                ],
+                name: "resolveItem",
                 outputs: [],
                 payable: false,
                 stateMutability: "nonpayable",
