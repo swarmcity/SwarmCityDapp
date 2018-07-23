@@ -594,20 +594,6 @@ var abi = {
             {
                 constant: true,
                 inputs: [],
-                name: "name",
-                outputs: [
-                    {
-                        name: "",
-                        type: "string"
-                    }
-                ],
-                payable: false,
-                stateMutability: "view",
-                type: "function"
-            },
-            {
-                constant: true,
-                inputs: [],
                 name: "ProviderRep",
                 outputs: [
                     {
@@ -627,6 +613,20 @@ var abi = {
                     {
                         name: "",
                         type: "address"
+                    }
+                ],
+                payable: false,
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                constant: true,
+                inputs: [],
+                name: "hashtagName",
+                outputs: [
+                    {
+                        name: "",
+                        type: "string"
                     }
                 ],
                 payable: false,
@@ -733,7 +733,7 @@ var abi = {
                         type: "address"
                     },
                     {
-                        name: "_name",
+                        name: "_hashtagName",
                         type: "string"
                     },
                     {
@@ -763,7 +763,7 @@ var abi = {
                         type: "uint256"
                     }
                 ],
-                name: "ProviderRepAdded",
+                name: "SeekerRepAdded",
                 type: "event"
             },
             {
@@ -780,7 +780,7 @@ var abi = {
                         type: "uint256"
                     }
                 ],
-                name: "SeekerRepAdded",
+                name: "ProviderRepAdded",
                 type: "event"
             },
             {
@@ -793,7 +793,7 @@ var abi = {
                     },
                     {
                         indexed: false,
-                        name: "dealhash",
+                        name: "itemHash",
                         type: "bytes32"
                     },
                     {
@@ -803,7 +803,7 @@ var abi = {
                     },
                     {
                         indexed: false,
-                        name: "offerValue",
+                        name: "itemValue",
                         type: "uint256"
                     },
                     {
@@ -822,7 +822,7 @@ var abi = {
                         type: "uint256"
                     }
                 ],
-                name: "NewDealForTwo",
+                name: "NewItemForTwo",
                 type: "event"
             },
             {
@@ -830,7 +830,7 @@ var abi = {
                 inputs: [
                     {
                         indexed: false,
-                        name: "provider",
+                        name: "providerAddress",
                         type: "address"
                     },
                     {
@@ -840,7 +840,7 @@ var abi = {
                     },
                     {
                         indexed: false,
-                        name: "dealhash",
+                        name: "itemHash",
                         type: "bytes32"
                     },
                     {
@@ -862,7 +862,7 @@ var abi = {
                     },
                     {
                         indexed: false,
-                        name: "dealhash",
+                        name: "itemHash",
                         type: "bytes32"
                     },
                     {
@@ -876,7 +876,7 @@ var abi = {
                         type: "string"
                     }
                 ],
-                name: "DealStatusChange",
+                name: "ItemStatusChange",
                 type: "event"
             },
             {
@@ -1019,31 +1019,19 @@ var abi = {
                 constant: false,
                 inputs: [
                     {
-                        name: "_dealhash",
+                        name: "_itemHash",
                         type: "bytes32"
                     },
                     {
-                        name: "_offerValue",
+                        name: "_itemValue",
                         type: "uint256"
                     },
                     {
                         name: "_ipfsMetadata",
                         type: "string"
-                    },
-                    {
-                        name: "_v",
-                        type: "uint8"
-                    },
-                    {
-                        name: "_r",
-                        type: "bytes32"
-                    },
-                    {
-                        name: "_s",
-                        type: "bytes32"
                     }
                 ],
-                name: "makeDealForTwo",
+                name: "newItem",
                 outputs: [],
                 payable: false,
                 stateMutability: "nonpayable",
@@ -1053,70 +1041,8 @@ var abi = {
                 constant: false,
                 inputs: [
                     {
-                        name: "_dealhash",
-                        type: "bytes32"
-                    }
-                ],
-                name: "cancelDeal",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_dealhash",
-                        type: "bytes32"
-                    }
-                ],
-                name: "dispute",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_dealhash",
-                        type: "bytes32"
-                    },
-                    {
-                        name: "_seekerFraction",
-                        type: "uint256"
-                    }
-                ],
-                name: "resolve",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_dealid",
+                        name: "_itemId",
                         type: "string"
-                    },
-                    {
-                        name: "_msgHash",
-                        type: "bytes32"
-                    },
-                    {
-                        name: "_v",
-                        type: "uint8"
-                    },
-                    {
-                        name: "_r",
-                        type: "bytes32"
-                    },
-                    {
-                        name: "_s",
-                        type: "bytes32"
                     }
                 ],
                 name: "fundDeal",
@@ -1129,7 +1055,7 @@ var abi = {
                 constant: false,
                 inputs: [
                     {
-                        name: "_dealhash",
+                        name: "_itemHash",
                         type: "bytes32"
                     }
                 ],
@@ -1143,7 +1069,7 @@ var abi = {
                 constant: true,
                 inputs: [
                     {
-                        name: "_dealhash",
+                        name: "_itemHash",
                         type: "bytes32"
                     }
                 ],
@@ -1158,7 +1084,7 @@ var abi = {
                         type: "uint256"
                     },
                     {
-                        name: "dealValue",
+                        name: "itemValue",
                         type: "uint256"
                     },
                     {
@@ -1170,7 +1096,7 @@ var abi = {
                         type: "uint256"
                     },
                     {
-                        name: "provider",
+                        name: "providerAddress",
                         type: "address"
                     },
                     {

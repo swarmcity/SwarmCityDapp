@@ -197,23 +197,10 @@ The following custom properties and mixins are available for styling:
                         abi.hashtagSimpleDeal.abi,
                         this.hashtag.address
                     );
-
-                    let sig = webpack.ecsign(
-                        itemHashBuffer,
-                        privateKeyBuffer
-                    );
-
-                    let v = sig.v;
-                    let r = `0x${sig.r.toString('hex')}`;
-                    let s = `0x${sig.s.toString('hex')}`;
-
-                    let rawMakeDealForTwo = simpleDealContract.methods.makeDealForTwo(
+                    let rawMakeDealForTwo = simpleDealContract.methods.newItem(
                         itemHashHex,
                         itemBudgetWei,
-                        this.itemDataHash.data,
-                        v,
-                        r,
-                        s
+                        this.itemDataHash.data
                     ).encodeABI();
 
                     let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
