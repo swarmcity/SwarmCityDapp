@@ -1,0 +1,138 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../data/data-transaction.html">>
+<link rel="import" href="../redux-state.html">
+
+
+<!--
+
+Example:
+```
+<display-complete-payout></display-complete-payout>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-payout` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-payout">
+    <template>
+        <data-transaction id="transaction"></data-transaction>
+    </template>
+    <script>
+        class MyDisplayCompletePayout extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-complete-payout';
+            }
+            /**
+            * Redux actions for choosing a provider
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    SENDSIGNEDTX: function(sendSignedTx) {
+                        return {
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_payout',
+                    },
+                    /**
+                    * Route is the current URL
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * Signed TX to send
+                    * @type {Object}
+                    */
+                    sendSignedTx: {
+                        type: Object,
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * The user's nonce
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * address represents the user's public key
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
+            /**
+            * We collect all & encrypt all necessary data, prepare the selectProvider object
+            */
+            _payout() {
+                if (this.privateKey) {
+                    let simpleDealContract = new webpack.Contract(
+                        abi.hashtagSimpleDeal.abi,
+                        this.hashtag.address
+                    );
+
+                    let rawPayoutItem = simpleDealContract.methods.payoutItem(
+                        this.hashtagItem.itemHash,
+                    ).encodeABI();
+                    const txParams = {
+                        nonce: this._toHex(this.nonce),
+                        gasPrice: 1000000000,
+                        gasLimit: 3000000,
+                        to: this.hashtag.address,
+                        from: this.address,
+                        value: '0x00',
+                        data: rawPayoutItem,
+                        chainId: 42,
+                    };
+                    this.$.transaction.signRawTx(txParams, this.privateKey)
+                        .then((serializedTx) => {
+                            this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                        }).catch((err) => {
+                            this.error = err;
+                        });
+                }
+            }
+        } window.customElements.define(MyDisplayCompletePayout.is, MyDisplayCompletePayout);
+    </script>
+</dom-module>

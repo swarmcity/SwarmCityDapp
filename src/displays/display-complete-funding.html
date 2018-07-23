@@ -117,12 +117,10 @@ The following custom properties and mixins are available for styling:
                         abi.hashtagSimpleDeal.abi,
                         this.hashtag.address
                     );
-                    let privateKeyBuffer = new webpack.Buffer.Buffer(this.privateKey, 'hex');
                     webpack.decryptWithPrivateKey(
                         this.privateKey,
                         this.hashtagItem.selectee.secret,
                     ).then((secret) => {
-                        console.log(secret);
                         let rawFundDeal = simpleDealContract.methods.fundDeal(
                             secret
                         ).encodeABI();
@@ -144,7 +142,6 @@ The following custom properties and mixins are available for styling:
                         };
                         this.$.transaction.signRawTx(txParams, this.privateKey)
                             .then((serializedTx) => {
-                                console.log(serializedTx.toString('hex'));
                                 this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
                             }).catch((err) => {
                                 this.error = err;
