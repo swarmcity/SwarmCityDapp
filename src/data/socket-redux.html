@@ -390,8 +390,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.socket.emit('sendSignedTx', {
                     tx: this.signedTx,
                 }, (reply) => {
-                    this.txHashItem = reply;
-                    this.dispatch('TXHASHITEM', this.txHashItem);
+                    this.txHash = reply;
+                    setTimeout(() => {
+                        this.dispatch('TXHASH', this.txHash);
+                    }, 2000);
                 });
             }
 
@@ -527,6 +529,9 @@ This code may only be used under the license found at https://github.com/swarmci
                             let address = this.hashtag.request;
                             this.hashtag = JSON.parse(reply.data);
                             this.hashtag.address = address;
+                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
+                            this.hashtag.hashtagFee = 600000000000000000;
+                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
                             this.dispatch('HASHTAG', this.hashtag);
                         }
                     });
@@ -535,6 +540,9 @@ This code may only be used under the license found at https://github.com/swarmci
                             let address = this.hashtag.address;
                             this.hashtag = JSON.parse(JSON.parse(reply.data));
                             this.hashtag.address = address;
+                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
+                            this.hashtag.hashtagFee = 600000000000000000;
+                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
                             this.dispatch('HASHTAG', this.hashtag);
                         }
                     });

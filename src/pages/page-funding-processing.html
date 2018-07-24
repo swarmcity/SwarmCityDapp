@@ -14,7 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 
-<dom-module id="page-new-request-processing">
+<dom-module id="page-funding-processing">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -266,7 +266,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </dom-if>
                 <dom-if if="{{success}}">
                     <template>
-                        <div class="title">{{localize('Your request is posted.')}}</div>
+                        <div class="title">The deal has been funded.</div>
                     </template>
                 </dom-if>
                 <dom-if if="{{failure}}">
@@ -314,10 +314,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         <template>
                             <div class="flexer"></div>
                             <div class="darkline"></div>
-                            <div class="failure-text">{{errormsg}}</div>
+                            <div class="failure-text">{{txHash.data}}</div>
                         </template>
                     </dom-if>
-
                     <dom-if if="{{timeOut}}">
                         <template>
                             <div class="flexer"></div>
@@ -325,6 +324,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             <div class="failure-text">{{localize('There was a timeout.')}}</div>
                         </template>
                     </dom-if>
+
                 </div>
             </div>
             <div class="flexer"></div>
@@ -339,13 +339,13 @@ This code may only be used under the license found at https://github.com/swarmci
     </template>
 
     <script>
-        class MyNewRequestProcessing extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyFundingProcessing extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-new-request-processing';
+                return 'page-funding-processing';
             }
             static get properties() {
                 return {
@@ -358,25 +358,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * Send new request metadata to IPFS
-                    * @type {Object}
-                    */
-                    itemToIpfs: {
-                        type: Object,
-                        statePath: 'itemToIpfs',
-                        observer: '_itemToIpfs',
-                    },
-                    /**
-                    * IPFS hash of request metadata
-                    * @type {Object}
-                    */
-                    itemDataHash: {
-                        type: Object,
-                        statePath: 'itemDataHash',
-                        observer: '_newItemDataHash',
-                    },
-                    /**
-                    * txHash of broadcasted item
+                    * txHash of broadcasted transaction
                     * @type {Object}
                     */
                     txHash: {
@@ -401,11 +383,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_timeOut',
                     },
                     /**
-                    * this is set to true when timer hits 0
-                    * @type {String}
+                    * Send new signed tx to the blockchain
+                    * @type {Object}
                     */
-                    errormsg: {
-                        type: String,
+                    signedTx: {
+                        type: Object,
+                        statePath: 'sendSignedTx',
+                        observer: '_newSignedTx',
                     },
                 };
             }
@@ -413,12 +397,13 @@ This code may only be used under the license found at https://github.com/swarmci
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                this.timeOut = false;
             }
 
             /**
             * When new tx is broadcast, reset page & timer
             */
-            _newBroadcast() {
+            _newSignedTx() {
                 this._resetValues();
                 this._startTimer();
             }
@@ -445,57 +430,30 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             /**
-            * once a itemDataHash is received, show error if failure
-            */
-            _newItemDataHash() {
-                if (this.itemDataHash.response == 500) {
-                    clearTimeout(this.timer);
-                    this.$.button.classList.add('continue');
-                    this.errormsg = this.itemDataHash.data;
-                    this.waiting = false;
-                    this.failure = true;
-                    this.timeOut = false;
-                    this.$.icon.classList.remove('icon-next');
-                    this.$.icon.classList.add('icon-previous');
-                }
-            }
-
-            /**
             * once a txHash is received, decide on the feedback
             */
             _newTxHash() {
-                if (this.itemDataHash.response == 200) {
-                    clearTimeout(this.timer);
-                    this.$.button.classList.add('continue');
-                    switch (this.txHash.response) {
-                        case 200: {
-                            this.success = true;
-                            this.failure = false;
-                            this.waiting = false;
-                            this.timeOut = false;
-                            this.$.icon.classList.remove('icon-previous');
-                            this.$.icon.classList.add('icon-next');
-                            break;
-                        }
-                        case 500: {
-                            this.errormsg = this.itemDataHash.data;
-                            this.waiting = false;
-                            this.failure = true;
-                            this.timeOut = false;
-                            this.$.icon.classList.remove('icon-next');
-                            this.$.icon.classList.add('icon-previous');
-                            break;
-                        }
+                clearTimeout(this.timer);
+                this.$.button.classList.add('continue');
+                switch (this.txHash.response) {
+                    case 200: {
+                        this.success = true;
+                        this.failure = false;
+                        this.waiting = false;
+                        this.timeOut = false;
+                        this.$.icon.classList.remove('icon-previous');
+                        this.$.icon.classList.add('icon-next');
+                        break;
+                    }
+                    case 500: {
+                        this.waiting = false;
+                        this.failure = true;
+                        this.timeOut = false;
+                        this.$.icon.classList.remove('icon-next');
+                        this.$.icon.classList.add('icon-previous');
+                        break;
                     }
                 }
-            }
-
-            /**
-            * When new request is sent to IPFS, reset page & timer
-            */
-            _itemToIpfs() {
-                this._resetValues();
-                this._startTimer();
             }
 
             /**
@@ -515,14 +473,13 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _next() {
                 if (!this.waiting) {
-                    if (sessionStorage.getItem('hashtag')) {
-                        this.set('route.path', '/hashtag/' + sessionStorage.getItem('hashtag'));
-                        sessionStorage.removeItem('hashtag');
-                    }
+                    let detail = JSON.parse(sessionStorage.getItem('detail'));
+                    this.set('route.path', `detail/${detail.hashtagAddress}/${detail.itemHash}`);
+                    sessionStorage.removeItem('detail');
                 }
             }
         }
         window.customElements
-            .define(MyNewRequestProcessing.is, MyNewRequestProcessing);
+            .define(MyFundingProcessing.is, MyFundingProcessing);
     </script>
 </dom-module>
