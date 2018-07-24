@@ -558,23 +558,22 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = `user-reputation/${this.hashtagItem.seeker.address}/${this.hashtagItem.seeker.avatarHash}/${this.hashtagItem.seeker.username}`; // eslint-disable-line
             }
             /**
-            * Toggles betweeen loading & loaded state
+            * Toggles betweeen loading & loaded state & switches the state
             */
             _load() {
-                if (this.loadingItem) {
-                    if (this.hashtagItem.itemHash &&
-                        this.hashtagItem.itemHash == this.route.path.split('/')[3]
-                    ) {
-                        this.loadingItem = false;
-                        if (this.hashtagItem.selectee &&
-                            (this.hashtagItem.selectee.address == this.publicKey ||
-                                this.hashtagItem.seeker.address == this.publicKey)) {
-                            this.stateChange = 'selected';
-                        } else {
-                            this.stateChange = 'replies';
-                        }
-                    } else {
-                        this.loadingItem = true;
+                // Is the hashtagItem loaded?
+                this.loadingItem = this.hashtagItem.request ? true : false;
+
+                // What is the state we're in with this item?
+                if (this.hashtagItem.selectee &&
+                    (this.hashtagItem.selectee.address == this.publicKey ||
+                        this.hashtagItem.seeker.address == this.publicKey)
+                ) {
+                    this.stateChange = 'selected';
+                } else {
+                    if (this.state != 'input' &&
+                        this.state != 'detail') {
+                        this.stateChange = 'replies';
                     }
                 }
             }
