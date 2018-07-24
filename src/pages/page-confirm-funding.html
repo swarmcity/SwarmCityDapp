@@ -125,7 +125,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </display-complete-funding>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title" id="title">Fund this deal with SWT?</div>
+                <div class="title" id="title">Fund this deal with [[_totalSum()]] SWT?</div>
                 <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} SWT {{localize('hashtagfee is included')}}.</div>
             </div>
             <div class="flexer">
@@ -212,6 +212,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'confirm-funding',
                     },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
                 };
             }
 
@@ -239,7 +255,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Number} the total cost of posting a request
             */
             _totalSum() {
-                return parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee/2e18);
+                return parseFloat(this.hashtagItem.value) + parseFloat(this.hashtag.hashtagFee/2e18);
             }
             /**
             * Returns the SWT size hashtagFee

@@ -62,7 +62,7 @@ The following custom properties and mixins are available for styling:
                     */
                     privateKey: {
                         type: String,
-                        observer: '_fundDeal',
+                        observer: '_fundItem',
                     },
                     /**
                     * Path signals to the parent to change the path
@@ -107,7 +107,7 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
-            _fundDeal() {
+            _fundItem() {
                 if (this.privateKey) {
                     let swtContract = new webpack.Contract(
                         abi.miniMeToken.abi,
@@ -121,14 +121,14 @@ The following custom properties and mixins are available for styling:
                         this.privateKey,
                         this.hashtagItem.selectee.secret,
                     ).then((secret) => {
-                        let rawFundDeal = simpleDealContract.methods.fundDeal(
+                        let rawFundItem = simpleDealContract.methods.fundItem(
                             secret
                         ).encodeABI();
-                        let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
+                        let totalSum = parseInt(this.hashtagItem.value) + 600000000000000000 / 2;
                         let rawApproveAndCall = swtContract.methods.approveAndCall(
                             this.hashtag.address,
                             totalSum,
-                            rawFundDeal,
+                            rawFundItem,
                         ).encodeABI();
                         const txParams = {
                             nonce: this._toHex(this.nonce),
