@@ -1,1215 +1,1154 @@
 var abi = {
-    "miniMeToken": {
-        "contract_name": "miniMeToken",
-        "abi": [
+    miniMeToken: {
+        contract_name: "miniMeToken",
+        abi: [
             {
-                "constant": true,
-                "inputs": [],
-                "name": "name",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "name",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "string"
+                        name: "",
+                        type: "string"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_spender",
-                        "type": "address"
+                        name: "_spender",
+                        type: "address"
                     },
                     {
-                        "name": "_amount",
-                        "type": "uint256"
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "approve",
-                "outputs": [
+                name: "approve",
+                outputs: [
                     {
-                        "name": "success",
-                        "type": "bool"
+                        name: "success",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "creationBlock",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "creationBlock",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "uint256"
+                        name: "",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "totalSupply",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "uint256"
+                        name: "",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_from",
-                        "type": "address"
+                        name: "_from",
+                        type: "address"
                     },
                     {
-                        "name": "_to",
-                        "type": "address"
+                        name: "_to",
+                        type: "address"
                     },
                     {
-                        "name": "_amount",
-                        "type": "uint256"
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "transferFrom",
-                "outputs": [
+                name: "transferFrom",
+                outputs: [
                     {
-                        "name": "success",
-                        "type": "bool"
+                        name: "success",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "decimals",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "decimals",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "uint8"
+                        name: "",
+                        type: "uint8"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_newController",
-                        "type": "address"
+                        name: "_newController",
+                        type: "address"
                     }
                 ],
-                "name": "changeController",
-                "outputs": [],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "changeController",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
+                constant: true,
+                inputs: [
                     {
-                        "name": "_owner",
-                        "type": "address"
+                        name: "_owner",
+                        type: "address"
                     },
                     {
-                        "name": "_blockNumber",
-                        "type": "uint256"
+                        name: "_blockNumber",
+                        type: "uint256"
                     }
                 ],
-                "name": "balanceOfAt",
-                "outputs": [
+                name: "balanceOfAt",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "uint256"
+                        name: "",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "version",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "version",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "string"
+                        name: "",
+                        type: "string"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_cloneTokenName",
-                        "type": "string"
+                        name: "_cloneTokenName",
+                        type: "string"
                     },
                     {
-                        "name": "_cloneDecimalUnits",
-                        "type": "uint8"
+                        name: "_cloneDecimalUnits",
+                        type: "uint8"
                     },
                     {
-                        "name": "_cloneTokenSymbol",
-                        "type": "string"
+                        name: "_cloneTokenSymbol",
+                        type: "string"
                     },
                     {
-                        "name": "_snapshotBlock",
-                        "type": "uint256"
+                        name: "_snapshotBlock",
+                        type: "uint256"
                     },
                     {
-                        "name": "_transfersEnabled",
-                        "type": "bool"
+                        name: "_transfersEnabled",
+                        type: "bool"
                     }
                 ],
-                "name": "createCloneToken",
-                "outputs": [
+                name: "createCloneToken",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
+                constant: true,
+                inputs: [
                     {
-                        "name": "_owner",
-                        "type": "address"
+                        name: "_owner",
+                        type: "address"
                     }
                 ],
-                "name": "balanceOf",
-                "outputs": [
+                name: "balanceOf",
+                outputs: [
                     {
-                        "name": "balance",
-                        "type": "uint256"
+                        name: "balance",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "parentToken",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "parentToken",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_owner",
-                        "type": "address"
+                        name: "_owner",
+                        type: "address"
                     },
                     {
-                        "name": "_amount",
-                        "type": "uint256"
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "generateTokens",
-                "outputs": [
+                name: "generateTokens",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "bool"
+                        name: "",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "symbol",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "symbol",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "string"
+                        name: "",
+                        type: "string"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
+                constant: true,
+                inputs: [
                     {
-                        "name": "_blockNumber",
-                        "type": "uint256"
+                        name: "_blockNumber",
+                        type: "uint256"
                     }
                 ],
-                "name": "totalSupplyAt",
-                "outputs": [
+                name: "totalSupplyAt",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "uint256"
+                        name: "",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_to",
-                        "type": "address"
+                        name: "_to",
+                        type: "address"
                     },
                     {
-                        "name": "_amount",
-                        "type": "uint256"
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "transfer",
-                "outputs": [
+                name: "transfer",
+                outputs: [
                     {
-                        "name": "success",
-                        "type": "bool"
+                        name: "success",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "transfersEnabled",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "transfersEnabled",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "bool"
+                        name: "",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "parentSnapShotBlock",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "parentSnapShotBlock",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "uint256"
+                        name: "",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_spender",
-                        "type": "address"
+                        name: "_spender",
+                        type: "address"
                     },
                     {
-                        "name": "_amount",
-                        "type": "uint256"
+                        name: "_amount",
+                        type: "uint256"
                     },
                     {
-                        "name": "_extraData",
-                        "type": "bytes"
+                        name: "_extraData",
+                        type: "bytes"
                     }
                 ],
-                "name": "approveAndCall",
-                "outputs": [
+                name: "approveAndCall",
+                outputs: [
                     {
-                        "name": "success",
-                        "type": "bool"
+                        name: "success",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_owner",
-                        "type": "address"
+                        name: "_owner",
+                        type: "address"
                     },
                     {
-                        "name": "_amount",
-                        "type": "uint256"
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "destroyTokens",
-                "outputs": [
+                name: "destroyTokens",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "bool"
+                        name: "",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
+                constant: true,
+                inputs: [
                     {
-                        "name": "_owner",
-                        "type": "address"
+                        name: "_owner",
+                        type: "address"
                     },
                     {
-                        "name": "_spender",
-                        "type": "address"
+                        name: "_spender",
+                        type: "address"
                     }
                 ],
-                "name": "allowance",
-                "outputs": [
+                name: "allowance",
+                outputs: [
                     {
-                        "name": "remaining",
-                        "type": "uint256"
+                        name: "remaining",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_token",
-                        "type": "address"
+                        name: "_token",
+                        type: "address"
                     }
                 ],
-                "name": "claimTokens",
-                "outputs": [],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "claimTokens",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "tokenFactory",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "tokenFactory",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_transfersEnabled",
-                        "type": "bool"
+                        name: "_transfersEnabled",
+                        type: "bool"
                     }
                 ],
-                "name": "enableTransfers",
-                "outputs": [],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "enableTransfers",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [],
-                "name": "controller",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "controller",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "inputs": [
+                inputs: [
                     {
-                        "name": "_tokenFactory",
-                        "type": "address"
+                        name: "_tokenFactory",
+                        type: "address"
                     },
                     {
-                        "name": "_parentToken",
-                        "type": "address"
+                        name: "_parentToken",
+                        type: "address"
                     },
                     {
-                        "name": "_parentSnapShotBlock",
-                        "type": "uint256"
+                        name: "_parentSnapShotBlock",
+                        type: "uint256"
                     },
                     {
-                        "name": "_tokenName",
-                        "type": "string"
+                        name: "_tokenName",
+                        type: "string"
                     },
                     {
-                        "name": "_decimalUnits",
-                        "type": "uint8"
+                        name: "_decimalUnits",
+                        type: "uint8"
                     },
                     {
-                        "name": "_tokenSymbol",
-                        "type": "string"
+                        name: "_tokenSymbol",
+                        type: "string"
                     },
                     {
-                        "name": "_transfersEnabled",
-                        "type": "bool"
+                        name: "_transfersEnabled",
+                        type: "bool"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "constructor"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "constructor"
             },
             {
-                "payable": true,
-                "stateMutability": "payable",
-                "type": "fallback"
+                payable: true,
+                stateMutability: "payable",
+                type: "fallback"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "indexed": true,
-                        "name": "_token",
-                        "type": "address"
+                        indexed: true,
+                        name: "_token",
+                        type: "address"
                     },
                     {
-                        "indexed": true,
-                        "name": "_controller",
-                        "type": "address"
+                        indexed: true,
+                        name: "_controller",
+                        type: "address"
                     },
                     {
-                        "indexed": false,
-                        "name": "_amount",
-                        "type": "uint256"
+                        indexed: false,
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "ClaimedTokens",
-                "type": "event"
+                name: "ClaimedTokens",
+                type: "event"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "indexed": true,
-                        "name": "_from",
-                        "type": "address"
+                        indexed: true,
+                        name: "_from",
+                        type: "address"
                     },
                     {
-                        "indexed": true,
-                        "name": "_to",
-                        "type": "address"
+                        indexed: true,
+                        name: "_to",
+                        type: "address"
                     },
                     {
-                        "indexed": false,
-                        "name": "_amount",
-                        "type": "uint256"
+                        indexed: false,
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "Transfer",
-                "type": "event"
+                name: "Transfer",
+                type: "event"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "indexed": true,
-                        "name": "_cloneToken",
-                        "type": "address"
+                        indexed: true,
+                        name: "_cloneToken",
+                        type: "address"
                     },
                     {
-                        "indexed": false,
-                        "name": "_snapshotBlock",
-                        "type": "uint256"
+                        indexed: false,
+                        name: "_snapshotBlock",
+                        type: "uint256"
                     }
                 ],
-                "name": "NewCloneToken",
-                "type": "event"
+                name: "NewCloneToken",
+                type: "event"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "indexed": true,
-                        "name": "_owner",
-                        "type": "address"
+                        indexed: true,
+                        name: "_owner",
+                        type: "address"
                     },
                     {
-                        "indexed": true,
-                        "name": "_spender",
-                        "type": "address"
+                        indexed: true,
+                        name: "_spender",
+                        type: "address"
                     },
                     {
-                        "indexed": false,
-                        "name": "_amount",
-                        "type": "uint256"
+                        indexed: false,
+                        name: "_amount",
+                        type: "uint256"
                     }
                 ],
-                "name": "Approval",
-                "type": "event"
+                name: "Approval",
+                type: "event"
             }
-        ],
-    }
-    ,
-    "hashtagSimpleDeal": {
-
-        "contract_name": "hashtagSimpleDeal",
-        "abi": [
+        ]
+    },
+    hashtagSimpleDeal: {
+        contract_name: "hashtagSimpleDeal",
+        abi: [
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "name",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "ProviderRep",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "string"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: true,
+                inputs: [],
+                name: "payoutAddress",
+                outputs: [
                     {
-                        "name": "_dealid",
-                        "type": "string"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "name": "fundDeal",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "payoutaddress",
-                "outputs": [
+                constant: true,
+                inputs: [],
+                name: "hashtagName",
+                outputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        name: "",
+                        type: "string"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "ProviderRep",
-                "outputs": [
-                    {
-                        "name": "",
-                        "type": "address"
-                    }
-                ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                constant: false,
+                inputs: [],
+                name: "renounceOwnership",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
+                constant: true,
+                inputs: [],
+                name: "owner",
+                outputs: [
                     {
-                        "name": "_dealhash",
-                        "type": "bytes32"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "name": "readDeal",
-                "outputs": [
-                    {
-                        "name": "status",
-                        "type": "uint8"
-                    },
-                    {
-                        "name": "_hashtagFee",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "_dealValue",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "_providerRep",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "_seekerRep",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "_provider",
-                        "type": "address"
-                    },
-                    {
-                        "name": "_ipfsMetadata",
-                        "type": "string"
-                    }
-                ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: true,
+                inputs: [],
+                name: "SeekerRep",
+                outputs: [
                     {
-                        "name": "_payoutaddress",
-                        "type": "address"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "name": "setPayoutAddress",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
-
-                ],
-                "name": "renounceOwnership",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
-            },
-            {
-                "constant": false,
-                "inputs": [
+                constant: true,
+                inputs: [],
+                name: "metadataHash",
+                outputs: [
                     {
-                        "name": "_ipfsMetadataHash",
-                        "type": "string"
+                        name: "",
+                        type: "string"
                     }
                 ],
-                "name": "setMetadataHash",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "owner",
-                "outputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        name: "newOwner",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                name: "transferOwnership",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: true,
+                inputs: [],
+                name: "hashtagFee",
+                outputs: [
                     {
-                        "name": "_dealhash",
-                        "type": "bytes32"
-                    },
-                    {
-                        "name": "_offerValue",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "_ipfsMetadata",
-                        "type": "string"
-                    },
-                    {
-                        "name": "_v",
-                        "type": "uint8"
-                    },
-                    {
-                        "name": "_r",
-                        "type": "bytes32"
-                    },
-                    {
-                        "name": "_s",
-                        "type": "bytes32"
+                        name: "",
+                        type: "uint256"
                     }
                 ],
-                "name": "makeDealForTwo",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                constant: true,
+                inputs: [],
+                name: "token",
+                outputs: [
                     {
-                        "name": "_msgsender",
-                        "type": "address"
-                    },
-                    {
-                        "name": "_amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "name": "_fromcontract",
-                        "type": "address"
-                    },
-                    {
-                        "name": "_extraData",
-                        "type": "bytes"
+                        name: "",
+                        type: "address"
                     }
                 ],
-                "name": "receiveApproval",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             },
             {
-                "constant": false,
-                "inputs": [
+                inputs: [
                     {
-                        "name": "_dealhash",
-                        "type": "bytes32"
+                        name: "_token",
+                        type: "address"
+                    },
+                    {
+                        name: "_hashtagName",
+                        type: "string"
+                    },
+                    {
+                        name: "_hashtagFee",
+                        type: "uint256"
+                    },
+                    {
+                        name: "_ipfsMetadataHash",
+                        type: "string"
                     }
                 ],
-                "name": "dispute",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "constructor"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "SeekerRep",
-                "outputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        indexed: false,
+                        name: "to",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "amount",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                name: "SeekerRepAdded",
+                type: "event"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "metadataHash",
-                "outputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "",
-                        "type": "string"
+                        indexed: false,
+                        name: "to",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "amount",
+                        type: "uint256"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                name: "ProviderRepAdded",
+                type: "event"
             },
             {
-                "constant": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "_dealhash",
-                        "type": "bytes32"
+                        indexed: false,
+                        name: "owner",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        indexed: false,
+                        name: "ipfsMetadata",
+                        type: "string"
+                    },
+                    {
+                        indexed: false,
+                        name: "itemValue",
+                        type: "uint256"
+                    },
+                    {
+                        indexed: false,
+                        name: "hashtagFee",
+                        type: "uint256"
+                    },
+                    {
+                        indexed: false,
+                        name: "totalValue",
+                        type: "uint256"
+                    },
+                    {
+                        indexed: false,
+                        name: "seekerRep",
+                        type: "uint256"
                     }
                 ],
-                "name": "payout",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "NewItemForTwo",
+                type: "event"
             },
             {
-                "constant": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "_newHashtagFee",
-                        "type": "uint256"
+                        indexed: false,
+                        name: "seeker",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "provider",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "itemHash",
+                        type: "bytes32"
                     }
                 ],
-                "name": "setHashtagFee",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "FundItem",
+                type: "event"
             },
             {
-                "constant": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "_dealhash",
-                        "type": "bytes32"
+                        indexed: false,
+                        name: "owner",
+                        type: "address"
                     },
                     {
-                        "name": "_seekerFraction",
-                        "type": "uint256"
+                        indexed: false,
+                        name: "itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        indexed: false,
+                        name: "newstatus",
+                        type: "uint8"
+                    },
+                    {
+                        indexed: false,
+                        name: "ipfsMetadata",
+                        type: "string"
                     }
                 ],
-                "name": "resolve",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "ItemStatusChange",
+                type: "event"
             },
             {
-                "constant": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "newOwner",
-                        "type": "address"
+                        indexed: false,
+                        name: "sender",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "amount",
+                        type: "uint256"
+                    },
+                    {
+                        indexed: false,
+                        name: "fromcontract",
+                        type: "address"
+                    },
+                    {
+                        indexed: false,
+                        name: "extraData",
+                        type: "bytes"
                     }
                 ],
-                "name": "transferOwnership",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "ReceivedApproval",
+                type: "event"
             },
             {
-                "constant": false,
-                "inputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "_dealhash",
-                        "type": "bytes32"
+                        indexed: false,
+                        name: "_change",
+                        type: "string"
                     }
                 ],
-                "name": "cancelDeal",
-                "outputs": [
-
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                name: "HashtagChanged",
+                type: "event"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "hashtagFee",
-                "outputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "",
-                        "type": "uint256"
+                        indexed: true,
+                        name: "previousOwner",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                name: "OwnershipRenounced",
+                type: "event"
             },
             {
-                "constant": true,
-                "inputs": [
-
-                ],
-                "name": "token",
-                "outputs": [
+                anonymous: false,
+                inputs: [
                     {
-                        "name": "",
-                        "type": "address"
+                        indexed: true,
+                        name: "previousOwner",
+                        type: "address"
+                    },
+                    {
+                        indexed: true,
+                        name: "newOwner",
+                        type: "address"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
+                name: "OwnershipTransferred",
+                type: "event"
             },
             {
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "name": "_token",
-                        "type": "address"
+                        name: "_msgsender",
+                        type: "address"
                     },
                     {
-                        "name": "_name",
-                        "type": "string"
+                        name: "_amount",
+                        type: "uint256"
                     },
                     {
-                        "name": "_hashtagFee",
-                        "type": "uint256"
+                        name: "_fromcontract",
+                        type: "address"
                     },
                     {
-                        "name": "_ipfsMetadataHash",
-                        "type": "string"
+                        name: "_extraData",
+                        type: "bytes"
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "constructor"
+                name: "receiveApproval",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "amount",
-                        "type": "uint256"
+                        name: "_payoutaddress",
+                        type: "address"
                     }
                 ],
-                "name": "ProviderRepAdded",
-                "type": "event"
+                name: "setPayoutAddress",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "to",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "amount",
-                        "type": "uint256"
+                        name: "_ipfsMetadataHash",
+                        type: "string"
                     }
                 ],
-                "name": "SeekerRepAdded",
-                "type": "event"
+                name: "setMetadataHash",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "dealhash",
-                        "type": "bytes32"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "ipfsMetadata",
-                        "type": "string"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "offerValue",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "hashtagFee",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "totalValue",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "seekerRep",
-                        "type": "uint256"
+                        name: "_newHashtagFee",
+                        type: "uint256"
                     }
                 ],
-                "name": "NewDealForTwo",
-                "type": "event"
+                name: "setHashtagFee",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "provider",
-                        "type": "address"
+                        name: "_itemHash",
+                        type: "bytes32"
                     },
                     {
-                        "indexed": false,
-                        "name": "owner",
-                        "type": "address"
+                        name: "_itemValue",
+                        type: "uint256"
                     },
                     {
-                        "indexed": false,
-                        "name": "dealhash",
-                        "type": "bytes32"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "ipfsMetadata",
-                        "type": "string"
+                        name: "_ipfsMetadata",
+                        type: "string"
                     }
                 ],
-                "name": "FundDeal",
-                "type": "event"
+                name: "newItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "owner",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "dealhash",
-                        "type": "bytes32"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "newstatus",
-                        "type": "uint8"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "ipfsMetadata",
-                        "type": "string"
+                        name: "_itemId",
+                        type: "string"
                     }
                 ],
-                "name": "DealStatusChange",
-                "type": "event"
+                name: "fundItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "sender",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "fromcontract",
-                        "type": "address"
-                    },
-                    {
-                        "indexed": false,
-                        "name": "extraData",
-                        "type": "bytes"
+                        name: "_itemHash",
+                        type: "bytes32"
                     }
                 ],
-                "name": "ReceivedApproval",
-                "type": "event"
+                name: "payoutItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": false,
-                        "name": "_change",
-                        "type": "string"
+                        name: "_itemHash",
+                        type: "bytes32"
                     }
                 ],
-                "name": "HashtagChanged",
-                "type": "event"
+                name: "cancelItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": true,
-                        "name": "previousOwner",
-                        "type": "address"
+                        name: "_itemHash",
+                        type: "bytes32"
                     }
                 ],
-                "name": "OwnershipRenounced",
-                "type": "event"
+                name: "disputeItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
             },
             {
-                "anonymous": false,
-                "inputs": [
+                constant: false,
+                inputs: [
                     {
-                        "indexed": true,
-                        "name": "previousOwner",
-                        "type": "address"
+                        name: "_itemHash",
+                        type: "bytes32"
                     },
                     {
-                        "indexed": true,
-                        "name": "newOwner",
-                        "type": "address"
+                        name: "_seekerFraction",
+                        type: "uint256"
                     }
                 ],
-                "name": "OwnershipTransferred",
-                "type": "event"
+                name: "resolveItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: true,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "readDeal",
+                outputs: [
+                    {
+                        name: "status",
+                        type: "uint8"
+                    },
+                    {
+                        name: "hashtagFee",
+                        type: "uint256"
+                    },
+                    {
+                        name: "itemValue",
+                        type: "uint256"
+                    },
+                    {
+                        name: "providerRep",
+                        type: "uint256"
+                    },
+                    {
+                        name: "seekerRep",
+                        type: "uint256"
+                    },
+                    {
+                        name: "providerAddress",
+                        type: "address"
+                    },
+                    {
+                        name: "ipfsMetadata",
+                        type: "string"
+                    }
+                ],
+                payable: false,
+                stateMutability: "view",
+                type: "function"
             }
-        ],
+        ]
     }
 };

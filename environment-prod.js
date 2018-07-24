@@ -1,3 +1,3 @@
 module.exports = {
-		socketurl: 'https://www.swarmdev.city',
+		socketurl: 'https://dev.swarm.city',
 };

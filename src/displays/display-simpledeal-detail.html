@@ -18,7 +18,9 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
 <link rel="import" href="../displays/display-button-reply.html">
 <link rel="import" href="../displays/display-button-cancel.html">
-<link rel="import" href="../displays/display-input-reply.html">
+<link rel="import" href="../displays/display-simpledeal-input-reply.html">
+<link rel="import" href="../displays/display-simpledeal-reply-detail.html">
+<link rel="import" href="../displays/display-simpledeal-detail-selected.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -41,10 +43,13 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .container .itembox {
+                width: 100%;
                 background-color: var(--sc-white);
                 box-sizing: border-box;
-                padding: 10px 10px 35px 20px;
+                padding: 10px 10px 0px 0px;
                 border-bottom: 1px dashed rgba(51, 51, 51, 0.08);
+                @apply --layout-vertical;
+                @apply --layout-start;
             }
 
             .container[wide-layout] .itembox {
@@ -55,8 +60,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-horizontal;
                 @apply --layout-end-justified;
                 box-sizing: border-box;
-                width: 100%;
-                z-index: 99;
+                z-index: 99999;
+                position: fixed;
+                /* top: 0; */
+                @apply --layout-self-end;
+                background-color: rgba(250, 250, 250, 0.9);
+                border-radius: 50%;
             }
 
             .close {
@@ -83,16 +92,21 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .container .description {
-                @apply --layout-flex;
                 @apply --layout-vertical;
                 @apply --layout-end-justified;
                 @apply --body-detail;
                 color: var(--sc-grey4);
-                margin: -10px 10px 0 10px;
+                margin: 20px 30px 0 30px;
             }
 
             .container[wide-layout] .description {
-                margin: -10px 20px 0 10px;
+                margin: 20px 20px 0 30px;
+            }
+
+            .spacer {
+                /* width: 100%;
+                background-color: red;
+                height: 46px; */
             }
 
             .pricebox {
@@ -119,11 +133,12 @@ This code may only be used under the license found at https://github.com/swarmci
             .linkbox {
                 width: 100%;
                 box-sizing: border-box;
-                padding: 20px 20px 0px 10px;
+                padding: 20px 20px 30px 30px;
             }
 
             .link {
                 @apply --small-bold;
+                cursor: pointer;
                 color: var(--sc-grey3);
                 text-decoration: none;
                 border-bottom: 2px dotted var(--sc-grey2);
@@ -160,7 +175,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .date {
                 @apply --small-light;
                 color: var(--sc-grey3b);
-                margin: 4px 10px 0 10px;
+                margin: 4px 30px 0 30px;
             }
 
             .seeker {
@@ -168,7 +183,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 width: 100%;
                 box-sizing: border-box;
-                padding: 15px 15px 0 10px;
+                padding: 15px 15px 0 30px;
             }
 
             .seeker-info {
@@ -222,7 +237,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100%;
                 height: 100%;
                 box-sizing: border-box;
-                padding: 10px 40px 40px 40px;
+                padding: 0px 30px 40px 30px;
             }
 
             .shape1 {
@@ -233,11 +248,11 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .shape2 {
-                height: 12px;
-                width: 120px;
+                height: 10px;
+                width: 100px;
                 background-color: var(--sc-grey1);
                 border-radius: 8px;
-                margin-top: 12px;
+                margin-top: 10px;
             }
 
             .shapes_3_4_5_6 {
@@ -251,7 +266,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center;
                 @apply --layout-start-justified;
                 @apply --layout-flex;
-                margin-top: 30px;
+                margin-top: 20px;
             }
 
             .shape3 {
@@ -274,7 +289,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-end;
                 @apply --layout-center-justified;
-                margin-top: 30px;
+                margin-top: 20px;
             }
 
             .shape5 {
@@ -294,12 +309,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 opacity: 0.15;
             }
 
-            .repliescontainer {
+            .states {
                 box-sizing: border-box;
                 width: 100%;
             }
 
-            .container[wide-layout] .repliescontainer {
+            .container[wide-layout] .states {
                 max-width: 68vw;
             }
 
@@ -318,6 +333,19 @@ This code may only be used under the license found at https://github.com/swarmci
             display-button-cancel {
                 margin: 30px auto;
                 width: 175px;
+            }
+
+            .copied {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);
+            }
+
+            .showcopied {
+                visibility: visible;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -355,6 +383,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </template>
             </dom-if>
             <dom-if if="{{!loadingItem}}">
@@ -363,6 +392,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="closebox">
                             <div class="close" on-tap="_close" tabindex="1"></div>
                         </div>
+                        <div class="spacer"></div>
                         <div class="description">
                             [[hashtagItem.description]]
                         </div>
@@ -371,23 +401,33 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                         <div class="seeker">
 
-                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://www.swarmdev.city/img/[[hashtagItem.seeker.avatarHash]]"
+                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seeker.avatarHash]]"
                                 placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                             </iron-image>
-                            <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+
+                            <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                                <div id="seeker" class="seeker-info seeker-owner" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            </template>
+
+                            <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
+                                <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                            </template>
+
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
                                 <div class="value">[[_formatValue(hashtagItem.value)]]</div>
                             </div>
                         </div>
                         <div class="linkbox">
-                            <span class="link">shareable link</span>
+                            <div class="copied" id="copied">copied</div>
+                            <span on-up="_copyUrl" class="link">shareable link</span>
                         </div>
                     </div>
-                    <div class="repliescontainer">
+                    <div class="states">
 
+                        <!-- The default, all replies view -->
                         <template is="dom-if" if="[[_getState('replies', state)]]">
-                            <display-simpledeal-itemreplies></display-simpledeal-itemreplies>
+                            <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}" selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
                             <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
                                 <display-button-reply on-up="_reply"></display-button-reply>
                             </template>
@@ -395,13 +435,33 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <display-button-cancel></display-button-cancel>
                             </template>
                         </template>
+
+                        <!-- The reply input view -->
                         <template is="dom-if" if="[[_getState('input', state)]]">
-                            <display-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-input-reply>
+                            <display-simpledeal-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-simpledeal-input-reply>
                         </template>
+
+                        <!-- The detailed view of a reply, with option to select the replier as provider -->
+                        <template is="dom-if" if="[[_getState('detail', state)]]">
+                            <display-simpledeal-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"
+                                selected-reply="{{selectedReply}}"></display-simpledeal-reply-detail>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
+                        </template>
+
+                        <!-- The view if there is a selectee, either user is chosen or has chosen-->
+                        <template is="dom-if" if="[[_getState('selected', state)]]">
+                            <display-simpledeal-detail-selected state-change="{{stateChange}}" path="{{path}}"></display-simpledeal-detail-selected>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
+                        </template>
+
                     </div>
                 </template>
             </dom-if>
-            </div>
+        </div>
 
     </template>
     <script>
@@ -487,11 +547,36 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         notify: true,
                     },
+                    /**
+                    * routeExit will trigger the display reset whenever we routed away
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                    },
                 };
             }
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                this._loadAnimations();
+            }
+            /**
+            * All animations this page needs
+            */
+            _loadAnimations() {
+                this.anim = {
+                    moveUp: {
+                        arr: [{transform: 'translateY(0px)'},
+                        {transform: 'translateY(-20px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                };
             }
             /**
             * takes the user to originating page
@@ -500,32 +585,51 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = `hashtag/${this.route.path.split('/')[2]}`;
             }
             /**
-            * takes the user to the user reputation page
+            * takes the user to the selected user reputation page
             */
             _toUserReputation() {
                 this.path = `user-reputation/${this.hashtagItem.seeker.address}/${this.hashtagItem.seeker.avatarHash}/${this.hashtagItem.seeker.username}`; // eslint-disable-line
             }
             /**
-            * Toggles betweeen loading & loaded state
+            * Toggles betweeen loading & loaded state & switches the state
             */
             _load() {
-                if (this.hashtagItem.itemHash &&
-                    this.hashtagItem.itemHash == this.route.path.split('/')[3]) {
-                    this.loadingItem = false;
-                    if (this.hashtagItem.seeker.address == this.publicKey) {
-                        this.async(() => {
-                            this.$$('#seeker').classList.add('seeker-owner');
-                        });
-                    } else {
-                        this.async(() => {
-                            this.$$('#seeker').classList.remove('seeker-owner');
-                        });
-                    }
+                // Is the hashtagItem loaded?
+                this.loadingItem = this.hashtagItem.request ? true : false;
+
+                // What is the state we're in with this item?
+                if (this.hashtagItem.selectee &&
+                    (this.hashtagItem.selectee.address == this.publicKey ||
+                        this.hashtagItem.seeker.address == this.publicKey)
+                ) {
+                    this.stateChange = 'selected';
                 } else {
-                    this.loadingItem = true;
+                    if (this.state != 'input' &&
+                        this.state != 'detail') {
+                        this.stateChange = 'replies';
+                    }
                 }
             }
-
+            /**
+             * copies the url key to the clipboard
+             */
+            _copyUrl() {
+                let textArea = document.createElement('textarea');
+                textArea.value = window.location.href;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                let copied = this.shadowRoot.querySelector('#copied');
+                copied.classList.add('showcopied');
+                copied.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                );
+                setTimeout(() => {
+                    copied.classList.remove('showcopied');
+                }, 500);
+            }
             /**
             * formats epoch
             * @param {DateTime} dateTime epoch in javascript milliseconds
@@ -564,7 +668,17 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     }
                     return replied ? false : true;
+                } else if (!item.replies) {
+                    return true;
                 }
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(hashtagItem) {
+                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
             }
             /**
             * Changes the state with its passed value.
@@ -589,12 +703,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.stateChange = 'input';
             }
             /**
-            * Switch between visible views
+            * Switch between visible
+            * @param {String} view the view that can be shown
             * @param {String} state the current state
             * @return {Boolean} true when give state should be visible
             */
-            _getState(state) {
-                return state == this.state;
+            _getState(view, state) {
+                return view == state;
             }
         }
         window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);

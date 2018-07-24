@@ -118,16 +118,35 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container .spacer {
                 width: 100%;
-                height:15px;
+                height: 15px;
                 background-color: var(--sc-white);
             }
 
             .container[wide-layout] .spacer {
                 width: 100%;
-                height:10px;
+                height: 10px;
                 background-color: var(--sc-white);
             }
 
+            .choose {
+                @apply --icon-button-mini;
+            }
+
+            .choose:active {
+                @apply --button-active;
+            }
+
+            .choose-icon {
+                @apply --next-blue-small;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .choose-icon {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -143,30 +162,37 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="description">
                             [[item.description]]
                         </div>
-                        <div class="price"><div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT</div>
+                        <div class="price">
+                            <div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT</div>
                     </div>
 
                     <div class="date">[[_formatDate(item.dateTime)]]</div>
 
                     <div class="bottom">
-                        <iron-image sizing="cover" preload fade src="https://www.swarmdev.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png">
+                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png"
+                            on-up="_toUserReputation">
                         </iron-image>
 
                         <template is="dom-if" if="[[!_isReplier(item)]]">
                             <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
+
+                            <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                                <div class="choose" on-up="_replyDetail">
+                                    <div class="choose-icon"></div>
+                                </div>
+                            </template>
                         </template>
 
                         <template is="dom-if" if="[[_isReplier(item)]]">
                             <div class="user replier">[[item.username]] · [[item.reputation]] SWR</div>
                         </template>
 
-
                     </div>
                 </div>
             </template>
             <div class="spacer"></div>
 
-        </template>
+    </template>
     <script>
         class MySimpledealItemreplies extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
@@ -210,14 +236,24 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
-
+                    /**
+                    * State contains the current view
+                    * @type {String}
+                    */
+                    stateChange: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * selectedReply contains the reply the user wants to see in detail
+                    * @type {Object}
+                    */
+                    selectedReply: {
+                        type: Object,
+                        notify: true,
+                    },
                 };
             }
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-
             /**
             * formats epoch
             * @param {DateTime} dateTime epoch in javascript milliseconds
@@ -239,7 +275,6 @@ This code may only be used under the license found at https://github.com/swarmci
             _formatValue(value) {
                 return value / 1e18;
             }
-
             /**
             * Here we check if a reply is owned by the current user
             * @param {Object} reply a hashtagItem reply
@@ -248,7 +283,14 @@ This code may only be used under the license found at https://github.com/swarmci
             _isReplier(reply) {
                 return reply.address == this.publicKey;
             }
-
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(hashtagItem) {
+                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
+            }
             /**
             * Here we check if there are any replies
             * @param {Object} item a hashtagItem
@@ -256,6 +298,21 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _noReplies(item) {
                 return (!item.replies || item.replies.length == 0);
+            }
+            /**
+            * takes the user to the selected user reputation page
+            * @param {Object} event object clicked containing the specific replier item
+            */
+            _toUserReputation(event) {
+                this.path = `user-reputation/${event.model.__data.item.address}/${event.model.__data.item.avatarHash}/${event.model.__data.item.username}`; // eslint-disable-line
+            }
+            /**
+            * show the reply detail
+            * @param {Object} event object clicked containing the specific replier item
+            */
+            _replyDetail(event) {
+                this.stateChange = 'detail';
+                this.selectedReply = event.model.__data.item;
             }
         }
         window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);

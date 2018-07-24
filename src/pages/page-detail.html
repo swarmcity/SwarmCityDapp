@@ -34,6 +34,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .container {
                 width: 100%;
                 background-image: var(--sc-bg);
+                min-height: 100vh;
                 @apply --layout-vertical;
                 @apply --layout-start;
                 @apply --layout-start-justified;
@@ -85,8 +86,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <display-my-info path="{{path}}" route="{{route}}"></display-my-info>
-            <display-simpledeal-title></display-simpledeal-title>
-            <display-simpledeal-detail path="{{path}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-simpledeal-detail>
+            <display-simpledeal-title id="simpledealtitle"></display-simpledeal-title>
+            <display-simpledeal-detail path="{{path}}" route-entry="{{routeEntry}}" private-key="{{privateKey}}"  toggle-unlock="{{toggleUnlock}}" reply="{{reply}}" id="detaildisplay"></display-simpledeal-detail>
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
@@ -162,6 +163,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         observer: '_blur',
                     },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'detail',
+                    },
                 };
             }
 
@@ -199,14 +208,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         // Here come the Exit Animations
                         if (this.routeExit[1] == 'hashtag') {
                             // Here come the Exit Animations, going to page Hashtag
-                            this.$.detailcontainer.animate(
+                            this.$.detaildisplay.animate(
                                 [
-                                    {'transform': 'translateY(0px)', 'opacity': '1'},
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                    {'transform': 'translateX(0px)', 'opacity': 1},
+                                    {'transform': 'translateX(50px)', 'opacity': 0},
                                 ],
                                 {
                                     fill: 'forwards',
-                                    duration: 200,
+                                    duration: 150,
                                     iterations: 1,
                                     iterationStart: 0,
                                     easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -223,18 +232,18 @@ This code may only be used under the license found at https://github.com/swarmci
             * Load the correct entry animations
             */
             _loadEntryAnimations() {
-                if (this.routeExit[0] != this.routeExit[1]) {
-                    if (this.routeExit[1] == this.pageID) {
-                        if (this.routeExit[0] == 'hashtag') {
+                if (this.routeEntry[0] != this.routeEntry[1]) {
+                    if (this.routeEntry[1] == this.pageID) {
+                        if (this.routeEntry[0] == 'hashtag') {
                             // Coming from page Hashtag
-                            this.$.detailcontainer.animate(
+                            this.$.detaildisplay.animate(
                                 [
-                                    {'transform': 'translateY(50px)', 'opacity': '0'},
-                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateX(50px)', 'opacity': 0},
+                                    {'transform': 'translateX(0px)', 'opacity': 1},
                                 ],
                                 {
                                     fill: 'forwards',
-                                    duration: 200,
+                                    duration: 150,
                                     iterations: 1,
                                     iterationStart: 0,
                                     easing: 'cubic-bezier(0.42,0,0.177,0.751)',
