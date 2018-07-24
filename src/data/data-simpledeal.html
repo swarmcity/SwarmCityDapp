@@ -18,12 +18,23 @@
                 return new Promise((resolve, reject) => {
                     let items = Object.values(hashtag.items)
                         .filter((item) => {
+                            let isInvolved = false;
+                            if (item.replies) {
+                                for (let i = 0; i < item.replies.length; i++) {
+                                    if (item.replies[i].address == userAddress) {
+                                        isInvolved = true;
+                                    }
+                                }
+                            }
+                            if (item.seeker.address == userAddress) {
+                                isInvolved = true;
+                            }
                             if (involved) {
                                 // only return items the user is involved with
-                                return item.seeker.address == userAddress;
+                                return isInvolved;
                             } else {
                                 // only return items the user is not involved with
-                                return item.seeker.address != userAddress;
+                                return !isInvolved;
                             }
                         })
                         .map((item) => {
