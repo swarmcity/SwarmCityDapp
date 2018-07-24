@@ -614,8 +614,10 @@ This code may only be used under the license found at https://github.com/swarmci
                                 });
                                 this.socket.on('hashtagItemChanged', (reply) => {
                                     if (reply.response == 200) {
-                                        this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                        this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                        if (reply.subscriptionId == this.hashtagItemSubscription) {
+                                            this.hashtagItem = JSON.parse(JSON.parse(reply.data));
+                                            this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                        }
                                     }
                                 });
                             }

@@ -391,6 +391,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'sendSignedTx',
                         observer: '_newSignedTx',
                     },
+                    /**
+                    * nonce is the current nonce of the used public key
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
                 };
             }
 
@@ -398,6 +406,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 this.timeOut = false;
+            }
+            /**
+            * Redux action for setting redux properties
+            */
+            static get actions() {
+                return Object.assign({
+                    NONCE: function(nonce) {
+                        return {
+                            type: 'NONCE',
+                            nonce: nonce,
+                        };
+                    },
+                });
             }
 
             /**
@@ -443,6 +464,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.timeOut = false;
                         this.$.icon.classList.remove('icon-previous');
                         this.$.icon.classList.add('icon-next');
+                        let newNonce = Number(this.nonce) + 1;
+                        this.dispatch('NONCE', newNonce);
                         break;
                     }
                     case 500: {
