@@ -126,7 +126,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title" id="title">Fund this deal with [[_totalSum()]] SWT?</div>
-                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} SWT {{localize('hashtagfee is included')}}.</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[_calculatedFee()]] SWT {{localize('hashtagfee is included')}}.</div>
             </div>
             <div class="flexer">
             </div>
@@ -161,6 +161,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
+                    /**
+                    * language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
@@ -255,7 +259,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Number} the total cost of posting a request
             */
             _totalSum() {
-                return parseFloat(this.hashtagItem.value) + parseFloat(this.hashtag.hashtagFee/2e18);
+                return parseFloat(this.hashtagItem.value/1e18) + parseFloat(this.hashtag.hashtagFee/2e18);
             }
             /**
             * Returns the SWT size hashtagFee
@@ -284,11 +288,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * Routes to new-request-processing
+            * Routes to funding-processing
             */
             _privateKey() {
                 if (this.privateKey != null) {
-                    this.set('route.path', 'new-request-processing');
+                    this.set('route.path', 'funding-processing');
                 }
             }
         }

@@ -479,7 +479,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                     <div class="send-buttonbox">
                         <div tabindex="3" class="disagree" on-tap="_start" on-keyPress="_start"></div>
-                        <div tabindex="4" id="send" class="round-button" on-tap="_checkPublicKey" on-keyPress="_checkPublicKey">
+                        <div tabindex="4" id="send" class="round-button" on-up="_checkPublicKey">
                             <div class="agree"></div>
                         </div>
                     </div>
@@ -518,7 +518,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="found-buttonbox">
                         <div class="disagree" on-tap="_sendSwt"></div>
                         <div class="round-button enabled">
-                            <div class="agree" on-tap="_goToConfirm"></div>
+                            <div class="agree" on-up="_goToConfirm"></div>
                         </div>
                     </div>
                 </div>
@@ -840,20 +840,17 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * switches to state shortCode
-            * @param {Object} event element clicked.
             */
-            _checkPublicKey(event) {
+            _checkPublicKey() {
                 if (this._checkBalance() && this._checkShortCode()) {
-                    if (event.keyCode === 13 || event.type == 'tap') {
-                        if (this.sendDestination && this.amountToSend <= this.balance.swt.balanceSwt) {
-                            const length = this.sendDestination.length;
-                            if (length == 5) {
-                                this.sendToShortcode = this.sendDestination;
-                                this.dispatch('REQTOKEY', this.sendToShortcode);
-                                this._gettingPublicKey();
-                            } else {
-                                this.error = this.localize('shortcode is the wrong length');
-                            }
+                    if (this.sendDestination && this.amountToSend <= this.balance.swt.balanceSwt) {
+                        const length = this.sendDestination.length;
+                        if (length == 5) {
+                            this.sendToShortcode = this.sendDestination;
+                            this.dispatch('REQTOKEY', this.sendToShortcode);
+                            this._gettingPublicKey();
+                        } else {
+                            this.error = this.localize('shortcode is the wrong length');
                         }
                     }
                 }
