@@ -19,7 +19,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
 Example:
 ```
-<display-simpledeal-detail-selected></display-simpledeal-detail-selected>
+<display-simpledeal-detail-funded></display-simpledeal-detail-funded>
 ```
 
 ### Styling
@@ -30,16 +30,14 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--display-simpledeal-detail-selected` | Mixin applied to the deal button | `{}` |
+| `--display-simpledeal-detail-funded` | Mixin applied to the deal button | `{}` |
 -->
-<dom-module id="display-simpledeal-detail-selected">
+<dom-module id="display-simpledeal-detail-funded">
     <template>
         <style include="shared-styles">
             :host {
                 display: block;
             }
-
-            .container {}
 
             iron-image {
                 height: 40px;
@@ -107,95 +105,119 @@ The following custom properties and mixins are available for styling:
                 background-color: var(--sc-white);
             }
 
-            .bluebox {
+            .greenbox {
                 @apply --layout-vertical;
                 @apply --layout-center;
                 box-sizing: border-box;
-                padding: 40px 25px 15px 25px;
-                background-color: var(--sc-blue);
+                padding: 40px 25px 40px 25px;
+                background-color: var(--sc-green);
+                position: relative;
+            }
+
+            .chat-button {
+                @apply --icon-button-big;
+                position: absolute;
+                top: -36px;
+                right: 50px;
+            }
+
+            .chat-button:active {
+                @apply --button-active;
+            }
+
+            .chat-icon {
+                @apply --chat-blue-normal;
             }
 
             .white-text {
                 @apply --body-bold;
+                font-size: 14px;
                 color: var(--sc-white);
                 text-align: center;
-            }
-
-            .white-subtext {
-                @apply --small-light;
-                margin-top: 20px;
-                color: var(--sc-white);
-                text-align: center;
-            }
-
-            .choice {
-                @apply --layout-horizontal;
-                @apply --layout-center-center;
-                padding: 30px 0;
             }
 
             .button {
-                @apply --text-button-small;
-                @apply --small-bold;
-                margin: 40px 0;
+                @apply --text-button-big;
+                @apply --body-bold;
+                margin: 20px 0 0 0;
                 color: var(--sc-white);
+                width: 250px;
             }
 
             .button:active {
                 @apply --button-active;
             }
+
+            .not-involved {
+                @apply --body-default;
+                box-sizing: border-box;
+                padding: 40px 15px;
+                color: var(--sc-grey4);
+                text-align: center;
+            }
+
+            .bold {
+                @apply --body-bold;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="whitebox">
-                <div class="descriptionbox">
-                    <div class="description">[[hashtagItem.selectee.reply.description]]</div>
-                    <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
-                </div>
-                <div class="date">
-                    [[_formatDate(hashtagItem.selectee.reply.dateTime)]]
-                </div>
-                <div class="providerbox">
-                    <div class="avatar">
-                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.selectee.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
-                        </iron-image>
+            <template is="dom-if" if="[[_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
+                <div class="whitebox">
+                    <div class="descriptionbox">
+                        <div class="description">[[hashtagItem.provider.reply.description]]</div>
+                        <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
                     </div>
-                    <template is="dom-if" if="[[!_isReplier(hashtagItem.selectee.reply, publicKey)]]">
-                        <div class="username">[[hashtagItem.selectee.reply.username]] · [[hashtagItem.selectee.reply.reputation]] SWR</div>
-                    </template>
+                    <div class="date">
+                        [[_formatDate(hashtagItem.provider.reply.dateTime)]]
+                    </div>
+                    <div class="providerbox">
+                        <div class="avatar">
+                            <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.provider.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </div>
+                        <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
+                            <div class="username">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
+                        </template>
 
-                    <template is="dom-if" if="[[_isReplier(hashtagItem.selectee.reply, publicKey)]]">
-                        <div class="replier">[[hashtagItem.selectee.reply.username]] · [[hashtagItem.selectee.reply.reputation]] SWR</div>
+                        <template is="dom-if" if="[[_isProvider(hashtagItem.provider.address, publicKey)]]">
+                            <div class="replier">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
+                        </template>
+                    </div>
+                </div>
+                <div class="greenbox">
+                    <div class="chat-button">
+                        <div class="chat-icon"></div>
+                    </div>
+                    <div class="white-text">You're in a deal!</div>
+                    <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
+                        <div class="button">
+                            payout
+                        </div>
+                    </template>
+            </template>
+            <template is="dom-if" if="[[!_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
+                <div class="whitebox not-involved">
+                    <template is="dom-if" if="[[_hasReplied(hashtagItem.replies, publicKey)]]">
+                        <div>[[hashtagItem.seeker.username]] selected a provider.</div>
+                        <div class="bold">It's not you.</div>
+                    </template>
+                    <template is="dom-if" if="[[!_hasReplied(hashtagItem.replies, publicKey)]]">
+                        <div>[[hashtagItem.seeker.username]] already selected a provider for this request.</div>
                     </template>
                 </div>
-            </div>
-            <div class="bluebox">
-                <template is="dom-if" if="[[_isReplier(hashtagItem.selectee.reply, publicKey)]]">
-                    <div class="white-text">[[hashtagItem.seeker.username]] selected you to make a deal. Do you accept?</div>
-                    <div class="choice">
-                        <display-button-disagree></display-button-disagree>
-                        <display-button-confirm on-up="_fund"></display-button-confirm>
-                    </div>
-                </template>
-                <template is="dom-if" if="[[!_isReplier(hashtagItem.selectee.reply, publicKey)]]">
-                    <div class="white-text">You selected [[hashtagItem.selectee.reply.username]] to make a deal.</div>
-                    <div class="white-subtext">Waiting for [[hashtagItem.selectee.reply.username]] to respond</div>
-                    <div class="button">
-                        unselect [[hashtagItem.selectee.reply.username]]
-                    </div>
-                </template>
-
+            </template>
             </div>
         </div>
     </template>
     <script>
-        class MyDisplaySimpledealDetailSelected extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MySimpledealDetailFunded extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-simpledeal-detail-selected';
+                return 'display-simpledeal-detail-funded';
             }
             static get properties() {
                 return {
@@ -243,12 +265,6 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /**
-            * Changes the current view to show all replies
-            */
-            _toReplies() {
-                this.stateChange = 'replies';
-            }
-            /**
             * formats the item value
             * @param {String} value item value in wei
             * @return {string} value in human readable format
@@ -270,29 +286,54 @@ The following custom properties and mixins are available for styling:
                 }
             }
             /**
-            * Here we check if the request is owned by the current user
-            * @param {Object} reply the selected reply
-            * @param {Object} publicKey the user's address
-            * @return {Boolean} true when user owns this request
+            * Here we check if the current user is involved either as seeker or provider
+            * @param {String} seekerAddress the seeker's address
+            * @param {String} providerAddress the provider's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is either seeker or provider
             */
-            _isReplier(reply, publicKey) {
-                return reply ? reply.address == publicKey : false;
+            _isInvolved(seekerAddress, providerAddress, userAddress) {
+                return (seekerAddress == userAddress || providerAddress == userAddress);
             }
             /**
-            * Change the route to confirm funding page
+            * Here we check if the current user is provider to this request
+            * @param {String} providerAddress the provider's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is provider to this request
             */
-            _fund() {
-                let detail = {
-                    itemHash: this.hashtagItem.itemHash,
-                    hashtagAddress: this.hashtag.address,
-                };
-                sessionStorage.setItem('detail', JSON.stringify(detail));
-                this.path = 'confirm-funding';
+            _isProvider(providerAddress, userAddress) {
+                return providerAddress == userAddress;
+            }
+            /**
+            * Here we check if the current user is seeker of this request
+            * @param {String} seekerAddress the seeker's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is provider to this request
+            */
+            _isSeeker(seekerAddress, userAddress) {
+                return seekerAddress == userAddress;
+            }
+            /**
+            * Here we check if the current user has replied of this request
+            * @param {Array} replies the request's replies
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user has previously replied to this request
+            */
+            _hasReplied(replies, userAddress) {
+                if (replies) {
+                    let hasReplied = false;
+                    for (let i = 0; i < replies.length; i++) {
+                        if (replies[i].address == userAddress) {
+                            hasReplied = true;
+                        }
+                    }
+                    return hasReplied;
+                }
             }
         }
         window.customElements.define(
-            MyDisplaySimpledealDetailSelected.is,
-            MyDisplaySimpledealDetailSelected
+            MySimpledealDetailFunded.is,
+            MySimpledealDetailFunded
         );
     </script>
 </dom-module>
