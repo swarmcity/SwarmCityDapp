@@ -6,6 +6,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../data/data-transaction.html">>
 <link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+<script src="../data/abi.js"></script>
 
 
 <!--
@@ -100,6 +102,14 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         statePath: 'publicKey',
                     },
+                    /**
+                    * The hashtag we're posting a request on
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
                 };
             }
             /**
@@ -132,6 +142,16 @@ The following custom properties and mixins are available for styling:
                             this.error = err;
                         });
                 }
+            }
+            /**
+            * to hex
+            * @param {string} dec - The data to convert
+            * @return {object}
+            */
+            _toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x' + result;
             }
         } window.customElements.define(MyDisplayCompletePayout.is, MyDisplayCompletePayout);
     </script>
