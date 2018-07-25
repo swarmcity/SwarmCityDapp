@@ -163,26 +163,27 @@ The following custom properties and mixins are available for styling:
                         <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.provider.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
                         </iron-image>
                     </div>
-                    <template is="dom-if" if="[[!_isReplier(hashtagItem.provider.reply, publicKey)]]">
+                    <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
                         <div class="username">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
                     </template>
 
-                    <template is="dom-if" if="[[_isReplier(hashtagItem.provider.reply, publicKey)]]">
+                    <template is="dom-if" if="[[_isProvider(hashtagItem.provider.address, publicKey)]]">
                         <div class="replier">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
                     </template>
                 </div>
             </div>
-            <div class="greenbox">
-                <div class="chat-button">
-                    <div class="chat-icon"></div>
-                </div>
-                <div class="white-text">You're in a deal!</div>
-                <template is="dom-if" if="[[!_isReplier(hashtagItem.provider.reply, publicKey)]]">
-                    <div class="button">
-                        payout
+            <template is="dom-if" if="[[_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
+                <div class="greenbox">
+                    <div class="chat-button">
+                        <div class="chat-icon"></div>
                     </div>
-                </template>
-
+                    <div class="white-text">You're in a deal!</div>
+                    <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
+                        <div class="button">
+                            payout
+                        </div>
+                    </template>
+            </template>
             </div>
         </div>
     </template>
@@ -262,13 +263,32 @@ The following custom properties and mixins are available for styling:
                 }
             }
             /**
-            * Here we check if the request is owned by the current user
-            * @param {Object} reply the selected reply
-            * @param {Object} publicKey the user's address
-            * @return {Boolean} true when user owns this request
+            * Here we check if the current user is involved either as seeker or provider
+            * @param {String} seekerAddress the seeker's address
+            * @param {String} providerAddress the provider's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is either seeker or provider
             */
-            _isReplier(reply, publicKey) {
-                return reply ? reply.address == publicKey : false;
+            _isInvolved(seekerAddress, providerAddress, userAddress) {
+                return (seekerAddress == userAddress || providerAddress == userAddress);
+            }
+            /**
+            * Here we check if the current user is provider to this request
+            * @param {String} providerAddress the provider's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is provider to this request
+            */
+            _isProvider(providerAddress, userAddress) {
+                return providerAddress == userAddress;
+            }
+            /**
+            * Here we check if the current user is seeker of this request
+            * @param {String} seekerAddress the seeker's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is provider to this request
+            */
+            _isSeeker(seekerAddress, userAddress) {
+                return seekerAddress == userAddress;
             }
         }
         window.customElements.define(
