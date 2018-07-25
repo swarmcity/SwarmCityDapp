@@ -469,7 +469,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         <!-- The view if both parties have funded and the deal is ongoing-->
                         <template is="dom-if" if="[[_getState('funded', state)]]">
                             <display-simpledeal-detail-funded state-change="{{stateChange}}" path="{{path}}"></display-simpledeal-detail-funded>
-                            <display-button-conflict></display-button-conflict>
+                            <template is="dom-if" if="[[_showConflictButton(hashtagItem)]]">
+                                <display-button-conflict></display-button-conflict>
+                            </template>
                         </template>
                     </div>
                 </template>
@@ -686,6 +688,17 @@ This code may only be used under the license found at https://github.com/swarmci
                     return replied ? false : true;
                 } else if (!item.replies) {
                     return true;
+                }
+            }
+            /**
+            * Set the conditions for showing the conflict button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showConflictButton(item) {
+                if (item.provider) {
+                    return (item.seeker.address == this.publicKey ||
+                        item.provider.address == this.publicKey);
                 }
             }
             /**
