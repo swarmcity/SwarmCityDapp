@@ -147,32 +147,44 @@ The following custom properties and mixins are available for styling:
             .button:active {
                 @apply --button-active;
             }
+
+            .not-involved {
+                @apply --body-default;
+                box-sizing: border-box;
+                padding: 40px 15px;
+                color: var(--sc-grey4);
+                text-align: center;
+            }
+
+            .bold {
+                @apply --body-bold;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="whitebox">
-                <div class="descriptionbox">
-                    <div class="description">[[hashtagItem.provider.reply.description]]</div>
-                    <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
-                </div>
-                <div class="date">
-                    [[_formatDate(hashtagItem.provider.reply.dateTime)]]
-                </div>
-                <div class="providerbox">
-                    <div class="avatar">
-                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.provider.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
-                        </iron-image>
-                    </div>
-                    <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
-                        <div class="username">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
-                    </template>
-
-                    <template is="dom-if" if="[[_isProvider(hashtagItem.provider.address, publicKey)]]">
-                        <div class="replier">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
-                    </template>
-                </div>
-            </div>
             <template is="dom-if" if="[[_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
+                <div class="whitebox">
+                    <div class="descriptionbox">
+                        <div class="description">[[hashtagItem.provider.reply.description]]</div>
+                        <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+                    </div>
+                    <div class="date">
+                        [[_formatDate(hashtagItem.provider.reply.dateTime)]]
+                    </div>
+                    <div class="providerbox">
+                        <div class="avatar">
+                            <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.provider.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </div>
+                        <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
+                            <div class="username">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
+                        </template>
+
+                        <template is="dom-if" if="[[_isProvider(hashtagItem.provider.address, publicKey)]]">
+                            <div class="replier">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
+                        </template>
+                    </div>
+                </div>
                 <div class="greenbox">
                     <div class="chat-button">
                         <div class="chat-icon"></div>
@@ -185,7 +197,15 @@ The following custom properties and mixins are available for styling:
                     </template>
             </template>
             <template is="dom-if" if="[[!_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
-                This item is in a deal
+                <div class="whitebox not-involved">
+                    <template is="dom-if" if="[[_hasReplied(hashtagItem.replies, publicKey)]]">
+                        <div>[[hashtagItem.seeker.username]] selected a provider.</div>
+                        <div class="bold">It's not you.</div>
+                    </template>
+                    <template is="dom-if" if="[[!_hasReplied(hashtagItem.replies, publicKey)]]">
+                        <div>[[hashtagItem.seeker.username]] already selected a provider for this request.</div>
+                    </template>
+                </div>
             </template>
             </div>
         </div>
@@ -292,6 +312,23 @@ The following custom properties and mixins are available for styling:
             */
             _isSeeker(seekerAddress, userAddress) {
                 return seekerAddress == userAddress;
+            }
+            /**
+            * Here we check if the current user has replied of this request
+            * @param {Array} replies the request's replies
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user has previously replied to this request
+            */
+            _hasReplied(replies, userAddress) {
+                if (replies) {
+                    let hasReplied = false;
+                    for (let i = 0; i < replies.length; i++) {
+                        if (replies[i].address == userAddress) {
+                            hasReplied = true;
+                        }
+                    }
+                    return hasReplied;
+                }
             }
         }
         window.customElements.define(
