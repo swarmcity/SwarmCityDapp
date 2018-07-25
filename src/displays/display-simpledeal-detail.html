@@ -18,9 +18,11 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
 <link rel="import" href="../displays/display-button-reply.html">
 <link rel="import" href="../displays/display-button-cancel.html">
+<link rel="import" href="../displays/display-button-conflict.html">
 <link rel="import" href="../displays/display-simpledeal-input-reply.html">
 <link rel="import" href="../displays/display-simpledeal-reply-detail.html">
 <link rel="import" href="../displays/display-simpledeal-detail-selected.html">
+<link rel="import" href="../displays/display-simpledeal-detail-funded.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -335,6 +337,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 175px;
             }
 
+            display-button-conflict {
+                margin: 30px auto;
+                width: 175px;
+                text-align: center;
+            }
+
             .copied {
                 @apply --small-bold;
                 color: var(--sc-grey3);
@@ -458,6 +466,11 @@ This code may only be used under the license found at https://github.com/swarmci
                             </template>
                         </template>
 
+                        <!-- The view if both parties have funded and the deal is ongoing-->
+                        <template is="dom-if" if="[[_getState('funded', state)]]">
+                            <display-simpledeal-detail-funded state-change="{{stateChange}}" path="{{path}}"></display-simpledeal-detail-funded>
+                            <display-button-conflict></display-button-conflict>
+                        </template>
                     </div>
                 </template>
             </dom-if>
@@ -603,7 +616,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.hashtagItem.seeker.address == this.publicKey)
                 ) {
                     this.stateChange = 'selected';
-                } else {
+                } else if (this.hashtagItem.provider) {
+                    this.stateChange = 'funded';
+                }
+                else {
                     if (this.state != 'input' &&
                         this.state != 'detail') {
                         this.stateChange = 'replies';
