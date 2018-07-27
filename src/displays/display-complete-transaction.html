@@ -8,58 +8,11 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../redux-state.html">
 <link rel="import" href="../data/data-transaction.html">
 <script src="../data/abi.js"></script>
-<script src="../data/webpack.min.js"></script>
 
-
-<!--
-
-Example:
-```
-<display-complete-transaction></display-complete-transaction>
-```
-
-### Styling
-
-Style the button with CSS as you would a normal DOM element.
-
-The following custom properties and mixins are available for styling:
-
-| Custom property | Description | Default |
-| --- | --- | --- |
-| `--display-complete-transaction` | Mixin applied to the deal button | `{}` |
--->
 <dom-module id="display-complete-transaction">
     <template>
         <data-transaction id="transaction"></data-transaction>
-        <template is="dom-if" if="{{debug}}">
-            <p style="margin-top:100px">
-                <pre style="background-color:black; color:lime">
-
-            ==========================================================================
-            Test DIV To show all TX values (this is for testing only)
-            ==========================================================================
-
-            ADDRESS: {{address}}
-            TO ADDRESS: {{toAddress}}
-            AMOUNT TO SEND : {{amountToSend}} SWT
-            NONCE: {{nonce}}
-            GAS PRICE: {{gasPrice}}
-
-            -------------------------------------------------------------------------
-            PRIVATE KEY: {{privateKey}}
-            -------------------------------------------------------------------------
-            RAW TX: {{rawTx}}
-            -------------------------------------------------------------------------
-            SIGNED TX: {{signedTx}}
-            -------------------------------------------------------------------------
-            STATUS: {{status}}
-            -------------------------------------------------------------------------
-            ERROR: {{error}}
-
-        </pre>
-            </p>
         </template>
-
     </template>
     <script>
         class DisplayCompleteTransaction extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -82,31 +35,10 @@ The following custom properties and mixins are available for styling:
                             broadcast: broadcast,
                         };
                     },
-                    PUBLICKEY: function(publicKey) {
-                        return {
-                            type: 'PUBLICKEY',
-                            publicKey: publicKey,
-                        };
-                    },
                 });
             }
             static get properties() {
                 return {
-                    /**
-                    * Debug either shows or hides all the transaction data for debuging
-                    * @type {Boolean}
-                    */
-                    debug: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * Send indicates the type of coin to send limited to ETH or SWT
-                    * @type {String}
-                    */
-                    send: {
-                        type: String,
-                    },
                     /**
                     * Address is the ethereum address the transaction is to be sent from
                     * @type {String}
@@ -140,22 +72,6 @@ The following custom properties and mixins are available for styling:
                         statePath: 'nonce',
                     },
                     /**
-                    * publickey is the wallet pubkey
-                    * @type {String}
-                    */
-                    publicKey: {
-                        type: String,
-                        statePath: 'publicKey',
-                    },
-                    /**
-                    * gas price is the curent price of gas
-                    * @type {Number}
-                    */
-                    gasPrice: {
-                        type: Number,
-                        statePath: 'gasPrice',
-                    },
-                    /**
                     * private key that is asocated with the from address
                     * @type {String}
                     */
@@ -165,47 +81,7 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                     },
                     /**
-                    * Raw transaction for checking the values
-                    * @type {String}
-                    */
-                    rawTx: {
-                        type: String,
-                        notify: true,
-                        reflectToAtribute: true,
-                    },
-                    /**
-                    * Signed transaction for checking the value
-                    * @type {String}
-                    */
-                    signedTx: {
-                        type: String,
-                        notify: true,
-                        reflectToAtribute: true,
-                    },
-                    /**
-                    * status has iut been broadcast or not?
-                    * @type {String}
-                    */
-                    status: {
-                        type: String,
-                        value: 'UNSENT',
-                        notify: true,
-                        reflectToAtribute: true,
-                    },
-                    /**
-                    * any transaction error
-                    * @type {String}
-                    */
-                    error: {
-                        type: String,
-                        notify: true,
-                        reflectToAtribute: true,
-                    },
-                    broadcast: {
-                        type: String,
-                    },
-                    /**
-                    * Path signlas to the parent to change the path
+                    * Path signals to the parent to change the path
                     * @type {Boolean}
                     */
                     path: {
@@ -215,41 +91,34 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
+            /**
+            * We collect all data and prepare a signed transaction to broadcast
+            */
             _sign() {
                 if (this.privateKey) {
-                    let swtContract = new webpack.Contract(abi.miniMeToken.abi,
-                        '0x0ADBc89464Cb7fa752ADCf3533514949A2547589');
                     let weiAmount = parseFloat(this.amountToSend) * 1e18;
-                    let txData = swtContract.methods.transfer(this.toAddress,
-                        weiAmount).encodeABI();
-                    const txParams = {
-                        nonce: this._toHex(this.nonce),
-                        gasPrice: this._toHex(21000000000),
-                        gasLimit: this._toHex(200000),
-                        to: '0x0ADBc89464Cb7fa752ADCf3533514949A2547589',
-                        from: this.address,
-                        data: txData,
-                        chainId: 42,
-                    };
-                    this.$.transaction.signRawTx(txParams, this.privateKey)
-                        .then((serializedTx) => {
+                    this.$.transaction.rawTokenTx(
+                        this.toAddress,
+                        weiAmount,
+                        '0x0ADBc89464Cb7fa752ADCf3533514949A2547589',
+                        abi.miniMeToken.abi
+                    ).then((rawTokenTx) => {
+                        this.$.transaction.signRawTx(
+                            this.address,
+                            '0x0ADBc89464Cb7fa752ADCf3533514949A2547589',
+                            this.nonce,
+                            rawTokenTx,
+                            this.privateKey
+                        ).then((serializedTx) => {
                             this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
                             this.path = 'transaction-processing/';
                         }).catch((err) => {
                             this.error = err;
                         });
+                    }).catch((err) => {
+                        this.error = err;
+                    });
                 }
-            }
-
-            /**
-            * to hex
-            * @param {string} dec - The data to convert
-            * @return {object}
-            */
-            _toHex(dec) {
-                let hex = Number(dec).toString(16);
-                let result = '000000'.substr(0, 6 - hex.length) + hex;
-                return '0x' + result;
             }
         } window.customElements.define(DisplayCompleteTransaction.is, DisplayCompleteTransaction);
     </script>

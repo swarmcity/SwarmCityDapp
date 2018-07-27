@@ -7,15 +7,62 @@
             static get is() {
                 return 'data-transaction';
             }
-
-            signRawTx(txParameters, privateKey) {
+            /**
+            * Sign the txData
+            * @param {String} senderAddress - The sender's address
+            * @param {String} contractAddress - The contract containg the function's address
+            * @param {String} nonce - The current user's nonce
+            * @param {String} txData - The txData to sign
+            * @param {String} privateKey - The user's private key
+            * @return {Object} - The signed transaction
+            */
+            signRawTx(senderAddress, contractAddress, nonce, txData, privateKey) {
                 return new Promise((resolve, reject) => {
+                    const txParams = {
+                        nonce: this._toHex(nonce),
+                        gasPrice: 1000000000,
+                        gasLimit: 3000000,
+                        to: contractAddress,
+                        from: senderAddress,
+                        data: txData,
+                        chainId: 42,
+                    };
                     const privateKeyBuffer = new webpack.Buffer.Buffer(privateKey, 'hex'); // eslint-disable-line
-                    let tx = new webpack.EthereumTx(txParameters); // eslint-disable-line
+                    let tx = new webpack.EthereumTx(txParams); // eslint-disable-line
                     tx.sign(privateKeyBuffer);
                     let serializedTx = tx.serialize();
                     resolve(serializedTx);
                 });
+            }
+            /**
+            * Call the token transfer method
+            * @param {String} receiverAddress - The receiver's address
+            * @param {Number} weiAmount - The amount to be transferred, in wei
+            * @param {String} contractAddress - The contract containg the function's address
+            * @param {Object} abi - The contract's abi
+            * @return {Object} - The signed transaction
+            */
+            rawTokenTx(receiverAddress, weiAmount, contractAddress, abi) {
+                return new Promise((resolve, reject) => {
+                    const tokenContract = new webpack.Contract(
+                        abi,
+                        contractAddress);
+                    let rawTokenTx = tokenContract.methods.transfer(
+                        receiverAddress,
+                        weiAmount
+                    ).encodeABI();
+                    resolve(rawTokenTx);
+                });
+            }
+            /**
+            * to hex
+            * @param {String} dec - The data to convert
+            * @return {Object} - the input data in hex format
+            */
+            _toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x' + result;
             }
         } window.customElements.define(DataTransaction.is, DataTransaction);
     </script>
