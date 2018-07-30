@@ -143,6 +143,13 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-blue);
             }
 
+            .truncate {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
             .seeker {
                 color: var(--sc-grey4);
             }
@@ -197,7 +204,9 @@ The following custom properties and mixins are available for styling:
                 line-height: 10px;
             }
 
-
+            .horizontal {
+                @apply --layout-horizontal;
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -211,8 +220,6 @@ The following custom properties and mixins are available for styling:
         <display-language language="{{language}}"></display-language>
         <data-simpledeal id="sort"></data-simpledeal>
         <div class="container" wide-layout$="{{wide}}">
-
-
 
             <template is="dom-repeat" items="{{items}}">
                 <div tabindex="5" class="box" on-tap="_toItem">
@@ -236,11 +243,13 @@ The following custom properties and mixins are available for styling:
                             <div class="meta">
 
                                 <template is="dom-if" if="[[!_isSeeker(item)]]">
-                                    <div class="user">[[item.seeker.username]] · [[item.seeker.rep]] SWR</div>
+                                        <div class="user horizontal">
+                                            <div class="truncate">[[item.seeker.username]]</div> · [[item.seeker.rep]] SWR</div>
                                 </template>
 
                                 <template is="dom-if" if="[[_isSeeker(item)]]">
-                                    <div class="user seeker">[[item.seeker.username]] · [[item.seeker.rep]] SWR</div>
+                                        <div class="user seeker horizontal">
+                                            <div class="truncate">[[item.seeker.username]]</div> · [[item.seeker.rep]] SWR</div>
                                 </template>
 
                             </div>
@@ -364,7 +373,7 @@ The following custom properties and mixins are available for styling:
             * @return {number} number of replies
             */
             _replycount(replies) {
-                return replies ? replies.length: 0;
+                return replies ? replies.length : 0;
             }
             /**
             * routes to the corresponding item detail page

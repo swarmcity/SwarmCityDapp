@@ -23,6 +23,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-simpledeal-reply-detail.html">
 <link rel="import" href="../displays/display-simpledeal-detail-selected.html">
 <link rel="import" href="../displays/display-simpledeal-detail-funded.html">
+<link rel="import" href="../displays/display-simpledeal-detail-done.html">
 
 <dom-module id="display-simpledeal-detail">
     <template>
@@ -352,8 +353,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
             }
 
+            .truncate {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
             .showcopied {
                 visibility: visible;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -414,11 +426,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             </iron-image>
 
                             <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
-                                <div id="seeker" class="seeker-info seeker-owner" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                                <div id="seeker" class="seeker-info seeker-owner horizontal" on-up="_toUserReputation"><div class="truncate">[[hashtagItem.seeker.username]]</div> · [[hashtagItem.seeker.rep]]</div>
                             </template>
 
                             <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
-                                <div id="seeker" class="seeker-info" on-up="_toUserReputation">[[hashtagItem.seeker.username]] · [[hashtagItem.seeker.rep]]</div>
+                                <div id="seeker" class="seeker-info horizontal" on-up="_toUserReputation">
+                                        <div class="truncate">[[hashtagItem.seeker.username]]</div> · [[hashtagItem.seeker.rep]]</div>
                             </template>
 
                             <div class="pricebox">
@@ -472,6 +485,11 @@ This code may only be used under the license found at https://github.com/swarmci
                             <template is="dom-if" if="[[_showConflictButton(hashtagItem)]]">
                                 <display-button-conflict></display-button-conflict>
                             </template>
+                        </template>
+                        
+                        <!-- The view if the seeker has paid out and the deal is done-->
+                        <template is="dom-if" if="[[_getState('done', state)]]">
+                            <display-simpledeal-detail-done></display-simpledeal-detail-done>
                         </template>
                     </div>
                 </template>
@@ -612,8 +630,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 // Is the hashtagItem loaded?
                 this.loadingItem = this.hashtagItem.request ? true : false;
 
+                // selected, funded, done, replies
+                // don't get out of: detail, input
+
                 // What is the state we're in with this item?
-                if (this.hashtagItem.selectee &&
+                if (this.hashtagItem.status &&
+                    this.hashtagItem.status == '1') {
+                    this.stateChange = 'done';
+                } else if (this.hashtagItem.selectee &&
+                    !this.hashtagItem.provider &&
                     (this.hashtagItem.selectee.address == this.publicKey ||
                         this.hashtagItem.seeker.address == this.publicKey)
                 ) {

@@ -346,6 +346,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.dispatch('NONCE', this.nonce);
                 });
 
+                // Get push updates of the user's nonce
+                this.socket.on('hashtagListChanged', (reply) => {
+                    this.hashtagList = reply.data;
+                    this.dispatch('HASHTAGLIST', this.hashtagList);
+                });
+
                 // All handlers attached - please connect..
                 this.socket.connect();
             }
@@ -598,45 +604,39 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.socket.emit('unsubscribe', {
                             subscriptionId: this.hashtagItemSubscription,
                         }, (reply) => {
-                            if (reply.response == 200) {
-                                this.socket.emit('subscribe', {
-                                    channel: 'hashtagItem',
-                                    args: {
-                                        address: this.hashtagItem.request.hashtagAddress,
-                                        itemHash: this.hashtagItem.request.itemHash,
-                                    },
-                                }, (reply) => {
-                                    if (reply.response == 200) {
-                                        this.hashtagItem = JSON.parse(reply.data);
-                                        this.hashtagItemSubscription = reply.subscriptionId;
-                                        /* eslint-disable */
-                                        // --------------- BEGIN TEMPORARY PROVIDER DATA ---------------
-                                        if (this.hashtagItem.selectee) {
-                                            this.hashtagItem.provider = this.hashtagItem.selectee;
-                                            delete this.hashtagItem.selectee;
-                                        }
-                                        // --------------- END TEMPORARY PROVIDER DATA ---------------
-                                        /* eslint-enable */
+                            this.socket.emit('subscribe', {
+                                channel: 'hashtagItem',
+                                args: {
+                                    address: this.hashtagItem.request.hashtagAddress,
+                                    itemHash: this.hashtagItem.request.itemHash,
+                                },
+                            }, (reply) => {
+                                if (reply.response == 200) {
+                                    this.hashtagItem = JSON.parse(reply.data);
+                                    this.hashtagItemSubscription = reply.subscriptionId;
+                                    this.hashtagItem.description =
+                                        this.hashtagItem.description ||
+                                        'Missing description';
+                                    this.hashtagItem.seeker.username =
+                                        this.hashtagItem.seeker.username ||
+                                        this.hashtagItem.seeker.address;
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                }
+                            });
+                            this.socket.on('hashtagItemChanged', (reply) => {
+                                if (reply.response == 200) {
+                                    if (reply.subscriptionId == this.hashtagItemSubscription) {
+                                        this.hashtagItem = JSON.parse(JSON.parse(reply.data));
+                                        this.hashtagItem.description =
+                                            this.hashtagItem.description ||
+                                            'Missing description';
+                                        this.hashtagItem.seeker.username =
+                                            this.hashtagItem.seeker.username ||
+                                            this.hashtagItem.seeker.address;
                                         this.dispatch('HASHTAGITEM', this.hashtagItem);
                                     }
-                                });
-                                this.socket.on('hashtagItemChanged', (reply) => {
-                                    if (reply.response == 200) {
-                                        if (reply.subscriptionId == this.hashtagItemSubscription) {
-                                            this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                            /* eslint-disable */
-                                            // --------------- BEGIN TEMPORARY PROVIDER DATA ---------------
-                                            if (this.hashtagItem.selectee) {
-                                                this.hashtagItem.provider = this.hashtagItem.selectee;
-                                                delete this.hashtagItem.selectee;
-                                            }
-                                            // --------------- END TEMPORARY PROVIDER DATA ---------------
-                                            /* eslint-enable */
-                                            this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                        }
-                                    }
-                                });
-                            }
+                                }
+                            });
                         });
                     } else {
                         this.socket.emit('subscribe', {
@@ -647,31 +647,27 @@ This code may only be used under the license found at https://github.com/swarmci
                             },
                         }, (reply) => {
                             if (reply.response == 200) {
-                                    this.hashtagItem = JSON.parse(reply.data);
-                                    this.hashtagItemSubscription = reply.subscriptionId;
-                                    /* eslint-disable */
-                                    // --------------- BEGIN TEMPORARY PROVIDER DATA ---------------
-                                    if (this.hashtagItem.selectee) {
-                                        this.hashtagItem.provider = this.hashtagItem.selectee;
-                                        delete this.hashtagItem.selectee;
-                                    }
-                                    // --------------- END TEMPORARY PROVIDER DATA ---------------
-                                    /* eslint-enable */
-                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                this.hashtagItem = JSON.parse(reply.data);
+                                this.hashtagItemSubscription = reply.subscriptionId;
+                                this.hashtagItem.description =
+                                    this.hashtagItem.description ||
+                                    'missing description';
+                                this.hashtagItem.seeker.username =
+                                    this.hashtagItem.seeker.username ||
+                                    this.hashtagItem.seeker.address;
+                                this.dispatch('HASHTAGITEM', this.hashtagItem);
                             }
                         });
                         this.socket.on('hashtagItemChanged', (reply) => {
                             if (reply.response == 200) {
                                 if (reply.subscriptionId == this.hashtagItemSubscription) {
                                     this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                    /* eslint-disable */
-                                    // --------------- BEGIN TEMPORARY PROVIDER DATA ---------------
-                                    if (this.hashtagItem.selectee) {
-                                        this.hashtagItem.provider = this.hashtagItem.selectee;
-                                        delete this.hashtagItem.selectee;
-                                    }
-                                    // --------------- END TEMPORARY PROVIDER DATA ---------------
-                                    /* eslint-enable */
+                                    this.hashtagItem.description =
+                                        this.hashtagItem.description ||
+                                        'missing description';
+                                    this.hashtagItem.seeker.username =
+                                        this.hashtagItem.seeker.username ||
+                                        this.hashtagItem.seeker.address;
                                     this.dispatch('HASHTAGITEM', this.hashtagItem);
                                 }
                             }
@@ -679,6 +675,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 }
             }
+
             // fired when entering needing a shortCode
             _usingShortCode() {
                 if (this.usingShortCode) {

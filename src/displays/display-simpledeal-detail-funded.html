@@ -191,7 +191,7 @@ The following custom properties and mixins are available for styling:
                     </div>
                     <div class="white-text">You're in a deal!</div>
                     <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
-                        <div class="button">
+                        <div class="button" on-up="_payout">
                             payout
                         </div>
                     </template>
@@ -329,6 +329,17 @@ The following custom properties and mixins are available for styling:
                     }
                     return hasReplied;
                 }
+            }
+            /**
+            * Change the route to confirm payout page
+            */
+            _payout() {
+                let detail = {
+                    itemHash: this.hashtagItem.itemHash,
+                    hashtagAddress: this.hashtag.address,
+                };
+                sessionStorage.setItem('detail', JSON.stringify(detail));
+                this.path = 'confirm-payout';
             }
         }
         window.customElements.define(
