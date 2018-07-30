@@ -346,6 +346,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.dispatch('NONCE', this.nonce);
                 });
 
+                // Get push updates of the user's nonce
+                this.socket.on('hashtagListChanged', (reply) => {
+                    this.hashtagList = reply.data;
+                    this.dispatch('HASHTAGLIST', this.hashtagList);
+                });
+
                 // All handlers attached - please connect..
                 this.socket.connect();
             }
@@ -610,10 +616,10 @@ This code may only be used under the license found at https://github.com/swarmci
                                     this.hashtagItemSubscription = reply.subscriptionId;
                                     this.hashtagItem.description =
                                         this.hashtagItem.description ||
-                                            'Missing description';
+                                        'Missing description';
                                     this.hashtagItem.seeker.username =
                                         this.hashtagItem.seeker.username ||
-                                            this.hashtagItem.seeker.address;
+                                        this.hashtagItem.seeker.address;
                                     this.dispatch('HASHTAGITEM', this.hashtagItem);
                                 }
                             });
@@ -623,10 +629,10 @@ This code may only be used under the license found at https://github.com/swarmci
                                         this.hashtagItem = JSON.parse(JSON.parse(reply.data));
                                         this.hashtagItem.description =
                                             this.hashtagItem.description ||
-                                                'Missing description';
+                                            'Missing description';
                                         this.hashtagItem.seeker.username =
                                             this.hashtagItem.seeker.username ||
-                                                this.hashtagItem.seeker.address;
+                                            this.hashtagItem.seeker.address;
                                         this.dispatch('HASHTAGITEM', this.hashtagItem);
                                     }
                                 }
@@ -645,10 +651,10 @@ This code may only be used under the license found at https://github.com/swarmci
                                 this.hashtagItemSubscription = reply.subscriptionId;
                                 this.hashtagItem.description =
                                     this.hashtagItem.description ||
-                                        'missing description';
+                                    'missing description';
                                 this.hashtagItem.seeker.username =
                                     this.hashtagItem.seeker.username ||
-                                        this.hashtagItem.seeker.address;
+                                    this.hashtagItem.seeker.address;
                                 this.dispatch('HASHTAGITEM', this.hashtagItem);
                             }
                         });
@@ -658,10 +664,10 @@ This code may only be used under the license found at https://github.com/swarmci
                                     this.hashtagItem = JSON.parse(JSON.parse(reply.data));
                                     this.hashtagItem.description =
                                         this.hashtagItem.description ||
-                                            'missing description';
+                                        'missing description';
                                     this.hashtagItem.seeker.username =
                                         this.hashtagItem.seeker.username ||
-                                            this.hashtagItem.seeker.address;
+                                        this.hashtagItem.seeker.address;
                                     this.dispatch('HASHTAGITEM', this.hashtagItem);
                                 }
                             }
