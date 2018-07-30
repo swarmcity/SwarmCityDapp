@@ -8,6 +8,70 @@
             }
 
             /**
+            * Create a new hashtag item
+            * @param {String} itemHash - The itemHash in Hex (with prefix)
+            * @param {Number} weiAmount - The item value in wei
+            * @param {String} ipfsHash - The item's metadata ipfs hash
+            * @param {String} contractAddress - The hashtag's address
+            * @param {Object} abi - The hashtag contract's abi
+            * @return {Object} - The Raw new item tx data
+            */
+            rawNewItem(itemHash, weiAmount, ipfsHash, contractAddress, abi) {
+                return new Promise((resolve, reject) => {
+                    const simpleDealContract = new webpack.Contract(
+                        abi,
+                        contractAddress
+                    );
+                    let rawNewItem = simpleDealContract.methods.newItem(
+                        itemHash,
+                        weiAmount,
+                        ipfsHash
+                    ).encodeABI();
+                    resolve(rawNewItem);
+                });
+            }
+
+            /**
+            * Fund a hashtag item
+            * @param {String} secret - The shared secret to allow funding
+            * @param {String} contractAddress - The hashtag's address
+            * @param {Object} abi - The hashtag contract's abi
+            * @return {Object} - The Raw new item tx data
+            */
+            rawFundItem(secret, contractAddress, abi) {
+                return new Promise((resolve, reject) => {
+                    const simpleDealContract = new webpack.Contract(
+                        abi,
+                        contractAddress
+                    );
+                    let rawFundItem = simpleDealContract.methods.fundItem(
+                        secret
+                    ).encodeABI();
+                    resolve(rawFundItem);
+                });
+            }
+
+            /**
+            * Pay the provider the full sum
+            * @param {String} itemHash - The itemHash in Hex (with prefix)
+            * @param {String} contractAddress - The hashtag's address
+            * @param {Object} abi - The hashtag contract's abi
+            * @return {Object} - The Raw payout item tx data
+            */
+            rawPayoutItem(itemHash, contractAddress, abi) {
+                return new Promise((resolve, reject) => {
+                    const simpleDealContract = new webpack.Contract(
+                        abi,
+                        contractAddress
+                    );
+                    let rawPayoutItem = simpleDealContract.methods.payoutItem(
+                        itemHash,
+                    ).encodeABI();
+                    resolve(rawPayoutItem);
+                });
+            }
+
+            /**
             * Filter the hashtag object to return a formatted list of items the user is involved in
             * @return {items} The array with items the user is involved in
             * @argument {object} hashtag the current hashtag
