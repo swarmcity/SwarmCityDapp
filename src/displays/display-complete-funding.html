@@ -48,10 +48,16 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    SENDSIGNEDTX: function (sendSignedTx) {
+                    SENDSIGNEDTX: function(sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
+                        };
+                    },
+                    HASHTAGITEM: function(hashtagItem) {
+                        return {
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
                         };
                     },
                 });
@@ -127,7 +133,7 @@ The following custom properties and mixins are available for styling:
                             this.$.transaction.rawApproveAndCall(
                                 this.hashtag.address,
                                 totalSum,
-                                rawNewItem,
+                                rawFundItem,
                                 '0x0adbc89464cb7fa752adcf3533514949a2547589',
                                 abi.miniMeToken.abi
                             ).then((rawApproveAndCall) => {
@@ -138,12 +144,15 @@ The following custom properties and mixins are available for styling:
                                     rawApproveAndCall,
                                     this.privateKey
                                 ).then((serializedTx) => {
+                                    this.hashtagItem.provider = this.hashtagItem.selectee;
+                                    delete this.hashtagItem.selectee;
                                     this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
                                 }).catch((err) => {
                                     this.error = err;
                                 });
                             });
-                        })
+                        });
                     });
                 }
             }
