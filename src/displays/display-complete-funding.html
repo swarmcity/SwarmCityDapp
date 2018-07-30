@@ -144,10 +144,11 @@ The following custom properties and mixins are available for styling:
                                     rawApproveAndCall,
                                     this.privateKey
                                 ).then((serializedTx) => {
-                                    this.hashtagItem.provider = this.hashtagItem.selectee;
-                                    delete this.hashtagItem.selectee;
+                                    let temp = this.hashtagItem;
+                                    temp.provider = this.hashtagItem.selectee;
+                                    delete temp.selectee;
                                     this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
-                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                    this.dispatch('HASHTAGITEM', temp);
                                 }).catch((err) => {
                                     this.error = err;
                                 });
