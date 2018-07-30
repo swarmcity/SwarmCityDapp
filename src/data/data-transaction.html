@@ -7,6 +7,7 @@
             static get is() {
                 return 'data-transaction';
             }
+
             /**
             * Sign the txData
             * @param {String} senderAddress - The sender's address
@@ -34,19 +35,20 @@
                     resolve(serializedTx);
                 });
             }
+
             /**
             * Call the token transfer method
             * @param {String} receiverAddress - The receiver's address
             * @param {Number} weiAmount - The amount to be transferred, in wei
-            * @param {String} contractAddress - The contract containg the function's address
+            * @param {String} tokenContract - The contract containg the function's address
             * @param {Object} abi - The contract's abi
             * @return {Object} - The signed transaction
             */
-            rawTokenTx(receiverAddress, weiAmount, tokenContractAddress, abi) {
+            rawTokenTx(receiverAddress, weiAmount, tokenContract, abi) {
                 return new Promise((resolve, reject) => {
                     const tokenContract = new webpack.Contract(
                         abi,
-                        tokenContractAddress);
+                        tokenContract);
                     let rawTokenTx = tokenContract.methods.transfer(
                         receiverAddress,
                         weiAmount
@@ -55,6 +57,15 @@
                 });
             }
 
+            /**
+            * Call the approve and call method
+            * @param {String} spenderAddress - The spending contract's address
+            * @param {Number} weiAmount - The amount that the spender has to transfer
+            * @param {String} txData - The txData of the method to call
+            * @param {String} tokenAddress - The address of the token contract
+            * @param {Object} abi - The token contract's abi
+            * @return {Object} - The raw method data
+            */
             rawApproveAndCall(spenderAddress, weiAmount, txData, tokenAddress, abi) {
                 return new Promise((resolve, reject) => {
                     const tokenContract = new webpack.Contract(
@@ -69,6 +80,7 @@
                     resolve(rawApproveAndCall);
                 });
             }
+
             /**
             * to hex
             * @param {String} dec - The data to convert
