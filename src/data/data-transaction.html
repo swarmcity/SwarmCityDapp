@@ -42,11 +42,11 @@
             * @param {Object} abi - The contract's abi
             * @return {Object} - The signed transaction
             */
-            rawTokenTx(receiverAddress, weiAmount, contractAddress, abi) {
+            rawTokenTx(receiverAddress, weiAmount, tokenContractAddress, abi) {
                 return new Promise((resolve, reject) => {
                     const tokenContract = new webpack.Contract(
                         abi,
-                        contractAddress);
+                        tokenContractAddress);
                     let rawTokenTx = tokenContract.methods.transfer(
                         receiverAddress,
                         weiAmount
@@ -59,22 +59,26 @@
                 return new Promise((resolve, reject) => {
                     const tokenContract = new webpack.Contract(
                         abi,
-                        contractAddress);
+                        tokenAddress);
 
-
-                resolve(rawApproveAndCall);
-            });
-        }
-        /**
-        * to hex
-        * @param {String} dec - The data to convert
-        * @return {Object} - the input data in hex format
-        */
-        _toHex(dec) {
-            let hex = Number(dec).toString(16);
-            let result = '000000'.substr(0, 6 - hex.length) + hex;
-            return '0x' + result;
-        }
+                    let rawApproveAndCall = tokenContract.methods.approveAndCall(
+                        spenderAddress,
+                        weiAmount,
+                        txData,
+                    ).encodeABI();
+                    resolve(rawApproveAndCall);
+                });
+            }
+            /**
+            * to hex
+            * @param {String} dec - The data to convert
+            * @return {Object} - the input data in hex format
+            */
+            _toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x' + result;
+            }
         } window.customElements.define(DataTransaction.is, DataTransaction);
     </script>
 </dom-module>

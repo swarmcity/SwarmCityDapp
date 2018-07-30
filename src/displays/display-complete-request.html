@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../data/data-transaction.html">
+<link rel="import" href="../data/data-simpledeal.html">
 <link rel="import" href="../redux-state.html">
 <script src="../data/webpack.min.js"></script>
 <script src="../data/abi.js"></script>
@@ -29,6 +30,7 @@ The following custom properties and mixins are available for styling:
 -->
 <dom-module id="display-complete-request">
     <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
         <data-transaction id="transaction"></data-transaction>
     </template>
     <script>
@@ -46,13 +48,13 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    ITEMTOIPFS: function(itemToIpfs) {
+                    ITEMTOIPFS: function (itemToIpfs) {
                         return {
                             type: 'ITEMTOIPFS',
                             itemToIpfs: itemToIpfs,
                         };
                     },
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
@@ -187,61 +189,41 @@ The following custom properties and mixins are available for styling:
                     const UUIDv4 = webpack.uuid.v4();
                     let itemBudgetWei = this.itemBudget * 1e18;
                     let itemHashBuffer = webpack.sha3(UUIDv4);
-                    let itemHashHex =  webpack.addHexPrefix(itemHashBuffer.toString('hex'));
+                    let itemHashHex = webpack.addHexPrefix(itemHashBuffer.toString('hex'));
                     let UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
                     UUIDCollection[UUIDv4] = itemHashHex;
                     localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
+                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
 
-                    let simpleDealContract = new webpack.Contract(
-                        abi.hashtagSimpleDeal.abi,
-                        this.hashtag.address
-                    );
-
-                    let rawNewItem = simpleDealContract.methods.newItem(
+                    this.$.simpledeal.rawNewItem(
                         itemHashHex,
                         itemBudgetWei,
-                        this.itemDataHash.data
-                    ).encodeABI();
-
-                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
-                    let swtContract = new webpack.Contract(
-                        abi.miniMeToken.abi,
-                        '0x0adbc89464cb7fa752adcf3533514949a2547589'
-                    );
-                    let rawApproveAndCall = swtContract.methods.approveAndCall(
+                        this.itemDataHash.data,
                         this.hashtag.address,
-                        totalSum,
-                        rawNewItem,
-                    ).encodeABI();
+                        abi.hashtagSimpleDeal.abi
+                    ).then((rawNewItem) => {
+                        this.$.transaction.rawApproveAndCall(
+                            this.hashtag.address,
+                            totalSum,
+                            rawNewItem,
+                            '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                            abi.miniMeToken.abi
+                        ).then((rawApproveAndCall) => {
+                            this.$.transaction.signRawTx(
+                                this.address,
+                                '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                                this.nonce,
+                                rawApproveAndCall,
+                                this.privateKey
+                            ).then((serializedTx) => {
+                                this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                            }).catch((err) => {
+                                this.error = err;
+                            });
+                        })
 
-                    const txParams = {
-                        nonce: this._toHex(this.nonce),
-                        gasPrice: 1000000000,
-                        gasLimit: 3000000,
-                        to: '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                        from: this.address,
-                        value: '0x00',
-                        data: rawApproveAndCall,
-                        chainId: 42,
-                    };
-
-                    this.$.transaction.signRawTx(txParams, this.privateKey)
-                        .then((serializedTx) => {
-                            this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
-                        }).catch((err) => {
-                            this.error = err;
-                        });
+                    })
                 }
-            }
-            /**
-            * to hex
-            * @param {string} dec - The data to convert
-            * @return {object}
-            */
-            _toHex(dec) {
-                let hex = Number(dec).toString(16);
-                let result = '000000'.substr(0, 6 - hex.length) + hex;
-                return '0x' + result;
             }
         } window.customElements.define(MyCompleteRequest.is, MyCompleteRequest);
     </script>
