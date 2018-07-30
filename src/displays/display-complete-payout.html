@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../data/data-transaction.html">>
+<link rel="import" href="../data/data-simpledeal.html">
 <link rel="import" href="../redux-state.html">
 <script src="../data/webpack.min.js"></script>
 <script src="../data/abi.js"></script>
@@ -29,6 +30,7 @@ The following custom properties and mixins are available for styling:
 -->
 <dom-module id="display-complete-payout">
     <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
         <data-transaction id="transaction"></data-transaction>
     </template>
     <script>
@@ -46,7 +48,7 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
@@ -117,30 +119,23 @@ The following custom properties and mixins are available for styling:
             */
             _payout() {
                 if (this.privateKey) {
-                    let simpleDealContract = new webpack.Contract(
-                        abi.hashtagSimpleDeal.abi,
-                        this.hashtag.address
-                    );
-
-                    let rawPayoutItem = simpleDealContract.methods.payoutItem(
+                    this.$.simpledeal.rawPayoutItem(
                         this.hashtagItem.itemHash,
-                    ).encodeABI();
-                    const txParams = {
-                        nonce: this.nonce,
-                        gasPrice: 1000000000,
-                        gasLimit: 3000000,
-                        to: this.hashtag.address,
-                        from: this.address,
-                        value: '0x00',
-                        data: rawPayoutItem,
-                        chainId: 42,
-                    };
-                    this.$.transaction.signRawTx(txParams, this.privateKey)
-                        .then((serializedTx) => {
+                        this.hashtag.address,
+                        abi.hashtagSimpleDeal.abi
+                    ).then((rawPayoutItem) => {
+                        this.$.transaction.signRawTx(
+                            this.address,
+                            this.hashtag.address,
+                            this.nonce,
+                            rawPayoutItem,
+                            this.privateKey
+                        ).then((serializedTx) => {
                             this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
                         }).catch((err) => {
                             this.error = err;
                         });
+                    })
                 }
             }
         } window.customElements.define(MyDisplayCompletePayout.is, MyDisplayCompletePayout);
