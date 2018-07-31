@@ -404,6 +404,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.socket.emit('sendSignedTx', {
                     tx: this.signedTx,
                 }, (reply) => {
+                    let newNonce = Number(this.nonce) + 1;
+                    this.dispatch('NONCE', newNonce);
                     this.txHash = reply;
                     setTimeout(() => {
                         this.dispatch('TXHASH', this.txHash);
