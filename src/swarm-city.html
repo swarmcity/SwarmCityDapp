@@ -195,6 +195,14 @@
           routeData: Object,
           subroute: String,
           rootPath: String,
+          offScreenPages: {
+            Type: Array,
+            value: [],
+          },
+          exitOpacity0Pages: {
+            Type: Array,
+            value: [],
+          },
         };
       }
 
@@ -293,21 +301,65 @@
         }
       }
 
-      _loadAnimations() {
-        if (this.routeExit[0] != this.routeExit[1]) {
-          let transitionFound = false;
-          for (let i = 1; i < this.animationsArray.length; i++) {
-            if (this.animationsArray[i].from == this.routeExit[0]
-              && this.animationsArray[i].to == this.routeExit[1]) {
-              this.animations = this.animationsArray[i];
-              transitionFound = true;
+        _loadAnimations() {
+            if (this.routeExit[0] != this.routeExit[1]) {
+                let transitionFound = false;
+                for (let i = 1; i < this.animationsArray.length; i++) {
+                    if (this.animationsArray[i].from == this.routeExit[0]
+                    && this.animationsArray[i].to == this.routeExit[1]) {
+                    this.animations = this.animationsArray[i];
+                    transitionFound = true;
+                    }
+                }
+                let offScreen = this.offScreenPages.includes(this.routeExit[1]);
+                let opacity0 = this.exitOpacity0Pages.includes(this.routeExit[1]);
+                if (!transitionFound) {
+                    this.animations = this.animationsArray[0];
+                }
+                if (offScreen) {
+                    this.animations.entryAnimation.descriptionArray.forEach(function(entry) {
+                        entry.transform='translate(0)';
+                    });
+                    this.animations.entryAnimation.descriptionObject.duration=0;
+                    this._removeItemFromArray(this.offScreenPages, this.routeExit[0]);
+                }
+                if (opacity0) {
+                    this.animations.entryAnimation.descriptionArray.forEach(function(entry) {
+                        entry.opacity =1;
+                    });
+                    this.animations.entryAnimation.descriptionObject.duration=0;
+                    this._removeItemFromArray(this.exitOpacity0Pages, this.routeExit[0]);
+                }
+                if (this._isPageHasTransform(this.animations.exitAnimation.descriptionArray)) {
+                    this.offScreenPages.push(this.routeExit[0]);
+                }
+                if (this._isPageExitOpacity0(this.animations.exitAnimation.descriptionArray)) {
+                    this.exitOpacity0Pages.push(this.routeExit[0]);
+                }
             }
-          }
-          if (!transitionFound) {
-            this.animations = this.animationsArray[0];
-          }
         }
-      }
+
+        _removeItemFromArray(array, item) {
+            for (let i = array.length - 1; i >= 0; i--) {
+                if (array[i] === item) {
+                    array.splice(i, 1);
+                }
+            }
+        }
+
+        _isPageHasTransform(pageDescriptionArray) {
+            let res=false;
+            pageDescriptionArray.forEach(function(entry) {
+                if (entry.transform) {
+                    res=true;
+                }
+            });
+            return res;
+        }
+
+        _isPageExitOpacity0(pageDescriptionArray) {
+            return pageDescriptionArray[pageDescriptionArray.length - 1].opacity ==0;
+        }
     }
     window.customElements.define(SwarmCity.is, SwarmCity);
   </script>
