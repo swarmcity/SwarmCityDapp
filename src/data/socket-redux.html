@@ -310,6 +310,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             userReputation: userReputation,
                         };
                     },
+                    HASHTAGS: function(hashtags) {
+                        return {
+                            type: 'HASHTAGS',
+                            hashtags: hashtags,
+                        };
+                    },
                 });
             }
 
@@ -346,10 +352,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.dispatch('NONCE', this.nonce);
                 });
 
-                // Get push updates of the user's nonce
-                this.socket.on('hashtagListChanged', (reply) => {
-                    this.hashtagList = reply.data;
-                    this.dispatch('HASHTAGLIST', this.hashtagList);
+                // Get the list of hashtags
+                this.socket.emit('getHashtags', {
+
+                }, (reply) => {
+                    this.hashtags = reply.data;
+                    this.dispatch('HASHTAGS', this.hashtags);
                 });
 
                 // All handlers attached - please connect..
@@ -534,7 +542,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         if (reply.response == 200) {
                             let address = this.hashtag.request;
                             this.hashtag = JSON.parse(reply.data);
-                            this.hashtag.address = address;
+                            this.hashtag.hashtagAddress = address;
                             // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
                             this.hashtag.hashtagFee = 600000000000000000;
                             // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
@@ -543,9 +551,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     });
                     this.socket.on('hashtagItemsChanged', (reply) => {
                         if (reply.response == 200) {
-                            let address = this.hashtag.address;
+                            let address = this.hashtag.hashtagAddress;
                             this.hashtag = JSON.parse(JSON.parse(reply.data));
-                            this.hashtag.address = address;
+                            this.hashtag.hashtagAddress = address;
                             // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
                             this.hashtag.hashtagFee = 600000000000000000;
                             // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
