@@ -91,6 +91,7 @@ The following custom properties and mixins are available for styling:
                 font-size: 26px;
                 margin-right: 2px;
             }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -98,23 +99,21 @@ The following custom properties and mixins are available for styling:
                     @apply --retina;
                 }
             }
-
-
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <template is="dom-repeat" items="{{hashtags}}" id="domRepeat">
                 <div tabindex="3" class="box" on-click="_toHashtag" on-KeyPress="_toHashtag">
                     <div class="flex">
-                            <div class="hashtag">
-                                <span class="cursor"><span class="hashtag">#</span>[[item.hashtagName]]</span>
-                            </div>
+                        <div class="hashtag">
+                            <span class="cursor">
+                                <span class="hashtag">#</span>[[item.hashtagName]]</span>
+                        </div>
                         <div class="deals">[[_allDealsCount(item.stats)]] {{localize('deals done')}}</div>
                     </div>
                     <div class="right"></div>
                 </div>
-            </template> 
+            </template>
         </div>
     </template>
     <script>
@@ -166,7 +165,7 @@ The following custom properties and mixins are available for styling:
             */
             _toHashtag(event) {
                 if (event.keyCode === 13 || event.type == 'click') {
-                    this.path = 'hashtag/'+event.model.__data.item.hashtagAddress+'/';
+                    this.path = 'hashtag/' + event.model.__data.item.hashtagAddress + '/';
                 }
             }
             /**
@@ -175,7 +174,9 @@ The following custom properties and mixins are available for styling:
             * @return {int} returns amount of completed deals
             */
             _allDealsCount(stats) {
-                return stats.paidNoConflict + stats.resolved;
+                if (stats) {
+                    return stats.paidNoConflict + stats.resolved;
+                }
             }
         }
         window.customElements.define(DisplayHashtagList.is, DisplayHashtagList);

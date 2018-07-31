@@ -310,6 +310,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             userReputation: userReputation,
                         };
                     },
+                    HASHTAGS: function(hashtags) {
+                        return {
+                            type: 'HASHTAGS',
+                            hashtags: hashtags,
+                        };
+                    },
                 });
             }
 
@@ -346,8 +352,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.dispatch('NONCE', this.nonce);
                 });
 
-                // Get push updates of the user's nonce
-                this.socket.emit('getHashtags', (reply) => {
+                // Get the list of hashtags
+                this.socket.emit('getHashtags', {
+
+                }, (reply) => {
                     this.hashtags = reply.data;
                     this.dispatch('HASHTAGS', this.hashtags);
                 });
