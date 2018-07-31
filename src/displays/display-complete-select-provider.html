@@ -98,17 +98,21 @@ The following custom properties and mixins are available for styling:
                         this.selectedReply.publicKey,
                         uuid,
                     ).then((secret) => {
+                        let publicKeySeeker = webpack.privateToPublic(this.privateKey);
                         this.selectProvider = {
                             itemHash: itemHash,
                             hashtagAddress: this.route.path.split('/')[2],
                             selectee: {
                                 secret: secret,
                                 address: this.selectedReply.address,
+                                publicKeySeeker: publicKeySeeker,
                             },
                             reply: this.selectedReply,
                         };
                         this.dispatch('SELECTPROVIDER', JSON.stringify(this.selectProvider));
                     });
+
+
                 }
             }
         } window.customElements.define(MyCompleteSelectProvider.is, MyCompleteSelectProvider);
