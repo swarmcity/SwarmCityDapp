@@ -265,6 +265,16 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                         observer: '_blur',
                     },
+
+                    /**
+                    * elements off screen (because of ExitAnimations)
+                    * @type {Boolean}
+                    */
+                    elementsOffScreen: {
+                        type: Boolean,
+                        value: false,
+                    },
+
                 };
             }
             connectedCallback() {
@@ -310,6 +320,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         if (this.routeExit[1] == 'download-success'||
                             this.routeExit[1] == 'print-success' ||
                             this.routeExit[1] == 'my-keys') {
+                            this.elementsOffScreen = true;
                             // Here come the Exit Animations, going to page download-success
                             this.$.title.animate(
                                 [
@@ -391,22 +402,24 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
+
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations
                     if (this.routeExit[0] == 'download-success'||
                         this.routeExit[0] == 'print-success'||
-                        this.routeExit[0] == 'my-keys') {
+                        this.routeExit[0] == 'my-keys' ||
+                        this.elementsOffScreen) {
                         // Coming from page download-success
                         this.$.title.animate(
                             [
-                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX('+(this.elementsOffScreen?0:-100)+'vw)'},
                                 {'transform': 'translateX(0px)'},
                             ],
                             {
                                 fill: 'forwards',
-                                duration: 200,
+                                duration: this.elementsOffScreen?0:200,
                                 iterations: 1,
                                 iterationStart: 0,
                                 easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -416,12 +429,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         );
                         this.$.trianglecontainer.animate(
                             [
-                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX('+(this.elementsOffScreen?0:-100)+'vw)'},
                                 {'transform': 'translateX(0px)'},
                             ],
                             {
                                 fill: 'forwards',
-                                duration: 200,
+                                duration: this.elementsOffScreen?0:200,
                                 iterations: 1,
                                 iterationStart: 0,
                                 easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -431,12 +444,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         );
                         this.$.content.animate(
                             [
-                                {'transform': 'translateX(-100vw)'},
+                                {'transform': 'translateX('+(this.elementsOffScreen?0:-100)+'vw)'},
                                 {'transform': 'translateX(0px)'},
                             ],
                             {
                                 fill: 'forwards',
-                                duration: 200,
+                                duration: this.elementsOffScreen?0:200,
                                 iterations: 1,
                                 iterationStart: 0,
                                 easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -446,12 +459,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         );
                         this.$.buttons.animate(
                             [
-                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX('+(this.elementsOffScreen?0:-20)+'vw)',
+                                   'opacity': '0'},
                                 {'transform': 'translateX(0px)', 'opacity': '1'},
                             ],
                             {
                                 fill: 'forwards',
-                                duration: 200,
+                                duration: this.elementsOffScreen?0:200,
                                 iterations: 1,
                                 iterationStart: 0,
                                 easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -461,12 +475,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         );
                         this.$.keys.animate(
                             [
-                                {'transform': 'translateX(-20vw)', 'opacity': '0'},
+                                {'transform': 'translateX('+(this.elementsOffScreen?0:-20)+'vw)',
+                                   'opacity': '0'},
                                 {'transform': 'translateX(0px)', 'opacity': '1'},
                             ],
                             {
                                 fill: 'forwards',
-                                duration: 200,
+                                duration: this.elementsOffScreen?0:200,
                                 iterations: 1,
                                 iterationStart: 0,
                                 easing: 'cubic-bezier(0.42,0,0.177,0.751)',
@@ -474,6 +489,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 endDelay: 0,
                             }
                         );
+                        this.elementsOffScreen = false;
                     }
                 }
             }
