@@ -118,7 +118,7 @@ The following custom properties and mixins are available for styling:
                 /* Chrome10-25,Safari5.1-6 */
                 background: linear-gradient(to bottom, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
                 /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-                height: 70vh;
+                height: 80vh;
                 z-index: 99;
                 position: absolute;
             }
@@ -203,7 +203,7 @@ The following custom properties and mixins are available for styling:
 
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-
+        <app-location route="{{route}}"></app-location>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{loadingItems}}">
                 <div class="items_loading">
@@ -328,6 +328,7 @@ The following custom properties and mixins are available for styling:
                     hashtag: {
                         type: Object,
                         statePath: 'hashtag',
+                        observer: '_load',
                     },
                     /**
                     * loadingItems is the currently loaded hashtag object
@@ -335,7 +336,7 @@ The following custom properties and mixins are available for styling:
                     */
                     loadingItems: {
                         type: Boolean,
-                        value: false,
+                        value: true,
                     },
                 };
             }
@@ -345,6 +346,15 @@ The following custom properties and mixins are available for styling:
             */
             _isInvolved() {
                 this.showCounter = this.count >= 1 ? true : false;
+            }
+            _load() {
+                if (this.hashtag &&
+                this.hashtag.hashtagAddress &&
+                this.hashtag.hashtagAddress === this.route.path.split('/')[2]) {
+                    this.loadingItems = false;
+                } else {
+                    this.loadingItems = true;
+                }
             }
             /**
             * takes the user back to the top of the page
