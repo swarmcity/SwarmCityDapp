@@ -98,7 +98,11 @@ The following custom properties and mixins are available for styling:
                         this.selectedReply.publicKey,
                         uuid,
                     ).then((secret) => {
-                        let publicKeySeeker = webpack.privateToPublic(this.privateKey);
+                        let publicKeySeeker = webpack
+                            .privateToPublic(
+                                new webpack.Buffer.Buffer(this.privateKey, 'hex')
+                            )
+                            .toString('hex');
                         this.selectProvider = {
                             itemHash: itemHash,
                             hashtagAddress: this.route.path.split('/')[2],
@@ -111,8 +115,6 @@ The following custom properties and mixins are available for styling:
                         };
                         this.dispatch('SELECTPROVIDER', JSON.stringify(this.selectProvider));
                     });
-
-
                 }
             }
         } window.customElements.define(MyCompleteSelectProvider.is, MyCompleteSelectProvider);

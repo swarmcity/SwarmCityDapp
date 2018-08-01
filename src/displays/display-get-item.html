@@ -29,6 +29,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagItem: {
                         type: Object,
                     },
+                    /**
+                    * the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    loadedHashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
                 };
             }
             /**
@@ -49,16 +57,30 @@ This code may only be used under the license found at https://github.com/swarmci
             * If so and not yet loaded, send data request to socket
             */
             _getItemHash() {
-                if (this.route.path.split('/')[1] == 'detail') {
-                    let itemHash = this.route.path.split('/')[3];
-                    let hashtagAddress = this.route.path.split('/')[2];
-                    this.hashtagItem = {
-                        request: {
-                            hashtagAddress,
-                            itemHash,
-                        },
-                    };
-                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                // only allow requesting new items when we are on detail or chat view
+                if (this.route.path.split('/')[1] == 'detail' ||
+                    this.route.path.split('/')[1] == 'chat'
+                ) {
+                    // only request new item if the item we need doesn't yet exist in redux
+                    if (
+                        // load when no hashtag yet loaded or if a wrong one is loaded
+                        !this.loadedHashtagItem ||
+                        (
+                            this.loadedHashtagItem &&
+                            this.loadedHashtagItem.itemHash &&
+                            this.route.path.split('/')[3] != this.loadedHashtagItem.itemHash
+                        )
+                    ) {
+                        let itemHash = this.route.path.split('/')[3];
+                        let hashtagAddress = this.route.path.split('/')[2];
+                        this.hashtagItem = {
+                            request: {
+                                hashtagAddress,
+                                itemHash,
+                            },
+                        };
+                        this.dispatch('HASHTAGITEM', this.hashtagItem);
+                    }
                 }
             }
         }

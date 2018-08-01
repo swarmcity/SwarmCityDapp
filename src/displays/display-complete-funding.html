@@ -114,7 +114,7 @@ The following custom properties and mixins are available for styling:
             */
             _fundItem() {
                 if (this.privateKey) {
-                    this._startChat();
+                    // this._startChat();
                     let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
                     webpack.decryptWithPrivateKey(
                         this.privateKey,
@@ -152,22 +152,21 @@ The following custom properties and mixins are available for styling:
                     // create unique secret
                     const secret = webpack.uuid.v4();
                     // store secret as value in localstorage, use itemHash as key
-                    let UUIDCollection = JSON.parse(localStorage.getItem('chatSecrets')) || {};
+                    let chatSecrets = JSON.parse(localStorage.getItem('chatSecrets')) || {};
                     chatSecrets[this.hashtagItem.itemHash] = secret;
-                    localStorage.setItem('chatSecrets', JSON.stringify(UUIDCollection));
-                    // As provider, encrypt secret with seeker's public key                
+                    localStorage.setItem('chatSecrets', JSON.stringify(chatSecrets));
+                    // As provider, encrypt secret with seeker's public key
                     webpack.encryptWithPublicKey(
                         this.hashtagItem.selectee.publicKeySeeker,
                         secret,
                     ).then((chatSecret) => {
                         // start a subscription for chat
-                        
-                        // we create an object to send 
-
-                        let subscription = {
-                            itemHash: this.hashtagItem.itemHash,
-                            chatSecret: chatSecret
-                        }
+                        // we create an object to send
+                        // let subscription = {
+                        //     itemHash: this.hashtagItem.itemHash,
+                        //     recipient: this.hashtagItem.seeker.address,
+                        //     chatSecret: chatSecret
+                        // }
                     });
             }
 
