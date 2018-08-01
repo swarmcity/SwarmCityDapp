@@ -16,6 +16,8 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../displays/display-get-item.html">
+<link rel="import" href="../displays/display-chat-messages.html">
+<link rel="import" href="../displays/display-unlock.html">
 
 <dom-module id="page-chat">
     <template>
@@ -31,7 +33,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-end-justified;
                 @apply --layout-center;
-                height: 100%;
+                width: 100vw;
+                min-height: 100%;
+                overflow-y: scroll;
             }
 
             .input-box {
@@ -44,11 +48,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             iron-image {
-                height: 40px;
-                width: 40px;
                 border-radius: 50%;
-                margin: 13px 10px 0 0;
-                min-width: 40px;
             }
 
             paper-textarea {
@@ -85,6 +85,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 min-width: 52px;
             }
 
+            .blur {
+                @apply --unlock-blur;
+            }
+
             .input-confirm:active {
                 @apply --button-active
             }
@@ -99,10 +103,81 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 95vw;
             }
 
+            .avatar-main {
+                margin: 13px 10px 0 0;
+                min-width: 40px;
+                height: 40px;
+                width: 40px;
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --layout-center;
+                height: 123px;
+            }
+
+            .top-avatar-box {
+                @apply --layout-horizontal;
+                position: absolute;
+                top: 40px;
+                left: 40px;
+                z-index: 99;
+
+            }
+
+            .top-avatar {
+                min-width: 28px;
+                height: 28px;
+                width: 28px;
+            }
+
+            .top-avatar-seeker {
+                z-index: 2;
+
+            }
+
+            .top-avatar-provider {
+                margin-left: -5px;
+                z-index: 1
+            }
+
+            .close {
+                @apply --xmark-blue-small;
+                position: absolute;
+                z-index: 99;
+                top: 50px;
+                right: 20px;
+            }
+
+            .top {
+                background: -moz-linear-gradient(bottom, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* FF3.6-15 */
+                background: -webkit-linear-gradient(bottom, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* Chrome10-25,Safari5.1-6 */
+                background: linear-gradient( to top,
+                rgba(241, 241, 241, 0) 0%,
+                rgba(241, 241, 241, 0.1) 1%,
+                rgba(241, 241, 241, 0.9) 35%,
+                rgba(241, 241, 241, 1) 100%);
+                /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 98;
+                height: 20vh;
+                width: 100vw;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .input-confirm-icon {
+                .input-confirm-icon,
+                .close {
                     @apply --retina;
                 }
             }
@@ -111,16 +186,39 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-get-item route={{route}}></display-get-item>
         <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="divider"></div>
-            <div class="input-box">
-                <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[seeker.avatarHash]]" placeholder="../images/defaultavatar.png">
+            <display-chat-messages toggle-unlock="{{toggleUnlock}}" private-key="[[privateKey]]" hashtag="[[hashtag]]" hashtag-item="[[hashtagItem]]"
+                chat-history="[[chatHistory]]" address="[[address]]" decrypted="{{decrypted}}"></display-chat-messages>
+
+            <div class="top"></div>
+            <div class="top-avatar-box">
+                <iron-image class="top-avatar top-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[_getSeekerAvatar(chatHistory.members)]]"
+                    placeholder="../images/defaultavatar.png">
                 </iron-image>
-                <paper-textarea type="txt" autofocus></paper-textarea>
-                <div class="input-confirm">
-                    <div class="input-confirm-icon"></div>
+                <iron-image class="top-avatar top-avatar-provider" sizing="cover" preload fade src="https://dev.swarm.city/img/[[_getProviderAvatar(chatHistory.members)]]"
+                    placeholder="../images/defaultavatar.png">
+                </iron-image>
+            </div>
+            <div class="close" on-up="_toDetail">
+            </div>
+
+            <div class="bottom">
+                <div class="divider"></div>
+                <div class="input-box">
+                    <iron-image class="avatar-main" sizing="cover" preload fade src="https://dev.swarm.city/img/[[seeker.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                    <paper-textarea type="txt" autofocus></paper-textarea>
+                    <div class="input-confirm">
+                        <div class="input-confirm-icon"></div>
+                    </div>
                 </div>
             </div>
         </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock blue toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
     <script>
         class MyChat extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -140,6 +238,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: {
                         type: String,
                         statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
                     },
                     /**
                     * Route is the current browser route
@@ -168,20 +274,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_load',
                     },
                     /**
-                    * seeker is this item's seeker
-                    * @type {Object}
-                    */
-                    seeker: {
-                        type: Object,
-                    },
-                    /**
-                    * provider is this item's provider
-                    * @type {Object}
-                    */
-                    provider: {
-                        type: Object,
-                    },
-                    /**
                     * PublicKey represents the user's public key
                     * @type {String}
                     */
@@ -189,6 +281,37 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the current user's private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                    },
+                    /**
+                    * decrypted is set to false as long as we are not decrypting the chatmessages
+                    * @type {Boolean}
+                    */
+                    decrypted: {
+                        type: Boolean,
+                    }, 
                 };
             }
 
@@ -198,15 +321,6 @@ This code may only be used under the license found at https://github.com/swarmci
             ready() {
                 super.ready();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-            * takes the user to the hashtag list page
-            * @param {Object} event element clicked.
-            */
-            _back(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    this.path = 'hashtag-list/';
-                }
             }
             /**
             * compare the chat & hashtagItem objects and populate seeker & provider
@@ -225,6 +339,64 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     }
                 }
+            }
+            _getAvatarHash(message) {
+                for (let i = 0; i < this.chatHistory.members.length; i++) {
+                    if (this.chatHistory.members[i].address == message.sender) {
+                        return this.chatHistory.members[i].avatarHash;
+                    }
+                }
+            }
+            _getProviderAvatar(members) {
+                if (this.hashtagItem &&
+                    this.hashtagItem.itemHash) {
+                    for (let i = 0; i < members.length; i++) {
+                        if (members[i].address == this.hashtagItem.provider.address) {
+                            return members[i].avatarHash;
+                        }
+                    }
+
+                }
+
+            }
+            _getSeekerAvatar(members) {
+                if (this.hashtagItem &&
+                    this.hashtagItem.itemHash) {
+                    for (let i = 0; i < members.length; i++) {
+                        if (members[i].address == this.hashtagItem.seeker.address) {
+                            return members[i].avatarHash;
+                        }
+                    }
+                }
+            }
+            /**
+            * changes the current path
+            */
+            _toDetail() {
+                this.path = `detail/${this.route.path.split('/')[2]}/${this.route.path.split('/')[3]}`;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else if (!this.toggleUnlock && !this.decrypted) {
+                    console.log(this.decrypted);
+                    this._toDetail();
+                } else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
             }
         } window.customElements.define(MyChat.is, MyChat);
     </script>

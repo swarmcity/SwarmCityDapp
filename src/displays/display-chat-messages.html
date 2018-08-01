@@ -1,0 +1,322 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-chat-messages></display-chat-messages>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--agree-blue` | Mixin applied to the agree button | `{}}` |
+
+
+-->
+<dom-module id="display-chat-messages">
+    <template is="dom-if">
+        <style>
+            :host {
+                display: block;
+            }
+
+            iron-image {
+                border-radius: 50%;
+            }
+
+            .left {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+            }
+
+            .right {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+            }
+
+            .message-box {
+                margin: 15px 0;
+            }
+
+            .avatar-chat {
+                margin: 0 8px;
+                min-width: 28px;
+                height: 28px;
+                width: 28px;
+            }
+
+            .message-date {
+                @apply --smallest-light;
+                color: var(--sc-grey3b);
+            }
+
+            .message-text {
+                @apply --body-default;
+                color: black;
+                font-weight: 300;
+            }
+
+            .messages-container {
+                width: 100%;
+                overflow-y: scroll;
+                box-sizing: border-box;
+                position: absolute;
+                bottom: 150px;
+                height: auto;
+                right: 0;
+                padding: 0 30px;
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="messages-container">
+                <template is="dom-repeat" items="{{chatHistory.messages}}" id="domRepeat">
+                    <div class="message-box">
+                        <template is="dom-if" if="[[_isUser(item)]]">
+                            <div class="left">
+                                <iron-image class="avatar-chat" sizing="cover" preload fade src="https://dev.swarm.city/img/[[_getAvatarHash(item)]]" placeholder="../images/defaultavatar.png">
+                                </iron-image>
+                                <div class="vertical">
+                                    <div class="message-date">
+                                        [[_formatDate(item.time)]]
+                                    </div>
+                                    <div class="message-text">
+                                        [[item.message]]
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <template is="dom-if" if="[[!_isUser(item)]]">
+                        <div class="right">
+                            <div class="vertical">
+                                <div class="message-date right">
+                                    [[_formatDate(item.time)]]
+                                </div>
+                                <div class="message-text right">
+                                    [[item.message]]
+                                </div>
+                            </div>
+                            <iron-image class="avatar-chat" sizing="cover" preload fade src="https://dev.swarm.city/img/[[_getAvatarHash(item)]]" placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </div>
+                    </template>
+
+                </template>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyDisplayChatMessages extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-chat-messages';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * chatHistory is this item's chathistory
+                    * @type {Object}
+                    */
+                    chatHistory: {
+                        type: Object,
+                        observer: '_unlock',
+                    },
+                    /**
+                    * hashtagItem is the item linked to this chat
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                    },
+                    /**
+                    * seeker is this item's seeker
+                    * @type {Object}
+                    */
+                    seeker: {
+                        type: Object,
+                    },
+                    /**
+                    * provider is this item's provider
+                    * @type {Object}
+                    */
+                    provider: {
+                        type: Object,
+                    },
+                    /**
+                    * messages is an Array of decrypted chat messages
+                    * @type {Array}
+                    */
+                    messages: {
+                        type: Array,
+                        value: [],
+                    },
+                    /**
+                    * secret is the string used to encrypt the chat messages
+                    * @type {String}
+                    */
+                    secret: {
+                        type: String,
+                    }, 
+                    /**
+                    * decrypted is set to false as long as we are not decrypting the chatmessages
+                    * @type {Boolean}
+                    */
+                    decrypted: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    }, 
+                    /**
+                    * contains the current user's private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_getChatSecret'
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * verifies if the poster of a message is the current user
+            * @param {message} object chat message
+            * @return {boolean} true if current user is poster
+            */
+            _isUser(message) {
+                return message.sender == this.address;
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * returns the ipfshash of the message sender's avatar base64
+            * @param {message} object chat message
+            * @return {string} ipfhash of sender's base64 avatar
+            */
+            _getAvatarHash(message) {
+                for (let i = 0; i < this.chatHistory.members.length; i++) {
+                    if (this.chatHistory.members[i].address == message.sender) {
+                        return this.chatHistory.members[i].avatarHash;
+                    }
+                }
+            }
+            _unlock() {
+                if (!this.secret) {
+                    this.toggleUnlock = true;
+                    this.secret = 'unlocking';
+                }
+            }
+            /**
+            * returns the ipfshash of the provider's avatar base64
+            * @param {members} object chat members
+            * @return {string} ipfhash of provider's base64 avatar
+            */
+            _getProviderAvatar(members) {
+                if (this.hashtagItem &&
+                    this.hashtagItem.itemHash) {
+                    for (let i = 0; i < members.length; i++) {
+                        if (members[i].address == this.hashtagItem.provider.address) {
+                            return members[i].avatarHash;
+                        }
+                    }
+                }
+            }
+            /**
+            * returns the ipfshash of the seeker's avatar base64
+            * @param {members} object chat members
+            * @return {string} ipfhash of seeker's base64 avatar
+            */
+            _getSeekerAvatar(members) {
+                if (this.hashtagItem &&
+                    this.hashtagItem.itemHash) {
+                    for (let i = 0; i < members.length; i++) {
+                        if (members[i].address == this.hashtagItem.seeker.address) {
+                            return members[i].avatarHash;
+                        }
+                    }
+                }
+            }
+            /**
+            * returns secret needed to decrypt the chat messages
+            */
+            _getChatSecret() {
+                if (this.privateKey) {
+                    this.decrypted = true;
+                    console.log('lets decrypt this shit');
+                } else {
+
+                console.log('go back to detail');
+                }
+            }
+        }
+        window.customElements.define(MyDisplayChatMessages.is, MyDisplayChatMessages);
+    </script>
+</dom-module>

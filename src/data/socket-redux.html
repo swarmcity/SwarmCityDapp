@@ -206,6 +206,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagItemSubscription: {
                         type: String,
                     },
+                    /**
+                    * The user
+                    * @type {Object}
+                    */
+                    chatHistory: {
+                        type: Object,
+                        statePath: 'chatHistory',
+                        observer: '_chatHistory',
+                    },
                 };
             }
             /**
@@ -214,106 +223,112 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    BALANCE: function(balance) {
+                    BALANCE: function (balance) {
                         return {
                             type: 'BALANCE',
                             balance: balance,
                         };
                     },
-                    FX: function(fx) {
+                    FX: function (fx) {
                         return {
                             type: 'FX',
                             fx: fx,
                         };
                     },
-                    NONCE: function(nonce) {
+                    NONCE: function (nonce) {
                         return {
                             type: 'NONCE',
                             nonce: nonce,
                         };
                     },
-                    TOKEY: function(tokey) {
+                    TOKEY: function (tokey) {
                         return {
                             type: 'TOKEY',
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function(shortCode) {
+                    SHORTCODE: function (shortCode) {
                         return {
                             type: 'SHORTCODE',
                             shortCode: shortCode,
                         };
                     },
-                    IPHONE: function(iphone) {
+                    IPHONE: function (iphone) {
                         return {
                             type: 'IPHONE',
                             iphone: iphone,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    AVATARHASH: function(avatarHash) {
+                    AVATARHASH: function (avatarHash) {
                         return {
                             type: 'AVATARHASH',
                             avatarHash: avatarHash,
                         };
                     },
-                    TXHASH: function(txHash) {
+                    TXHASH: function (txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function(txHashItem) {
+                    TXHASHITEM: function (txHashItem) {
                         return {
                             type: 'TXHASHITEM',
                             txHashItem: txHashItem,
                         };
                     },
-                    CONFIRMEDTX: function(confirmedTx) {
+                    CONFIRMEDTX: function (confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
                         };
                     },
-                    ITEMDATAHASH: function(itemDataHash) {
+                    ITEMDATAHASH: function (itemDataHash) {
                         return {
                             type: 'ITEMDATAHASH',
                             itemDataHash: itemDataHash,
                         };
                     },
-                    HASHTAG: function(hashtag) {
+                    HASHTAG: function (hashtag) {
                         return {
                             type: 'HASHTAG',
                             hashtag: hashtag,
                         };
                     },
-                    HASHTAGITEM: function(hashtagItem) {
+                    HASHTAGITEM: function (hashtagItem) {
                         return {
                             type: 'HASHTAGITEM',
                             hashtagItem: hashtagItem,
                         };
                     },
-                    IPFSHASH: function(ipfsHash) {
+                    IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
                         };
                     },
-                    USERREPUTATION: function(userReputation) {
+                    USERREPUTATION: function (userReputation) {
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
                         };
                     },
-                    HASHTAGS: function(hashtags) {
+                    HASHTAGS: function (hashtags) {
                         return {
                             type: 'HASHTAGS',
                             hashtags: hashtags,
+                        };
+                    },
+                    CHATHISTORY: function (chatHistory) {
+                        return {
+                            type: 'CHATHISTORY',
+                            chatHistory: chatHistory,
                         };
                     },
                 });
@@ -363,6 +378,544 @@ This code may only be used under the license found at https://github.com/swarmci
                 // All handlers attached - please connect..
                 this.socket.connect();
             }
+
+            // --------------- BEGIN TEMPORARY NEW CHAT MESSAGE DATA ---------------
+            _chatHistory() {
+                if (true && this.chatHistory && this.chatHistory.messages && this.chatHistory.messages.length < 5) {
+                    setTimeout(() => {
+                        this.chatHistory = {
+                            itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                            members: [
+                                {
+                                    address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                    username: 'Xardas',
+                                    avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                }, {
+                                    address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                    username: 'Strenge Kiki',
+                                    avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                },
+                            ],
+                            messages: [
+                                {
+                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                    time: 1533072365,
+                                    message: 'Hallo daar dit is Xardas',
+                                },
+                                {
+                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                    time: 1533072362,
+                                    message: 'Nou zeg ik ben Strenge Kiki',
+                                },
+                                {
+                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                    time: 1533072362,
+                                    message: 'Waarom ben je zo streng?',
+                                },
+                                {
+                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                    time: 1533072362,
+                                    message: 'Flurkel heeft low energy libido',
+                                }, {
+                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                    time: 1533072362,
+                                    message: 'Ik kan je daar bij helpen!',
+                                }
+                            ],
+                        };
+                        this.dispatch('CHATHISTORY', this.chatHistory);
+                        setTimeout(() => {
+                            this.chatHistory = {
+                                itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                members: [
+                                    {
+                                        address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                        username: 'Xardas',
+                                        avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                    }, {
+                                        address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                        username: 'Strenge Kiki',
+                                        avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                    },
+                                ],
+                                messages: [
+                                    {
+                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                        time: 1533072365,
+                                        message: 'Hallo daar dit is Xardas',
+                                    },
+                                    {
+                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                        time: 1533072362,
+                                        message: 'Nou zeg ik ben Strenge Kiki',
+                                    },
+                                    {
+                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                        time: 1533072362,
+                                        message: 'Waarom ben je zo streng?',
+                                    },
+                                    {
+                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                        time: 1533072362,
+                                        message: 'Flurkel heeft low energy libido',
+                                    }, {
+                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                        time: 1533072362,
+                                        message: 'Ik kan daar bij helpen!',
+                                    }, {
+                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                        time: 1533072362,
+                                        message: 'Super! Waar en wanneer?',
+                                    }
+                                ],
+                            };
+                            this.dispatch('CHATHISTORY', this.chatHistory);
+                            setTimeout(() => {
+                                this.chatHistory = {
+                                    itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                    members: [
+                                        {
+                                            address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                            username: 'Xardas',
+                                            avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                        }, {
+                                            address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                            username: 'Strenge Kiki',
+                                            avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                        },
+                                    ],
+                                    messages: [
+                                        {
+                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                            time: 1533072365,
+                                            message: 'Hallo daar dit is Xardas',
+                                        },
+                                        {
+                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                            time: 1533072362,
+                                            message: 'Nou zeg ik ben Strenge Kiki',
+                                        },
+                                        {
+                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                            time: 1533072362,
+                                            message: 'Waarom ben je zo streng?',
+                                        },
+                                        {
+                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                            time: 1533072362,
+                                            message: 'Flurkel heeft low energy libido',
+                                        }, {
+                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                            time: 1533072362,
+                                            message: 'Ik kan daar bij helpen!',
+                                        }, {
+                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                            time: 1533072362,
+                                            message: 'Super! Waar en wanneer?',
+                                        }, {
+                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                            time: 1533072362,
+                                            message: 'Ik vlieg meteen over vanuit Canada!',
+                                        }
+                                    ],
+                                };
+                                this.dispatch('CHATHISTORY', this.chatHistory);
+                                setTimeout(() => {
+                                    this.chatHistory = {
+                                        itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                        members: [
+                                            {
+                                                address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                username: 'Xardas',
+                                                avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                            }, {
+                                                address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                username: 'Strenge Kiki',
+                                                avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                            },
+                                        ],
+                                        messages: [
+                                            {
+                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                time: 1533072365,
+                                                message: 'Hallo daar dit is Xardas',
+                                            },
+                                            {
+                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                time: 1533072362,
+                                                message: 'Nou zeg ik ben Strenge Kiki',
+                                            },
+                                            {
+                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                time: 1533072362,
+                                                message: 'Waarom ben je zo streng?',
+                                            },
+                                            {
+                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                time: 1533072362,
+                                                message: 'Flurkel heeft low energy libido',
+                                            }, {
+                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                time: 1533072362,
+                                                message: 'Ik kan daar bij helpen!',
+                                            }, {
+                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                time: 1533072362,
+                                                message: 'Super! Waar en wanneer?',
+                                            }, {
+                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                time: 1533072362,
+                                                message: 'Ik vlieg meteen over vanuit Canada!',
+                                            }, {
+                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                time: 1533072362,
+                                                message: 'Ik zal de Flurkel zeggen dat ik ff op verlof ben',
+                                            }
+                                        ],
+                                    };
+                                    this.dispatch('CHATHISTORY', this.chatHistory);
+                                    setTimeout(() => {
+                                        this.chatHistory = {
+                                            itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                            members: [
+                                                {
+                                                    address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                    username: 'Xardas',
+                                                    avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                                }, {
+                                                    address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                    username: 'Strenge Kiki',
+                                                    avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                                },
+                                            ],
+                                            messages: [
+                                                {
+                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                    time: 1533072365,
+                                                    message: 'Hallo daar dit is Xardas',
+                                                },
+                                                {
+                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                    time: 1533072362,
+                                                    message: 'Nou zeg ik ben Strenge Kiki',
+                                                },
+                                                {
+                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                    time: 1533072362,
+                                                    message: 'Waarom ben je zo streng?',
+                                                },
+                                                {
+                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                    time: 1533072362,
+                                                    message: 'Flurkel heeft low energy libido',
+                                                }, {
+                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                    time: 1533072362,
+                                                    message: 'Ik kan daar bij helpen!',
+                                                }, {
+                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                    time: 1533072362,
+                                                    message: 'Super! Waar en wanneer?',
+                                                }, {
+                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                    time: 1533072362,
+                                                    message: 'Ik vlieg meteen over vanuit Canada!',
+                                                }, {
+                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                    time: 1533072362,
+                                                    message: 'Ik zal de Flurkel zeggen dat ik ff op verlof ben',
+                                                }, {
+                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                    time: 1533072362,
+                                                    message: 'Haha dat die maar eens iets probeert bij mij',
+                                                }
+                                            ],
+                                        };
+                                        this.dispatch('CHATHISTORY', this.chatHistory);
+                                        setTimeout(() => {
+                                            this.chatHistory = {
+                                                itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                                members: [
+                                                    {
+                                                        address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                        username: 'Xardas',
+                                                        avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                                    }, {
+                                                        address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                        username: 'Strenge Kiki',
+                                                        avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                                    },
+                                                ],
+                                                messages: [
+                                                    {
+                                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                        time: 1533072365,
+                                                        message: 'Hallo daar dit is Xardas',
+                                                    },
+                                                    {
+                                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                        time: 1533072362,
+                                                        message: 'Nou zeg ik ben Strenge Kiki',
+                                                    },
+                                                    {
+                                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                        time: 1533072362,
+                                                        message: 'Waarom ben je zo streng?',
+                                                    },
+                                                    {
+                                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                        time: 1533072362,
+                                                        message: 'Flurkel heeft low energy libido',
+                                                    }, {
+                                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                        time: 1533072362,
+                                                        message: 'Ik kan daar bij helpen!',
+                                                    }, {
+                                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                        time: 1533072362,
+                                                        message: 'Super! Waar en wanneer?',
+                                                    }, {
+                                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                        time: 1533072362,
+                                                        message: 'Ik vlieg meteen over vanuit Canada!',
+                                                    }, {
+                                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                        time: 1533072362,
+                                                        message: 'Ik zal de Flurkel zeggen dat ik ff op verlof ben',
+                                                    }, {
+                                                        sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                        time: 1533072362,
+                                                        message: 'Haha dat die maar eens iets probeert bij mij',
+                                                    }, {
+                                                        sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                        time: 1533072362,
+                                                        message: 'Pas op die doet wel karate',
+                                                    }
+                                                ],
+                                            };
+                                            this.dispatch('CHATHISTORY', this.chatHistory);
+                                            setTimeout(() => {
+                                                this.chatHistory = {
+                                                    itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                                    members: [
+                                                        {
+                                                            address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            username: 'Xardas',
+                                                            avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                                        }, {
+                                                            address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                            username: 'Strenge Kiki',
+                                                            avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                                        },
+                                                    ],
+                                                    messages: [
+                                                        {
+                                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            time: 1533072365,
+                                                            message: 'Hallo daar dit is Xardas',
+                                                        },
+                                                        {
+                                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                            time: 1533072362,
+                                                            message: 'Nou zeg ik ben Strenge Kiki',
+                                                        },
+                                                        {
+                                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            time: 1533072362,
+                                                            message: 'Waarom ben je zo streng?',
+                                                        },
+                                                        {
+                                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                            time: 1533072362,
+                                                            message: 'Flurkel heeft low energy libido',
+                                                        }, {
+                                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            time: 1533072362,
+                                                            message: 'Ik kan daar bij helpen!',
+                                                        }, {
+                                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                            time: 1533072362,
+                                                            message: 'Super! Waar en wanneer?',
+                                                        }, {
+                                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            time: 1533072362,
+                                                            message: 'Ik vlieg meteen over vanuit Canada!',
+                                                        }, {
+                                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                            time: 1533072362,
+                                                            message: 'Ik zal de Flurkel zeggen dat ik ff op verlof ben',
+                                                        }, {
+                                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            time: 1533072362,
+                                                            message: 'Haha dat die maar eens iets probeert bij mij',
+                                                        }, {
+                                                            sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                            time: 1533072362,
+                                                            message: 'Pas op die doet wel karate',
+                                                        }, {
+                                                            sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                            time: 1533072362,
+                                                            message: 'Allez ik sprint naar het vliegtuig. Tot sebiet!',
+                                                        }
+                                                    ],
+                                                };
+                                                this.dispatch('CHATHISTORY', this.chatHistory);
+                                                setTimeout(() => {
+                                                    this.chatHistory = {
+                                                        itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                                        members: [
+                                                            {
+                                                                address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                username: 'Xardas',
+                                                                avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                                            }, {
+                                                                address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                username: 'Strenge Kiki',
+                                                                avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                                            },
+                                                        ],
+                                                        messages: [
+                                                            {
+                                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                time: 1533072365,
+                                                                message: 'Hallo daar dit is Xardas',
+                                                            },
+                                                            {
+                                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                time: 1533072362,
+                                                                message: 'Nou zeg ik ben Strenge Kiki',
+                                                            },
+                                                            {
+                                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                time: 1533072362,
+                                                                message: 'Waarom ben je zo streng?',
+                                                            },
+                                                            {
+                                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                time: 1533072362,
+                                                                message: 'Flurkel heeft low energy libido',
+                                                            }, {
+                                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                time: 1533072362,
+                                                                message: 'Ik kan daar bij helpen!',
+                                                            }, {
+                                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                time: 1533072362,
+                                                                message: 'Super! Waar en wanneer?',
+                                                            }, {
+                                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                time: 1533072362,
+                                                                message: 'Ik vlieg meteen over vanuit Canada!',
+                                                            }, {
+                                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                time: 1533072362,
+                                                                message: 'Ik zal de Flurkel zeggen dat ik ff op verlof ben',
+                                                            }, {
+                                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                time: 1533072362,
+                                                                message: 'Haha dat die maar eens iets probeert bij mij',
+                                                            }, {
+                                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                time: 1533072362,
+                                                                message: 'Pas op die doet wel karate',
+                                                            }, {
+                                                                sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                time: 1533072362,
+                                                                message: 'Allez ik sprint naar het vliegtuig. Tot sebiet!',
+                                                            }, {
+                                                                sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                time: 1533072362,
+                                                                message: 'Vloog de concorde nog maar! Ik kan niet wachten!',
+                                                            }
+                                                        ],
+                                                    };
+                                                    this.dispatch('CHATHISTORY', this.chatHistory);
+                                                    setTimeout(() => {
+                                                        this.chatHistory = {
+                                                            itemHash: '0x9b4dda416bd4e700e6d988507ed9903993561831f365fc89d7dedb1c1bfa7020',
+                                                            members: [
+                                                                {
+                                                                    address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    username: 'Xardas',
+                                                                    avatarHash: 'QmQxbFJXBjx9z34ackvzhSgNorY4typv7C5SAxCPN5Xwt3',
+                                                                }, {
+                                                                    address: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    username: 'Strenge Kiki',
+                                                                    avatarHash: 'Qmf3B6jVG5RhSSXpt7WknJWnjrzLH6oKQ8B5jQkqCbnsqz',
+                                                                },
+                                                            ],
+                                                            messages: [
+                                                                {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072365,
+                                                                    message: 'Hallo daar dit is Xardas',
+                                                                },
+                                                                {
+                                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    time: 1533072362,
+                                                                    message: 'Nou zeg ik ben Strenge Kiki',
+                                                                },
+                                                                {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072362,
+                                                                    message: 'Waarom ben je zo streng?',
+                                                                },
+                                                                {
+                                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    time: 1533072362,
+                                                                    message: 'Flurkel heeft low energy libido',
+                                                                }, {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072362,
+                                                                    message: 'Ik kan daar bij helpen!',
+                                                                }, {
+                                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    time: 1533072362,
+                                                                    message: 'Super! Waar en wanneer?',
+                                                                }, {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072362,
+                                                                    message: 'Ik vlieg meteen over vanuit Canada!',
+                                                                }, {
+                                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    time: 1533072362,
+                                                                    message: 'Ik zal de Flurkel zeggen dat ik ff op verlof ben',
+                                                                }, {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072362,
+                                                                    message: 'Haha dat die maar eens iets probeert bij mij',
+                                                                }, {
+                                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    time: 1533072362,
+                                                                    message: 'Pas op die doet wel karate',
+                                                                }, {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072362,
+                                                                    message: 'Allez ik sprint naar het vliegtuig. Tot sebiet!',
+                                                                }, {
+                                                                    sender: '0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54',
+                                                                    time: 1533072362,
+                                                                    message: 'Vloog de concorde nog maar! Ik kan niet wachten!',
+                                                                }, {
+                                                                    sender: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                                                                    time: 1533072362,
+                                                                    message: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+                                                                }
+                                                            ],
+                                                        };
+                                                        this.dispatch('CHATHISTORY', this.chatHistory);
+                                                    }, 500)
+                                                }, 500)
+                                            }, 500)
+                                        }, 500)
+                                    }, 500)
+                                }, 500)
+                            }, 500)
+                        }, 500)
+                    }, 500)
+                }
+            }
+            // --------------- END TEMPORARY NEW CHAT MESSAGE DATA ---------------
 
             /**
             * Send an IPFS hash of a base64 avatar
