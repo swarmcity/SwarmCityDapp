@@ -1,0 +1,24 @@
+language: node_js
+sudo: required
+dist: trusty
+addons:
+  firefox: latest
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
+node_js:
+  - '8'
+cache:
+  directories:
+    - $HOME/.cache/bower
+    - node_modules
+install:
+  - npm install
+  - npm install -g polymer-cli
+  - polymer install
+before_script:
+  - npm run lint
+script:
+  - node --max-old-space-size=4096 ./node_modules/.bin/polymer build
