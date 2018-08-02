@@ -3,13 +3,12 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 
+<link rel="lazy-import" href="pages/my-view1.html">
+<link rel="lazy-import" href="pages/my-view2.html">
+<link rel="lazy-import" href="pages/my-view3.html">
+<link rel="lazy-import" href="pages/my-view404.html">
 
-<link rel="lazy-import" href="my-view1.html">
-<link rel="lazy-import" href="my-view2.html">
-<link rel="lazy-import" href="my-view3.html">
-<link rel="lazy-import" href="my-view404.html">
-
-<dom-module id="my-app">
+<dom-module id="swarm-city">
   <template>
     <style>
       :host {
@@ -45,8 +44,8 @@
   <script>
     Polymer.setPassiveTouchGestures(true);
 
-    class MyApp extends Polymer.Element {
-      static get is() { return 'my-app'; }
+    class SwarmCity extends Polymer.Element {
+      static get is() { return 'swarm-city'; }
 
       static get properties() {
         return {
@@ -69,13 +68,10 @@
 
       _routePageChanged(page) {
         this.page = page || 'view1';
-        if (!this.$.drawer.persistent) {
-          this.$.drawer.close();
-        }
       }
 
       _pageChanged(page) {
-        const resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        const resolvedPageUrl = this.resolveUrl('pages/page-' + page + '.html');
         Polymer.importHref(
             resolvedPageUrl,
             null,
@@ -88,6 +84,6 @@
       }
     }
 
-    window.customElements.define(MyApp.is, MyApp);
+    window.customElements.define(SwarmCity.is, SwarmCity);
   </script>
 </dom-module>
