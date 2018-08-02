@@ -37,7 +37,7 @@
 /* eslint-disable indent, no-unused-vars, no-multiple-empty-lines, max-nested-callbacks, space-before-function-paren, quotes, comma-spacing */
 'use strict';
 
-var precacheConfig = [["bower_components/webcomponentsjs/webcomponents-loader.js","596ad3dc06dfb78ecdc6bcee1d653f04"],["index.html","8e3643c53ce932c6755b078ff66ee5f0"],["manifest.json","1845171d3c4fe9ebe6a48852f4347b34"],["src/pages/page-view404.html","1a2b73c83c856a272d293fc8ad9a252b"],["src/pages/page-welcome.html","c122b01992a6cb776f0b6cdfa7bd2aff"],["src/swarm-city.html","bd8d7ec00218d639507c196adb31460f"]];
+var precacheConfig = [["bower_components/webcomponentsjs/webcomponents-loader.js","596ad3dc06dfb78ecdc6bcee1d653f04"],["index.html","8e3643c53ce932c6755b078ff66ee5f0"],["manifest.json","1845171d3c4fe9ebe6a48852f4347b34"],["src/pages/page-view404.html","1a2b73c83c856a272d293fc8ad9a252b"],["src/pages/page-welcome.html","f37dc33254b948cdb8fe9d9a2ba80a61"],["src/swarm-city.html","bd8d7ec00218d639507c196adb31460f"]];
 var cacheName = 'sw-precache-v3--' + (self.registration ? self.registration.scope : '');
 
 
