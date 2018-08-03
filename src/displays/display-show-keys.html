@@ -1,0 +1,404 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-show-keys></display-show-keys>
+```
+-->
+<dom-module id="display-show-keys">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+
+            .keybox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                width: 100%;
+                transition: all 0.1s linear;
+                padding: 0px;
+            }
+
+            .keybox[wide-layout] {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                @apply --layout-flex;
+            }
+
+            .opened {
+                border: 2px solid rgba(0, 0, 0, 0.1);
+                padding: 20px 30px 20px 30px;
+                margin-top: 10px;
+
+            }
+
+            .keybox[wide-layout] .opened {
+                padding: 8px 8px 20px 20px;
+
+            }
+
+            .greylink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey3b);
+                margin-top: 10px;
+            }
+
+            .keybox[wide-layout] .greylink {
+                margin-top: 0px;
+            }
+
+            .key {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                word-break: break-all;
+                text-align: center;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+            }
+
+            .keybox[wide-layout] .key {
+                text-align: left;
+            }
+
+            .subtitle {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+                margin-top: 10px;
+            }
+
+            .keybox[wide-layout] .subtitle {
+                margin-top: 0px;
+            }
+
+            .bluelink {
+                @apply --blue-link;
+                margin: 20px 15px 0px 0px;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                margin: 10px 0px 0px 0px;
+                cursor: pointer;
+                min-width: 36px;
+            }
+
+            .keybox[wide-layout] .close {
+                @apply --xmark-grey2-small;
+                margin: 0px 0px 0px 25px;
+                min-width: 36px;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .txtbox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .keybox[wide-layout] .txtbox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                box-sizing: border-box;
+            }
+
+            .extramargin {
+                margin-top: 35px;
+            }
+
+            .keybox[wide-layout] .extramargin {
+                margin-top: 10px;
+            }
+
+            .privbtn {
+                margin: 30px 0px 10px 0px;
+                @apply --text-button-small;
+                background-color: var(--sc-white);
+                padding: 9px 14px;
+            }
+
+            .keybox[wide-layout] .privbtn {
+                margin: 20px 0px 0px 0px;
+            }
+
+            .copied {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);
+            }
+
+            .copiedpriv {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);
+            }
+
+            .showcopied {
+                visibility: visible;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .keybox[wide-layout] .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="keyBox" class="keybox" wide-layout$="{{wide}}">
+
+            <dom-if if="{{toggleKeys}}">
+                <template>
+                    <div class="greylink" on-click="_togglePublicKey">{{localize('show my keys')}}</div>
+                </template>
+            </dom-if>
+
+            <dom-if if="{{!toggleKeys}}">
+                <template>
+                    <div class="txtbox">
+                        <div class="subtitle">{{localize('Your public key')}}</div>
+                        <div class="key">{{publicKey}}</div>
+                        <div class="copied" id="copied">{{localize('copied')}}</div>
+                        <div class="bluelink" on-click="_copyPublicKey">{{localize('copy public key')}}</div>
+
+                        <template is="dom-if" if="{{!togglePrivateKey}}">
+                            <div class="privbtn" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
+                        </template>
+
+                        <dom-if if="{{togglePrivateKey}}">
+                            <template>
+                                <div class="subtitle extramargin">{{localize('Your private key')}}</div>
+                                <div class="key">{{privateKey}}</div>
+                                <div class="copiedpriv" id="copiedpriv">{{localize('copied')}}</div>
+                                <div class="bluelink" on-click="_copyPrivateKey">{{localize('copy private key')}}</div>
+                            </template>
+                        </dom-if>
+
+                    </div>
+                    <div class="close" on-click="_close"></div>
+                </template>
+            </dom-if>
+        </div>
+    </template>
+    <script>
+
+        class DisplayShowKeys extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-show-keys';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    locales: {
+                        type: Array,
+                    },
+                    /**
+                    * contains the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        notify: true,
+                        observer: '_scrollTo',
+                    },
+                    /*
+                    * toggles the view to show keys
+                    * @type {Boolean}
+                    */
+                    toggleKeys: {
+                        type: Boolean,
+                        value: true,
+                        observer: '_toggleKeys',
+                    },
+                    /*
+                    * toggles the view to show the private key
+                    * @type {Boolean}
+                    */
+                    togglePrivateKey: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * contains route information
+                    * @type {String}
+                    */
+                    route: {
+                        type: String,
+                        observer: '_close',
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this._loadAnimations();
+            }
+            /**
+            * All animations this page needs
+            */
+            _loadAnimations() {
+                this.anim = {
+                    moveUp: {
+                        arr: [{transform: 'translateY(20px)'},
+                        {transform: 'translateY(0px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                };
+            }
+            /**
+             * copies the public key to the desktop
+             */
+            _copyPublicKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.publicKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                let copied = this.shadowRoot.querySelector('#copied');
+                copied.classList.add('showcopied');
+                copied.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                );
+                setTimeout(() => {
+                    copied.classList.remove('showcopied');
+                }, 500);
+            }
+            /**
+             * copies the private key to the desktop
+             */
+            _copyPrivateKey() {
+                let textArea = document.createElement('textarea');
+                textArea.value = this.privateKey;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                let copiedpriv = this.shadowRoot.querySelector('#copiedpriv');
+                copiedpriv.classList.add('showcopied');
+                copiedpriv.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                );
+                setTimeout(() => {
+                    copiedpriv.classList.remove('showcopied');
+                }, 500);
+            }
+            /**
+            * Toggles the visibility of the full Public Key
+            */
+            _togglePublicKey() {
+                this.$.keyBox.classList.toggle('opened');
+                this.toggleKeys = !this.toggleKeys;
+            }
+            /**
+            * toggles the keybox visibility
+            */
+            _close() {
+                if (!this.toggleKeys) {
+                    this.$.keyBox.classList.toggle('opened');
+                    this.toggleKeys = !this.toggleKeys;
+                    this.privateKey = null;
+                }
+            }
+            /**
+            * resets the private key visibility when keybox closes
+            */
+            _toggleKeys() {
+                this.togglePrivateKey = false;
+                this.privateKey = null;
+            }
+            /**
+            * Toggles the visibility of the full Private Key
+            */
+            _togglePrivateKey() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Scrolls to show keys in viewport
+            */
+            _scrollTo() {
+                this.async(() => {
+                    this.$.keyBox.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'end',
+                        inline: 'nearest',
+                    });
+                });
+            }
+        }
+        window.customElements.define(DisplayShowKeys.is, DisplayShowKeys);
+    </script>
+</dom-module>

@@ -1,0 +1,2060 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-profile-swr.html">
+<link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-show-keys.html">
+
+<dom-module id="page-my-profile">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                width: 100vw;
+                max-width: 100%;
+                min-height: 100vh;
+                background-image: var(--sc-bg);
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+                width: 100%;
+                min-height: 100vh;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                max-width: 100%;
+            }
+
+            .top {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                @apply --layout-end-justified;
+                background-image: var(--sc-bg);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 14vw 10vh 14vw;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] .top {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 80px 10vw 60px 10vw;
+                max-width: 100%;
+            }
+
+            .close {
+                @apply --xmark-grey3-small;
+                @apply --close;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            img {
+                width: 90px;
+                height: 90px;
+                cursor: pointer;
+                border-radius: 50%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .avatarcontainer {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+                margin-top: 100px;
+            }
+
+            .container[wide-layout] .avatarcontainer {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+                margin-top: 0px;
+            }
+
+            .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+            }
+
+            .container[wide-layout] .avatar {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-end;
+                margin: 0 30px 0 0;
+            }
+
+            .arrowcontainer {
+                @apply --base-shadow;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+                height: 30px;
+                width: 30px;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                position: absolute;
+                cursor: pointer;
+                margin: 0px 0px 0px 0px;
+            }
+
+            .arrowup {
+                @apply --arrowup-white-mini;
+            }
+
+            .topflex {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+            }
+
+            .container[wide-layout] .topflex {
+                @apply --layout-flex;
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+            .username {
+                width:100%;
+            }
+
+            paper-input {
+                width: 100%;
+                text-align: center;
+                margin-top: 6vh;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 60%;
+                margin: 0 0 0 0;
+            }
+
+            .keybox {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 3vh 0 0 0;
+                width: 100%;
+            }
+
+            .container[wide-layout] .keybox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 3vh 0 0 0;
+            }
+
+            .publicKey {
+                margin-top: 3vh;
+            }
+
+            .container[wide-layout] .publicKey {
+                margin: 0px 10px 0 0;
+            }
+
+            .greytext {
+                @apply --small-light;
+                color: var(--sc-grey3);
+            }
+
+            .showKeys {
+                margin-top: 1vh;
+            }
+
+            .container[wide-layout] .showKeys {
+                margin-top: 0px;
+            }
+
+            .bluelink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+            .greylink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey2);
+            }
+
+            .container[wide-layout] .topright {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                margin-top: 3vh;
+            }
+
+            .notifications {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --small-light;
+                color: var(--sc-grey4);
+                background-color: rgba(0, 0, 0, 0.05);
+                box-sizing: border-box;
+                padding: 2px 8px 4px 8px;
+                border-radius: 12px;
+                margin-top: 7vh;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .notifications {
+                margin-top: 0;
+            }
+
+            .divider {
+                @apply --general-divider;
+                max-width: 100%;
+            }
+
+            display-profile-swr {
+                box-sizing: border-box;
+                padding: 50px 0;
+                background-image: var(--sc-bg);
+                width: 100%;
+            }
+
+            .container[wide-layout] display-profile-swr {
+                box-sizing: border-box;
+                padding: 50px 0;
+
+            }
+
+            .buttonbox {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                background-image: var(--sc-bg);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 5vh 14vw 10vh 14vw;
+                max-width: 100%;
+            }
+
+            .container[wide-layout] .buttonbox {
+                @apply --layout-start;
+                box-sizing: border-box;
+                padding: 50px 12vw;
+            }
+
+            .truncate {
+                width: 75px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .backup {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big-fullwhite;
+                box-sizing: border-box;
+                width: 100%;
+                margin: 0 0 0 0;
+                max-width: 320px;
+            }
+
+            .backup:active {
+                @apply --button-active;
+            }
+
+            .delete {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big;
+                color: var(--sc-red2);
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 320px;
+                margin-top: 10px;
+            }
+
+            .delete:active {
+                @apply --button-active;
+            }
+
+            .blur {
+                @apply --unlock-blur;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .arrowup,
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="close" on-click="_close"></div>
+                <div class="avatarcontainer">
+                    <div class="avatar">
+                        <img id="avatarimg" src="{{avatar}}" on-click="_toResizeAvatar">
+                        <div id="arrowcontainer" class="arrowcontainer" on-click="_toResizeAvatar">
+                            <div class="arrowup"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="topflex" id="topFlex">
+                    <div class="username">
+                        <paper-input label="{{localize('Username')}}" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
+                    </div>
+                    <display-show-keys
+                        toggle-unlock="{{toggleUnlock}}"
+                        toggle-private-key="{{togglePrivateKey}}" 
+                        private-key="{{privateKey}}"
+                        route="{{route}}"
+                    ></display-show-keys>
+
+                </div>
+                <div class="topright" id="notifications">
+                    <div class="notifications" on-click="_toNotifications">{{localize('no notifications')}}</div>
+                </div>
+            </div>
+            <div class="divider" id="divider1"></div>
+            <div class="divider" id="divider2"></div>
+            <div class="buttonbox" id="buttonBox">
+                <div class="backup" on-click="_backup">{{localize('backup this user')}}</div>
+                <div class="delete" on-click="_delete">{{localize('delete this user')}}</div>
+            </div>
+        </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    blue
+                    toggle-unlock="{{toggleUnlock}}"
+                    toggle-private-key="{{togglePrivateKey}}" 
+                    private-key="{{privateKey}}" 
+                    qr-code-private-key="{{qrCodePrivateKey}}"
+                    qr-code-public-key="{{qrCodePublicKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
+    </template>
+
+    <script>
+        class MyProfile extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-my-profile';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * routeExit triggers the exit animations
+                    * @type {Array}
+                    */
+                    routeExit: {
+                        type: Array,
+                        observer: '_loadExitAnimations',
+                    },
+                    /**
+                    * routeEntry triggers the entry animations
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'my-profile',
+                    },
+                    /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    /**
+                    * Avatar represents the users IPFS to their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    /**
+                    * Error is a string message being shown when passwords don't match
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        value: '',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_privateKeyObserver',
+                    },
+                    /**
+                    * toggles the visibility of private key
+                    * @type {Boolean}
+                    */
+                    togglePrivateKey: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * contains the public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
+            /**
+            * Redux action for setting username
+            * @param {String} username
+            */
+            static get actions() {
+                return Object.assign({
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                });
+            }
+            ready() {
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                super.ready();
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
+            /**
+            * Toggles the visibility of the full Public Key
+            */
+            _togglePublicKey() {
+                this.$.pubKey.classList.toggle('truncate');
+                this.toggleKeys = !this.toggleKeys;
+            }
+            /**
+            * Toggles the password unlock display
+            */
+            _togglePrivateKey() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * Toggles the visibility of private key
+            */
+            _privateKeyObserver() {
+                this.togglePrivateKey = !this.togglePrivateKey;
+            }
+            /**
+            * takes the user to page-resize-avatar
+            */
+            _toResizeAvatar() {
+                this.path = 'resize-avatar/';
+            }
+            /**
+            * takes the user to page notifications
+            */
+            _toNotifications() {
+                this.path = 'notifications/';
+            }
+
+            /**
+            * takes the user to make-backup-profile
+            */
+            _backup() {
+                this.path = 'make-backup-profile/';
+            }
+            /**
+            * takes the user to warning-delete
+            */
+            _delete() {
+                this.path = 'warning-delete/';
+            }
+            /**
+            * compares written passwords and updates label with it
+            */
+            _equals() {
+                if (this.$.password.value == this.$.repeat.value ||
+                    this.$.repeat.value == '') {
+                    this.error = '';
+                } else {
+                    this.error = '[' + this.localize('password mismatch?') + ']';
+                }
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * save username
+            */
+            _saveUsername() {
+                this.dispatch('USERNAME', this.username);
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                storage.user.username = this.username;
+                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+            }
+            /**
+            * load animations
+            */
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    let middleCalc = (window.innerWidth/2)-60+'px';
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'hashtag-list') {
+                            // Going to page Hashtag-List
+                            if (this.wide) {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(-20px,-50px) scale(0.555, 0.555)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                // this.$.displayProfileSWR.animate(
+                                //     [
+                                //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                                //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                //     ],
+                                //     {
+                                //         fill: 'forwards',
+                                //         duration: 150,
+                                //         iterations: 1,
+                                //         iterationStart: 0,
+                                //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                //         delay: 0,
+                                //         endDelay: 0,
+                                //     }
+                                // );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform':
+                                            'translate(-'+middleCalc+',-85px) scale(0.444, 0.444)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                // this.$.displayProfileSWR.animate(
+                                //     [
+                                //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                                //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                //     ],
+                                //     {
+                                //         fill: 'forwards',
+                                //         duration: 150,
+                                //         iterations: 1,
+                                //         iterationStart: 0,
+                                //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                //         delay: 0,
+                                //         endDelay: 0,
+                                //     }
+                                // );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                        }
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Going to page Hashtag
+                            if (this.wide) {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(-20px,-50px) scale(0.555, 0.555)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                // this.$.displayProfileSWR.animate(
+                                //     [
+                                //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                                //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                //     ],
+                                //     {
+                                //         fill: 'forwards',
+                                //         duration: 150,
+                                //         iterations: 1,
+                                //         iterationStart: 0,
+                                //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                //         delay: 0,
+                                //         endDelay: 0,
+                                //     }
+                                // );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform':
+                                            'translate(-'+middleCalc+',-85px) scale(0.444, 0.444)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                // this.$.displayProfileSWR.animate(
+                                //     [
+                                //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                                //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                //     ],
+                                //     {
+                                //         fill: 'forwards',
+                                //         duration: 150,
+                                //         iterations: 1,
+                                //         iterationStart: 0,
+                                //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                //         delay: 0,
+                                //         endDelay: 0,
+                                //     }
+                                // );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                        }
+
+                        if (this.routeExit[1] == 'resize-avatar') {
+                            // Going to page resize-avatar
+                            if (this.wide) {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(80px,80px) scale(1.11, 1.11)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                    this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                        {'transform': 'translate(0px,80px) scale(1.11, 1.11)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                                this.$.arrowcontainer.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                // this.$.displayProfileSWR.animate(
+                                //     [
+                                //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                                //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                //     ],
+                                //     {
+                                //         fill: 'forwards',
+                                //         duration: 150,
+                                //         iterations: 1,
+                                //         iterationStart: 0,
+                                //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                //         delay: 0,
+                                //         endDelay: 0,
+                                //     }
+                                // );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                        }
+
+
+                        if (this.routeExit[1] == 'make-backup-profile' ||
+                            this.routeExit[1] == 'download-succes-profile' ||
+                            this.routeExit[1] == 'print-succes-profile') {
+                            // Going to page make-backup-profile
+                                    this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.arrowcontainer.animate(
+                                    [
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.topFlex.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.notifications.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.divider1.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                // this.$.displayProfileSWR.animate(
+                                //     [
+                                //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                                //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                //     ],
+                                //     {
+                                //         fill: 'forwards',
+                                //         duration: 150,
+                                //         iterations: 1,
+                                //         iterationStart: 0,
+                                //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                //         delay: 0,
+                                //         endDelay: 0,
+                                //     }
+                                // );
+                                this.$.divider2.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                                this.$.buttonBox.animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                        }
+                    }
+                }
+            }
+
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        if (this.routeExit[0] == 'hashtag-list') {
+                            // Coming from page Hashtag-List
+                            this.$.avatarimg.animate(
+                                [
+                                    {'transform': 'translateY(0px)'},
+                                    {'transform': 'translateY(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.arrowcontainer.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.topFlex.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.notifications.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            // this.$.displayProfileSWR.animate(
+                            //     [
+                            //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                            //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                            //     ],
+                            //     {
+                            //         fill: 'forwards',
+                            //         duration: 150,
+                            //         iterations: 1,
+                            //         iterationStart: 0,
+                            //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            //         delay: 0,
+                            //         endDelay: 0,
+                            //     }
+                            // );
+                            this.$.divider2.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[0] == 'hashtag') {
+                            // Coming from page Hashtag
+                            this.$.avatarimg.animate(
+                                [
+                                    {'transform': 'translateY(0px)'},
+                                    {'transform': 'translateY(0px)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.arrowcontainer.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.topFlex.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.notifications.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            // this.$.displayProfileSWR.animate(
+                            //     [
+                            //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                            //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                            //     ],
+                            //     {
+                            //         fill: 'forwards',
+                            //         duration: 150,
+                            //         iterations: 1,
+                            //         iterationStart: 0,
+                            //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            //         delay: 0,
+                            //         endDelay: 0,
+                            //     }
+                            // );
+                            this.$.divider2.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[0] == 'resize-avatar') {
+                            // Coming from page resize-avatar
+                            if (this.wide) {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(80px,80px) scale(1.11, 1.11)'},
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            } else {
+                                this.$.avatarimg.animate(
+                                    [
+                                        {'transform': 'translate(0px,80px) scale(1.11, 1.11)'},
+                                        {'transform': 'translate(0px,0px) scale(1, 1)'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 150,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            this.$.arrowcontainer.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.topFlex.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.notifications.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            // this.$.displayProfileSWR.animate(
+                            //     [
+                            //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                            //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                            //     ],
+                            //     {
+                            //         fill: 'forwards',
+                            //         duration: 150,
+                            //         iterations: 1,
+                            //         iterationStart: 0,
+                            //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            //         delay: 0,
+                            //         endDelay: 0,
+                            //     }
+                            // );
+                            this.$.divider2.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[0] == 'make-backup-profile' ||
+                            this.routeExit[0] == 'download-success-profile' ||
+                            this.routeExit[0] == 'print-success-profile') {
+                            // Coming from page make-backup-profile
+                            this.$.avatarimg.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.arrowcontainer.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.topFlex.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.notifications.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.divider1.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            // this.$.displayProfileSWR.animate(
+                            //     [
+                            //         {'transform': 'translateY(-20px)', 'opacity': '0'},
+                            //         {'transform': 'translateY(0px)', 'opacity': '1'},
+                            //     ],
+                            //     {
+                            //         fill: 'forwards',
+                            //         duration: 150,
+                            //         iterations: 1,
+                            //         iterationStart: 0,
+                            //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                            //         delay: 0,
+                            //         endDelay: 0,
+                            //     }
+                            // );
+                            this.$.divider2.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.buttonBox.animate(
+                                [
+                                    {'transform': 'translateY(-20px)', 'opacity': '0'},
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        window.customElements.define(MyProfile.is, MyProfile);
+    </script>
+</dom-module>
