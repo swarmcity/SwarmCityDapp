@@ -187,7 +187,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <display-get-item route={{route}}></display-get-item>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <display-chat-messages toggle-unlock="{{toggleUnlock}}" private-key="[[privateKey]]" hashtag="[[hashtag]]" hashtag-item="[[hashtagItem]]"
-                chat-history="[[chatHistory]]" address="[[address]]" decrypted="{{decrypted}}"></display-chat-messages>
+                chat-history="[[chatHistory]]" address="[[address]]" secret="{{secret}}"></display-chat-messages>
 
             <div class="top"></div>
             <div class="top-avatar-box">
@@ -215,7 +215,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
-                <display-unlock blue toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}">
+                <display-unlock toggle-unlock="{{toggleUnlockByDisplay}}" blue private-key="{{privateKey}}">
                 </display-unlock>
             </template>
         </dom-if>
@@ -306,12 +306,20 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                     },
                     /**
-                    * decrypted is set to false as long as we are not decrypting the chatmessages
+                    * secret contains the information needed to decrypt messages of a certain chatHistory
+                    * @type {Object}
+                    */
+                    secret: {
+                        type: Object,
+                    },
+                    /**
+                    * unlockByDisplay is the unlocked boolean as changed within display-unlock
                     * @type {Boolean}
                     */
-                    decrypted: {
+                    toggleUnlockByDisplay: {
                         type: Boolean,
-                    }, 
+                        observer: '_unlockByDisplay'
+                    }
                 };
             }
 
@@ -327,7 +335,8 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _load() {
                 if (this.hashtagItem &&
-                    this.hashtagItem.itemHash &&
+                    this.hashtagItem.seeker &&
+                    this.hashtagItem.provider &&
                     this.chatHistory &&
                     this.chatHistory.members) {
                     for (let i = 0; i < this.chatHistory.members.length; i++) {
@@ -349,7 +358,8 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _getProviderAvatar(members) {
                 if (this.hashtagItem &&
-                    this.hashtagItem.itemHash) {
+                    this.hashtagItem.itemHash &&
+                    this.hashtagItem.provider) {
                     for (let i = 0; i < members.length; i++) {
                         if (members[i].address == this.hashtagItem.provider.address) {
                             return members[i].avatarHash;
@@ -358,6 +368,14 @@ This code may only be used under the license found at https://github.com/swarmci
 
                 }
 
+            }
+
+            _unlockByDisplay() {
+                this.async(() => {
+                    if (!this.privateKey) {
+                        this._toDetail();
+                    }
+                });
             }
             _getSeekerAvatar(members) {
                 if (this.hashtagItem &&
@@ -381,10 +399,6 @@ This code may only be used under the license found at https://github.com/swarmci
             _blur() {
                 if (this.toggleUnlock) {
                     this.$.container.classList.add('blur');
-                }
-                else if (!this.toggleUnlock && !this.decrypted) {
-                    console.log(this.decrypted);
-                    this._toDetail();
                 } else {
                     this.$.container.classList.remove('blur');
                 }

@@ -81,7 +81,6 @@ The following custom properties and mixins are available for styling:
                 right: 0;
                 padding: 0 30px;
             }
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
@@ -195,28 +194,21 @@ The following custom properties and mixins are available for styling:
                         value: [],
                     },
                     /**
-                    * secret is the string used to encrypt the chat messages
-                    * @type {String}
+                    * secret is the object containing the itemHash and its secret
+                    * @type {Object}
                     */
                     secret: {
-                        type: String,
-                    }, 
-                    /**
-                    * decrypted is set to false as long as we are not decrypting the chatmessages
-                    * @type {Boolean}
-                    */
-                    decrypted: {
-                        type: Boolean,
-                        value: false,
+                        type: Object,
                         notify: true,
-                    }, 
+                    },
                     /**
                     * contains the current user's private key
                     * @type {String}
                     */
                     privateKey: {
                         type: String,
-                        observer: '_getChatSecret'
+                        observer: '_getChatSecret',
+                        notify: true,
                     },
                     /**
                     * toggles the unlock display
@@ -269,9 +261,15 @@ The following custom properties and mixins are available for styling:
                 }
             }
             _unlock() {
-                if (!this.secret) {
+                if (!this.secret ||
+                    (this.secret &&
+                        this.secret.itemHash &&
+                        this.secret.itemHash != this.chatHistory.itemHash)) {
                     this.toggleUnlock = true;
-                    this.secret = 'unlocking';
+                    this.secret = {
+                        itemHash: this.chatHistory.itemHash,
+                        key: null,
+                    };
                 }
             }
             /**
@@ -309,11 +307,15 @@ The following custom properties and mixins are available for styling:
             */
             _getChatSecret() {
                 if (this.privateKey) {
-                    this.decrypted = true;
+                    // First decrypt the messages
                     console.log('lets decrypt this shit');
-                } else {
 
-                console.log('go back to detail');
+
+                    // then unlock the page now it has visible messages
+                    this.toggleUnlock = false;
+
+                    // delete private key
+                    this.privateKey = null;
                 }
             }
         }
