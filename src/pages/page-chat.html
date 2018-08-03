@@ -322,6 +322,20 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 };
             }
+            /**
+            * Redux actions for starting a chat subscription
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    CHATHISTORY: function (chatHistory) {
+                        return {
+                            type: 'CHATHISTORY',
+                            chatHistory: chatHistory,
+                        };
+                    },
+                });
+            }
 
             /**
             * Fired on initial element load.
@@ -329,6 +343,11 @@ This code may only be used under the license found at https://github.com/swarmci
             ready() {
                 super.ready();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
+                let subscribe = {
+                    subscribe: '0x0d145bd07974f67689f7ad1ab21e2a0376d0c8b7717c954ed9d027577e0f9b0c'}
+                    ;
+
+                this.dispatch('CHATHISTORY', subscribe);
             }
             /**
             * compare the chat & hashtagItem objects and populate seeker & provider
@@ -347,6 +366,18 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.provider = this.chatHistory.members[i];
                         }
                     }
+                } else if (
+                    !this.chatHistory ||
+                    (
+                        (
+                            this.hashtagItem &&
+                            this.hashtagItem.itemHash
+                        ) &&
+                        (
+                            this.chatHistory.itemHash != this.hashtagItem.itemHash
+                        )
+                    )
+                ) {
                 }
             }
             _getAvatarHash(message) {
