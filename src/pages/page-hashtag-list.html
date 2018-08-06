@@ -1,0 +1,901 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<!-- <link rel="import" href="../displays/display-my-info.html">
+<link rel="import" href="../displays/display-hashtag-list.html">
+<link rel="import" href="../displays/display-hashtagadd-btn.html"> -->
+
+
+
+<dom-module id="page-hashtag-list">
+    <template>
+        <!--
+        Page specific styles, if the style is used on more than one page, move it to shared styles.
+        -->
+        <style include="shared-styles">
+            :host {
+                width: 100vw;
+                min-height: 80vh;
+                display: block;
+                max-width: 100%;
+                background-image: var(--sc-bg);
+            }
+
+            .container {
+                height: 100%;
+                width: 100%;
+                background-color: var(--sc-grey1);
+            }
+
+            .header {
+                @apply --layout-horizontal;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 40px 40px 20px 40px;
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 2;
+            }
+
+            .container[wide-layout] .header {
+                box-sizing: border-box;
+                padding: 50px 10vw 20px 10vw;
+            }
+
+            .topleft {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+            }
+
+            .topright {
+                @apply --layout-end;
+                @apply --layout-vertical;
+            }
+
+            .back {
+                cursor: pointer;
+                @apply --logout-grey3-small;
+            }
+
+            display-hashtag-list {
+                margin-top: 110px;
+            }
+
+            .container[wide-layout] display-hashtag-list {
+                margin-top: 128px;
+            }
+
+            .fullheight {
+                height: 100%;
+            }
+
+            .hashtagaddbtn {
+                position: fixed;
+                bottom: 50px;
+                right: 30px;
+                z-index: 55;
+            }
+
+            .container[wide-layout] .hashtagaddbtn {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
+
+
+            display-my-info {
+                @apply --layout-flex;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .back {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>      
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="header">
+                <div class="topleft">
+                    <display-my-info
+                        path="{{path}}" 
+                        route="{{route}}"
+                        id="displaymyinfo">
+                    </display-my-info>
+                </div>
+                <div class="topright">
+                    <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back"></div>
+                </div>
+            </div>
+            <display-hashtag-list 
+                id="hashtags" 
+                path="{{path}}">
+            </display-hashtag-list>
+            <div class="hashtagaddbtn">        
+                    <!-- <dom-if if="{{!faded}}">
+                        <template>  -->
+                            <display-hashtagadd-btn 
+                                route="[[route]]" 
+                                path="{{path}}"
+                                id="hashtagaddbtn">
+                            </display-hashtagadd-btn>
+                        <!--  </template>
+                    </dom-if> -->
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class HashtagList extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-hashtag-list';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The current route
+                    */
+                    route: {
+                        type: Object,
+                        notify: true,
+                    },
+                    /**
+                    * The animation object
+                    */
+                    animation: {
+                        type: Object,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * Location is the page path the user is on
+                    * @type {String}
+                    */
+                    location: {
+                        type: String,
+                        statePath: 'location',
+                    },
+                    /**
+                    * sliderState represents style state of the slider
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * routeExit triggers the exit animations
+                    * @type {Array}
+                    */
+                    routeExit: {
+                        type: Array,
+                        observer: '_loadExitAnimations',
+                    },
+                    /**
+                    * routeEntry triggers the entry animations
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'hashtag-list',
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * takes the user to the welcome page
+            * @param {Object} event element clicked.
+            */
+            _back(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
+                this.set('route.path', 'welcome/');
+                }
+            }
+
+            /**
+            * triggered after the user selects a language
+            */
+            _path() {
+                if (this.path) {
+                    this.set('route.path', this.path);
+                    this.path = null;
+                }
+            }
+
+
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        if (this.routeExit[1] == 'welcome') {
+                            // Going to page Welcome
+                            this.$.hashtags.animate(
+                                [
+                                    {'transform': 'translateY(0px)', 'opacity': '1'},
+                                    {'transform': 'translateY(50px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtags.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            if (this.publicKey) {
+                                this.$$('#displaymyinfo').animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            this.$.hashtagaddbtn.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'my-profile') {
+                            // Going to page My Profile
+                            this.$.hashtags.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagaddbtn.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'my-wallet') {
+                            // Going to page My Wallet
+                            this.$.hashtags.animate(
+                                [
+                                    {'opacity': '1'},
+                                    {'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagaddbtn.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'hashtag') {
+                            // Going to page Hashtag
+                            this.$.hashtags.animate(
+                                [
+                                    {'transform': 'translateX(0)'},
+                                    {'transform': 'translateX(-100%)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.hashtagaddbtn.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 150,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                        if (this.routeExit[1] == 'new-hashtag') {
+                            // Going to page new-Hashtag
+                            this.$.hashtags.animate(
+                                [
+                                    {'transform': 'translateX(0)'},
+                                    {'transform': 'translateX(-100%)'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            if (this.publicKey) {
+                                this.$$('#displaymyinfo').animate(
+                                    [
+                                        {'transform': 'translateY(0px)', 'opacity': '1'},
+                                        {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                    ],
+                                    {
+                                        fill: 'forwards',
+                                        duration: 300,
+                                        iterations: 1,
+                                        iterationStart: 0,
+                                        easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                        delay: 0,
+                                        endDelay: 0,
+                                    }
+                                );
+                            }
+                            this.$.hashtagaddbtn.animate(
+                                [
+                                    {'transform': 'translateY(20px)', 'opacity': '1'},
+                                    {'transform': 'translateY(0px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                            this.$.back.animate(
+                                [
+                                    {'transform': 'translateY(0)', 'opacity': '1'},
+                                    {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                ],
+                                {
+                                    fill: 'forwards',
+                                    duration: 300,
+                                    iterations: 1,
+                                    iterationStart: 0,
+                                    easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                    delay: 0,
+                                    endDelay: 0,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                            // Here come the Entry Animations
+                            switch (this.routeExit[0]) {
+                                case ('welcome'):
+                                    this.$.hashtags.animate(
+                                        [
+                                            {'transform': 'translateY(50px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    if (this.publicKey) {
+                                        this.$$('#displaymyinfo').animate(
+                                            [
+                                                {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                                {'transform': 'translateY(0px)', 'opacity': '1'},
+                                            ],
+                                            {
+                                                fill: 'forwards',
+                                                duration: 300,
+                                                iterations: 1,
+                                                iterationStart: 0,
+                                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                            }
+                                        );
+                                    }
+                                    this.$.hashtagaddbtn.animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.back.animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    break;
+                                case ('my-profile'):
+                                    this.$.hashtags.animate(
+                                        [
+                                            {'transform': 'translateX(0px)', 'opacity': '0'},
+                                            {'transform': 'translateX(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.hashtagaddbtn.animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.back.animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    break;
+                                case ('my-wallet'):
+                                    this.$.hashtags.animate(
+                                        [
+                                            {'transform': 'translateX(0px)', 'opacity': '0'},
+                                            {'transform': 'translateX(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.hashtagaddbtn.animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.back.animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    break;
+                                case ('new-request'):
+                                case ('hashtag'):
+                                    this.$.hashtags.animate(
+                                        [
+                                            {'transform': 'translateX(-50px)', 'opacity': '0'},
+                                            {'transform': 'translateX(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.hashtagaddbtn.animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.back.animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    break;
+                                case ('download-success'):
+                                case ('print-success'):
+                                    this.$.hashtags.animate(
+                                        [
+                                            {'transform': 'translateY(250px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    if (this.publicKey) {
+                                        this.$$('#displaymyinfo').animate(
+                                            [
+                                                {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                                {'transform': 'translateY(0px)', 'opacity': '1'},
+                                            ],
+                                            {
+                                                fill: 'forwards',
+                                                duration: 300,
+                                                iterations: 1,
+                                                iterationStart: 0,
+                                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                                delay: 0,
+                                                endDelay: 0,
+                                            }
+                                        );
+                                    }
+                                    this.$.hashtagaddbtn.animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.back.animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    break;
+                                case ('new-hashtag'):
+                                    this.$.hashtags.animate(
+                                        [
+                                            {'transform': 'translateX(-50px)', 'opacity': '0'},
+                                            {'transform': 'translateX(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    if (this.publicKey) {
+                                        this.$$('#displaymyinfo').animate(
+                                            [
+                                                {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                                {'transform': 'translateY(0px)', 'opacity': '1'},
+                                            ],
+                                            {
+                                                fill: 'forwards',
+                                                duration: 300,
+                                                iterations: 1,
+                                                iterationStart: 0,
+                                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                                delay: 0,
+                                                endDelay: 0,
+                                            }
+                                        );
+                                    }
+                                    this.$.hashtagaddbtn.animate(
+                                        [
+                                            {'transform': 'translateY(0px)', 'opacity': '0'},
+                                            {'transform': 'translateY(20px)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    this.$.back.animate(
+                                        [
+                                            {'transform': 'translateY(-30px)', 'opacity': '0'},
+                                            {'transform': 'translateY(0)', 'opacity': '1'},
+                                        ],
+                                        {
+                                            fill: 'forwards',
+                                            duration: 300,
+                                            iterations: 1,
+                                            iterationStart: 0,
+                                            easing: 'cubic-bezier(0.42,0,0.58,1)',
+                                            delay: 0,
+                                            endDelay: 0,
+                                        }
+                                    );
+                                    break;
+                            }
+                        }
+                }
+            }
+        }
+        window.customElements.define(HashtagList.is, HashtagList);
+    </script>
+</dom-module>
