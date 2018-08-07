@@ -206,8 +206,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="input-box">
                     <iron-image class="avatar-main" sizing="cover" preload fade src="https://dev.swarm.city/img/[[seeker.avatarHash]]" placeholder="../images/defaultavatar.png">
                     </iron-image>
-                    <paper-textarea type="txt" autofocus></paper-textarea>
-                    <div class="input-confirm">
+                    <paper-textarea type="txt" value="{{message}}" autofocus></paper-textarea>
+                    <div class="input-confirm" on-up="_sendMessage">
                         <div class="input-confirm-icon"></div>
                     </div>
                 </div>
@@ -254,6 +254,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     route: {
                         type: Object,
                         notify: true,
+                        observer: '_getChat'
                     },
                     /**
                     * chatHistory is this item's chathistory
@@ -313,6 +314,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                     },
                     /**
+                    * message is the new message string
+                    * @type {String}
+                    */
+                    message: {
+                        type: String,
+                    },
+                    /**
                     * unlockByDisplay is the unlocked boolean as changed within display-unlock
                     * @type {Boolean}
                     */
@@ -328,10 +336,16 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    CHATHISTORY: function(chatHistory) {
+                    CHATHISTORY: function (chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
+                        };
+                    },
+                    NEWCHATMESSAGE: function (newChatMessage) {
+                        return {
+                            type: 'NEWCHATMESSAGE',
+                            newChatMessage: newChatMessage,
                         };
                     },
                 });
@@ -343,11 +357,6 @@ This code may only be used under the license found at https://github.com/swarmci
             ready() {
                 super.ready();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-                let subscribe = {
-                    subscribe: '0x0d145bd07974f67689f7ad1ab21e2a0376d0c8b7717c954ed9d027577e0f9b0c'}
-                    ;
-
-                this.dispatch('CHATHISTORY', subscribe);
             }
             /**
             * compare the chat & hashtagItem objects and populate seeker & provider
@@ -366,20 +375,14 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.provider = this.chatHistory.members[i];
                         }
                     }
-                } else if (
-                    !this.chatHistory ||
-                    (
-                        (
-                            this.hashtagItem &&
-                            this.hashtagItem.itemHash
-                        ) &&
-                        (
-                            this.chatHistory.itemHash != this.hashtagItem.itemHash
-                        )
-                    )
-                ) {
-                    // get chatHistory
                 }
+            }
+            _getChat() {
+                let subscribe = {
+                    subscribe: this.route.path.split('/')[3],
+                };
+                this.dispatch('CHATHISTORY', subscribe);
+
             }
             _getAvatarHash(message) {
                 for (let i = 0; i < this.chatHistory.members.length; i++) {
@@ -389,7 +392,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             _getProviderAvatar(members) {
-                if (this.hashtagItem &&
+                if (members &&
+                    this.hashtagItem &&
                     this.hashtagItem.itemHash &&
                     this.hashtagItem.provider) {
                     for (let i = 0; i < members.length; i++) {
@@ -408,7 +412,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
             _getSeekerAvatar(members) {
-                if (this.hashtagItem &&
+                if (members &&
+                    this.hashtagItem &&
                     this.hashtagItem.itemHash) {
                     for (let i = 0; i < members.length; i++) {
                         if (members[i].address == this.hashtagItem.seeker.address) {
@@ -441,6 +446,17 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.set('route.path', this.path);
                 }
                 this.path = null;
+            }
+            /**
+            * send a new message on this item
+            */
+            _sendMessage() {
+                let message = {
+                    itemHash: this.route.path.split('/')[3],
+                    message: this.message,
+                }
+                this.dispatch('NEWCHATMESSAGE', message);
+                this.message = '';
             }
         } window.customElements.define(MyChat.is, MyChat);
     </script>
