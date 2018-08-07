@@ -1,0 +1,398 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
+<!--
+
+Example:
+```
+<display-simpledeal-items></display-simpledeal-items>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-simpledeal-items-avatar` | Mixin applied to the avatar | `{}` |
+| `--display-simpledeal-items-top-container` | Mixin applied to the container | `{}` |
+| `--display-simpledeal-items-time` | Mixin applied to the time | `{}` |
+| `--display-simpledeal-items-name` | Mixin applied to the name | `{}` |
+| `--display-simpledeal-items-description` | Mixin applied to the description | `{}` |
+| `--display-simpledeal-items-for` | Mixin applied to the word for | `{}` |
+| `--display-simpledeal-items-amount` | Mixin applied to the amount | `{}` |
+-->
+<dom-module id="display-simpledeal-items">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                width: 100%;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 10vw;
+            }
+
+            .box {
+                @apply --layout-vertical;
+                background-color: var(--sc-white);
+                max-width: 100%;
+                box-sizing: border-box;
+                padding: 24px 30px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                margin: 0px 10px 4px 10px;
+            }
+
+            .container[wide-layout] .box {
+                margin: 0px 0px 4px 0px;
+                max-width: 68vw;
+            }
+
+            .box:active {
+                @apply --button-active;
+
+            }
+
+            .empty {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 30px 10vw;
+                word-wrap: break-word;
+                @apply --body-default;
+                color: var(--sc-grey3);
+            }
+
+            .container[wide-layout] .empty {
+                padding: 0;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+            }
+
+            .avatarandmeta {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
+            }
+
+            .bottom {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .avatar {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 24px;
+            }
+
+            .container[wide-layout] .avatar {
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
+                background-size: 20px;
+            }
+
+
+            .item-avatar-seeker {
+                border-radius: 50%;
+                width: 100%;
+                height: 100%;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey3b);
+                margin-top: 4px;
+            }
+
+            .replycount {
+                @apply --small-bold;
+                margin-top: 2px;
+                color: var(--sc-grey4);
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .truncate {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .seeker {
+                color: var(--sc-grey4);
+            }
+
+            .replyicon {
+                @apply --reply-grey4-mini;
+            }
+
+            .datedescript {
+                @apply --layout-flex;
+
+            }
+
+            .description {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                padding-right: 10px;
+            }
+
+            img {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 30px;
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+                text-align: right;
+            }
+
+            .price {
+                @apply --main-title4;
+                color: var(--sc-yellow);
+                line-height: 24px;
+            }
+
+            .for {
+                @apply --smallest-bold;
+                color: var(--sc-yellow);
+            }
+
+
+            .container[wide-layout] .for {
+                @apply --body-bold;
+                font-size: 10px;
+                line-height: 10px;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .replyicon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <data-simpledeal id="sort"></data-simpledeal>
+        <div class="container" wide-layout$="{{wide}}">
+
+            <template is="dom-repeat" items="{{items}}">
+                <div tabindex="5" class="box" on-tap="_toItem">
+                    <div class="top">
+                        <div class="datedescript">
+                            <div class="description">[[item.description]]</div>
+                            <div class="date">
+                                [[_formatDate(item.dateTime)]]
+                            </div>
+                        </div>
+                        <div class="replycount">[[_replycount(item.replies)]]</div>
+                        <div class="replyicon"></div>
+                    </div>
+                    <div class="bottom">
+                        <div class="avatarandmeta">
+                            <div class="avatar">
+                                <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
+                                    placeholder="../images/defaultavatar.png">
+                                </iron-image>
+                            </div>
+                            <div class="meta">
+
+                                <template is="dom-if" if="[[!_isSeeker(item)]]">
+                                        <div class="user horizontal">
+                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]] SWR</div>
+                                </template>
+
+                                <template is="dom-if" if="[[_isSeeker(item)]]">
+                                        <div class="user seeker horizontal">
+                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]] SWR</div>
+                                </template>
+
+                            </div>
+                        </div>
+
+                        <div class="pricebox">
+                            <div class="for">SWT</div>
+                            <div class="price">[[item.value]]</div>
+                        </div>
+
+                    </div>
+                </div>
+            </template>
+
+
+        </div>
+    </template>
+    <script>
+        class MySimpledealItems extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-items';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the users selected or determined language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path signlas to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * Hashtag is the hashtag we're one
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_getItems',
+                    },
+                    /**
+                    * publicKey is the user's address
+                    * @type {Object}
+                    */
+                    publicKey: {
+                        type: Object,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * Items are all the hashtag's items the user is involved with
+                    * @type {Object}
+                    */
+                    items: {
+                        type: Object,
+                        value: [],
+                    },
+                    /**
+                    * involved will decide on sorting between items the user is or is not involved in
+                    * @type {Object}
+                    */
+                    involved: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * the parent will receive the amount of items the user is involved in
+                    * @type {Object}
+                    */
+                    count: {
+                        type: Number,
+                        value: 0,
+                        notify: true,
+                    },
+
+                };
+            }
+            /**
+            * Populates the items Object with the hashtag items the user is involved with
+            */
+            _getItems() {
+                if (this.hashtag && this.hashtag.hashtagAddress) {
+                    this.$.sort.getHashtagItems(this.hashtag, this.publicKey, this.involved)
+                        .then((items) => {
+                            this.set('items', items);
+                            if (this.involved) {
+                                this.count = items.length;
+                            }
+                        });
+                }
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * return the computed replycount
+            * @param {array} replies array of item replies
+            * @return {number} number of replies
+            */
+            _replycount(replies) {
+                return replies ? replies.length : 0;
+            }
+            /**
+            * routes to the corresponding item detail page
+            * @param {event} event item object that has been tapped
+            */
+            _toItem(event) {
+                this.path = 'detail/' + this.hashtag.hashtagAddress
+                    + '/' + event.model.__data.item.itemHash;
+            }
+            /**
+            * Here we check if an item has been posted by the current user
+            * @param {Object} item a hashtagItem reply
+            * @return {Boolean} true when user owns this item
+            */
+            _isSeeker(item) {
+                return item.seeker.address == this.publicKey;
+            }
+        }
+
+        window.customElements.define(MySimpledealItems.is, MySimpledealItems);
+    </script>
+</dom-module>

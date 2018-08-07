@@ -1,0 +1,150 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<title></title>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `title` | Mixin applied to the avatar | `{}` |
+| `title` | Mixin applied to the container | `{}` |
+| `title` | Mixin applied to the time | `{}` |
+| `title` | Mixin applied to the name | `{}` |
+| `title` | Mixin applied to the description | `{}` |
+| `title` | Mixin applied to the word for | `{}` |
+| `title` | Mixin applied to the amount | `{}` |
+-->
+<dom-module id="display-simpledeal-title">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 40px 15px 40px;
+                background-image: url('../../images/bg-header3.png');
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 10vw 15px 10vw;
+            }
+            
+            .hashtagloading {
+                height: 16px;
+                width: 140px;
+                background-color: var(--sc-grey2);
+                border-radius: 8px;
+                margin: 10px 0px 0px 0px;
+                opacity: 0.5;
+            }
+
+            .container[wide-layout] .hashtagloading {
+                margin: 12px 0px 0px 0px;
+            }
+
+            .namebox {
+                @apply --main-title2;
+                font-size: 30px;
+                color: var(--sc-grey4);
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                font-size: 27px;
+                margin-right: 2px;
+            }
+
+            .info-toggle {
+                @apply --small-bold;
+                @apply --layout-center;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+                margin: 0px 0px 8px 10px;
+                box-sizing: border-box;
+                padding: 1px 3px;
+                cursor: pointer;
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <dom-if if="{{loadingHashtag}}">
+                <template>
+                    <div class="hashtagloading"></div>
+                </template>
+            </dom-if>
+            <dom-if if="{{!loadingHashtag}}">
+                <template>
+                    <div class="namebox">
+                        <span class="hashtagsymbol">#</span>{{hashtag.name}}
+                    </div>
+                    <div id="infolink" class="info-toggle">i</div>
+
+                </template>
+            </dom-if>
+        </div>
+    </template>
+    <script>
+        class MySimpledealTitle extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-title';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Hashtag is the hashtag we're one
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_load',
+                    },
+                    /**
+                    * loadingHashtag is the currently loaded hashtag object
+                    * @type {Object}
+                    */
+                    loadingHashtag: {
+                        type: Boolean,
+                        value: true,
+                    },
+                };
+            }
+            /**
+            * Toggles betweeen loading & loaded state
+            */
+            _load() {
+                this.loadingHashtag =
+                    this.hashtag.hashtagAddress == this.route.path.split('/')[2] ? false : true;
+            }
+        }
+
+        window.customElements.define(MySimpledealTitle.is, MySimpledealTitle);
+    </script>
+</dom-module>
