@@ -207,6 +207,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                     },
                     /**
+                    * The current subscriptionId string to a hashtag
+                    * @type {String}
+                    */
+                    hashtagSubscription: {
+                        type: String,
+                    },
+                    /**
                     * the chat history object to instantiate or subscribe to
                     * @type {Object}
                     */
@@ -602,6 +609,11 @@ This code may only be used under the license found at https://github.com/swarmci
             // Subscribe to a certain hashtag
             _getHashtag() {
                 if (this.hashtag.request) {
+                    if (this.hashtagSubscription) {
+                        this.socket.emit('unsubscribe', {
+                            subscriptionId: this.hashtagSubscription,
+                        });
+                    }
                     this.socket.emit('subscribe', {
                         channel: 'hashtagItems',
                         args: {
@@ -609,6 +621,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         },
                     }, (reply) => {
                         if (reply.response == 200) {
+                            this.hashtagSubscription = reply.subscriptionId;
                             let address = this.hashtag.request;
                             this.hashtag = JSON.parse(reply.data);
                             this.hashtag.hashtagAddress = address;
@@ -619,7 +632,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     });
                     this.socket.on('hashtagItemsChanged', (reply) => {
-                        if (reply.response == 200) {
+                        // Only update if there is a current hashtag subscription
+                        if (reply.response == 200 && this.hashtagSubscription == reply.subscriptionId) {
                             let address = this.hashtag.hashtagAddress;
                             this.hashtag = JSON.parse(JSON.parse(reply.data));
                             this.hashtag.hashtagAddress = address;
