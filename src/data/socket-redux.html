@@ -1,0 +1,723 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../redux-state.html">
+<!-- <script src="environment.min.js"></script> -->
+<dom-module id="socket-redux">
+
+    <script>
+        class SocketRedux extends new ReduxMixin(Polymer.Element) {
+            static get is() {
+                return 'socket-redux';
+            }
+            static get properties() {
+                return {
+                    socket: {
+                        type: Object,
+                    },
+                    /**
+                    * balance represnts the users balance
+                    * @type {Array}
+                    */
+                    balance: {
+                        type: Object,
+                    },
+                    /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    /**
+                    * Avatar represents the user's base64 of their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                        observer: '_avatarChanged',
+                    },
+                    /**
+                    * fx is the SWT exchange rates
+                    * @type {Object}
+                    */
+                    fx: {
+                        type: Object,
+                    },
+                    /**
+                    * publickey is the wallet pubkey
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                        observer: '_publickeyChanged',
+                    },
+                    /**
+                    * nonce is the current nonce for the wallet's pubkey
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    nonce: {
+                        type: Number,
+                    },
+                    /**
+                    * This is the shortCode we want a public key for
+                    * as given by the ETH network
+                    * @type {Number}
+                    */
+                    reqtokey: {
+                        type: Number,
+                        statePath: 'reqtokey',
+                        observer: '_reqToKey',
+                    },
+                    /**
+                    * This is the signed transaction to be broadcast
+                    * @type {String}
+                    */
+                    broadcast: {
+                        type: String,
+                        statePath: 'broadcast',
+                        observer: '_broadcast',
+                    },
+                    /**
+                    * This is a generated shortCode
+                    * @type {String}
+                    */
+                    shortCode: {
+                        type: String,
+                        statePath: 'shortCode',
+                    },
+                    /**
+                    * Historic transactions for publickey
+                    * @type {Array}
+                    */
+                    transactions: {
+                        type: Array,
+                        statePath: 'transactions',
+                    },
+                    /**
+                    * Get base 64 image from IPFS hash
+                    * @type {Array}
+                    */
+                    reqipfs: {
+                        type: String,
+                        statePath: 'reqipfs',
+                        observer: '_reqipfs',
+                    },
+                    /**
+                    * An ipfs hash we want to resolve over the API
+                    * @type {Array}
+                    */
+                    ipfsHash: {
+                        type: String,
+                        statePath: 'ipfsHash',
+                        observer: '_ipfsHashResolve',
+                    },
+                    /**
+                    * Send new request metadata to IPFS
+                    * @type {Object}
+                    */
+                    itemToIpfs: {
+                        type: Object,
+                        statePath: 'itemToIpfs',
+                        observer: '_itemToIpfs',
+                    },
+                    /**
+                    * Send new signed tx to the blockchain
+                    * @type {Object}
+                    */
+                    signedTx: {
+                        type: Object,
+                        statePath: 'sendSignedTx',
+                        observer: '_sendSignedTx',
+                    },
+                    /**
+                    * usingShortCode will maintain a subscription while true
+                    * @type {Boolean}
+                    */
+                    usingShortCode: {
+                        type: Boolean,
+                        statePath: 'usingShortCode',
+                        observer: '_usingShortCode',
+                    },
+                    /**
+                    * An array containing the transaction history for this public key
+                    * @type {Array}
+                    */
+                    confirmedTx: {
+                        type: Array,
+                        statePath: 'confirmedTx',
+                    },
+                    /**
+                    * An Object containing the data for a hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_getHashtag',
+                    },
+                    /**
+                    * An Object containing the data for a hashtagItem
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                        observer: '_getHashtagItem',
+                    },
+                    /**
+                    * A reply to be added to a hashtagItem
+                    * @type {Object}
+                    */
+                    replyRequest: {
+                        type: Object,
+                        statePath: 'replyRequest',
+                        observer: '_sendReply',
+                    },
+                    /**
+                    * The selected user's reputation balance
+                    * @type {Object}
+                    */
+                    userReputation: {
+                        type: Object,
+                        statePath: 'userReputation',
+                        observer: '_getUserReputation',
+                    },
+                    /**
+                    * The payload to select a provider from the list of replies
+                    * @type {Object}
+                    */
+                    selectProvider: {
+                        type: Object,
+                        statePath: 'selectProvider',
+                        observer: '_selectProvider',
+                    },
+                    /**
+                    * The current subscriptionId string to a hashtagItem
+                    * @type {String}
+                    */
+                    hashtagItemSubscription: {
+                        type: String,
+                    },
+                };
+            }
+            /**
+            * Redux action for setting property values
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    BALANCE: function(balance) {
+                        return {
+                            type: 'BALANCE',
+                            balance: balance,
+                        };
+                    },
+                    FX: function(fx) {
+                        return {
+                            type: 'FX',
+                            fx: fx,
+                        };
+                    },
+                    NONCE: function(nonce) {
+                        return {
+                            type: 'NONCE',
+                            nonce: nonce,
+                        };
+                    },
+                    TOKEY: function(tokey) {
+                        return {
+                            type: 'TOKEY',
+                            tokey: tokey,
+                        };
+                    },
+                    SHORTCODE: function(shortCode) {
+                        return {
+                            type: 'SHORTCODE',
+                            shortCode: shortCode,
+                        };
+                    },
+                    IPHONE: function(iphone) {
+                        return {
+                            type: 'IPHONE',
+                            iphone: iphone,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
+                    AVATARHASH: function(avatarHash) {
+                        return {
+                            type: 'AVATARHASH',
+                            avatarHash: avatarHash,
+                        };
+                    },
+                    TXHASH: function(txHash) {
+                        return {
+                            type: 'TXHASH',
+                            txHash: txHash,
+                        };
+                    },
+                    TXHASHITEM: function(txHashItem) {
+                        return {
+                            type: 'TXHASHITEM',
+                            txHashItem: txHashItem,
+                        };
+                    },
+                    CONFIRMEDTX: function(confirmedTx) {
+                        return {
+                            type: 'CONFIRMEDTX',
+                            confirmedTx: confirmedTx,
+                        };
+                    },
+                    ITEMDATAHASH: function(itemDataHash) {
+                        return {
+                            type: 'ITEMDATAHASH',
+                            itemDataHash: itemDataHash,
+                        };
+                    },
+                    HASHTAG: function(hashtag) {
+                        return {
+                            type: 'HASHTAG',
+                            hashtag: hashtag,
+                        };
+                    },
+                    HASHTAGITEM: function(hashtagItem) {
+                        return {
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
+                        };
+                    },
+                    IPFSHASH: function(ipfsHash) {
+                        return {
+                            type: 'IPFSHASH',
+                            ipfsHash: ipfsHash,
+                        };
+                    },
+                    USERREPUTATION: function(userReputation) {
+                        return {
+                            type: 'USERREPUTATION',
+                            userReputation: userReputation,
+                        };
+                    },
+                    HASHTAGS: function(hashtags) {
+                        return {
+                            type: 'HASHTAGS',
+                            hashtags: hashtags,
+                        };
+                    },
+                });
+            }
+
+            constructor() {
+                super();
+                // Create websocket
+                this.socket = io('https://dev.swarm.city', // eslint-disable-line
+                    {
+                        query: 'apiUser=swarmCity',
+                        path: '/api',
+                        transports: ['websocket', 'xhr-polling'],
+                        autoConnect: false,
+                    });
+            }
+
+            ready() {
+                console.log('ready')
+                super.ready();
+                this._detectIphone();
+                // Get push updates of the user's balance
+                this.socket.on('balanceChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.balance = reply.data;
+                        this.dispatch('BALANCE', this.balance);
+                    }
+                });
+                // Listen for changes in the exchange rates
+                this.socket.on('fxChanged', (reply) => {
+                    this.fx = reply;
+                    this.dispatch('FX', this.fx);
+                });
+                // Get push updates of the user's nonce
+                this.socket.on('nonceChanged', (reply) => {
+                    this.nonce = reply.data.nonce;
+                    this.dispatch('NONCE', this.nonce);
+                });
+
+                // Get the list of hashtags
+                this.socket.emit('getHashtags', {
+
+                }, (reply) => {
+                    this.hashtags = reply.data;
+                    this.dispatch('HASHTAGS', this.hashtags);
+                });
+
+                // All handlers attached - please connect..
+                this.socket.connect();
+            }
+
+            /**
+            * Send an IPFS hash of a base64 avatar
+            * Get the corresponding bas64 back and store it as the user's avatar
+            */
+            _reqipfs() {
+                this.socket.emit('ipfscat', {
+                    hash: this.reqipfs,
+                    format: 'base64',
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
+                    }
+                });
+            }
+
+            _ipfsHashResolve() {
+                let store = JSON.parse(localStorage.getItem('IPFS'));
+                if (!(this.ipfsHash in store) && typeof (this.ipfsHash) == 'string') {
+                    this.socket.emit('ipfscat', {
+                        hash: this.ipfsHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            store[this.ipfsHash] = reply.data;
+                            let resolved = {};
+                            resolved[this.ipfsHash] = reply.data;
+                            this.dispatch('IPFSHASH', resolved);
+                            localStorage.setItem('IPFS', JSON.stringify(store));
+                        }
+                    });
+                }
+            }
+
+            _sendSignedTx() {
+                // Send a signed tx and get the txHash back
+                this.socket.emit('sendSignedTx', {
+                    tx: this.signedTx,
+                }, (reply) => {
+                    let newNonce = Number(this.nonce) + 1;
+                    this.dispatch('NONCE', newNonce);
+                    this.txHash = reply;
+                    setTimeout(() => {
+                        this.dispatch('TXHASH', this.txHash);
+                    }, 2000);
+                });
+            }
+
+            _avatarChanged() {
+                // Send the user's base64 image and get the ipfsHash back
+                this.socket.emit('ipfsAdd', {
+                    payload: this.avatar,
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.avatarHash = reply.data;
+                        this.dispatch('AVATARHASH', this.avatarHash);
+                        localStorage.setItem('avatarHash', this.avatarHash);
+                    }
+                });
+            }
+
+            _itemToIpfs() {
+                this.socket.emit('ipfsAdd', {
+                    payload: this.itemToIpfs,
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.itemDataHash = reply;
+                        this.dispatch('ITEMDATAHASH', this.itemDataHash);
+                    }
+                });
+            }
+
+            _detectIphone() {
+                if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
+                    this.dispatch('IPHONE', true);
+                } else {
+                    this.dispatch('IPHONE', false);
+                }
+            }
+            _publickeyChanged() {
+                // subscribe to updates of the balance of this publickey
+                this.socket.emit('subscribe', {
+                    channel: 'balance',
+                    args: {
+                        address: this.publicKey,
+                    },
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.balance = reply.data;
+                        this.dispatch('BALANCE', this.balance);
+                    }
+                });
+                // subscribe to updates of the nonce of this publickey
+                this.socket.emit('subscribe', {
+                    channel: 'nonce',
+                    args: {
+                        address: this.publicKey,
+                    },
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.nonce = reply.data.nonce;
+                        this.dispatch('NONCE', this.nonce);
+                    }
+                });
+
+                // Fired when the users nonce changes
+                this.socket.on('nonceChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.nonce = reply.data.nonce;
+                        this.dispatch('NONCE', this.nonce);
+                    }
+                });
+
+                // subscribe to updates of the tx history
+                this.socket.emit('subscribe', {
+                    channel: 'txHistory',
+                    args: {
+                        address: this.publicKey,
+                    },
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.confirmedTx = reply.data;
+                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                    }
+                });
+                this.socket.on('txHistoryChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.confirmedTx = reply.data;
+                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                    }
+                });
+            }
+
+            _reqToKey() {
+                this.socket.emit('readShortCode', {
+                    shortCode: this.reqtokey,
+                }, (reply) => {
+                    if (reply.response === 200) {
+                        this.tokey = reply;
+                        this.tokey.found = true;
+                        this.dispatch('TOKEY', this.tokey);
+                    }
+                    if (reply.response === 400) {
+                        this.tokey = reply;
+                        this.tokey.found = false;
+                        this.dispatch('TOKEY', this.tokey);
+                    }
+                });
+            }
+            _sendReply() {
+                this.socket.emit('replyRequest', {
+                    reply: this.replyRequest,
+                }, (reply) => {
+                });
+            }
+            _broadcast() {
+                if (this.reqtokey != null) {
+                    this.socket.emit('replyShortCode', {
+                        shortCode: this.reqtokey,
+                        tx: this.broadcast,
+                    }, (reply) => {
+                        this.txHash = reply;
+                        this.dispatch('TXHASH', this.txHash);
+                    });
+                }
+            }
+
+            // Subscribe to a certain hashtag
+            _getHashtag() {
+                if (this.hashtag.request) {
+                    this.socket.emit('subscribe', {
+                        channel: 'hashtagItems',
+                        args: {
+                            address: this.hashtag.request,
+                        },
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            let address = this.hashtag.request;
+                            this.hashtag = JSON.parse(reply.data);
+                            this.hashtag.hashtagAddress = address;
+                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
+                            this.hashtag.hashtagFee = 600000000000000000;
+                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
+                            this.dispatch('HASHTAG', this.hashtag);
+                        }
+                    });
+                    this.socket.on('hashtagItemsChanged', (reply) => {
+                        if (reply.response == 200) {
+                            let address = this.hashtag.hashtagAddress;
+                            this.hashtag = JSON.parse(JSON.parse(reply.data));
+                            this.hashtag.hashtagAddress = address;
+                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
+                            this.hashtag.hashtagFee = 600000000000000000;
+                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
+                            this.dispatch('HASHTAG', this.hashtag);
+                        }
+                    });
+                }
+            }
+
+            // Get a certain user's reputation balance by address
+            _getUserReputation() {
+                // if (this.userReputation.request) {
+                //     this.socket.emit('userReputation', {
+                //         address: this.userReputation.request,
+                //     }, (reply) => {
+                //     });
+                // }
+                /* eslint-disable */
+                // --------------- BEGIN TEMPORARY REPLIES DATA ---------------
+                if (this.userReputation.request) {
+                    let mockRepData = [
+                        {
+                            "name": "Settler",
+                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
+                            "seekerRep": 1,
+                            "providerRep": 0,
+                        }, {
+                            "name": "DevOps",
+                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
+                            "seekerRep": 9,
+                            "providerRep": 12,
+                        }, {
+                            "name": "SwarmCitySwag",
+                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
+                            "seekerRep": 4,
+                            "providerRep": 2,
+                        }
+                    ];
+                    this.dispatch('USERREPUTATION', mockRepData);
+                }
+                // --------------- END TEMPORARY REPLIES DATA ---------------
+                /* eslint-enable */
+            }
+
+            _selectProvider() {
+                this.socket.emit('selectProvider', {
+                    selectee: this.selectProvider,
+                }, (reply) => {
+                });
+            }
+
+            // Subscribe to a certain hashtagItem
+            _getHashtagItem() {
+                if (this.hashtagItem.request) {
+                    if (this.hashtagItemSubscription) {
+                        this.socket.emit('unsubscribe', {
+                            subscriptionId: this.hashtagItemSubscription,
+                        }, (reply) => {
+                            this.socket.emit('subscribe', {
+                                channel: 'hashtagItem',
+                                args: {
+                                    address: this.hashtagItem.request.hashtagAddress,
+                                    itemHash: this.hashtagItem.request.itemHash,
+                                },
+                            }, (reply) => {
+                                if (reply.response == 200) {
+                                    this.hashtagItem = JSON.parse(reply.data);
+                                    this.hashtagItemSubscription = reply.subscriptionId;
+                                    this.hashtagItem.description =
+                                        this.hashtagItem.description ||
+                                        'Missing description';
+                                    this.hashtagItem.seeker.username =
+                                        this.hashtagItem.seeker.username ||
+                                        this.hashtagItem.seeker.address;
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                }
+                            });
+                            this.socket.on('hashtagItemChanged', (reply) => {
+                                if (reply.response == 200) {
+                                    if (reply.subscriptionId == this.hashtagItemSubscription) {
+                                        this.hashtagItem = JSON.parse(JSON.parse(reply.data));
+                                        this.hashtagItem.description =
+                                            this.hashtagItem.description ||
+                                            'Missing description';
+                                        this.hashtagItem.seeker.username =
+                                            this.hashtagItem.seeker.username ||
+                                            this.hashtagItem.seeker.address;
+                                        this.hashtagItem.update = true;
+                                        this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                    }
+                                }
+                            });
+                        });
+                    } else {
+                        this.socket.emit('subscribe', {
+                            channel: 'hashtagItem',
+                            args: {
+                                address: this.hashtagItem.request.hashtagAddress,
+                                itemHash: this.hashtagItem.request.itemHash,
+                            },
+                        }, (reply) => {
+                            if (reply.response == 200) {
+                                this.hashtagItem = JSON.parse(reply.data);
+                                this.hashtagItemSubscription = reply.subscriptionId;
+                                this.hashtagItem.description =
+                                    this.hashtagItem.description ||
+                                    'missing description';
+                                this.hashtagItem.seeker.username =
+                                    this.hashtagItem.seeker.username ||
+                                    this.hashtagItem.seeker.address;
+                                this.dispatch('HASHTAGITEM', this.hashtagItem);
+                            }
+                        });
+                        this.socket.on('hashtagItemChanged', (reply) => {
+                            if (reply.response == 200) {
+                                if (reply.subscriptionId == this.hashtagItemSubscription) {
+                                    this.hashtagItem = JSON.parse(JSON.parse(reply.data));
+                                    this.hashtagItem.description =
+                                        this.hashtagItem.description ||
+                                        'missing description';
+                                    this.hashtagItem.update = true;
+                                    this.hashtagItem.seeker.username =
+                                        this.hashtagItem.seeker.username ||
+                                        this.hashtagItem.seeker.address;
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            // fired when entering needing a shortCode
+            _usingShortCode() {
+                if (this.usingShortCode) {
+                    this.socket.emit('subscribe', {
+                        channel: 'createShortCode',
+                        args: {
+                            address: this.publicKey,
+                            userName: this.username,
+                            avatar: this.avatar,
+                        },
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this.shortCode = reply;
+                            this.shortCode.received = (new Date).getTime();
+                            this.dispatch('SHORTCODE', this.shortCode);
+                        }
+                    });
+                } else {
+                    if (this.shortCode != null) {
+                        this.socket.emit('unsubscribe', {
+                            subscriptionId: this.shortCode.subscriptionId,
+                        }, (reply) => {
+                            if (reply.response == 200) {
+                                this.dispatch('SHORTCODE', null);
+                            }
+                        });
+                    }
+                }
+            }
+        } window.customElements.define(SocketRedux.is, SocketRedux);
+    </script>
+</dom-module>
