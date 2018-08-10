@@ -191,10 +191,10 @@ This code may only be used under the license found at https://github.com/swarmci
 
             <div class="top"></div>
             <div class="top-avatar-box">
-                <iron-image class="top-avatar top-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[_getSeekerAvatar(chatHistory.members)]]"
+                <iron-image class="top-avatar top-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[seeker.avatarHash]]"
                     placeholder="../images/defaultavatar.png">
                 </iron-image>
-                <iron-image class="top-avatar top-avatar-provider" sizing="cover" preload fade src="https://dev.swarm.city/img/[[_getProviderAvatar(chatHistory.members)]]"
+                <iron-image class="top-avatar top-avatar-provider" sizing="cover" preload fade src="https://dev.swarm.city/img/[[provider.avatarHash]]"
                     placeholder="../images/defaultavatar.png">
                 </iron-image>
             </div>
@@ -204,7 +204,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="bottom">
                 <div class="divider"></div>
                 <div class="input-box">
-                    <iron-image class="avatar-main" sizing="cover" preload fade src="https://dev.swarm.city/img/[[seeker.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    <iron-image class="avatar-main" sizing="cover" preload fade src="https://dev.swarm.city/img/[[user.avatarHash]]" placeholder="../images/defaultavatar.png">
                     </iron-image>
                     <paper-textarea type="txt" value="{{message}}" autofocus></paper-textarea>
                     <div class="input-confirm" on-up="_sendMessage">
@@ -254,7 +254,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     route: {
                         type: Object,
                         notify: true,
-                        observer: '_getChat'
+                        observer: '_getChat',
                     },
                     /**
                     * chatHistory is this item's chathistory
@@ -336,13 +336,13 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    CHATHISTORY: function (chatHistory) {
+                    CHATHISTORY: function(chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
                         };
                     },
-                    NEWCHATMESSAGE: function (newChatMessage) {
+                    NEWCHATMESSAGE: function(newChatMessage) {
                         return {
                             type: 'NEWCHATMESSAGE',
                             newChatMessage: newChatMessage,
@@ -367,60 +367,31 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.hashtagItem.provider &&
                     this.chatHistory &&
                     this.chatHistory.members) {
-                    for (let i = 0; i < this.chatHistory.members.length; i++) {
-                        if (this.hashtagItem.seeker.address == this.chatHistory.members[i].address) {
-                            this.seeker = this.chatHistory.members[i];
-                        }
-                        if (this.hashtagItem.provider.address == this.chatHistory.members[i].address) {
-                            this.provider = this.chatHistory.members[i];
-                        }
-                    }
+                    this.user = this.chatHistory.members[this.address];
+                    this.seeker = this.chatHistory.members[this.hashtagItem.seeker.address];
+                    this.provider = this.chatHistory.members[this.hashtagItem.provider.address];
                 }
             }
+            /**
+            * Check the route and subscribe to the corresponding chat channel
+            */
             _getChat() {
-                let subscribe = {
-                    subscribe: this.route.path.split('/')[3],
-                };
-                this.dispatch('CHATHISTORY', subscribe);
-
-            }
-            _getAvatarHash(message) {
-                for (let i = 0; i < this.chatHistory.members.length; i++) {
-                    if (this.chatHistory.members[i].address == message.sender) {
-                        return this.chatHistory.members[i].avatarHash;
-                    }
+                if (this.route.path.split('/')[1] == 'chat') {
+                    let subscribe = {
+                        subscribe: this.route.path.split('/')[3],
+                    };
+                    this.dispatch('CHATHISTORY', subscribe);
                 }
             }
-            _getProviderAvatar(members) {
-                if (members &&
-                    this.hashtagItem &&
-                    this.hashtagItem.itemHash &&
-                    this.hashtagItem.provider) {
-                    for (let i = 0; i < members.length; i++) {
-                        if (members[i].address == this.hashtagItem.provider.address) {
-                            return members[i].avatarHash;
-                        }
-                    }
-                }
-            }
-
+            /**
+            * Switch unlock state depending on unlock button press
+            */
             _unlockByDisplay() {
                 this.async(() => {
                     if (!this.privateKey) {
                         this._toDetail();
                     }
                 });
-            }
-            _getSeekerAvatar(members) {
-                if (members &&
-                    this.hashtagItem &&
-                    this.hashtagItem.itemHash) {
-                    for (let i = 0; i < members.length; i++) {
-                        if (members[i].address == this.hashtagItem.seeker.address) {
-                            return members[i].avatarHash;
-                        }
-                    }
-                }
             }
             /**
             * changes the current path
@@ -454,7 +425,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 let message = {
                     itemHash: this.route.path.split('/')[3],
                     message: this.message,
-                }
+                };
                 this.dispatch('NEWCHATMESSAGE', message);
                 this.message = '';
             }
