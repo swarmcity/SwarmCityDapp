@@ -239,115 +239,115 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    BALANCE: function(balance) {
+                    BALANCE: function (balance) {
                         return {
                             type: 'BALANCE',
                             balance: balance,
                         };
                     },
-                    FX: function(fx) {
+                    FX: function (fx) {
                         return {
                             type: 'FX',
                             fx: fx,
                         };
                     },
-                    NONCE: function(nonce) {
+                    NONCE: function (nonce) {
                         return {
                             type: 'NONCE',
                             nonce: nonce,
                         };
                     },
-                    TOKEY: function(tokey) {
+                    TOKEY: function (tokey) {
                         return {
                             type: 'TOKEY',
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function(shortCode) {
+                    SHORTCODE: function (shortCode) {
                         return {
                             type: 'SHORTCODE',
                             shortCode: shortCode,
                         };
                     },
-                    IPHONE: function(iphone) {
+                    IPHONE: function (iphone) {
                         return {
                             type: 'IPHONE',
                             iphone: iphone,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    AVATARHASH: function(avatarHash) {
+                    AVATARHASH: function (avatarHash) {
                         return {
                             type: 'AVATARHASH',
                             avatarHash: avatarHash,
                         };
                     },
-                    TXHASH: function(txHash) {
+                    TXHASH: function (txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function(txHashItem) {
+                    TXHASHITEM: function (txHashItem) {
                         return {
                             type: 'TXHASHITEM',
                             txHashItem: txHashItem,
                         };
                     },
-                    CONFIRMEDTX: function(confirmedTx) {
+                    CONFIRMEDTX: function (confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
                         };
                     },
-                    ITEMDATAHASH: function(itemDataHash) {
+                    ITEMDATAHASH: function (itemDataHash) {
                         return {
                             type: 'ITEMDATAHASH',
                             itemDataHash: itemDataHash,
                         };
                     },
-                    HASHTAG: function(hashtag) {
+                    HASHTAG: function (hashtag) {
                         return {
                             type: 'HASHTAG',
                             hashtag: hashtag,
                         };
                     },
-                    HASHTAGITEM: function(hashtagItem) {
+                    HASHTAGITEM: function (hashtagItem) {
                         return {
                             type: 'HASHTAGITEM',
                             hashtagItem: hashtagItem,
                         };
                     },
-                    IPFSHASH: function(ipfsHash) {
+                    IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
                         };
                     },
-                    USERREPUTATION: function(userReputation) {
+                    USERREPUTATION: function (userReputation) {
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
                         };
                     },
-                    HASHTAGS: function(hashtags) {
+                    HASHTAGS: function (hashtags) {
                         return {
                             type: 'HASHTAGS',
                             hashtags: hashtags,
                         };
                     },
-                    CHATHISTORY: function(chatHistory) {
+                    CHATHISTORY: function (chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
                         };
                     },
-                    NEWCHATMESSAGE: function(newChatMessage) {
+                    NEWCHATMESSAGE: function (newChatMessage) {
                         return {
                             type: 'NEWCHATMESSAGE',
                             newChatMessage: newChatMessage,
@@ -366,6 +366,19 @@ This code may only be used under the license found at https://github.com/swarmci
                         transports: ['websocket', 'xhr-polling'],
                         autoConnect: false,
                     });
+                window.setUrl = (url) => {
+                    this.socket.close()
+                    this.socket = io(url, // eslint-disable-line
+                        {
+                            query: 'apiUser=swarmCity',
+                            path: '/api',
+                            transports: ['websocket', 'xhr-polling'],
+                            autoConnect: true,
+                        });
+                    this.socket.on('connect', () => {
+                        console.log('connected to ' + url);
+                    });
+                }
             }
 
             ready() {
@@ -628,6 +641,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.hashtag.hashtagFee = 600000000000000000;
                             // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
                             this.dispatch('HASHTAG', this.hashtag);
+                            this._getHashtagItem()
                         }
                     });
                     this.socket.on('hashtagItemsChanged', (reply) => {
@@ -640,6 +654,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.hashtag.hashtagFee = 600000000000000000;
                             // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
                             this.dispatch('HASHTAG', this.hashtag);
+                            this._getHashtagItem()
                         }
                     });
                 }
@@ -690,56 +705,12 @@ This code may only be used under the license found at https://github.com/swarmci
             // Subscribe to a certain hashtagItem
             _getHashtagItem() {
                 if (this.hashtagItem.request) {
-                    if (this.hashtagItemSubscription) {
-                        this.socket.emit('unsubscribe', {
-                            subscriptionId: this.hashtagItemSubscription,
-                        }, (reply) => {
-                            this.socket.emit('subscribe', {
-                                channel: 'hashtagItem',
-                                args: {
-                                    address: this.hashtagItem.request.hashtagAddress,
-                                    itemHash: this.hashtagItem.request.itemHash,
-                                },
-                            }, (reply) => {
-                                if (reply.response == 200) {
-                                    this.hashtagItem = JSON.parse(reply.data);
-                                    this.hashtagItemSubscription = reply.subscriptionId;
-                                    this.hashtagItem.description =
-                                        this.hashtagItem.description ||
-                                        'Missing description';
-                                    this.hashtagItem.seeker.username =
-                                        this.hashtagItem.seeker.username ||
-                                        this.hashtagItem.seeker.address;
-                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                }
-                            });
-                            this.socket.on('hashtagItemChanged', (reply) => {
-                                if (reply.response == 200) {
-                                    if (reply.subscriptionId == this.hashtagItemSubscription) {
-                                        this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                        this.hashtagItem.description =
-                                            this.hashtagItem.description ||
-                                            'Missing description';
-                                        this.hashtagItem.seeker.username =
-                                            this.hashtagItem.seeker.username ||
-                                            this.hashtagItem.seeker.address;
-                                        this.hashtagItem.update = true;
-                                        this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                    }
-                                }
-                            });
-                        });
-                    } else {
-                        this.socket.emit('subscribe', {
-                            channel: 'hashtagItem',
-                            args: {
-                                address: this.hashtagItem.request.hashtagAddress,
-                                itemHash: this.hashtagItem.request.itemHash,
-                            },
-                        }, (reply) => {
-                            if (reply.response == 200) {
-                                this.hashtagItem = JSON.parse(reply.data);
-                                this.hashtagItemSubscription = reply.subscriptionId;
+                    if (this.hashtag &&
+                        this.hashtag.items &&
+                        this.hashtag.hashtagAddress == this.hashtagItem.request.hashtagAddress) {
+                        for (let i = 0; i < this.hashtag.items.length; i++) {
+                            if (this.hashtag.items[i].itemHash == this.hashtagItem.request.itemHash) {
+                                this.hashtagItem = this.hashtag.items[i];
                                 this.hashtagItem.description =
                                     this.hashtagItem.description ||
                                     'missing description';
@@ -748,22 +719,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                     this.hashtagItem.seeker.address;
                                 this.dispatch('HASHTAGITEM', this.hashtagItem);
                             }
-                        });
-                        this.socket.on('hashtagItemChanged', (reply) => {
-                            if (reply.response == 200) {
-                                if (reply.subscriptionId == this.hashtagItemSubscription) {
-                                    this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                    this.hashtagItem.description =
-                                        this.hashtagItem.description ||
-                                        'missing description';
-                                    this.hashtagItem.update = true;
-                                    this.hashtagItem.seeker.username =
-                                        this.hashtagItem.seeker.username ||
-                                        this.hashtagItem.seeker.address;
-                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                }
-                            }
-                        });
+                        }
                     }
                 }
             }
