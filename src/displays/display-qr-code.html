@@ -1,0 +1,79 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../data/data-wallet.html">
+
+<!--
+
+Example:
+```
+<display-qr-code></display-qr-code>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-qr-code-container` | Mixin applied to the container | `{}` |
+-->
+
+<dom-module id="display-qr-code">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+        </style>
+        <data-wallet id="wallet"></data-wallet>
+        <img src="{{qrCode}}">
+    </template>
+    <script>
+        class MyDisplayQrCode extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-qr-code';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The data tio embed in the QR code
+                    * @type {String}
+                    */
+                    data: {
+                        type: String,
+                        observer: '_makeQrCode',
+                    },
+                    /**
+                    * the qrCode base 64 image
+                    * @type {String}
+                    */
+                    qrCode: {
+                        type: String,
+                        notify: true,
+                        reflectToAtribute: true,
+                    },
+                };
+            }
+            /**
+            * Fired when the component first loads
+            */
+            _makeQrCode() {
+                this.$.wallet.makeQRCode(this.data)
+                .then((qrCode) => {
+                    this.qrCode = qrCode;
+                });
+            }
+        } window.customElements.define(MyDisplayQrCode.is, MyDisplayQrCode);
+    </script>
+</dom-module>
