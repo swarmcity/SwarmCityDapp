@@ -68,28 +68,31 @@ This code may only be used under the license found at https://github.com/swarmci
             * If so and not yet loaded, populate item from hashtag object
             */
             _getItem() {
-                console.log('display triggered');
-                // only fill items when we are on detail or chat view
-                if (this.route.path.split('/')[1] == 'detail' ||
-                    this.route.path.split('/')[1] == 'chat'
-                ) {
-                    console.log('display triggered && on the correct route');
-                    // only get new item if the item we need doesn't yet exist in redux
-                    if (
-                        // load when no hashtagitem yet loaded or if a wrong one is loaded
-                        !this.loadedHashtagItem ||
-                        (
-                            this.loadedHashtagItem &&
-                            this.loadedHashtagItem.itemHash &&
-                            this.route.path.split('/')[3] != this.loadedHashtagItem.itemHash
-                        ) &&
-                        this.hashtag &&
-                        this.hashtag.hashtagAddress
+                if (this.route) {
+                    // only fill items when we are on detail or chat view
+                    if (this.route.path.split('/')[1] == 'detail' ||
+                        this.route.path.split('/')[1] == 'chat'
                     ) {
-                        console.log('find item');
-                        let itemHash = this.route.path.split('/')[3];
-                        let hashtagAddress = this.route.path.split('/')[2];
-                        console.log(this.hashtag);
+                        // only get new item if the item we need doesn't yet exist in redux
+                        if (
+                            // load when no hashtagitem yet loaded or if a wrong one is loaded
+                            (!this.loadedHashtagItem ||
+                                (
+                                    this.loadedHashtagItem &&
+                                    this.loadedHashtagItem.itemHash &&
+                                    this.route.path.split('/')[3] != this.loadedHashtagItem.itemHash
+                                )) &&
+                            this.hashtag &&
+                            this.hashtag.hashtagAddress
+                        ) {
+                            let itemHash = this.route.path.split('/')[3];
+                            for (let i = 0; i < this.hashtag.items.length; i++) {
+                                if (this.hashtag.items[i].itemHash === itemHash) {
+                                    this.hashtagItem = this.hashtag.items[i];
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                }
+                            }
+                        }
                     }
                 }
             }
