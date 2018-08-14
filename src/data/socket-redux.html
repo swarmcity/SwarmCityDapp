@@ -641,7 +641,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.hashtag.hashtagFee = 600000000000000000;
                             // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
                             this.dispatch('HASHTAG', this.hashtag);
-                            this._getHashtagItem()
                         }
                     });
                     this.socket.on('hashtagItemsChanged', (reply) => {
@@ -654,7 +653,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.hashtag.hashtagFee = 600000000000000000;
                             // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
                             this.dispatch('HASHTAG', this.hashtag);
-                            this._getHashtagItem()
                         }
                     });
                 }
@@ -698,32 +696,8 @@ This code may only be used under the license found at https://github.com/swarmci
             _selectProvider() {
                 this.socket.emit('selectProvider', {
                     selectee: this.selectProvider,
-                }, (reply) => {
                 });
             }
-
-            // Subscribe to a certain hashtagItem
-            _getHashtagItem() {
-                if (this.hashtagItem.request) {
-                    if (this.hashtag &&
-                        this.hashtag.items &&
-                        this.hashtag.hashtagAddress == this.hashtagItem.request.hashtagAddress) {
-                        for (let i = 0; i < this.hashtag.items.length; i++) {
-                            if (this.hashtag.items[i].itemHash == this.hashtagItem.request.itemHash) {
-                                this.hashtagItem = this.hashtag.items[i];
-                                this.hashtagItem.description =
-                                    this.hashtagItem.description ||
-                                    'missing description';
-                                this.hashtagItem.seeker.username =
-                                    this.hashtagItem.seeker.username ||
-                                    this.hashtagItem.seeker.address;
-                                this.dispatch('HASHTAGITEM', this.hashtagItem);
-                            }
-                        }
-                    }
-                }
-            }
-
             // fired when entering needing a shortCode
             _usingShortCode() {
                 if (this.usingShortCode) {
