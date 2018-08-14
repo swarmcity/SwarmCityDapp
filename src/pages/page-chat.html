@@ -7,7 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../redux-state.html">
@@ -51,7 +51,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-radius: 50%;
             }
 
-            paper-textarea {
+            paper-input {
                 @apply --layout-flex;
                 max-width: 60vw;
                 text-indent: 1px;
@@ -177,6 +177,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding-top: 10vh;
                 height: 75vh;
                 overflow: scroll;
+                width: 100%;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -212,8 +213,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="input-box">
                     <iron-image class="avatar-main" sizing="cover" preload fade src="https://dev.swarm.city/img/[[user.avatarHash]]" placeholder="../images/defaultavatar.png">
                     </iron-image>
-                    <paper-textarea type="txt" value="{{message}}" autofocus></paper-textarea>
-                    <div class="input-confirm" on-up="_sendMessage">
+                    <paper-input type="txt" value="{{message}}" autofocus on-keypress="_checkForEnter"></paper-input>
+                    <div class="input-confirm" on-up="_sendMessage" on-keypress="_checkForEnter">
                         <div class="input-confirm-icon"></div>
                     </div>
                 </div>
@@ -441,6 +442,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = null;
             }
             /**
+            * check if user pressed enter
+            * @param {object} e the fired event
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13 && this.message) {
+                    this._sendMessage();
+                }
+            }
+            /**
             * send a new message on this item
             */
             _sendMessage() {
@@ -450,7 +460,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         message: this.message,
                     };
                     this.dispatch('NEWCHATMESSAGE', message);
-                    this.message = '';
+                    this.message = this.message.trim();
+                    this.message = ' ';
                 }
             }
 
