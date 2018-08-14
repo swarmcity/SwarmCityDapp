@@ -4,8 +4,10 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../redux-state.html">
 <dom-module id="display-get-item">
+    <app-location route="{{route}}"></app-location>
 
     <script>
         class MyDisplayGetItem extends new ReduxMixin(Polymer.Element) {
@@ -20,7 +22,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     route: {
                         type: Object,
-                        observer: '_getItemHash',
+                        observer: '_getItem',
                     },
                     /**
                     * the selected hashtag
@@ -28,6 +30,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     hashtagItem: {
                         type: Object,
+                    },
+                    /**
+                    * the loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                        observer: '_getItem',
                     },
                     /**
                     * the currently loaded hashtag
@@ -54,32 +65,34 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * Decide if the current url contains a hashtag address
-            * If so and not yet loaded, send data request to socket
+            * If so and not yet loaded, populate item from hashtag object
             */
-            _getItemHash() {
-                // only allow requesting new items when we are on detail or chat view
-                if (this.route.path.split('/')[1] == 'detail' ||
-                    this.route.path.split('/')[1] == 'chat'
-                ) {
-                    // only request new item if the item we need doesn't yet exist in redux
-                    if (
-                        // load when no hashtag yet loaded or if a wrong one is loaded
-                        !this.loadedHashtagItem ||
-                        (
-                            this.loadedHashtagItem &&
-                            this.loadedHashtagItem.itemHash &&
-                            this.route.path.split('/')[3] != this.loadedHashtagItem.itemHash
-                        )
+            _getItem() {
+                if (this.route) {
+                    // only fill items when we are on detail or chat view
+                    if (this.route.path.split('/')[1] == 'detail' ||
+                        this.route.path.split('/')[1] == 'chat'
                     ) {
-                        let itemHash = this.route.path.split('/')[3];
-                        let hashtagAddress = this.route.path.split('/')[2];
-                        this.hashtagItem = {
-                            request: {
-                                hashtagAddress,
-                                itemHash,
-                            },
-                        };
-                        this.dispatch('HASHTAGITEM', this.hashtagItem);
+                        // only get new item if the item we need doesn't yet exist in redux
+                        if (
+                            // load when no hashtagitem yet loaded or if a wrong one is loaded
+                            // (!this.loadedHashtagItem ||
+                            //     (
+                            //         this.loadedHashtagItem &&
+                            //         this.loadedHashtagItem.itemHash &&
+                            //         this.route.path.split('/')[3] != this.loadedHashtagItem.itemHash
+                            //     )) &&
+                            this.hashtag &&
+                            this.hashtag.hashtagAddress
+                        ) {
+                            let itemHash = this.route.path.split('/')[3];
+                            for (let i = 0; i < this.hashtag.items.length; i++) {
+                                if (this.hashtag.items[i].itemHash === itemHash) {
+                                    this.hashtagItem = this.hashtag.items[i];
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                }
+                            }
+                        }
                     }
                 }
             }

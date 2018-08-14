@@ -170,7 +170,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
-                        observer: '_getHashtagItem',
                     },
                     /**
                     * A reply to be added to a hashtagItem
@@ -200,11 +199,29 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_selectProvider',
                     },
                     /**
-                    * The current subscriptionId string to a hashtagItem
+                    * The current subscriptionId string to a hashtag
                     * @type {String}
                     */
-                    hashtagItemSubscription: {
+                    hashtagSubscription: {
                         type: String,
+                    },
+                    /**
+                    * the chat history object to instantiate or subscribe to
+                    * @type {Object}
+                    */
+                    chatHistory: {
+                        type: Object,
+                        statePath: 'chatHistory',
+                        observer: '_chatHistory',
+                    },
+                    /**
+                    * the newChatMessage object contains a new chat message for a chat subscription
+                    * @type {Object}
+                    */
+                    newChatMessage: {
+                        type: Object,
+                        statePath: 'newChatMessage',
+                        observer: '_newChatMessage',
                     },
                 };
             }
@@ -292,12 +309,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             hashtag: hashtag,
                         };
                     },
-                    HASHTAGITEM: function(hashtagItem) {
-                        return {
-                            type: 'HASHTAGITEM',
-                            hashtagItem: hashtagItem,
-                        };
-                    },
                     IPFSHASH: function(ipfsHash) {
                         return {
                             type: 'IPFSHASH',
@@ -316,6 +327,18 @@ This code may only be used under the license found at https://github.com/swarmci
                             hashtags: hashtags,
                         };
                     },
+                    CHATHISTORY: function(chatHistory) {
+                        return {
+                            type: 'CHATHISTORY',
+                            chatHistory: chatHistory,
+                        };
+                    },
+                    NEWCHATMESSAGE: function(newChatMessage) {
+                        return {
+                            type: 'NEWCHATMESSAGE',
+                            newChatMessage: newChatMessage,
+                        };
+                    },
                 });
             }
 
@@ -329,6 +352,16 @@ This code may only be used under the license found at https://github.com/swarmci
                         transports: ['websocket', 'xhr-polling'],
                         autoConnect: false,
                     });
+                window.setUrl = (url) => {
+                    this.socket.close();
+                    this.socket = io(url, // eslint-disable-line
+                        {
+                            query: 'apiUser=swarmCity',
+                            path: '/api',
+                            transports: ['websocket', 'xhr-polling'],
+                            autoConnect: true,
+                        });
+                };
             }
 
             ready() {
@@ -362,6 +395,42 @@ This code may only be used under the license found at https://github.com/swarmci
 
                 // All handlers attached - please connect..
                 this.socket.connect();
+            }
+
+            _chatHistory() {
+                if (this.chatHistory) {
+                    if (this.chatHistory.instantiate) {
+                        this.socket.emit('subscribeToChat', {
+                            emitterAddress: this.publicKey,
+                            members: this.chatHistory.instantiate,
+                            itemHash: this.hashtagItem.itemHash,
+                        });
+                    }
+                    if (this.chatHistory.subscribe) {
+                        this.socket.emit('subscribeToChat', {
+                            emitterAddress: this.publicKey,
+                            itemHash: this.chatHistory.subscribe,
+                        });
+                    }
+                    this.socket.on('chatChanged', (reply) => {
+                        this.dispatch('CHATHISTORY', reply);
+                    }
+                    );
+                }
+            }
+
+            _newChatMessage() {
+                if (this.newChatMessage) {
+                    this.socket.emit('newChatMessage', {
+                        itemHash: this.newChatMessage.itemHash,
+                        payload: {
+                            message: this.newChatMessage.message,
+                            avatarHash: this.avatarHash,
+                            username: this.username,
+                            sender: this.publicKey,
+                        },
+                    });
+                }
             }
 
             /**
@@ -535,6 +604,11 @@ This code may only be used under the license found at https://github.com/swarmci
             // Subscribe to a certain hashtag
             _getHashtag() {
                 if (this.hashtag.request) {
+                    if (this.hashtagSubscription) {
+                        this.socket.emit('unsubscribe', {
+                            subscriptionId: this.hashtagSubscription,
+                        });
+                    }
                     this.socket.emit('subscribe', {
                         channel: 'hashtagItems',
                         args: {
@@ -542,6 +616,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         },
                     }, (reply) => {
                         if (reply.response == 200) {
+                            this.hashtagSubscription = reply.subscriptionId;
                             let address = this.hashtag.request;
                             this.hashtag = JSON.parse(reply.data);
                             this.hashtag.hashtagAddress = address;
@@ -552,7 +627,8 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     });
                     this.socket.on('hashtagItemsChanged', (reply) => {
-                        if (reply.response == 200) {
+                        // Only update if there is a current hashtag subscription
+                        if (reply.response == 200 && this.hashtagSubscription == reply.subscriptionId) {
                             let address = this.hashtag.hashtagAddress;
                             this.hashtag = JSON.parse(JSON.parse(reply.data));
                             this.hashtag.hashtagAddress = address;
@@ -603,91 +679,8 @@ This code may only be used under the license found at https://github.com/swarmci
             _selectProvider() {
                 this.socket.emit('selectProvider', {
                     selectee: this.selectProvider,
-                }, (reply) => {
                 });
             }
-
-            // Subscribe to a certain hashtagItem
-            _getHashtagItem() {
-                if (this.hashtagItem.request) {
-                    if (this.hashtagItemSubscription) {
-                        this.socket.emit('unsubscribe', {
-                            subscriptionId: this.hashtagItemSubscription,
-                        }, (reply) => {
-                            this.socket.emit('subscribe', {
-                                channel: 'hashtagItem',
-                                args: {
-                                    address: this.hashtagItem.request.hashtagAddress,
-                                    itemHash: this.hashtagItem.request.itemHash,
-                                },
-                            }, (reply) => {
-                                if (reply.response == 200) {
-                                    this.hashtagItem = JSON.parse(reply.data);
-                                    this.hashtagItemSubscription = reply.subscriptionId;
-                                    this.hashtagItem.description =
-                                        this.hashtagItem.description ||
-                                        'Missing description';
-                                    this.hashtagItem.seeker.username =
-                                        this.hashtagItem.seeker.username ||
-                                        this.hashtagItem.seeker.address;
-                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                }
-                            });
-                            this.socket.on('hashtagItemChanged', (reply) => {
-                                if (reply.response == 200) {
-                                    if (reply.subscriptionId == this.hashtagItemSubscription) {
-                                        this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                        this.hashtagItem.description =
-                                            this.hashtagItem.description ||
-                                            'Missing description';
-                                        this.hashtagItem.seeker.username =
-                                            this.hashtagItem.seeker.username ||
-                                            this.hashtagItem.seeker.address;
-                                        this.hashtagItem.update = true;
-                                        this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                    }
-                                }
-                            });
-                        });
-                    } else {
-                        this.socket.emit('subscribe', {
-                            channel: 'hashtagItem',
-                            args: {
-                                address: this.hashtagItem.request.hashtagAddress,
-                                itemHash: this.hashtagItem.request.itemHash,
-                            },
-                        }, (reply) => {
-                            if (reply.response == 200) {
-                                this.hashtagItem = JSON.parse(reply.data);
-                                this.hashtagItemSubscription = reply.subscriptionId;
-                                this.hashtagItem.description =
-                                    this.hashtagItem.description ||
-                                    'missing description';
-                                this.hashtagItem.seeker.username =
-                                    this.hashtagItem.seeker.username ||
-                                    this.hashtagItem.seeker.address;
-                                this.dispatch('HASHTAGITEM', this.hashtagItem);
-                            }
-                        });
-                        this.socket.on('hashtagItemChanged', (reply) => {
-                            if (reply.response == 200) {
-                                if (reply.subscriptionId == this.hashtagItemSubscription) {
-                                    this.hashtagItem = JSON.parse(JSON.parse(reply.data));
-                                    this.hashtagItem.description =
-                                        this.hashtagItem.description ||
-                                        'missing description';
-                                    this.hashtagItem.update = true;
-                                    this.hashtagItem.seeker.username =
-                                        this.hashtagItem.seeker.username ||
-                                        this.hashtagItem.seeker.address;
-                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-
             // fired when entering needing a shortCode
             _usingShortCode() {
                 if (this.usingShortCode) {
