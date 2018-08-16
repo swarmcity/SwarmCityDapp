@@ -1,0 +1,300 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../data/data-wallet.html">
+
+<!--
+
+Example:
+```
+<display-new-account></display-new-account>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+
+
+-->
+<dom-module id="display-new-account">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+                width: 100%;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            paper-input {
+                width: 100%;
+                text-align: center;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                min-height: 8vh;
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+            }
+
+            .btn {
+                @apply --icon-button-big;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+                opacity: 0.2;
+            }
+
+            .enabled {
+                opacity: 1;
+            }
+
+            .enabled:active {
+                @apply --button-active;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .agree {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <data-wallet id="wallet"></data-wallet>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <paper-input 
+                id="password" 
+                label="{{localize('password?')}}" 
+                type="password" 
+                on-input="_checkInput" 
+                value="{{password}}" 
+                autofocus
+                on-keydown="_checkForEnter">
+            </paper-input>
+            <paper-input 
+                id="repeat" 
+                label="{{localize('Confirm password')}}" 
+                type="password" 
+                on-input="_checkInput" 
+                value="{{confirmPassword}}"
+                on-keydown="_checkForEnter">
+            </paper-input>
+            <div class="errorcontainer">
+                <span id="error">{{error}}</span>
+            </div>
+            <div class="btn">
+                <div id="agree" class="agree" on-click="_agree"></div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class DisplayNewAccount extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-new-account';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * specifies the users language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Password
+                    * @type {String}
+                    */
+                    password: {
+                        type: String,
+                    },
+                    /**
+                    * Confirm Password
+                    * @type {String}
+                    */
+                    confirmPassword: {
+                        type: String,
+                    },
+                    /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                    },
+                    /**
+                    * Path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                        observer: '_resetValues',
+                    },
+                    /**
+                    * routeEntry contains routing information
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_resetValues',
+                    },
+                };
+            }
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._agree();
+                }
+            }
+            /**
+            * When leaving the page, entered values get reset
+            */
+            _resetValues() {
+                if (this.routeEntry[0] == 'choose-password') {
+                    this.password = null;
+                    this.confirmPassword = null;
+                    this.error = null;
+                }
+            }
+            /**
+            * takes the user to the next page in user creation
+            */
+            _agree() {
+                if (this.password &&
+                this.password.length >= 1 &&
+                this.confirmPassword &&
+                this.password == this.confirmPassword) {
+                    this.$.wallet.createKey(this.password)
+                        .then((keyStore) => {
+                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                            storage.keyStore = keyStore.utcKeystore;
+                            this.dispatch('PUBLICKEY', storage.keyStore.address);
+                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                            this.path = 'account-complete/';
+                        });
+                }
+            }
+            /**
+            * Compares input realtime and toggles button and error message
+            */
+            _checkInput() {
+                this.error = '';
+                if (this.password &&
+                this.confirmPassword &&
+                this.password.length >=1 &&
+                this.confirmPassword.length >=1) {
+                    if (this.confirmPassword.length <= this.password.length) {
+                        for (let i = 0; i < this.confirmPassword.length; i++) {
+                            if (this.confirmPassword[i] != this.password[i]) {
+                            this.error = this.localize('The passwords dont match.');
+                        }
+                    }
+                    } else {
+                        this.error = this.localize('The passwords dont match.');
+                    }
+                }
+                if (this.password &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
+                    this.$.agree.classList.add('enabled');
+                }
+                else (this.$.agree.classList.remove('enabled'));
+            }
+        }
+        window.customElements.define(DisplayNewAccount.is, DisplayNewAccount);
+    </script>
+</dom-module>
