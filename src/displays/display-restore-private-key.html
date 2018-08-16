@@ -1,0 +1,567 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../data/data-wallet.html">
+<!--
+
+Example:
+```
+<display-restore-private-key></display-restore-private-key>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| Please remove all css from this file out to mixins
+
+-->
+<dom-module id="display-restore-private-key">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+                width: 100%;
+            }
+
+            .middle {
+                width: 100%;
+                @apply --layout-flex;
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                box-sizing:border-box;
+                padding-top: 5vh;
+            }
+
+            .container[wide-layout] .middle {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;               
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                background-color: rgba(0,0,0,0.05);
+                width: 100%;
+                max-width: 750px;
+                box-sizing:border-box;
+                padding: 40px;
+                @apply --small-light;
+                color: var(--sc-grey4);
+                text-align: center;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                width: 100%;
+                text-align: left;
+                padding: 40px;
+            }
+
+            .btn {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-small;
+                color: var(--sc-grey4);
+                box-sizing: border-box;
+                margin: 20px 14px 14px 0;
+            }
+
+            .btn:active {
+                @apply --button-active;
+            }
+
+            paper-input {
+                width: 100%;
+                text-align: center;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply(--body-bold);
+                }
+                --paper-input-error: {
+                    @apply(--body-bold);
+                }
+                --paper-input-prefix: {
+                    @apply(--body-default);
+                }
+                --paper-input-suffix: {
+                    @apply(--body-default);
+                }
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            .container .errorcontainer {
+                min-height: 15vh;
+                @apply --error-container;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                min-height: 8vh;
+                @apply --error-container-wide;
+            }
+
+            .error {
+                @apply --error-msg;
+            }
+
+            .container[wide-layout] .error {
+                @apply --error-msg-wide;
+            }
+
+            .error-key {
+                @apply --error-msg;
+                margin: 10px 0 0 0;
+            }
+
+            .container[wide-layout] .error-key {
+                @apply --error-msg-wide;
+                margin: 10px 0 0 0;
+            }
+            .messagebox {
+                margin-top: 2vh;
+                height: 4vh;
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+            }
+
+            .showfullkey {
+                margin-top: 2vh;
+                @apply --small-bold;
+                @apply --layout-center;
+                color: var(--sc-blue);
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+            .box {
+                @apply --layout-vertical;
+                @apply --layout--center;
+                @apply --layout--start-justified;
+                box-sizing: border-box;
+            }
+
+            .container[wide-layout] .box {
+                box-sizing: border-box;
+                @apply --layout-horizontal;
+                @apply --layout--start;
+                @apply --layout--start-justified;
+            }
+
+            .trianglecontainer {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-center-justified;
+                margin: 0px 10px 20px 10px;
+            }
+
+            .container[wide-layout] .trianglecontainer {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                width: 54px;
+            }
+
+            .triangle {
+                @apply --alert-blue-normal;
+                position: relative;
+            }
+
+            .textbox {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                text-align: center;
+                margin: 0px 0px 20px 0px;
+            }
+
+            .container[wide-layout] .textbox {
+                text-align: left;
+            }
+
+            .iconbtn {
+                @apply --icon-button-big;
+                margin: 5vh 0px 10px;
+            }
+
+            .iconbtn:active {
+                @apply --button-active;
+            }
+
+            .disabled {
+                @apply --icon-button-big;
+                margin: 0 0px 10px;
+                opacity: 0.2;
+            }
+
+            .enabled {
+                @apply --icon-button-big;
+                margin: 0 0px 10px;
+                opacity: 1;
+            }
+
+            .enabled:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+
+            .passset {
+                @apply --body-bold;
+                color: var(--sc-grey3);
+            }
+
+        </style>
+        <data-wallet id="wallet"></data-wallet>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="middle">
+                <paper-input autofocus tabindex="1" id="input" label="{{localize('Private key?')}}" type="txt" on-input="_checkKey" value="{{privateKey}}"></paper-input>
+                <div class="errorcontainer">
+                    <span id="privateKeyError" class="error-key">{{privateKeyError}}</span>
+                </div>
+            </div>
+            <template is="dom-if" if="{{showPasswordBox}}">
+
+            <div class="bottom">
+
+
+
+                <template is="dom-if" if="{{choosePassword}}">
+                <div>{{localize('To restore an account with a private key please choose a password for it first')}}</div>
+                <div class="btn" on-click="_agreeToEnterPassword">choose password</div>
+            </template>
+
+            <template is="dom-if" if="{{passwordWarning}}">
+                <div class="box">
+                    <div class="trianglecontainer">
+                        <div class="triangle"></div>
+                    </div>
+                    <div class="textbox">
+                        <div class="inner-top">{{localize('There is no password recovery available in Swarm City.')}}</div>
+                        <div class="inner-bottom">{{localize('Choose your password with care.')}}</div>
+                    </div>
+                </div>
+                <div class="iconbtn"> 
+                    <div class="agree" on-click="_agreeToChoosePassword"></div> 
+                </div>
+            </template>
+
+            <template is="dom-if" if="{{passwordSubmit}}">
+                <paper-input 
+                    id="password" 
+                    label="{{localize('password?')}}" 
+                    type="password" 
+                    on-input="_checkInput" 
+                    on-keydown="_checkForEnter" 
+                    value="{{password}}">
+                </paper-input>
+                <paper-input 
+                    id="repeat" 
+                    label="{{localize('Confirm password')}}" 
+                    type="password" 
+                    on-input="_checkInput"
+                    on-keydown="_checkForEnter" 
+                    value="{{confirmPassword}}"></paper-input>
+                <div class="errorcontainer">
+                    <span id="passwordError" class="error">{{passwordError}}</span>
+                </div>
+                <div id="agree" class="disabled"> 
+                    <div class="agree" on-click="_submit"></div> 
+                </div>
+            </template>
+
+            <template is="dom-if" if="{{passwordSet}}">
+                <div class="passset">{{localize('the password is set')}}</div>
+            </template>
+
+
+
+            </div>
+        </template>
+
+            <template is="dom-if" if="{{passwordSet}}">
+                <div class="iconbtn"> 
+                    <div class="agree" on-click=""></div> 
+                </div>
+            </template>
+
+        </div>
+    </template>
+    <script>
+        class DisplayRestorePrivateKey extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-restore-private-key';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * routeEntry contains routing information
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_resetValues',
+                    },
+                    /**
+                    * choosePassword if true gives the option to choose password
+                    * @type {Boolean}
+                    */
+                    choosePassword: {
+                        type: Boolean,
+                        value: true,
+                    },
+                    /**
+                    * passwordWarning if true shows a warning about password
+                    * @type {Boolean}
+                    */
+                    passwordWarning: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * passwordSubmit if true give the option to submit a passw
+                    * @type {Boolean}
+                    */
+                    passwordSubmit: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * showPasswordBox if true show the password-box
+                    * @type {Boolean}
+                    */
+                    showPasswordBox: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * passwordSet if true shows that passw is set
+                    * @type {Boolean}
+                    */
+                    passwordSet: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * The password the user has entered
+                    * @type {String}
+                    */
+                    password: {
+                        type: String,
+                    },
+                    /**
+                    * The password the user has entered the second time
+                    * @type {String}
+                    */
+                    confirmPassword: {
+                        type: String,
+                    },
+                    /**
+                    * User input error prompt on password input
+                    * @type {String}
+                    */
+                    passwordError: {
+                        type: String,
+                        value: '',
+                    },
+                    /**
+                    * User input error prompt on private key input
+                    * @type {String}
+                    */
+                    privateKeyError: {
+                        type: String,
+                        value: '',
+                    },
+                    /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                    },
+
+                };
+            }
+
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                });
+            }
+
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * The user agrees to enter a password
+            */
+            _agreeToEnterPassword() {
+                this.choosePassword = false;
+                this.passwordWarning = true;
+            }
+            /**
+            * The user agrees to choose a password with care
+            */
+            _agreeToChoosePassword() {
+                this.passwordWarning = false;
+                this.passwordSubmit = true;
+            }
+            /**
+            * When leaving the page, entered values get reset
+            */
+            _resetValues() {
+                if (this.routeEntry[0] == 'private-key') {
+                    this.password = null;
+                    this.confirmPassword = null;
+                    this.privateKey = null;
+                    this.privateKeyError = '';
+                    this.choosePassword = true;
+                    this.passwordWarning = false;
+                    this.passwordSubmit = false;
+                    this.passwordSet = false;
+                }
+            }
+            /**
+            * Compares input realtime and toggles button and error message
+            */
+            _checkInput() {
+                this.passwordError = '';
+                if (this.password &&
+                this.confirmPassword &&
+                this.password.length >=1 &&
+                this.confirmPassword.length >=1) {
+                    if (this.confirmPassword.length <= this.password.length) {
+                        for (let i = 0; i < this.confirmPassword.length; i++) {
+                            if (this.confirmPassword[i] != this.password[i]) {
+                            this.passwordError = this.localize('The passwords dont match.');
+                        }
+                    }
+                    } else {
+                        this.passwordError = this.localize('The passwords dont match.');
+                    }
+                }
+                if (this.password &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
+                        this.$$('#agree').classList.remove('disabled');
+                        this.$$('#agree').classList.add('enabled');
+                } else {
+                    this.$$('#agree').classList.add('disabled');
+                    this.$$('#agree').classList.remove('enabled');
+                }
+            }
+
+            _checkKey() {
+                this.privateKeyError = '';
+                if (this.privateKey && this.privateKey. length >= 1) {
+                    if (this. privateKey.length != 64) {
+                        this.showPasswordBox = false;
+                        if (this.privateKey.length < 64) {
+                            this.privateKeyError =
+                                this.localize('The private key you entered is too short.');
+                        } else {
+                            this.privateKeyError =
+                                this.localize('The private key you entered is too long.');
+                        }
+                    } else {
+                    this.showPasswordBox = true;
+                    }
+                }
+            }
+
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                    this._submit();
+                }
+            }
+            /**
+            * The password and key have been entered
+            */
+            _submit() {
+                if (this.password &&
+                this.password.length >= 1 &&
+                this.confirmPassword &&
+                this.password == this.confirmPassword) {
+                    if (this.privateKey && this.privateKey.length === 64) {
+                        this.$.wallet.restoreKey(this.privateKey, this.password)
+                        .then((KeyStore) => {
+                            this.dispatch('PUBLICKEY', KeyStore.address);
+                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                            storage.keyStore = KeyStore.utcKeystore;
+                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                            this.path = 'choose-avatar-and-username';
+                        });
+                    }
+                    else {
+                        this.privateKeyError = this.localize('Please enter a key.');
+                    }
+                }
+            }
+        } window.customElements.define(DisplayRestorePrivateKey.is, DisplayRestorePrivateKey);
+    </script>
+</dom-module>
+
+
