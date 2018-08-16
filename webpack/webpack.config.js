@@ -5,7 +5,7 @@ module.exports = {
     output: {
         filename: 'webpack.min.js',
         path: path.resolve(__dirname, '../src/data/'),
-        library: 'swarmcity',
+        library: 'webpack',
         libraryTarget: 'var',
     },
     mode: 'production',
