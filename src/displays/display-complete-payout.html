@@ -1,0 +1,143 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../data/data-transaction.html">>
+<link rel="import" href="../data/data-simpledeal.html">
+<link rel="import" href="../redux-state.html">
+<script src="../data/webpack.min.js"></script>
+<script src="../data/abi.js"></script>
+
+
+<!--
+
+Example:
+```
+<display-complete-payout></display-complete-payout>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-complete-payout` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-complete-payout">
+    <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
+    </template>
+    <script>
+        class MyDisplayCompletePayout extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-complete-payout';
+            }
+            /**
+            * Redux actions for choosing a provider
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    SENDSIGNEDTX: function(sendSignedTx) {
+                        return {
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
+                        };
+                    },
+                });
+            }
+            static get properties() {
+                return {
+                    /**
+                    * private key that is asocated with the from address
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_payout',
+                    },
+                    /**
+                    * Route is the current URL
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * Signed TX to send
+                    * @type {Object}
+                    */
+                    sendSignedTx: {
+                        type: Object,
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * The user's nonce
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * address represents the user's public key
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * The hashtag we're posting a request on
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                };
+            }
+            /**
+            * We collect all & encrypt all necessary data, prepare the selectProvider object
+            */
+            _payout() {
+                if (this.privateKey) {
+                    this.$.simpledeal.rawPayoutItem(
+                        this.hashtagItem.itemHash,
+                        this.hashtag.hashtagAddress,
+                        abi.hashtagSimpleDeal.abi
+                    ).then((rawPayoutItem) => {
+                        this.$.transaction.signRawTx(
+                            this.address,
+                            this.hashtag.hashtagAddress,
+                            this.nonce,
+                            rawPayoutItem,
+                            this.privateKey
+                        ).then((serializedTx) => {
+                            this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                        }).catch((err) => {
+                            this.error = err;
+                        });
+                    });
+                }
+            }
+        } window.customElements.define(MyDisplayCompletePayout.is, MyDisplayCompletePayout);
+    </script>
+</dom-module>
