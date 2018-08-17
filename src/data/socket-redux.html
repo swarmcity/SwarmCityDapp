@@ -128,6 +128,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_itemToIpfs',
                     },
                     /**
+                    * Send new reply metadata to IPFS
+                    * @type {Object}
+                    */
+                    replyToIpfs: {
+                        type: Object,
+                        statePath: 'replyToIpfs',
+                        observer: '_replyToIpfs',
+                    },
+                    /**
                     * Send new signed tx to the blockchain
                     * @type {Object}
                     */
@@ -171,15 +180,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'hashtagItem',
                     },
                     /**
-                    * A reply to be added to a hashtagItem
-                    * @type {Object}
-                    */
-                    replyRequest: {
-                        type: Object,
-                        statePath: 'replyRequest',
-                        observer: '_sendReply',
-                    },
-                    /**
                     * The selected user's reputation balance
                     * @type {Object}
                     */
@@ -187,15 +187,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         statePath: 'userReputation',
                         observer: '_getUserReputation',
-                    },
-                    /**
-                    * The payload to select a provider from the list of replies
-                    * @type {Object}
-                    */
-                    selectProvider: {
-                        type: Object,
-                        statePath: 'selectProvider',
-                        observer: '_selectProvider',
                     },
                     /**
                     * The current subscriptionId string to a hashtag
@@ -230,109 +221,115 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    BALANCE: function(balance) {
+                    BALANCE: function (balance) {
                         return {
                             type: 'BALANCE',
                             balance: balance,
                         };
                     },
-                    FX: function(fx) {
+                    FX: function (fx) {
                         return {
                             type: 'FX',
                             fx: fx,
                         };
                     },
-                    NONCE: function(nonce) {
+                    NONCE: function (nonce) {
                         return {
                             type: 'NONCE',
                             nonce: nonce,
                         };
                     },
-                    TOKEY: function(tokey) {
+                    TOKEY: function (tokey) {
                         return {
                             type: 'TOKEY',
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function(shortCode) {
+                    SHORTCODE: function (shortCode) {
                         return {
                             type: 'SHORTCODE',
                             shortCode: shortCode,
                         };
                     },
-                    IPHONE: function(iphone) {
+                    IPHONE: function (iphone) {
                         return {
                             type: 'IPHONE',
                             iphone: iphone,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    AVATARHASH: function(avatarHash) {
+                    AVATARHASH: function (avatarHash) {
                         return {
                             type: 'AVATARHASH',
                             avatarHash: avatarHash,
                         };
                     },
-                    TXHASH: function(txHash) {
+                    TXHASH: function (txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function(txHashItem) {
+                    TXHASHITEM: function (txHashItem) {
                         return {
                             type: 'TXHASHITEM',
                             txHashItem: txHashItem,
                         };
                     },
-                    CONFIRMEDTX: function(confirmedTx) {
+                    CONFIRMEDTX: function (confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
                         };
                     },
-                    ITEMDATAHASH: function(itemDataHash) {
+                    ITEMDATAHASH: function (itemDataHash) {
                         return {
                             type: 'ITEMDATAHASH',
                             itemDataHash: itemDataHash,
                         };
                     },
-                    HASHTAG: function(hashtag) {
+                    REPLYDATAHASH: function (replyDataHash) {
+                        return {
+                            type: 'REPLYDATAHASH',
+                            replyDataHash: replyDataHash,
+                        };
+                    },
+                    HASHTAG: function (hashtag) {
                         return {
                             type: 'HASHTAG',
                             hashtag: hashtag,
                         };
                     },
-                    IPFSHASH: function(ipfsHash) {
+                    IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
                         };
                     },
-                    USERREPUTATION: function(userReputation) {
+                    USERREPUTATION: function (userReputation) {
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
                         };
                     },
-                    HASHTAGS: function(hashtags) {
+                    HASHTAGS: function (hashtags) {
                         return {
                             type: 'HASHTAGS',
                             hashtags: hashtags,
                         };
                     },
-                    CHATHISTORY: function(chatHistory) {
+                    CHATHISTORY: function (chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
                         };
                     },
-                    NEWCHATMESSAGE: function(newChatMessage) {
+                    NEWCHATMESSAGE: function (newChatMessage) {
                         return {
                             type: 'NEWCHATMESSAGE',
                             newChatMessage: newChatMessage,
@@ -344,7 +341,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io('https://dev.swarm.city', // eslint-disable-line
+                this.socket = io('127.0.0.1:8011', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -385,11 +382,50 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
 
                 // Get the list of hashtags
-                this.socket.emit('getHashtags', {
+                this.socket.emit('subscribeToHashtags');
+                this.socket.on('hashtagsChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.hashtags = reply.data;
+                        this.dispatch('HASHTAGS', this.hashtags);
+                    }
+                });
 
-                }, (reply) => {
-                    this.hashtags = reply.data;
-                    this.dispatch('HASHTAGS', this.hashtags);
+                this.socket.on('hashtagItemsChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.hashtag.items = reply.data;
+                        this.hashtag.items[0].replies = [
+                            {
+                                "username": "The eyes of the Tiger",
+                                "avatarHash": "QmRoLkP6oA7tRHvzgBNoycWJkTETFeyk9pymFpiX3rpoYh",
+                                "address": "0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54",
+                                "publicKey": "f127d3356b6504345d62844339a2e5a6e8514dc09f96a7e4c3ca4aa6e80e4c29a43bd03827430099f91a96813e1e3bc729e00224b7d8f6c59adfd136ed78c864",
+                                "reputation": "0",
+                                "description": "hoi",
+                                "dateTime": 1534469079
+                            }
+                        ];
+                        this.hashtag.items[0].selectee = {
+                            "secret": {
+                                "iv": "9cc0aa0bfc933492a6b887a7bc1890e4",
+                                "ephemPublicKey": "04e2ffbdf4276d7927c95b3f3d611c9af28b0d61f96c331b758c71d7a254bc3ac9d2e76e4a3553430bd5af68a5e4d17f6a98b441639a74d67624c80bbda3abf3e8",
+                                "ciphertext": "c608778750c05b42113e37749633fa8179765aa0ccbba904dc1992c5ef3486793e645662c6b97229ac32eb36b6aafd03",
+                                "mac": "8d52b169940a27d2452444d284cc4ff1980120f66bd3186f23dd812c62a3e150"
+                            },
+                            "address": "0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54",
+                            "publicKeySeeker": "47c7cfcd792390a85bd6f8d0f33fcf5b363ee6ffbf99c789a53b9539ddff07c18163693244d832cba4eccf8e869ecf3c0c2ed0400608dcbd9f78aeb9f6a7fb0e",
+                            "reply": {
+                                "username": "The eyes of the Tiger",
+                                "avatarHash": "QmRoLkP6oA7tRHvzgBNoycWJkTETFeyk9pymFpiX3rpoYh",
+                                "address": "0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54",
+                                "publicKey": "f127d3356b6504345d62844339a2e5a6e8514dc09f96a7e4c3ca4aa6e80e4c29a43bd03827430099f91a96813e1e3bc729e00224b7d8f6c59adfd136ed78c864",
+                                "reputation": "0",
+                                "description": "hoi",
+                                "dateTime": 1534469079
+                            }
+                        }
+
+                        this._updateHashtag();
+                    }
                 });
 
                 // All handlers attached - please connect..
@@ -429,6 +465,28 @@ This code may only be used under the license found at https://github.com/swarmci
                             sender: this.publicKey,
                         },
                     });
+                }
+            }
+
+            _getHashtag() {
+                if (this.hashtag.request) {
+                    this.socket.emit('subscribeToHashtag', {
+                        hashtag: this.hashtag.request,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            delete this.hashtag.request;
+                            Object.assign(this.hashtag, reply.data);
+                            this._updateHashtag();
+                        }
+                    });
+                }
+            }
+
+            _updateHashtag() {
+                if (this.hashtag.items && this.hashtag.hashtagAddress) {
+                    let temp = this.hashtag;
+                    this.dispatch('HASHTAG', {});
+                    this.dispatch('HASHTAG', temp);
                 }
             }
 
@@ -501,6 +559,17 @@ This code may only be used under the license found at https://github.com/swarmci
                     if (reply.response == 200) {
                         this.itemDataHash = reply;
                         this.dispatch('ITEMDATAHASH', this.itemDataHash);
+                    }
+                });
+            }
+
+            _replyToIpfs() {
+                this.socket.emit('ipfsAdd', {
+                    payload: this.replyToIpfs,
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.replyDataHash = reply.data;
+                        this.dispatch('REPLYDATAHASH', this.replyDataHash);
                     }
                 });
             }
@@ -582,12 +651,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 });
             }
-            _sendReply() {
-                this.socket.emit('replyRequest', {
-                    reply: this.replyRequest,
-                }, (reply) => {
-                });
-            }
             _broadcast() {
                 if (this.reqtokey != null) {
                     this.socket.emit('replyShortCode', {
@@ -600,85 +663,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-            // Subscribe to a certain hashtag
-            _getHashtag() {
-                if (this.hashtag.request) {
-                    if (this.hashtagSubscription) {
-                        this.socket.emit('unsubscribe', {
-                            subscriptionId: this.hashtagSubscription,
-                        });
-                    }
-                    this.socket.emit('subscribe', {
-                        channel: 'hashtagItems',
-                        args: {
-                            address: this.hashtag.request,
-                        },
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            this.hashtagSubscription = reply.subscriptionId;
-                            let address = this.hashtag.request;
-                            this.hashtag = JSON.parse(reply.data);
-                            this.hashtag.hashtagAddress = address;
-                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
-                            this.hashtag.hashtagFee = 600000000000000000;
-                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
-                            this.dispatch('HASHTAG', this.hashtag);
-                        }
-                    });
-                    this.socket.on('hashtagItemsChanged', (reply) => {
-                        // Only update if there is a current hashtag subscription
-                        if (reply.response == 200 && this.hashtagSubscription == reply.subscriptionId) {
-                            let address = this.hashtag.hashtagAddress;
-                            this.hashtag = JSON.parse(JSON.parse(reply.data));
-                            this.hashtag.hashtagAddress = address;
-                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
-                            this.hashtag.hashtagFee = 600000000000000000;
-                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
-                            this.dispatch('HASHTAG', this.hashtag);
-                        }
-                    });
-                }
-            }
-
             // Get a certain user's reputation balance by address
             _getUserReputation() {
-                // if (this.userReputation.request) {
-                //     this.socket.emit('userReputation', {
-                //         address: this.userReputation.request,
-                //     }, (reply) => {
-                //     });
-                // }
-                /* eslint-disable */
-                // --------------- BEGIN TEMPORARY REPLIES DATA ---------------
                 if (this.userReputation.request) {
-                    let mockRepData = [
-                        {
-                            "name": "Settler",
-                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
-                            "seekerRep": 1,
-                            "providerRep": 0,
-                        }, {
-                            "name": "DevOps",
-                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
-                            "seekerRep": 9,
-                            "providerRep": 12,
-                        }, {
-                            "name": "SwarmCitySwag",
-                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
-                            "seekerRep": 4,
-                            "providerRep": 2,
-                        }
-                    ];
-                    this.dispatch('USERREPUTATION', mockRepData);
+                    this.socket.emit('getReputation', {
+                        address: this.userReputation.request,
+                    }, (reply) => {
+                        this.dispatch('USERREPUTATION', reply.data);
+                    });
                 }
-                // --------------- END TEMPORARY REPLIES DATA ---------------
-                /* eslint-enable */
-            }
-
-            _selectProvider() {
-                this.socket.emit('selectProvider', {
-                    selectee: this.selectProvider,
-                });
             }
             // fired when entering needing a shortCode
             _usingShortCode() {
