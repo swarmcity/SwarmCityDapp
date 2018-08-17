@@ -169,7 +169,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
-                        observer: '_getHashtagItem',
                     },
                     /**
                     * A reply to be added to a hashtagItem
@@ -197,13 +196,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         statePath: 'selectProvider',
                         observer: '_selectProvider',
-                    },
-                    /**
-                    * The current subscriptionId string to a hashtagItem
-                    * @type {String}
-                    */
-                    hashtagItemSubscription: {
-                        type: String,
                     },
                     /**
                     * The current subscriptionId string to a hashtag
@@ -316,12 +308,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             hashtag: hashtag,
                         };
                     },
-                    HASHTAGITEM: function (hashtagItem) {
-                        return {
-                            type: 'HASHTAGITEM',
-                            hashtagItem: hashtagItem,
-                        };
-                    },
                     IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
@@ -366,7 +352,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         autoConnect: false,
                     });
                 window.setUrl = (url) => {
-                    this.socket.close()
+                    this.socket.close();
                     this.socket = io(url, // eslint-disable-line
                         {
                             query: 'apiUser=swarmCity',
@@ -374,10 +360,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             transports: ['websocket', 'xhr-polling'],
                             autoConnect: true,
                         });
-                    this.socket.on('connect', () => {
-                        console.log('connected to ' + url);
-                    });
-                }
+                };
             }
 
             ready() {
@@ -619,8 +602,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             // Subscribe to a certain hashtag
             _getHashtag() {
-                console.log('_getHashtag')
                 if (this.hashtag.request) {
+                    console.log(this.hashtag.request);
                     if (this.hashtagSubscription) {
                         this.socket.emit('unsubscribe', {
                             subscriptionId: this.hashtagSubscription,
