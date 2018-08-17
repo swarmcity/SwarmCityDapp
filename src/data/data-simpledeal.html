@@ -32,20 +32,64 @@
             }
 
             /**
+            * Reply to an item
+            * @param {String} itemHash - The itemHash in Hex (with prefix)
+            * @param {String} ipfsHash - The reply data ipfs hash
+            * @param {String} contractAddress - The hashtag's address
+            * @param {Object} abi - The hashtag contract's abi
+            * @return {Object} - The Raw reply tx data
+            */
+            rawReplyItem(itemHash, ipfsHash, contractAddress, abi) {
+                return new Promise((resolve, reject) => {
+                    const simpleDealContract = new webpack.Contract(
+                        abi,
+                        contractAddress
+                    );
+                    let rawReplyItem = simpleDealContract.methods.replyItem(
+                        itemHash,
+                        ipfsHash,
+                    ).encodeABI();
+                    resolve(rawReplyItem);
+                });
+            }
+
+            /**
+            * As seeker, select a replier to your item as potential provider
+            * @param {String} itemHash - The itemHash in Hex (with prefix)
+            * @param {String} replierAddress - The replier's address
+            * @param {String} contractAddress - The hashtag's address
+            * @param {Object} abi - The hashtag contract's abi
+            * @return {Object} - The Raw reply tx data
+            */
+            rawSelectReplier(itemHash, replierAddress, contractAddress, abi) {
+                return new Promise((resolve, reject) => {
+                    const simpleDealContract = new webpack.Contract(
+                        abi,
+                        contractAddress
+                    );
+                    let rawSelectReplier = simpleDealContract.methods.selectReplier(
+                        itemHash,
+                        replierAddress,
+                    ).encodeABI();
+                    resolve(rawSelectReplier);
+                });
+            }
+
+            /**
             * Fund a hashtag item
-            * @param {String} secret - The shared secret to allow funding
+            * @param {String} itemHash - The itemHash of the item
             * @param {String} contractAddress - The hashtag's address
             * @param {Object} abi - The hashtag contract's abi
             * @return {Object} - The Raw new item tx data
             */
-            rawFundItem(secret, contractAddress, abi) {
+            rawFundItem(itemHash, contractAddress, abi) {
                 return new Promise((resolve, reject) => {
                     const simpleDealContract = new webpack.Contract(
                         abi,
                         contractAddress
                     );
                     let rawFundItem = simpleDealContract.methods.fundItem(
-                        secret
+                        itemHash
                     ).encodeABI();
                     resolve(rawFundItem);
                 });

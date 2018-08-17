@@ -169,10 +169,16 @@ The following custom properties and mixins are available for styling:
             */
             _itemToIpfs() {
                 if (this.privateKey) {
+                    let publicKeySeeker = webpack
+                        .privateToPublic(
+                            new webpack.Buffer.Buffer(this.privateKey, 'hex')
+                        )
+                        .toString('hex');
                     let item = {
                         'username': this.username,
                         'avatarHash': localStorage.getItem('avatarHash'),
                         'description': this.itemDescription,
+                        'publicKey': publicKeySeeker,
                     };
                     if (this.itemGeohash != null) {
                         item.location = this.itemGeohash;

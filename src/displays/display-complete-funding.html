@@ -50,13 +50,13 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
                         };
                     },
-                    CHATHISTORY: function(chatHistory) {
+                    CHATHISTORY: function (chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
@@ -124,33 +124,28 @@ The following custom properties and mixins are available for styling:
                 if (this.privateKey) {
                     this._startChat();
                     let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
-                    webpack.decryptWithPrivateKey(
-                        this.privateKey,
-                        this.hashtagItem.selectee.secret,
-                    ).then((secret) => {
-                        this.$.simpledeal.rawFundItem(
-                            secret,
+                    this.$.simpledeal.rawFundItem(
+                        this.hashtagItem.itemHash,
+                        this.hashtag.hashtagAddress,
+                        this.hashtag.abi
+                    ).then((rawFundItem) => {
+                        this.$.transaction.rawApproveAndCall(
                             this.hashtag.hashtagAddress,
-                            abi.hashtagSimpleDeal.abi
-                        ).then((rawFundItem) => {
-                            this.$.transaction.rawApproveAndCall(
-                                this.hashtag.hashtagAddress,
-                                totalSum,
-                                rawFundItem,
+                            totalSum,
+                            rawFundItem,
+                            '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                            abi.miniMeToken.abi
+                        ).then((rawApproveAndCall) => {
+                            this.$.transaction.signRawTx(
+                                this.address,
                                 '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                abi.miniMeToken.abi
-                            ).then((rawApproveAndCall) => {
-                                this.$.transaction.signRawTx(
-                                    this.address,
-                                    '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                    this.nonce,
-                                    rawApproveAndCall,
-                                    this.privateKey
-                                ).then((serializedTx) => {
-                                    this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
-                                }).catch((err) => {
-                                    this.error = err;
-                                });
+                                this.nonce,
+                                rawApproveAndCall,
+                                this.privateKey
+                            ).then((serializedTx) => {
+                                this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                            }).catch((err) => {
+                                this.error = err;
                             });
                         });
                     });
@@ -194,18 +189,18 @@ The following custom properties and mixins are available for styling:
                 this.dispatch('CHATHISTORY', {
                     instantiate: members,
                 });
-        }
+            }
 
-        /**
-        * to hex
-        * @param {string} dec - The data to convert
-        * @return {object}
-        */
-        _toHex(dec) {
-            let hex = Number(dec).toString(16);
-            let result = '000000'.substr(0, 6 - hex.length) + hex;
-            return '0x' + result;
-        }
+            /**
+            * to hex
+            * @param {string} dec - The data to convert
+            * @return {object}
+            */
+            _toHex(dec) {
+                let hex = Number(dec).toString(16);
+                let result = '000000'.substr(0, 6 - hex.length) + hex;
+                return '0x' + result;
+            }
         } window.customElements.define(MyDisplayCompleteFunding.is, MyDisplayCompleteFunding);
     </script>
 </dom-module>

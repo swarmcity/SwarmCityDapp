@@ -6,6 +6,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
+<link rel="import" href="../data/data-transaction.html">
 <script src="../data/webpack.min.js"></script>
 
 
@@ -29,6 +31,8 @@ The following custom properties and mixins are available for styling:
 <dom-module id="display-complete-select-provider">
     <template>
         <app-location route="{{route}}"></app-location>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
     </template>
     <script>
         class MyCompleteSelectProvider extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -40,15 +44,15 @@ The following custom properties and mixins are available for styling:
                 return 'display-complete-select-provider';
             }
             /**
-            * Redux actions for choosing a provider
+            * Redux actions for choosing a replier
             * @param {string} broadcast
             */
             static get actions() {
                 return Object.assign({
-                    SELECTPROVIDER: function(selectProvider) {
+                    SENDSIGNEDTX: function(sendSignedTx) {
                         return {
-                            type: 'SELECTPROVIDER',
-                            selectProvider: selectProvider,
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
                         };
                     },
                 });
@@ -77,43 +81,62 @@ The following custom properties and mixins are available for styling:
                     route: {
                         type: Object,
                     },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * The user's nonce
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * address represents the user's public key
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * The hashtag we're posting a request on
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
                 };
             }
             /**
-            * We collect all & encrypt all necessary data, prepare the selectProvider object
-            * and dispatch it to redux
+            * We select a replier as potential provider and call the contract funtion
             */
             _selectProvider() {
                 if (this.privateKey) {
-                    let itemHash = this.route.path.split('/')[3];
-                    let UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection'));
-                    let uuid;
-                    for (let key in UUIDCollection) {
-                        if (UUIDCollection[key] == itemHash) {
-                            uuid = key;
-                        }
-                    }
-
-                    webpack.encryptWithPublicKey(
-                        this.selectedReply.publicKey,
-                        uuid,
-                    ).then((secret) => {
-                        let publicKeySeeker = webpack
-                            .privateToPublic(
-                                new webpack.Buffer.Buffer(this.privateKey, 'hex')
-                            )
-                            .toString('hex');
-                        this.selectProvider = {
-                            itemHash: itemHash,
-                            hashtagAddress: this.route.path.split('/')[2],
-                            selectee: {
-                                secret: secret,
-                                address: this.selectedReply.address,
-                                publicKeySeeker: publicKeySeeker,
-                            },
-                            reply: this.selectedReply,
-                        };
-                        this.dispatch('SELECTPROVIDER', JSON.stringify(this.selectProvider));
+                    this.$.simpledeal.rawSelectReplier(
+                        this.hashtagItem.itemHash,
+                        this.selectedReply.address,
+                        this.hashtag.hashtagAddress,
+                        this.hashtag.abi
+                    ).then((rawSelectReplier) => {
+                        this.$.transaction.signRawTx(
+                            this.address,
+                            this.hashtag.hashtagAddress,
+                            this.nonce,
+                            rawSelectReplier,
+                            this.privateKey
+                        ).then((serializedTx) => {
+                            this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                        }).catch((err) => {
+                            this.error = err;
+                        });
                     });
                 }
             }
