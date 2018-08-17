@@ -392,38 +392,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
                 this.socket.on('hashtagItemsChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.hashtag.items = reply.data;
-                        this.hashtag.items[0].replies = [
-                            {
-                                "username": "The eyes of the Tiger",
-                                "avatarHash": "QmRoLkP6oA7tRHvzgBNoycWJkTETFeyk9pymFpiX3rpoYh",
-                                "address": "0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54",
-                                "publicKey": "f127d3356b6504345d62844339a2e5a6e8514dc09f96a7e4c3ca4aa6e80e4c29a43bd03827430099f91a96813e1e3bc729e00224b7d8f6c59adfd136ed78c864",
-                                "reputation": "0",
-                                "description": "hoi",
-                                "dateTime": 1534469079
-                            }
-                        ];
-                        this.hashtag.items[0].selectee = {
-                            "secret": {
-                                "iv": "9cc0aa0bfc933492a6b887a7bc1890e4",
-                                "ephemPublicKey": "04e2ffbdf4276d7927c95b3f3d611c9af28b0d61f96c331b758c71d7a254bc3ac9d2e76e4a3553430bd5af68a5e4d17f6a98b441639a74d67624c80bbda3abf3e8",
-                                "ciphertext": "c608778750c05b42113e37749633fa8179765aa0ccbba904dc1992c5ef3486793e645662c6b97229ac32eb36b6aafd03",
-                                "mac": "8d52b169940a27d2452444d284cc4ff1980120f66bd3186f23dd812c62a3e150"
-                            },
-                            "address": "0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54",
-                            "publicKeySeeker": "47c7cfcd792390a85bd6f8d0f33fcf5b363ee6ffbf99c789a53b9539ddff07c18163693244d832cba4eccf8e869ecf3c0c2ed0400608dcbd9f78aeb9f6a7fb0e",
-                            "reply": {
-                                "username": "The eyes of the Tiger",
-                                "avatarHash": "QmRoLkP6oA7tRHvzgBNoycWJkTETFeyk9pymFpiX3rpoYh",
-                                "address": "0x44a5Fb11B0Cce3DB3e24b6abeD88642D36795D54",
-                                "publicKey": "f127d3356b6504345d62844339a2e5a6e8514dc09f96a7e4c3ca4aa6e80e4c29a43bd03827430099f91a96813e1e3bc729e00224b7d8f6c59adfd136ed78c864",
-                                "reputation": "0",
-                                "description": "hoi",
-                                "dateTime": 1534469079
-                            }
-                        }
-
+                        this.hashtag.items = this.hashtag.items || [];
+                        Object.assign(this.hashtag.items, reply.data)
                         this._updateHashtag();
                     }
                 });
@@ -471,7 +441,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _getHashtag() {
                 if (this.hashtag.request) {
                     this.socket.emit('subscribeToHashtag', {
-                        hashtag: this.hashtag.request,
+                        hashtag: this.hashtag.request.toLowerCase(),
                     }, (reply) => {
                         if (reply.response == 200) {
                             delete this.hashtag.request;
