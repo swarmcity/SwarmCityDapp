@@ -222,7 +222,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
-                <display-unlock toggle-unlock="{{toggleUnlockByDisplay}}" blue private-key="{{privateKey}}">
+                <display-unlock focus="{{focus}}" toggle-unlock="{{toggleUnlockByDisplay}}" blue private-key="{{privateKey}}">
                 </display-unlock>
             </template>
         </dom-if>
@@ -321,6 +321,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                     },
                     /**
+                    * secret contains the information needed to decrypt messages of a certain chatHistory
+                    * @type {Object}
+                    */
+                    focus: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
                     * message is the new message string
                     * @type {String}
                     */
@@ -400,6 +408,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _getChat() {
                 if (this.route.path.split('/')[1] == 'chat') {
+                    this.focus = !this.focus;
                     let subscribe = {
                         subscribe: this.route.path.split('/')[3],
                     };
@@ -461,7 +470,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     };
                     this.dispatch('NEWCHATMESSAGE', message);
                     this.message = this.message.trim();
-                    this.message = ' ';
+                    this.message = '';
                 }
             }
 
