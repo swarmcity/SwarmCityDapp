@@ -97,14 +97,6 @@ The following custom properties and mixins are available for styling:
                         statePath: 'username',
                     },
                     /**
-                    * publickey is the wallet pubkey
-                    * @type {String}
-                    */
-                    publicKey: {
-                        type: String,
-                        statePath: 'publicKey',
-                    },
-                    /**
                     * The hashtag we're posting a request on
                     * @type {Object}
                     */
@@ -148,7 +140,7 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /*
-            * Makes the IPFS object of the new request and dispatches it
+            * Makes the IPFS object of the new reply and dispatches it
             */
             _replyToIpfs() {
                 if (this.privateKey) {
@@ -156,7 +148,7 @@ The following custom properties and mixins are available for styling:
                         replier: {
                             username: this.username,
                             avatarHash: this.avatarHash,
-                            address: this.publicKey,
+                            address: this.address,
                             publicKey: webpack
                                 .privateToPublic(new webpack.Buffer.Buffer(this.privateKey, 'hex'))
                                 .toString('hex'),
@@ -167,7 +159,7 @@ The following custom properties and mixins are available for styling:
                 }
             }
             /**
-            * We collect all necessary information, prepare the replyRequest object
+            * We collect all necessary information, sign the reply transaction
             * and dispatch it to redux
             */
             _newReplyDataHash() {
