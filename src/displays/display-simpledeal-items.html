@@ -227,7 +227,7 @@ The following custom properties and mixins are available for styling:
                         <div class="datedescript">
                             <div class="description">[[item.description]]</div>
                             <div class="date">
-                                <!-- [[_formatDate(item.dateTime)]] -->
+                                [[_formatDate(item.dateTime)]]
                             </div>
                         </div>
                         <div class="replycount">[[_replycount(item.replies)]]</div>
@@ -257,7 +257,7 @@ The following custom properties and mixins are available for styling:
 
                         <div class="pricebox">
                             <div class="for">SWT</div>
-                            <div class="price">[[item.value]]</div>
+                            <div class="price">[[_formatValue(item.value)]]</div>
                         </div>
 
                     </div>
@@ -360,12 +360,12 @@ The following custom properties and mixins are available for styling:
             * @return {string} formatted date string
             */
             _formatDate(dateTime) {
-                // let milliseconds = dateTime * 1000;
-                // if (webpack.moment().valueOf() - milliseconds < 86400000) {
-                //     return webpack.moment(milliseconds).fromNow();
-                // } else {
-                //     return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
-                // }
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
             }
             /**
             * return the computed replycount
@@ -390,6 +390,14 @@ The following custom properties and mixins are available for styling:
             */
             _isSeeker(item) {
                 return item.seeker.address == this.publicKey;
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
             }
         }
 
