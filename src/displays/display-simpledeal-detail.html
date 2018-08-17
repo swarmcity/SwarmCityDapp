@@ -1,0 +1,762 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<!-- <link rel="import" href="../displays/display-simpledeal-itemreplies.html">
+<link rel="import" href="../displays/display-button-reply.html">
+<link rel="import" href="../displays/display-button-cancel.html">
+<link rel="import" href="../displays/display-button-conflict.html">
+<link rel="import" href="../displays/display-simpledeal-input-reply.html">
+<link rel="import" href="../displays/display-simpledeal-reply-detail.html">
+<link rel="import" href="../displays/display-simpledeal-detail-selected.html">
+<link rel="import" href="../displays/display-simpledeal-detail-funded.html">
+<link rel="import" href="../displays/display-simpledeal-detail-done.html"> -->
+
+<dom-module id="display-simpledeal-detail">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 10px 25px 10px;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 10vw 25px 10vw;
+            }
+
+            .container .itembox {
+                width: 100%;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding: 10px 10px 0px 0px;
+                border-bottom: 1px dashed rgba(51, 51, 51, 0.08);
+                @apply --layout-vertical;
+                @apply --layout-start;
+            }
+
+            .container[wide-layout] .itembox {
+                max-width: 68vw;
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                z-index: 99999;
+                position: fixed;
+                /* top: 0; */
+                @apply --layout-self-end;
+                background-color: rgba(250, 250, 250, 0.9);
+                border-radius: 50%;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .seeker-avatar {
+                width: 40px;
+                height: 40px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 40px;
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .container .description {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-detail;
+                color: var(--sc-grey4);
+                margin: 20px 30px 0 30px;
+            }
+
+            .container[wide-layout] .description {
+                margin: 20px 20px 0 30px;
+            }
+            
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+            }
+
+            .container[wide-layout] .pricebox {
+                @apply --layout-end-justified;
+            }
+
+            .unit {
+                @apply --small-bold;
+                color: var(--sc-yellow);
+            }
+
+            .value {
+                @apply --main-title3;
+                color: var(--sc-yellow);
+            }
+
+            .linkbox {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 20px 20px 30px 30px;
+            }
+
+            .link {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey2);
+            }
+
+            .tempswitch {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                @apply --small-bold;
+                position: fixed;
+                top: 5px;
+                left: 5px;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .namebox {
+                margin: 0 21vw 40px 11vw;
+            }
+
+            .namebox {
+                @apply --main-title2;
+                font-size: 30px;
+                color: var(--sc-grey4);
+                padding: 0px 10px 0px 40px;
+                margin-bottom: 20px;
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                font-size: 27px;
+                margin-right: 2px;
+            }
+
+            .date {
+                @apply --small-light;
+                color: var(--sc-grey3b);
+                margin: 4px 30px 0 30px;
+            }
+
+            .seeker {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 15px 15px 0 30px;
+            }
+
+            .seeker-info {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .seeker-owner {
+                color: var(--sc-grey4);
+            }
+
+
+            .container .overlayer {
+                width: 95%;
+                background: -moz-linear-gradient(top, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* FF3.6-15 */
+                background: -webkit-linear-gradient(top, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* Chrome10-25,Safari5.1-6 */
+                background: linear-gradient(to bottom, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                height: 300px;
+                margin-top: 50px;
+                position: absolute;
+            }
+
+            .container .itemloading {
+                width: 100%;
+                background-color: white;
+                height: 350px;
+                box-sizing: border-box;
+            }
+
+            .closebox_loading {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                width: 100%;
+                z-index: 99;
+                padding: 10px 10px 0px 0px;
+            }
+
+            .container[wide-layout] .itemloading,
+            .container[wide-layout] .overlayer {
+                max-width: 68vw;
+            }
+
+            .allshapes {
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+                padding: 0px 30px 40px 30px;
+            }
+
+            .shape1 {
+                height: 12px;
+                width: 200px;
+                background-color: var(--sc-grey1);
+                border-radius: 8px;
+            }
+
+            .shape2 {
+                height: 10px;
+                width: 100px;
+                background-color: var(--sc-grey1);
+                border-radius: 8px;
+                margin-top: 10px;
+            }
+
+            .shapes_3_4_5_6 {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+            }
+
+            .shapes_3_4 {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+                margin-top: 20px;
+            }
+
+            .shape3 {
+                height: 40px;
+                width: 40px;
+                border-radius: 20px;
+                background-color: rgba(36, 177, 255, 0.1);
+            }
+
+            .shape4 {
+                height: 10px;
+                width: 60px;
+                background-color: var(--sc-grey2);
+                border-radius: 8px;
+                margin-left: 20px;
+                opacity: 0.35;
+            }
+
+            .shapes_5_6 {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-center-justified;
+                margin-top: 20px;
+            }
+
+            .shape5 {
+                height: 8px;
+                width: 20px;
+                background-color: var(--sc-yellow);
+                border-radius: 8px;
+                margin-bottom: 10px;
+                opacity: 0.15;
+            }
+
+            .shape6 {
+                height: 12px;
+                width: 40px;
+                background-color: var(--sc-yellow);
+                border-radius: 8px;
+                opacity: 0.15;
+            }
+
+            .states {
+                box-sizing: border-box;
+                width: 100%;
+            }
+
+            .container[wide-layout] .states {
+                max-width: 68vw;
+            }
+
+            display-button-reply {
+                position: fixed;
+                bottom: 10vh;
+                right: 10vw;
+            }
+
+            .container[wide-layout] display-button-reply {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
+
+            display-button-cancel {
+                margin: 30px auto;
+                width: 175px;
+            }
+
+            display-button-conflict {
+                margin: 30px auto;
+                width: 175px;
+                text-align: center;
+            }
+
+            .copied {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);
+            }
+
+            .truncate {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .showcopied {
+                visibility: visible;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon,
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <div class="container" wide-layout$="{{wide}}">
+
+            <dom-if if="{{loadingItem}}">
+                <template>
+                    <div class="itemloading">
+                        <div class="overlayer"></div>
+                        <div class="closebox_loading">
+                            <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+                        </div>
+                        <div class="allshapes">
+                            <div class="shape1"></div>
+                            <div class="shape2"></div>
+                            <div class="shapes_3_4_5_6">
+
+                                <div class="shapes_3_4">
+                                    <div class="shape3"></div>
+                                    <div class="shape4"></div>
+                                </div>
+                                <div class="shapes_5_6">
+                                    <div class="shape5"></div>
+                                    <div class="shape6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </dom-if>
+            <dom-if if="{{!loadingItem}}">
+                <template>
+                    <div class="itembox">
+                        <div class="closebox">
+                            <div class="close" on-tap="_close" tabindex="1"></div>
+                        </div>
+                        <div class="spacer"></div>
+                        <div class="description">
+                            [[hashtagItem.description]]
+                        </div>
+                        <div class="date">
+                            [[_formatDate(hashtagItem.dateTime)]]
+                        </div>
+                        <div class="seeker">
+
+                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seeker.avatarHash]]"
+                                placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
+                            </iron-image>
+
+                            <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                                <div id="seeker" class="seeker-info seeker-owner horizontal" on-up="_toUserReputation"><div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]</div>
+                            </template>
+
+                            <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
+                                <div id="seeker" class="seeker-info horizontal" on-up="_toUserReputation">
+                                        <div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]</div>
+                            </template>
+
+                            <div class="pricebox">
+                                <div class="unit">SWT</div>
+                                <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                            </div>
+                        </div>
+                        <div class="linkbox">
+                            <div class="copied" id="copied">copied</div>
+                            <span on-up="_copyUrl" class="link">shareable link</span>
+                        </div>
+                    </div>
+                    <div class="states">
+
+                        <!-- The default, all replies view -->
+                        <!-- <template is="dom-if" if="[[_getState('replies', state)]]">
+                            <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}" selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
+                            <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
+                                <display-button-reply on-up="_reply"></display-button-reply>
+                            </template>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
+                        </template> -->
+
+                        <!-- The reply input view -->
+                        <!-- <template is="dom-if" if="[[_getState('input', state)]]">
+                            <display-simpledeal-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-simpledeal-input-reply>
+                        </template> -->
+
+                        <!-- The detailed view of a reply, with option to select the replier as provider -->
+                        <!-- <template is="dom-if" if="[[_getState('detail', state)]]">
+                            <display-simpledeal-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"
+                                selected-reply="{{selectedReply}}"></display-simpledeal-reply-detail>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
+                        </template> -->
+
+                        <!-- The view if there is a selectee, either user is chosen or has chosen-->
+                        <!-- <template is="dom-if" if="[[_getState('selected', state)]]">
+                            <display-simpledeal-detail-selected state-change="{{stateChange}}" path="{{path}}"></display-simpledeal-detail-selected>
+                            <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
+                                <display-button-cancel></display-button-cancel>
+                            </template>
+                        </template> -->
+
+                        <!-- The view if both parties have funded and the deal is ongoing-->
+                        <!-- <template is="dom-if" if="[[_getState('funded', state)]]">
+                            <display-simpledeal-detail-funded state-change="{{stateChange}}" path="{{path}}"></display-simpledeal-detail-funded>
+                            <template is="dom-if" if="[[_showConflictButton(hashtagItem)]]">
+                                <display-button-conflict></display-button-conflict>
+                            </template>
+                        </template> -->
+                        
+                        <!-- The view if the seeker has paid out and the deal is done-->
+                        <!-- <template is="dom-if" if="[[_getState('done', state)]]">
+                            <display-simpledeal-detail-done></display-simpledeal-detail-done>
+                        </template>
+                    </div> -->
+                </template>
+            </dom-if>
+        </div>
+
+    </template>
+    <script>
+        class MySimpledealDetail extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-simpledeal-detail';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                        observer: '_load',
+                    },
+                    /**
+                    * loadingItem is the currently loaded hashtagItem object
+                    * @type {Object}
+                    */
+                    loadingItem: {
+                        type: Boolean,
+                        value: true,
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * State contains the current view.
+                    * @type {String}
+                    */
+                    state: {
+                        type: String,
+                        value: 'replies',
+                    },
+                    /**
+                    * stateChange is the intermediary property for changing the state
+                    * @type {String}
+                    */
+                    stateChange: {
+                        observer: '_stateChange',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        notify: true,
+                    },
+                    /**
+                    * routeExit will trigger the display reset whenever we routed away
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this._loadAnimations();
+            }
+            /**
+            * All animations this page needs
+            */
+            _loadAnimations() {
+                this.anim = {
+                    moveUp: {
+                        arr: [{transform: 'translateY(0px)'},
+                        {transform: 'translateY(-20px)'}],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                        },
+                    },
+                };
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                this.path = `hashtag/${this.route.path.split('/')[2]}`;
+            }
+            /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                this.path = `user-reputation/${this.hashtagItem.seeker.address}/${this.hashtagItem.seeker.avatarHash}/${this.hashtagItem.seeker.username}`; // eslint-disable-line
+            }
+            /**
+            * Toggles betweeen loading & loaded state & switches the state
+            */
+            _load() {
+                // Is the hashtagItem loaded?
+                this.loadingItem = this.hashtagItem.request ? true : false;
+
+                // selected, funded, done, replies
+                // don't get out of: detail, input
+
+                // What is the state we're in with this item?
+                if (this.hashtagItem.status &&
+                    this.hashtagItem.status == '1') {
+                    this.stateChange = 'done';
+                } else if (this.hashtagItem.selectee &&
+                    !this.hashtagItem.provider &&
+                    (this.hashtagItem.selectee.address == this.publicKey ||
+                        this.hashtagItem.seeker.address == this.publicKey)
+                ) {
+                    this.stateChange = 'selected';
+                } else if (this.hashtagItem.provider) {
+                    this.stateChange = 'funded';
+                }
+                else if (!this.hashtagItem.update) {
+                        this.stateChange = 'replies';
+                    }
+            }
+            /**
+             * copies the url key to the clipboard
+             */
+            _copyUrl() {
+                let textArea = document.createElement('textarea');
+                textArea.value = window.location.href;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                let copied = this.shadowRoot.querySelector('#copied');
+                copied.classList.add('showcopied');
+                copied.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                );
+                setTimeout(() => {
+                    copied.classList.remove('showcopied');
+                }, 500);
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * Set the conditions for showing the reply button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showReplyButton(item) {
+                if (item.seeker &&
+                    item.seeker.address == this.publicKey) {
+                    return false;
+                } else if (item.replies) {
+                    let replied = false;
+                    for (let replier of item.replies) {
+                        if (replier.address == this.publicKey) {
+                            replied = true;
+                        }
+                    }
+                    return replied ? false : true;
+                } else if (!item.replies) {
+                    return true;
+                }
+            }
+            /**
+            * Set the conditions for showing the conflict button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showConflictButton(item) {
+                if (item.provider) {
+                    return (item.seeker.address == this.publicKey ||
+                        item.provider.address == this.publicKey);
+                }
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(hashtagItem) {
+                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
+            }
+            /**
+            * Changes the state with its passed value.
+            * We need this extra value due to errors with changing state directly
+            * from within a dom-if
+            */
+            _stateChange() {
+                this.state = this.stateChange;
+            }
+            /**
+            * Set the conditions for showing the cancel button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showCancelButton(item) {
+                return (item.seeker && item.seeker.address == this.publicKey);
+            }
+            /**
+            * Set the view to write a reply
+            */
+            _reply() {
+                this.stateChange = 'input';
+            }
+            /**
+            * Switch between visible
+            * @param {String} view the view that can be shown
+            * @param {String} state the current state
+            * @return {Boolean} true when give state should be visible
+            */
+            _getState(view, state) {
+                return view == state;
+            }
+        }
+        window.customElements.define(MySimpledealDetail.is, MySimpledealDetail);
+    </script>
+</dom-module>
