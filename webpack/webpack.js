@@ -1,7 +1,6 @@
 import {
     sha3,
     addHexPrefix,
-    isValidAddress,
     privateToAddress,
     privateToPublic,
     publicToAddress,
@@ -28,7 +27,6 @@ import {
 export {
     sha3,
     addHexPrefix,
-    isValidAddress,
     privateToAddress,
     privateToPublic,
     publicToAddress,
