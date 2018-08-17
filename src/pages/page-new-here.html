@@ -14,7 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 
-<dom-module id="page-create-account">
+<dom-module id="page-new-here">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -139,27 +139,27 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <div class="container" wide-layout$="{{wide}}" id="container">
             <div class="top">
-                <div class="close" on-click="_close"></div>
-                <div class="title" id="title">{{localize('Lets create an account')}}</div>
-                <div class="subtitle" id="subtitle">{{localize('When you restore or create a new account its stored locally on your device')}}</div>
+                <div tabindex="3" class="close" on-click="_close"></div>
+                <div class="title" id="title">{{localize('You must be new here')}}</div>
+                <div class="subtitle" id="subtitle">{{localize('No account was found. When you restore or create a new account its stored locally on your device')}}</div>
             </div>
             <div class="flexer"></div>            
             <div class="bottom">
                 <div class="buttons" id="buttons">
-                    <div class="create" on-click="_create">{{localize('create account')}}</div>
-                    <div class="restore" on-click="_restore">{{localize('restore account')}}</div>
+                    <div autofocus tabindex="1" class="create" on-click="_create" on-keypress="_create">{{localize('create account')}}</div>
+                    <div tabindex="2" class="restore" on-click="_restore" on-keypress="_restore">{{localize('restore account')}}</div>
                 </div>
             </div>
         </div>
     </template>
     <script>
-        class MyCreateAccount extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyNewHere extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-create-account';
+                return 'page-new-here';
             }
             static get properties() {
                 return {
@@ -197,7 +197,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     pageID: {
                         type: String,
-                        value: 'create-account',
+                        value: 'new-here',
                     },
 
                 };
@@ -210,9 +210,16 @@ This code may only be used under the license found at https://github.com/swarmci
 
             /**
             * takes the user to the next page in user creation
+            * @param {Object} e element clicked.
             */
-            _create() {
-                this.path = 'choose-avatar-and-username/';
+            _create(e) {
+                if (e.type != 'click') {
+                    if (e.keyCode === 13) {
+                        this.path = 'choose-avatar-and-username/';
+                    }
+                } else {
+                    this.path = 'choose-avatar-and-username/';
+                }
             }
             /**
             * takes the user to the previous page
@@ -228,9 +235,16 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * takes the user to the hashtag list page
+            * @param {Object} e element clicked.
             */
-            _restore() {
-                this.path = 'restore-account/';
+            _restore(e) {
+                if (e.type != 'click') {
+                    if (e.keyCode === 13) {
+                        this.path = 'restore-account/';
+                    }
+                } else {
+                    this.path = 'restore-account/';
+                }
             }
 
             /**
@@ -247,8 +261,7 @@ This code may only be used under the license found at https://github.com/swarmci
             if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
-                        if (this.routeExit[1] == 'hashtag' ||
-                            this.routeExit[1] == 'hashtag-list') {
+                        if (this.routeExit[1] == 'hashtag') {
                             // Here come the Exit Animations, going to page Hashtag
                             this.$.title.animate(
                                 [
@@ -281,55 +294,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                 }
                             );
                         }
-                        if (this.routeExit[1] == 'choose-avatar-and-username' ||
-                            this.routeExit[1] == 'restore-account') {
-                            // going to page choose-password-and-avatar
-                            this.$.title.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100%)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.subtitle.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100%)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 300,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                            this.$.buttons.animate(
-                                [
-                                    {'transform': 'translateX(0px)'},
-                                    {'transform': 'translateX(-100%)'},
-                                ],
-                                {
-                                    fill: 'forwards',
-                                    duration: 450,
-                                    iterations: 1,
-                                    iterationStart: 0,
-                                    easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                    delay: 0,
-                                    endDelay: 0,
-                                }
-                            );
-                        }
                     }
                 }
             }
@@ -338,8 +302,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
                     // Here come the Entry Animations
-                    if (this.routeExit[0] == 'hashtag'
-                    || this.routeExit[0] === 'hashtag-list') {
+                    if (this.routeExit[0] == 'hashtag') {
                         // Coming from page Hashtag
                         this.$.title.animate(
                             [
@@ -390,55 +353,55 @@ This code may only be used under the license found at https://github.com/swarmci
                     if (this.routeExit[0] == 'choose-avatar-and-username'
                     || this.routeExit[0] === 'restore-account') {
                         // Coming from page choose-avatar-and-username OR restore-account
-                        this.$.title.animate(
-                            [
-                                {'transform': 'translateX(-100%)'},
-                                {'transform': 'translateX(0)'},
-                            ],
-                            {
-                                fill: 'forwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        this.$.subtitle.animate(
-                            [
-                            {'transform': 'translateX(-100%)'},
-                            {'transform': 'translateX(0)'},
-                            ],
-                            {
-                                fill: 'forwards',
-                                duration: 300,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
-                        this.$.buttons.animate(
-                            [
-                            {'transform': 'translateX(-100%)'},
-                            {'transform': 'translateX(0)'},
-                            ],
-                            {
-                                fill: 'forwards',
-                                duration: 400,
-                                iterations: 1,
-                                iterationStart: 0,
-                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
-                                delay: 0,
-                                endDelay: 0,
-                            }
-                        );
+                        // this.$.title.animate(
+                        //     [
+                        //         {'transform': 'translateX(-100%)'},
+                        //         {'transform': 'translateX(0)'},
+                        //     ],
+                        //     {
+                        //         fill: 'forwards',
+                        //         duration: 300,
+                        //         iterations: 1,
+                        //         iterationStart: 0,
+                        //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                        //         delay: 0,
+                        //         endDelay: 0,
+                        //     }
+                        // );
+                        // this.$.subtitle.animate(
+                        //     [
+                        //     {'transform': 'translateX(-100%)'},
+                        //     {'transform': 'translateX(0)'},
+                        //     ],
+                        //     {
+                        //         fill: 'forwards',
+                        //         duration: 300,
+                        //         iterations: 1,
+                        //         iterationStart: 0,
+                        //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                        //         delay: 0,
+                        //         endDelay: 0,
+                        //     }
+                        // );
+                        // this.$.buttons.animate(
+                        //     [
+                        //     {'transform': 'translateX(-100%)'},
+                        //     {'transform': 'translateX(0)'},
+                        //     ],
+                        //     {
+                        //         fill: 'forwards',
+                        //         duration: 400,
+                        //         iterations: 1,
+                        //         iterationStart: 0,
+                        //         easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                        //         delay: 0,
+                        //         endDelay: 0,
+                        //     }
+                        // );
                     }
                 }
             }
         }
-    } window.customElements.define(MyCreateAccount.is, MyCreateAccount);
+    } window.customElements.define(MyNewHere.is, MyNewHere);
     </script>
 </dom-module>

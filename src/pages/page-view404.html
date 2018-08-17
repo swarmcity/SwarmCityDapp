@@ -1,40 +1,53 @@
 <!--
 @license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
 
 <dom-module id="page-view404">
-  <template>
-    <style>
-      :host {
-        display: block;
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style>
+            :host {
+                display: block;
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+        Oops you hit a 404.
+        <a href="[[rootPath]]">Head back to home.</a>
+    </template>
 
-        padding: 10px 20px;
-      }
-    </style>
+    <script>
+        class MyView404 extends Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        ) {
+            static get is() {
+                return 'page-view404';
+            }
+            static get properties() {
+                return {
+                    /**
+                     * root path
+                     */
+                    rootPath: String,
+                };
+            }
 
-    Oops you hit a 404. <a href="[[rootPath]]">Head back to home.</a>
-  </template>
-
-  <script>
-    class MyView404 extends Polymer.Element {
-      static get is() { return 'page-view404'; }
-      static get properties() {
-        return {
-          // This shouldn't be neccessary, but the Analyzer isn't picking up
-          // Polymer.Element#rootPath
-          rootPath: String,
-        };
-      }
-    }
-
-    window.customElements.define(MyView404.is, MyView404);
-  </script>
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+        }
+        window.customElements.define(MyView404.is, MyView404);
+    </script>
 </dom-module>

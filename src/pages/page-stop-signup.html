@@ -14,18 +14,18 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 
-<dom-module id="page-password-warning">
+<dom-module id="page-stop-signup">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
-    -->
+-->
         <style include="shared-styles">
             :host {
                 @apply --titlepage-closed;
             }
 
             .container {
-                background-image: var(--sc-bg);
+                background-color: var(--sc-blue);
                 @apply --titlepage-closed-container;
             }
 
@@ -39,7 +39,12 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container .title {
                 @apply --titlepage-title;
-                color: var(--sc-grey3b);
+                color: var(--sc-white);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
             }
 
             .container[wide-layout] {
@@ -58,98 +63,48 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --titlepage-title-wide;
             }
 
-            .close {
-                @apply --xmark-grey3-small;
-                @apply --close;
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
             }
 
-            .close:active {
+            .container .confirmers {
+                @apply --titlepage-confirmers;
+            }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(1):active {
                 @apply --button-active;
             }
 
-            .btn {
-                margin-top: 4vh;
+            .container .confirmers>div:nth-child(2) {
                 @apply --icon-button-big;
             }
 
-            .btn:active {
+            .container .confirmers>div:nth-child(2):active {
                 @apply --button-active;
             }
 
-            .agree {
-                @apply --next-blue-normal;
-            }
-
-            .box {
-                @apply --layout-vertical;
-                @apply --layout--start-justified;
-                @apply --layout--start;
-                box-sizing: border-box;
-                padding: 54px 25px 40px;
-                background-color: var(--sc-white);
-                max-width: 450px;
-                margin-bottom: 8vh;
-            }
-
-            .container[wide-layout] .box {
-                box-sizing: border-box;
-                padding: 40px 40px 40px 40px;
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                margin: 5vh 0px 0px 0px;
-            }
-
-            .trianglecontainer {
-                @apply --layout-horizontal;
-                @apply --layout-center-justified;
-                width: 100%;
-                position: relative;
-                margin-bottom: -30px;
-            }
-
-            .container[wide-layout] .trianglecontainer {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                margin: 0px 30px 0px 0px;
-                width: 54px;
-            }
-
-            .triangle {
-                @apply --alert-blue-normal;
-                position: relative;
-            }
-
-            .textbox {
-                @apply --body-bold;
-                color: var(--sc-grey4);
-                @apply --layout-vertical;
-                @apply --layout-center-justified;
-                text-align: center;
-            }
-
-            .container[wide-layout] .textbox {
-                text-align: left;
-            }
-
-            .inner-bottom {
-                margin-top: 10px;
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
             }
 
             .flexer {
                 @apply --titlepage-flexer;
             }
-            .flexup {
-                @apply --layout-flex;
-            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close,
-                .triangle,
-                .agree {
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                     @apply --retina;
                 }
             }
@@ -158,47 +113,29 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="close" on-click="_close"></div>
-                <div class="title" id="title">{{localize('Choose a password.')}}</div>
+                <div class="title" id="title">{{localize('Do you want to stop creating your account?')}}</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone. All progress will be lost')}}</div>
             </div>
-            <div class="warning" id="content">
-                <template is="dom-if" if="{{!wide}}">
-                    <div class="trianglecontainer">
-                        <div class="triangle"></div>
-                    </div>
-                </template>
-                <div class="box">
-                    <template is="dom-if" if="{{wide}}">
-                        <div class="trianglecontainer">
-                            <div class="triangle"></div>
-                        </div>
-                    </template>
-                    <div class="textbox">
-                        <div class="inner-top">{{localize('There is no password recovery available in Swarm City.')}}</div>
-                        <div class="inner-bottom">{{localize('Choose your password with care.')}}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="flexer"></div>                
+            <div class="flexer"></div>
             <div class="bottom">
-                <div class="flexup"></div>
-                <div class="btn" id="buttons">
-                    <div autofocus class="agree" on-click="_agree"></div>
+                <div class="confirmers" id="buttons">
+                    <div on-click="_disagree"></div>
+                    <div on-click="_agree">
+                        <div></div>
+                    </div>
                 </div>
             </div>
-
         </div>
-
     </template>
 
     <script>
-        class MyPasswordWarning extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyStopSignup extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-password-warning';
+                return 'page-stop-signup';
             }
             static get properties() {
                 return {
@@ -231,12 +168,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_loadEntryAnimations',
                     },
                     /**
-                    * pageID is an id given to every page specific
+                    * pageID is an id givven to every page specific
                     * @type {String}
                     */
                     pageID: {
                         type: String,
-                        value: 'password-warning',
+                        value: 'stop-signup',
                     },
                 };
             }
@@ -271,17 +208,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+
             /**
-            * takes the user to page-stop-signup
+            * takes the user to the previous page
             */
-            _close() {
+            _disagree() {
+                window.history.back();
+            }
+
+            /**
+            * takes the user to the initiating hashtag page
+            */
+            _agree() {
                 this._deleteProfile();
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
                 }
                 else {
-                    this.path = 'hashtag-list';
+                    this.set('route.path', 'hashtag-list');
                 }
             }
 
@@ -304,12 +249,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
             }
-            /**
-            * takes the user to the next page in user creation
-            */
-            _agree() {
-                this.path = 'choose-password';
-            }
+
             /**
             * changes the current path
             */
@@ -319,10 +259,41 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
                 this.path = null;
             }
+
             _loadExitAnimations() {
-            if (this.routeExit[0] != this.routeExit[1]) {
+                if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[0] == this.pageID) {
                         // Here come the Exit Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateY(0px)'},
+                                {'transform': 'translateY(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateY(0px)'},
+                                {'transform': 'translateY(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
                     }
                 }
             }
@@ -330,11 +301,41 @@ This code may only be used under the license found at https://github.com/swarmci
             _loadEntryAnimations() {
                 if (this.routeExit[0] != this.routeExit[1]) {
                     if (this.routeExit[1] == this.pageID) {
-                    // Here come the Entry Animations
+                        // Here come the Entry Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateY(50px)'},
+                                {'transform': 'translateY(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateY(50px)'},
+                                {'transform': 'translateY(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
                     }
                 }
             }
         }
-        window.customElements.define(MyPasswordWarning.is, MyPasswordWarning);
+        window.customElements.define(MyStopSignup.is, MyStopSignup);
     </script>
 </dom-module>

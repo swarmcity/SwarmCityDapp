@@ -1,0 +1,374 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-unlock.html">
+<link rel="import" href="../displays/display-complete-request.html">
+
+<dom-module id="page-confirm-new-request">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                background-color: var(--sc-blue);
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                background-color: var(--sc-blue);
+                @apply --titlepage-closed-container;
+            }
+
+            .container .top {
+                @apply --titlepage-closed-container-top;
+            }
+
+            .container .bottom {
+                @apply --titlepage-closed-container-bottom;
+            }
+
+            .container .title {
+                @apply --titlepage-title;
+                color: var(--sc-white);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
+            }
+
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
+            }
+
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+            .container .confirmers {
+                @apply --titlepage-confirmers;
+            }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
+            }
+
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+            
+            .blur { 
+                @apply --unlock-blur;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1){
+                    @apply --retina
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <display-complete-request
+            private-key="[[privateKey]]">
+        </display-complete-request>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[_calculatedFee()]] SWT {{localize('hashtagfee is included')}}.</div>
+            </div>
+            <div class="flexer">
+            </div>
+            <div class="bottom">
+                <div class="confirmers" id="buttons">
+                    <div on-click="_disagree"></div>
+                    <div on-click="_unlock">
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <dom-if if="{{toggleUnlock}}">
+            <template>
+                <display-unlock 
+                    white
+                    toggle-unlock="{{toggleUnlock}}" 
+                    private-key="{{privateKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
+    </template>
+
+    <script>
+        class MyConfirmNewRequest extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-confirm-new-request';
+            }
+            static get properties() {
+                return {
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                        observer: '_privateKey',
+                    },
+                    /**
+                    * contains the request budget
+                    * @type {String}
+                    */
+                    itemBudget: {
+                        type: String,
+                        statePath: 'itemBudget',
+                    },
+                    /**
+                    * contains the current hashtag
+                    * @type {String}
+                    */
+                    hashtag: {
+                        type: String,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * routeExit triggers the exit animations
+                    * @type {Array}
+                    */
+                    routeExit: {
+                        type: Array,
+                        observer: '_loadExitAnimations',
+                    },
+                    /**
+                    * routeEntry triggers the entry animations
+                    * @type {Array}
+                    */
+                    routeEntry: {
+                        type: Array,
+                        observer: '_loadEntryAnimations',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'confirm-new-request',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * triggered after the user selects a language
+            */
+            _path() {
+                if (this.path) {
+                    this.set('route.path', this.path);
+                    this.path = null;
+                }
+            }
+            /**
+            * Takes the user to the previous page
+            */
+            _disagree() {
+                window.history.back();
+            }
+            /**
+            * Adds the user budget and the hashtagfee
+            * @return {Number} the total cost of posting a request
+            */
+            _totalSum() {
+                return parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee/2e18);
+            }
+            /**
+            * Returns the SWT size hashtagFee
+            * @return {Number} the total cost of posting a request
+            */
+            _calculatedFee() {
+                return parseFloat(this.hashtag.hashtagFee/2e18);
+            }
+
+            /**
+            * toggles the password unlock display
+            */
+            _unlock() {
+                this.toggleUnlock = !this.toggleUnlock;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.privateKey = null;
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * Routes to new-request-processing
+            */
+            _privateKey() {
+                if (this.privateKey != null) {
+                    this.set('route.path', 'new-request-processing');
+                }
+            }
+
+            _loadExitAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[0] == this.pageID) {
+                        // Here come the Exit Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(0px)'},
+                                {'transform': 'translateX(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateX(0px)'},
+                                {'transform': 'translateX(50px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 150,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+            _loadEntryAnimations() {
+                if (this.routeExit[0] != this.routeExit[1]) {
+                    if (this.routeExit[1] == this.pageID) {
+                        // Here come the Entry Animations
+                        this.$.title.animate(
+                            [
+                                {'transform': 'translateX(50px)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                        this.$.subtitle.animate(
+                            [
+                                {'transform': 'translateX(50px)'},
+                                {'transform': 'translateX(0px)'},
+                            ],
+                            {
+                                fill: 'forwards',
+                                duration: 200,
+                                iterations: 1,
+                                iterationStart: 0,
+                                easing: 'cubic-bezier(0.42,0,0.177,0.751)',
+                                delay: 0,
+                                endDelay: 0,
+                            }
+                        );
+                    }
+                }
+            }
+        }
+        window.customElements.define(MyConfirmNewRequest.is, MyConfirmNewRequest);
+    </script>
+</dom-module>
