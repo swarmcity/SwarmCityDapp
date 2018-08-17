@@ -1,0 +1,423 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-wallet.html">
+<script src="../data/lightwallet.min.js"></script>
+<!--
+
+Example:
+```
+<display-restore-json-file></display-restore-json-file>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| Please remove all css from this file out to mixins
+
+-->
+<dom-module id="display-restore-json-file">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+                width: 100%;
+            }
+
+            .container {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+            .inputfile {
+                width: 0.1px;
+                height: 0.1px;
+                opacity: 0;
+                overflow: hidden;
+                position: absolute;
+                z-index: -1;
+            }
+
+            .container label {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .select {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --text-button-big-fullwhite;
+                color: var(--sc-blue);
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .select:active {
+                @apply --button-active;
+            }
+
+            .uploadedfile {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .container[wide-layout] .uploadedfile{
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+            }
+
+
+            paper-input {
+                width: 100%;
+                text-align: center;
+
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-input {
+                text-align: left;
+                max-width: 400px;
+            }
+
+            .btn {
+                margin-top: 10vh;
+                @apply --icon-button-big;
+            }
+
+            .container[wide-layout] .btn {
+                margin-top: 7vh;
+            }
+
+            .btn:active {
+                @apply --button-active;
+            }
+
+            .confirm {
+                @apply --next-blue-normal;
+            }
+
+            .cancel {
+                @apply --xmark-grey4-small;
+            }
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .confirm,
+                .cancel {
+                    @apply --retina;
+                }
+            }
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .error {
+                @apply --body-bold;
+                color: var(--sc-red2);
+                margin-top: 30px;
+            }
+
+        </style>
+        <data-wallet id="wallet"></data-wallet>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="{{!askPassword}}">
+                <div class="flex"></div>
+                <form method="post" enctype="multipart/form-data"></form>
+                    <input type="file" name="file" id="file" class="inputfile" on-change="_getFile" accept='application/json'/>
+                    <label id="button" tabindex="1" for="file" onclick="">
+                        <div class="select">{{localize('select file')}}</div>
+                    </label>
+                </form>
+                <div class="error">{{error}}</div>
+            </template>
+
+            <template is="dom-if" if="{{askPassword}}">
+                <div class="uploadedfile">
+                    <div>{{filename}}</div>
+                    <div class="cancel" on-click="_cancel"></div>
+                </div>
+                <paper-input 
+                    id="password" 
+                    label="{{localize('password?')}}" 
+                    type="password" 
+                    value="{{password}}"
+                    on-keydown="_checkForEnter"></paper-input>
+                    <div class="error">{{error}}</div>
+                    <div class="btn">
+                        <div class="confirm" on-click="_decrypt"></div>
+                    </div>
+            </template>
+        </div>
+    </template>
+    <script>
+        class MyDisplayRestoreJsonFile extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-restore-json-file';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * The users selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * Rotue is the current
+                    * @type {String}
+                    */
+                    route: {
+                        type: String,
+                        observer: '_cancel',
+                    },
+                    /**
+                    * wallet represnts the users wallet
+                    * @type {Object}
+                    */
+                    wallet: {
+                        type: Object,
+                    },
+                    /**
+                    * askPassword represents of the password field ois shown or not
+                    * @type {Boolean}
+                    */
+                    askPassword: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * error shows the readers parse error
+                    * @type {Boolean}
+                    */
+                    error: {
+                        type: Object,
+                    },
+                    /**
+                    * the name of the file selected
+                    * @type {Boolean}
+                    */
+                    filename: {
+                        type: String,
+                    },
+                                        /**
+                    * the password the user enters
+                    * @type {Boolean}
+                    */
+                    password: {
+                        type: String,
+                    },
+                    /**
+                    * PublicKey represents the user's public Key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
+            /**
+            * Redux action for setting publicKey
+            * @param {String} publicKey
+            */
+            static get actions() {
+                return Object.assign({
+                    PUBLICKEY: function(publicKey) {
+                        return {
+                            type: 'PUBLICKEY',
+                            publicKey: publicKey,
+                        };
+                    },
+                    AVATAR: function(avatar) {
+                        return {
+                            type: 'AVATAR',
+                            avatar: avatar,
+                        };
+                    },
+                    USERNAME: function(username) {
+                        return {
+                            type: 'USERNAME',
+                            username: username,
+                        };
+                    },
+                    REQIPFS: function(reqipfs) {
+                        return {
+                            type: 'REQIPFS',
+                            reqipfs: reqipfs,
+                        };
+                    },
+                });
+            }
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+            * Checks for enter key input
+            * @param {Object} e element clicked.
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13) {
+                        this._decrypt();
+                }
+            }
+            /**
+            * Fired when the user selects a file
+            * @param {event} event The event from the on-change
+            */
+            _getFile(event) {
+                event.stopPropagation();
+                event.preventDefault();
+                this.filename = event.target.files[0].name;
+                const file = event.target.files[0];
+                let reader = new FileReader();
+                reader.readAsText(file);
+                reader.onload = () => {
+                    this.wallet = JSON.parse(reader.result);
+                    this.askPassword = true;
+                    this.async(() => {
+                        this.$$('#password').focus();
+                    });
+                };
+                reader.onerror = (error) => {
+                    this.error = error;
+                };
+            }
+            /**
+            * Fired when the Restore button is clicked
+            */
+            _decrypt() {
+                if (this.wallet.Crypto) {
+                    // check password before dooing any of this
+                    this.$.wallet.decryptUtcKeystore(this.wallet, this.password)
+                    .then((privateKey) => {
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.keyStore = this.wallet;
+                        if (!this.wallet.avatar) {
+                            storage.user.avatar = '[[importHref]]../../images/defaultavatar.png';
+                        } else {
+                            storage.user.avatar = this.wallet.avatar;
+                        }
+                        storage.user.username = this.wallet.username;
+                        delete storage.keyStore.username;
+                        delete storage.keyStore.avatar;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        this.dispatch('PUBLICKEY', storage.keyStore.address);
+                        this.dispatch('AVATAR', storage.user.avatar);
+                        this.dispatch('USERNAME', storage.user.username);
+
+                        if (sessionStorage.getItem('origin')) {
+                            this.path = sessionStorage.getItem('origin');
+                            sessionStorage.removeItem('origin');
+                        }
+                        else {
+                            this.set('route.path', 'hashtag-list');
+                        }
+                    })
+                    .catch((error) => {
+                        this.error = 'wrong password';
+                    });
+                } else {
+                    const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
+                    keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
+                        if (!err) {
+                            const privatekey = keystore.exportPrivateKey('0x' + keystore.getAddresses()[0],
+                            pwDerivedKey);
+                            this.$.wallet.restoreKey(privatekey, this.password)
+                            .then((KeyStore) => {
+                                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                                storage.keyStore = KeyStore.utcKeystore;
+                                storage.user.username = this.wallet.identity.username;
+                                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                if (this.wallet.identity.avatarhash) {
+                                    this.dispatch('REQIPFS', this.wallet.identity.avatarhash);
+                                }
+                                this.dispatch('PUBLICKEY', storage.keyStore.address);
+                                this.dispatch('USERNAME', storage.user.username);
+                                if (sessionStorage.getItem('origin')) {
+                                    this.path = sessionStorage.getItem('origin');
+                                    sessionStorage.removeItem('origin');
+                                }
+                                else {
+                                    this.set('route.path', 'hashtag-list');
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            /**
+            * Fired when the ccancel btn is clicked
+            */
+            _cancel() {
+                this.askPassword = false;
+                this.error = null;
+                this.password = null;
+            }
+        } window.customElements.define(MyDisplayRestoreJsonFile.is, MyDisplayRestoreJsonFile);
+    </script>
+</dom-module>
