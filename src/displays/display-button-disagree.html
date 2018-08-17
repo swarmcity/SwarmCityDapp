@@ -1,0 +1,69 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<display-button-disagree></display-button-disagree>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--display-button-disagree` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="display-button-disagree">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .button {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-small;
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .button {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="button"></div>
+        </div>
+
+    </template>
+    <script>
+        class MyDisplayButtonDisagree extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-button-disagree';
+            }
+        }
+        window.customElements.define(MyDisplayButtonDisagree.is, MyDisplayButtonDisagree);
+    </script>
+</dom-module>
