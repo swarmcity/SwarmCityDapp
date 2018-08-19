@@ -694,15 +694,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (item.seeker &&
                     item.seeker.address == this.publicKey) {
                     return false;
-                } else if (item.replies) {
-                    let replied = false;
-                    for (let replier of item.replies) {
-                        if (replier.address == this.publicKey) {
-                            replied = true;
-                        }
-                    }
-                    return replied ? false : true;
-                } else if (!item.replies) {
+                } else if (item.replies && item.replies[this.publicKey]) {
+                    return false;
+                } else {
                     return true;
                 }
             }
