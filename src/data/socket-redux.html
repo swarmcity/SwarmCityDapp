@@ -251,12 +251,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             shortCode: shortCode,
                         };
                     },
-                    IPHONE: function (iphone) {
-                        return {
-                            type: 'IPHONE',
-                            iphone: iphone,
-                        };
-                    },
                     AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
@@ -362,7 +356,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             ready() {
                 super.ready();
-                this._detectIphone();
                 // Get push updates of the user's balance
                 this.socket.on('balanceChanged', (reply) => {
                     if (reply.response == 200) {
@@ -545,13 +538,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
 
-            _detectIphone() {
-                if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
-                    this.dispatch('IPHONE', true);
-                } else {
-                    this.dispatch('IPHONE', false);
-                }
-            }
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
                 this.socket.emit('subscribe', {
