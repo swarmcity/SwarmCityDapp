@@ -105,7 +105,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] .description {
                 margin: 20px 20px 0 30px;
             }
-            
+
             .pricebox {
                 @apply --layout-vertical;
                 @apply --layout-end;
@@ -420,12 +420,15 @@ This code may only be used under the license found at https://github.com/swarmci
                             </iron-image>
 
                             <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
-                                <div id="seeker" class="seeker-info seeker-owner horizontal" on-up="_toUserReputation"><div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]</div>
+                                <div id="seeker" class="seeker-info seeker-owner horizontal" on-up="_toUserReputation">
+                                    <div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]
+                                </div>
                             </template>
 
                             <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
                                 <div id="seeker" class="seeker-info horizontal" on-up="_toUserReputation">
-                                        <div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]</div>
+                                    <div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]
+                                </div>
                             </template>
 
                             <div class="pricebox">
@@ -480,7 +483,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 <display-button-conflict></display-button-conflict>
                             </template>
                         </template>
-                        
+
                         <!-- The view if the seeker has paid out and the deal is done-->
                         <template is="dom-if" if="[[_getState('done', state)]]">
                             <display-simpledeal-detail-done></display-simpledeal-detail-done>
@@ -594,8 +597,8 @@ This code may only be used under the license found at https://github.com/swarmci
             _loadAnimations() {
                 this.anim = {
                     moveUp: {
-                        arr: [{transform: 'translateY(0px)'},
-                        {transform: 'translateY(-20px)'}],
+                        arr: [{ transform: 'translateY(0px)' },
+                        { transform: 'translateY(-20px)' }],
                         obj: {
                             fill: 'both',
                             duration: 250,
@@ -623,22 +626,37 @@ This code may only be used under the license found at https://github.com/swarmci
             _load() {
                 // Is the hashtagItem loaded?
                 this.loadingItem = this.hashtagItem.itemHash ? false : true;
-                // What is the state we're in with this item?
-                if (this.hashtagItem.status &&
-                    this.hashtagItem.status == '1') {
-                    this.stateChange = 'done';
-                } else if (this.hashtagItem.selectee &&
-                    !this.hashtagItem.provider &&
-                    (this.hashtagItem.selectee.address == this.publicKey ||
-                        this.hashtagItem.seeker.address == this.publicKey)
-                ) {
-                    this.stateChange = 'selected';
-                } else if (this.hashtagItem.provider) {
-                    this.stateChange = 'funded';
-                }
-                else if (!this.hashtagItem.update) {
-                        this.stateChange = 'replies';
+                if (this.hashtagItem.status) {
+                    switch (status) {
+                        case 0:
+                            // Open item
+                            if (this.hashtagItem.selectee &&
+                                (this.hashtagItem.selectee.address == this.publicKey ||
+                                    this.hashtagItem.seeker.address == this.publicKey)
+                            ) {
+                                this.stateChange = 'selected';
+                            } else {
+                                this.stateChange = 'replies';
+                            }
+                            break;
+                        case 1:
+                            // Funded item
+                            this.stateChange = 'funded';
+                            break;
+                        case 2:
+                            // Item paid out
+                            this.stateChange = 'done';
+                            break;
+                        case 3:
+
+                            break;
+                        case 4:
+
+                            break;
+                        default:
+                            break;
                     }
+                }
             }
             /**
              * copies the url key to the clipboard
