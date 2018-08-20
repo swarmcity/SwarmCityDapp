@@ -124,31 +124,17 @@ The following custom properties and mixins are available for styling:
                 if (this.privateKey) {
                     this._startChat();
                     let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
-                    webpack.decryptWithPrivateKey(
-                        this.privateKey,
-                        this.hashtagItem.selectee.secret,
-                    ).then((secret) => {
-                        this.$.simpledeal.rawFundItem(
-                            secret,
-                            this.hashtag.hashtagAddress,
-                            abi.hashtagSimpleDeal.abi
-                        ).then((rawFundItem) => {
-                            this.$.transaction.rawApproveAndCall(
-                                this.hashtag.hashtagAddress,
-                                totalSum,
-                                rawFundItem,
-                                '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                abi.miniMeToken.abi
-                            ).then((rawApproveAndCall) => {
-                                this.$.transaction.signRawTx(
-                                    this.address,
-                                    '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                    this.nonce,
-                                    rawApproveAndCall,
-                                    this.privateKey
-                                ).then((serializedTx) => {
+                    webpack.decryptWithPrivateKey(this.privateKey, this.hashtagItem.selectee.secret)
+                    .then((secret) => {
+                        this.$.simpledeal.rawFundItem(secret, this.hashtag.hashtagAddress, abi.hashtagSimpleDeal.abi)
+                        .then((rawFundItem) => {
+                            this.$.transaction.rawApproveAndCall(this.hashtag.hashtagAddress, totalSum, rawFundItem, '0x0adbc89464cb7fa752adcf3533514949a2547589', abi.miniMeToken.abi)
+                            .then((rawApproveAndCall) => {
+                                this.$.transaction.signRawTx(this.address, '0x0adbc89464cb7fa752adcf3533514949a2547589', this.nonce, rawApproveAndCall, this.privateKey)
+                            .then((serializedTx) => {
                                     this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
-                                }).catch((err) => {
+                            })
+                            .catch((err) => {
                                     this.error = err;
                                 });
                             });
