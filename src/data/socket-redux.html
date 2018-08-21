@@ -400,15 +400,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.chatHistory) {
                     if (this.chatHistory.instantiate) {
                         this.socket.emit('subscribeToChat', {
-                            emitterAddress: this.publicKey,
+                            emitterAddress: this.publicKey.toLowerCase(),
                             members: this.chatHistory.instantiate,
-                            itemHash: this.hashtagItem.itemHash,
+                            itemHash: this.hashtagItem.itemHash.toLowerCase(),
                         });
                     }
                     if (this.chatHistory.subscribe) {
                         this.socket.emit('subscribeToChat', {
-                            emitterAddress: this.publicKey,
-                            itemHash: this.chatHistory.subscribe,
+                            emitterAddress: this.publicKey.toLowerCase(),
+                            itemHash: this.chatHistory.subscribe.toLowerCase(),
                         });
                     }
                     this.socket.on('chatChanged', (reply) => {
@@ -421,12 +421,12 @@ This code may only be used under the license found at https://github.com/swarmci
             _newChatMessage() {
                 if (this.newChatMessage) {
                     this.socket.emit('newChatMessage', {
-                        itemHash: this.newChatMessage.itemHash,
+                        itemHash: this.newChatMessage.itemHash.toLowerCase(),
                         payload: {
                             message: this.newChatMessage.message,
                             avatarHash: this.avatarHash,
                             username: this.username,
-                            sender: this.publicKey,
+                            sender: this.publicKey.toLowerCase(),
                         },
                     });
                 }
