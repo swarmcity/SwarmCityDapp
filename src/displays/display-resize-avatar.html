@@ -379,7 +379,7 @@
             * @param {boolean} withArc whether to draw the arc around the center
             * @param {boolean} withShadow whether to reduce opacity of image outside arc
             */
-            _drawFile(withArc=true, withShadow=true) {
+            _drawFile(stroke) {
                 if (this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context) {
                     let myscale = (this.canvasHeight/this.image.height)*this.scale;
                     let px = 2*this.endX / (myscale);
@@ -394,35 +394,30 @@
                     this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
                     this.context.scale(myscale, myscale);
                     this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx),
-                        - 0.5*(this.image.height - ny));
+                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5*(this.image.height - ny));
                     this.context.restore();
-                    if (withShadow) {
-                        this.context.globalAlpha = 0.5;
-                        this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-                        this.context.save();
-                        this.context.beginPath();
-                        this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2,
-                        Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
-                        this.context.clip();
-                        this.context.globalAlpha = 1;
-                        this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
-                        this.context.scale(myscale, myscale);
-                        this.context.rotate(this.angle * Math.PI / 180);
-                        this.context.drawImage(this.image, - 0.5 * (this.image.width - nx),
-                            - 0.5*(this.image.height - ny));
-                        this.context.restore();
-                        this.context.save();
-                    }
-                    if (withArc) {
-                        this.context.globalAlpha = 1;
-                        this.context.arc(this.canvasWidth * 0.5,
-                        this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
+                    this.context.globalAlpha = 0.5;
+                    this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+                    this.context.save();
+                    this.context.beginPath();
+                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
+                    this.context.clip();
+                    this.context.globalAlpha = 1;
+                    this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
+                    this.context.scale(myscale, myscale);
+                    this.context.rotate(this.angle * Math.PI / 180);
+                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx),- 0.5*(this.image.height - ny));
+                    this.context.restore();
+                    this.context.save();
+                    this.context.globalAlpha = 1;
+                    this.context.arc(this.canvasWidth * 0.5,
+                    this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
+                    if(stroke === true || stroke === undefined){
                         this.context.lineWidth = 4;
                         this.context.strokeStyle = '#24B1FF';
                         this.context.stroke();
-                        this.context.restore();
                     }
+                    this.context.restore();
                 }
             }
             /**
@@ -493,7 +488,7 @@
             * @param {event} event The event from the on-change
             */
             _save() {
-                this._drawFile(true, true);
+                this._drawFile(false);
                 let newCanvas = document.createElement('canvas');
                 newCanvas.width = 204;
                 newCanvas.height = 204;
