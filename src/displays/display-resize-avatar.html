@@ -194,7 +194,7 @@
                     * @type {String}
                     */
                     defaultAvatar: {
-                        type: String
+                        type: String,
                     },
                     /**
                     * Avatar represents the users IPFS to their avatar image
@@ -376,8 +376,7 @@
             }
             /**
             * Draws the image to the canvas
-            * @param {boolean} withArc whether to draw the arc around the center
-            * @param {boolean} withShadow whether to reduce opacity of image outside arc
+            * @param {boolean} stroke
             */
             _drawFile(stroke) {
                 if (this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context) {
@@ -407,17 +406,17 @@
                     ctx.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
                     ctx.scale(myscale, myscale);
                     ctx.rotate(this.angle * Math.PI / 180);
-                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx),- 0.5*(this.image.height - ny));
+                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5*(this.image.height - ny));
                     ctx.restore();
                     ctx.save();
                     ctx.globalAlpha = 1;
                     ctx.arc(this.canvasWidth * 0.5,
                     this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
                     let blueStroke = true;
-                    if (stroke == false){
+                    if (stroke == false) {
                         blueStroke = false;
                     }
-                    if(blueStroke === true || blueStroke === undefined){
+                    if (blueStroke === true || blueStroke === undefined) {
                         ctx.lineWidth = 4;
                         ctx.strokeStyle = '#24B1FF';
                         ctx.stroke();
@@ -497,7 +496,7 @@
                 let newCanvas = document.createElement('canvas');
                 newCanvas.width = 204;
                 newCanvas.height = 204;
-                let ctx = newCanvas.getContext('2d'); 
+                let ctx = newCanvas.getContext('2d');
                 ctx.scale(2.15, 2.15);
                 ctx.drawImage(this.$.canvas, -77, -77);
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
