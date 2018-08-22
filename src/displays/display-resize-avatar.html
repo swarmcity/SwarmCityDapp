@@ -330,13 +330,6 @@
                     this.context = false;
                 } else {
                     this.context = this.$.canvas.getContext('2d');
-                    this.context.fillStyle = '#000';
-                    this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-                    this.context.arc(this.canvasWidth*0.5,
-                    this.canvasHeight*0.5, 50, 0, 2 * Math.PI, false);
-                    this.context.lineWidth = 4;
-                    this.context.strokeStyle = '#24B1FF';
-                    this.context.stroke();
                 }
             }
 
@@ -387,41 +380,42 @@
                     let rad = this.angle * Math.PI / 180;
                     let nx = px * Math.cos(-rad) - py * Math.sin(-rad);
                     let ny = px * Math.sin(-rad) + py * Math.cos(-rad);
-                    this.context.globalAlpha = 1.0;
-                    this.context.fillStyle = '#000';
-                    this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-                    this.context.save();
-                    this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
-                    this.context.scale(myscale, myscale);
-                    this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5*(this.image.height - ny));
-                    this.context.restore();
-                    this.context.globalAlpha = 0.5;
-                    this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
-                    this.context.save();
-                    this.context.beginPath();
-                    this.context.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
-                    this.context.clip();
-                    this.context.globalAlpha = 1;
-                    this.context.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
-                    this.context.scale(myscale, myscale);
-                    this.context.rotate(this.angle * Math.PI / 180);
-                    this.context.drawImage(this.image, - 0.5 * (this.image.width - nx),- 0.5*(this.image.height - ny));
-                    this.context.restore();
-                    this.context.save();
-                    this.context.globalAlpha = 1;
-                    this.context.arc(this.canvasWidth * 0.5,
+                    let ctx = this.context;
+                    ctx.globalAlpha = 1.0;
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+                    ctx.save();
+                    ctx.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
+                    ctx.scale(myscale, myscale);
+                    ctx.rotate(this.angle * Math.PI / 180);
+                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5*(this.image.height - ny));
+                    ctx.restore();
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(this.canvasWidth / 2, this.canvasHeight / 2, Math.min(100, 100) / 2, 0, 2 * Math.PI, false);
+                    ctx.clip();
+                    ctx.globalAlpha = 1;
+                    ctx.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
+                    ctx.scale(myscale, myscale);
+                    ctx.rotate(this.angle * Math.PI / 180);
+                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx),- 0.5*(this.image.height - ny));
+                    ctx.restore();
+                    ctx.save();
+                    ctx.globalAlpha = 1;
+                    ctx.arc(this.canvasWidth * 0.5,
                     this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
                     let blueStroke = true;
                     if (stroke == false){
-                        let blueStroke = false;
+                        blueStroke = false;
                     }
                     if(blueStroke === true || blueStroke === undefined){
-                        this.context.lineWidth = 4;
-                        this.context.strokeStyle = '#24B1FF';
-                        this.context.stroke();
+                        ctx.lineWidth = 4;
+                        ctx.strokeStyle = '#24B1FF';
+                        ctx.stroke();
                     }
-                    this.context.restore();
+                    ctx.restore();
                 }
             }
             /**
