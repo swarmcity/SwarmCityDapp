@@ -190,6 +190,13 @@
                         notify: true,
                     },
                     /**
+                    * Default Avatar represents the users IPFS to their avatar image
+                    * @type {String}
+                    */
+                    defaultAvatar: {
+                        type: String
+                    },
+                    /**
                     * Avatar represents the users IPFS to their avatar image
                     * @type {String}
                     */
@@ -219,7 +226,7 @@
                     */
                     scale: {
                         type: Number,
-                        value: 0.5,
+                        value: 0,
                         observer: '_drawFile',
                     },
                     /**
@@ -343,7 +350,7 @@
                 };
                 let savedAvatar = JSON.parse(localStorage.getItem('SwarmCity')).user.avatar;
                 if (!savedAvatar) {
-                    image.src = '../images/defaultavatar.png';
+                    image.src = this.defaultAvatar;
                 } else {
                     image.src = savedAvatar;
                 }
@@ -490,7 +497,7 @@
                 let newCanvas = document.createElement('canvas');
                 newCanvas.width = 204;
                 newCanvas.height = 204;
-                let ctx = newCanvas.getContext('2d');
+                let ctx = newCanvas.getContext('2d'); 
                 ctx.scale(2.15, 2.15);
                 ctx.drawImage(this.$.canvas, -77, -77);
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
