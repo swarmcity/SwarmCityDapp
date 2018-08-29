@@ -222,109 +222,109 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    BALANCE: function (balance) {
+                    BALANCE: function(balance) {
                         return {
                             type: 'BALANCE',
                             balance: balance,
                         };
                     },
-                    FX: function (fx) {
+                    FX: function(fx) {
                         return {
                             type: 'FX',
                             fx: fx,
                         };
                     },
-                    NONCE: function (nonce) {
+                    NONCE: function(nonce) {
                         return {
                             type: 'NONCE',
                             nonce: nonce,
                         };
                     },
-                    TOKEY: function (tokey) {
+                    TOKEY: function(tokey) {
                         return {
                             type: 'TOKEY',
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function (shortCode) {
+                    SHORTCODE: function(shortCode) {
                         return {
                             type: 'SHORTCODE',
                             shortCode: shortCode,
                         };
                     },
-                    AVATAR: function (avatar) {
+                    AVATAR: function(avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    AVATARHASH: function (avatarHash) {
+                    AVATARHASH: function(avatarHash) {
                         return {
                             type: 'AVATARHASH',
                             avatarHash: avatarHash,
                         };
                     },
-                    TXHASH: function (txHash) {
+                    TXHASH: function(txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function (txHashItem) {
+                    TXHASHITEM: function(txHashItem) {
                         return {
                             type: 'TXHASHITEM',
                             txHashItem: txHashItem,
                         };
                     },
-                    CONFIRMEDTX: function (confirmedTx) {
+                    CONFIRMEDTX: function(confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
                         };
                     },
-                    ITEMDATAHASH: function (itemDataHash) {
+                    ITEMDATAHASH: function(itemDataHash) {
                         return {
                             type: 'ITEMDATAHASH',
                             itemDataHash: itemDataHash,
                         };
                     },
-                    REPLYDATAHASH: function (replyDataHash) {
+                    REPLYDATAHASH: function(replyDataHash) {
                         return {
                             type: 'REPLYDATAHASH',
                             replyDataHash: replyDataHash,
                         };
                     },
-                    HASHTAG: function (hashtag) {
+                    HASHTAG: function(hashtag) {
                         return {
                             type: 'HASHTAG',
                             hashtag: hashtag,
                         };
                     },
-                    IPFSHASH: function (ipfsHash) {
+                    IPFSHASH: function(ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
                         };
                     },
-                    USERREPUTATION: function (userReputation) {
+                    USERREPUTATION: function(userReputation) {
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
                         };
                     },
-                    HASHTAGS: function (hashtags) {
+                    HASHTAGS: function(hashtags) {
                         return {
                             type: 'HASHTAGS',
                             hashtags: hashtags,
                         };
                     },
-                    CHATHISTORY: function (chatHistory) {
+                    CHATHISTORY: function(chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
                         };
                     },
-                    NEWCHATMESSAGE: function (newChatMessage) {
+                    NEWCHATMESSAGE: function(newChatMessage) {
                         return {
                             type: 'NEWCHATMESSAGE',
                             newChatMessage: newChatMessage,
@@ -336,7 +336,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io('127.0.0.1:8011', // eslint-disable-line
+                this.socket = io('https://dev.swarm.city', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -380,8 +380,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.socket.on('hashtagsChanged', (reply) => {
                     if (reply.response == 200) {
                         this.hashtags = reply.data;
-                        console.log('hashtagsChanged', reply.data)
-                        PubSub.publish('hashtagsChanged', reply.data);
                         this.dispatch('HASHTAGS', this.hashtags);
                     }
                 });
@@ -553,10 +551,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.balance = reply.data;
                         this.dispatch('BALANCE', this.balance);
                     }
-                });
-                PubSub.publish('SUB-BALANCE', this.publicKey);
-                PubSub.subscribe('BALANCE', (msg, data) => {
-                    console.log('Received balance from API', data);
                 });
                 // subscribe to updates of the nonce of this publickey
                 this.socket.emit('subscribe', {
