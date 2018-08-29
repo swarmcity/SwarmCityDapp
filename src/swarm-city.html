@@ -5,6 +5,7 @@
 <link rel="import" href="data/socket-redux.html">
 <link rel="import" href="displays/display-get-hashtag.html">
 <link rel="import" href="redux-state.html">
+<link rel="import" href="data/api.html">
 
 <link rel="lazy-import" href="pages/page-welcome.html">
 <link rel="lazy-import" href="pages/page-hashtag-list.html">
@@ -72,28 +73,18 @@
         display: block;
       }
     </style>
-    
+
     <socket-redux></socket-redux>
 
     <display-get-hashtag route="[[route]]"></display-get-hashtag>
 
-    <app-location
-      route="{{route}}"
-      url-space-regex="^[[rootPath]]">
+    <app-location route="{{route}}" url-space-regex="^[[rootPath]]">
     </app-location>
 
-    <app-route
-      route="{{route}}"
-      pattern="[[rootPath]]:page"
-      data="{{routeData}}"
-      tail="{{subroute}}">
+    <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
-    <iron-pages
-        selected="[[page]]"
-        attr-for-selected="name"
-        fallback-selection="view404"
-        role="main">
+    <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
       <page-welcome name="welcome"></page-welcome>
       <page-language name="language"></page-language>
       <page-hashtag-list name="hashtag-list"></page-hashtag-list>
@@ -156,7 +147,7 @@
     Polymer.setPassiveTouchGestures(true);
 
     class SwarmCity extends Polymer.Element {
-      static get is() {return 'swarm-city';}
+      static get is() { return 'swarm-city'; }
 
       static get properties() {
         return {
@@ -184,10 +175,10 @@
       _pageChanged(page) {
         const resolvedPageUrl = this.resolveUrl('pages/page-' + page + '.html');
         Polymer.importHref(
-            resolvedPageUrl,
-            null,
-            this._showPage404.bind(this),
-            true);
+          resolvedPageUrl,
+          null,
+          this._showPage404.bind(this),
+          true);
       }
 
       _showPage404() {
