@@ -1,0 +1,72 @@
+<script src="../../node_modules/redux/dist/redux.min.js"></script>
+
+<script>
+    (function () {
+        const reducers = {
+            txs: (state = [], action) => {
+                switch (action.type) {
+                    case 'UPDATE_TXS':
+                        return action.txs;
+                    case 'ADD_TX':
+                        return [
+                            ...state,
+                            action.tx
+                        ];
+                }
+                return state;
+            },
+            showLoadingSpinner: (state = false, action) => {
+                switch (action.type) {
+                    case 'SHOW_LOADING_SPINNER':
+                        return true;
+                    case 'LOADING_DONE':
+                        return false;
+                }
+                return state;
+            },
+            loadedList: (state = [], action) => {
+                switch (action.type) {
+                    case 'SET_LOADED_LIST':
+                        return action.result;
+                    case 'CLEAR_LOADED_LIST':
+                        return [];
+                }
+                return state;
+            },
+            location: (state = { page: "view1" }, action) => {
+                switch (action.type) {
+                    case 'LOCATION_CHANGED':
+                        return action.location;
+                }
+                return state;
+            },
+            showToast(state = {}, action) {
+                switch (action.type) {
+                    case 'SHOW_INFO':
+                        return {
+                            type: 'INFO',
+                            infoText: action.infoText
+                        };
+                    case 'SHOW_ERROR':
+                        return {
+                            type: 'ERROR',
+                            errorText: action.errorText,
+                            exception: action.exception
+                        };
+                    case 'SHOW_QUESTION':
+                        return {
+                            type: 'QUESTION',
+                            questionText: action.questionText,
+                            yesText: action.yesText,
+                            noText: action.noText,
+                            yesAction: action.yesAction,
+                            noAction: action.noAction
+                        };
+                }
+                return state;
+            }
+        }
+        if (!window.AppStore) window.AppStore = {}
+        window.AppStore.rootReducer = Redux.combineReducers(reducers)
+    }());
+</script>

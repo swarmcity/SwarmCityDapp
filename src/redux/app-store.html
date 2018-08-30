@@ -1,0 +1,42 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer-redux/polymer-redux.html">
+
+<link rel="import" href="app-sagas.html">
+<link rel="import" href="app-actions.html">
+<link rel="import" href="app-reducers.html">
+
+<script src="../../node_modules/redux-saga/dist/redux-saga.js"></script>
+
+<script>
+    (function () {
+        const composeEnhancers = typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+            ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
+            : Redux.compose;
+        // create the saga middleware
+        const createSagaMiddleware = ReduxSaga.default;
+        const sagaMiddleware = createSagaMiddleware();
+        const enhancer = composeEnhancers(
+            Redux.applyMiddleware(sagaMiddleware),
+        );
+        const store = Redux.createStore(AppStore.rootReducer, enhancer);
+        window.store = store;
+        sagaMiddleware.run(AppStore.rootSaga);
+        const reduxMixin = PolymerRedux(store);
+        /* @mixinFunction */
+        const actionsMixin = (superClass) => {
+            return class extends reduxMixin(superClass) {
+                static get actions() {
+                    return AppStore.actions
+                }
+            }
+        }
+        /* @mixinFunction */
+        if (!window.AppStore) window.AppStore = {}
+        window.AppStore.ReduxMixin = Polymer.dedupingMixin(actionsMixin);
+
+        // Test
+        window.test = () => {
+            store.dispatch(window.AppStore.actions.getTxs('0xceb2f510de0945e6540cf507d0e18ed9a7e1b3fe'))
+        }
+    }());
+</script>

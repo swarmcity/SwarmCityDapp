@@ -1,0 +1,110 @@
+<script src="../../node_modules/redux-saga/dist/redux-saga.js"></script>
+<script src="./contractsData.js"></script>
+
+<script>
+    (function () {
+        // Initialize web3
+        let web3 = new Web3('https://kovan.infura.io/metamask');
+        console.log('Redux-sagas is using web3 version: ' + web3.version + ', host: ' + web3.currentProvider.host)
+
+        const effects = ReduxSaga.effects;
+
+        // Import contract data:
+        const { swtToken } = window.contractsData;
+        /*
+         * Selector functions
+         */
+        const getFirebaseApp = (state) => state.firebaseApp;
+        const getUser = (state) => state.user;
+
+        /*
+         * redux-saga worker functions
+         */
+        // worker Saga: will be fired on LOAD_LIST actions
+
+        async function createLogsForDirection(address) {
+            const swtContractInstance = new web3.eth.Contract(
+                [swtToken.abi.TransferEvent],
+                swtToken.address
+            );
+            // Fetch transactions
+            const [incoming, outgoing] = await Promise.all([
+                swtContractInstance.getPastEvents('Transfer', {
+                    'fromBlock': swtToken.deployBlock,
+                    'filter': { _to: address },
+                }),
+                swtContractInstance.getPastEvents('Transfer', {
+                    'fromBlock': swtToken.deployBlock,
+                    'filter': { _from: address },
+                })
+            ])
+            // Merge transactions, mark outgoing as so. For incoming, tx.outgoing is false
+            // Keep only the relevant data
+            const txs = [...incoming, ...outgoing].map(tx => ({
+                transactionHash: tx.transactionHash,
+                to: tx.returnValues._to,
+                from: tx.returnValues._from,
+                amount: tx.returnValues._amount,
+                outgoing: tx.returnValues._from === address,
+                blockNumber: tx.blockNumber
+            }))
+            // Fetch the time of the transaction, and assign it to the tx object
+            await Promise.all(txs.map(tx =>
+                web3.eth.getBlock(tx.blockNumber)
+                    .then(block => tx.timestamp = block.timestamp)
+                    .catch(e => console.log('Error fetching datetime of block ' + tx.blockNumber))
+            ))
+            // Return the result
+            return txs
+        }
+        function* getTransactionHistory(action) {
+            try {
+                const txs = yield effects.call(createLogsForDirection, action.address)
+                yield effects.put(AppStore.actions.updateTxs(txs));
+                console.log('Received txs', txs)
+
+                // The code below is left as example / reference for future functions
+
+                // let result = [1, 2, 3, 4, 5];
+                // // Artificial to delay to simulate a REST call like behavior
+                // yield ReduxSaga.delay(1000);
+                // yield effects.put(MyApp.actions.setLoadedList(result));
+                // yield effects.put(MyApp.actions.showSpinner(false));
+                // yield effects.put(MyApp.actions.showInfo('List loaded'));
+            } catch (e) {
+                console.error(e);
+                // yield effects.put(MyApp.actions.showError('Error while fetching list', e));
+                // yield effects.put(MyApp.actions.clearLoadedList());
+                // yield effects.put(MyApp.actions.showSpinner(false));
+            }
+        }
+        // worker Saga: will be fired on CLEAR_LIST actions
+        function* exampleFunction(action) {
+            yield effects.put(MyApp.actions.showSpinner(true));
+            // Artificial to delay to simulate a REST call like behavior
+            yield ReduxSaga.delay(1000);
+            yield effects.put(MyApp.actions.clearLoadedList());
+            yield effects.put(MyApp.actions.showSpinner(false));
+            yield effects.put(MyApp.actions.showInfo('List cleared'));
+        }
+
+        function* getBlock(action) {
+            try {
+                console.log('GET BLOCK req', action)
+            } catch (e) {
+                // 
+            }
+        }
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield effects.takeEvery('GET_BLOCK', getBlock);
+            yield effects.takeEvery('CLEAR_LIST', exampleFunction);
+            yield effects.takeEvery('GET_TXS', getTransactionHistory)
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        window.AppStore.rootSaga = rootSaga;
+    }());
+</script>
