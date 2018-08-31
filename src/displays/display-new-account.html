@@ -118,21 +118,10 @@ The following custom properties and mixins are available for styling:
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <paper-input 
-                id="password" 
-                label="{{localize('password?')}}" 
-                type="password" 
-                on-input="_checkInput" 
-                value="{{password}}" 
-                autofocus
-                on-keydown="_checkForEnter">
+            <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}"
+                autofocus on-keydown="_checkForEnter">
             </paper-input>
-            <paper-input 
-                id="repeat" 
-                label="{{localize('Confirm password')}}" 
-                type="password" 
-                on-input="_checkInput" 
-                value="{{confirmPassword}}"
+            <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" value="{{confirmPassword}}"
                 on-keydown="_checkForEnter">
             </paper-input>
             <div class="errorcontainer">
@@ -212,20 +201,7 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
-            /**
-            * Redux action for setting publicKey
-            * @param {String} publicKey
-            */
-            static get actions() {
-                return Object.assign({
-                    PUBLICKEY: function(publicKey) {
-                        return {
-                            type: 'PUBLICKEY',
-                            publicKey: publicKey,
-                        };
-                    },
-                });
-            }
+
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -254,14 +230,14 @@ The following custom properties and mixins are available for styling:
             */
             _agree() {
                 if (this.password &&
-                this.password.length >= 1 &&
-                this.confirmPassword &&
-                this.password == this.confirmPassword) {
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
                     this.$.wallet.createKey(this.password)
                         .then((keyStore) => {
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                             storage.keyStore = keyStore.utcKeystore;
-                            this.dispatch('PUBLICKEY', storage.keyStore.address);
+                            this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
                             localStorage.setItem('SwarmCity', JSON.stringify(storage));
                             this.path = 'account-complete/';
                         });
@@ -273,15 +249,15 @@ The following custom properties and mixins are available for styling:
             _checkInput() {
                 this.error = '';
                 if (this.password &&
-                this.confirmPassword &&
-                this.password.length >=1 &&
-                this.confirmPassword.length >=1) {
+                    this.confirmPassword &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword.length >= 1) {
                     if (this.confirmPassword.length <= this.password.length) {
                         for (let i = 0; i < this.confirmPassword.length; i++) {
                             if (this.confirmPassword[i] != this.password[i]) {
-                            this.error = this.localize('The passwords dont match.');
+                                this.error = this.localize('The passwords dont match.');
+                            }
                         }
-                    }
                     } else {
                         this.error = this.localize('The passwords dont match.');
                     }

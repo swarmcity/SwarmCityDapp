@@ -367,13 +367,13 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    CHATHISTORY: function(chatHistory) {
+                    CHATHISTORY: function (chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
                         };
                     },
-                    NEWCHATMESSAGE: function(newChatMessage) {
+                    NEWCHATMESSAGE: function (newChatMessage) {
                         return {
                             type: 'NEWCHATMESSAGE',
                             newChatMessage: newChatMessage,
@@ -412,7 +412,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     let subscribe = {
                         subscribe: this.route.path.split('/')[3],
                     };
-                    this.dispatch('CHATHISTORY', subscribe);
+                    this.dispatch({
+                        type: 'CHATHISTORY',
+                        chatHistory: subscribe,
+                    });
                 }
             }
             /**
@@ -468,7 +471,10 @@ This code may only be used under the license found at https://github.com/swarmci
                         itemHash: this.route.path.split('/')[3],
                         message: this.message,
                     };
-                    this.dispatch('NEWCHATMESSAGE', message);
+                    this.dispatch({
+                        type: 'NEWCHATMESSAGE',
+                        newChatMessage: message,
+                    });
                     this.message = this.message.trim();
                     this.message = '';
                 }

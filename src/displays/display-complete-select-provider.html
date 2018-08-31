@@ -49,7 +49,7 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
@@ -133,7 +133,10 @@ The following custom properties and mixins are available for styling:
                             rawSelectReplier,
                             this.privateKey
                         ).then((serializedTx) => {
-                            this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                            this.dispatch({
+                                type: 'SENDSIGNEDTX',
+                                sendSignedTx: serializedTx.toString('hex'),
+                            });
                         }).catch((err) => {
                             this.error = err;
                         });

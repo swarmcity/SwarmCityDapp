@@ -49,19 +49,19 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    REPLYTOIPFS: function(replyToIpfs) {
+                    REPLYTOIPFS: function (replyToIpfs) {
                         return {
                             type: 'REPLYTOIPFS',
                             replyToIpfs: replyToIpfs,
                         };
                     },
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
                         };
                     },
-                    HASHTAGITEM: function(hashtagItem) {
+                    HASHTAGITEM: function (hashtagItem) {
                         return {
                             type: 'HASHTAGITEM',
                             hashtagItem: hashtagItem,
@@ -161,7 +161,7 @@ The following custom properties and mixins are available for styling:
                     //     reputation: '0',
                     //     username: this.username,
                     // }
-                    // this.dispatch('HASHTAGITEM', this.hashtagItem);
+                    // this.dispatch({type: 'HASHTAGITEM', hashtagItem: this.hashtagItem});
                     let reply = {
                         replier: {
                             username: this.username,
@@ -173,7 +173,10 @@ The following custom properties and mixins are available for styling:
                         },
                         description: this.reply,
                     };
-                    this.dispatch('REPLYTOIPFS', JSON.stringify(reply));
+                    this.dispatch({
+                        type: 'REPLYTOIPFS',
+                        replyToIpfs: JSON.stringify(reply),
+                    });
                 }
             }
             /**
@@ -194,7 +197,10 @@ The following custom properties and mixins are available for styling:
                         rawReplyItem,
                         this.privateKey
                     ).then((serializedTx) => {
-                        this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                        this.dispatch({
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: serializedTx.toString('hex'),
+                        });
                     }).catch((err) => {
                         this.error = err;
                     });

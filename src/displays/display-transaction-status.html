@@ -678,7 +678,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     balance: {
                         type: Object,
-                        statePath: 'balance',
+                        statePath: AppStore.selectors.balance,
                     },
                     /**
                     * the amount to be sent
@@ -722,31 +722,31 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    REQTOKEY: function(reqtokey) {
+                    REQTOKEY: function (reqtokey) {
                         return {
                             type: 'REQTOKEY',
                             reqtokey: reqtokey,
                         };
                     },
-                    USINGSHORTCODE: function(usingShortCode) {
+                    USINGSHORTCODE: function (usingShortCode) {
                         return {
                             type: 'USINGSHORTCODE',
                             usingShortCode: usingShortCode,
                         };
                     },
-                    TOADDRESS: function(toAddress) {
+                    TOADDRESS: function (toAddress) {
                         return {
                             type: 'TOADDRESS',
                             toAddress: toAddress,
                         };
                     },
-                    TOUSERNAME: function(toUserName) {
+                    TOUSERNAME: function (toUserName) {
                         return {
                             type: 'TOUSERNAME',
                             toUserName: toUserName,
                         };
                     },
-                    AMOUNTTOSEND: function(amountToSend) {
+                    AMOUNTTOSEND: function (amountToSend) {
                         return {
                             type: 'AMOUNTTOSEND',
                             amountToSend: amountToSend,
@@ -763,7 +763,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (event.keyCode === 13 || event.type == 'tap' || event.type == 'functionCall') {
                     this.start = true;
                     this.looking = false;
-                    this.dispatch('USINGSHORTCODE', false);
+                    this.dispatch({ type: 'USINGSHORTCODE', usingShortCode: false });
                     this.send = false;
                     this.found = false;
                     this.updateStyles({
@@ -779,7 +779,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this._resetValues();
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
-                    this.dispatch('USINGSHORTCODE', true);
+                    this.dispatch({ type: 'USINGSHORTCODE', usingShortCode: true });
                     this.updateStyles({
                         '--container-height': '85px',
                     });
@@ -826,7 +826,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.start = false;
                     this.looking = false;
-                    this.dispatch('USINGSHORTCODE', false);
+                    this.dispatch({ type: 'USINGSHORTCODE', usingShortCode: false });
                     this.found = false;
                     this.notFound = false;
                     this.send = true;
@@ -847,7 +847,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         const length = this.sendDestination.length;
                         if (length == 5) {
                             this.sendToShortcode = this.sendDestination;
-                            this.dispatch('REQTOKEY', this.sendToShortcode);
+                            this.dispatch({ type: 'GET_SHORTCODE_DATA', shortCode: this.sendToShortcode });
                             this._gettingPublicKey();
                         } else {
                             this.error = this.localize('shortcode is the wrong length');
@@ -896,9 +896,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the confirm page
             */
             _goToConfirm() {
-                this.dispatch('AMOUNTTOSEND', this.amountToSend);
-                this.dispatch('TOADDRESS', this.sendToPublicKey);
-                this.dispatch('TOUSERNAME', this.tokey.data.userName);
+                this.dispatch({ type: 'AMOUNTTOSEND', amountToSend: this.amountToSend });
+                this.dispatch({ type: 'TOADDRESS', toAddress: this.sendToPublicKey });
+                this.dispatch({ type: 'TOUSERNAME', toUserName: this.tokey.data.userName });
                 this.path = 'confirm-sending/';
             }
             /**

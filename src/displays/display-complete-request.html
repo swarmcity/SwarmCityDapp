@@ -48,13 +48,13 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    ITEMTOIPFS: function(itemToIpfs) {
+                    ITEMTOIPFS: function (itemToIpfs) {
                         return {
                             type: 'ITEMTOIPFS',
                             itemToIpfs: itemToIpfs,
                         };
                     },
-                    SENDSIGNEDTX: function(sendSignedTx) {
+                    SENDSIGNEDTX: function (sendSignedTx) {
                         return {
                             type: 'SENDSIGNEDTX',
                             sendSignedTx: sendSignedTx,
@@ -183,7 +183,10 @@ The following custom properties and mixins are available for styling:
                     if (this.itemGeohash != null) {
                         item.location = this.itemGeohash;
                     }
-                    this.dispatch('ITEMTOIPFS', JSON.stringify(item));
+                    this.dispatch({
+                        type: 'ITEMTOIPFS',
+                        itemToIpfs: JSON.stringify(item),
+                    });
                 }
             }
 
@@ -222,7 +225,10 @@ The following custom properties and mixins are available for styling:
                                 rawApproveAndCall,
                                 this.privateKey
                             ).then((serializedTx) => {
-                                this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                                this.dispatch({
+                                    type: 'SENDSIGNEDTX',
+                                    sendSignedTx: serializedTx.toString('hex'),
+                                });
                             }).catch((err) => {
                                 this.error = err;
                             });

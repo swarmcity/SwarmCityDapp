@@ -37,7 +37,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    HASHTAG: function(hashtag) {
+                    HASHTAG: function (hashtag) {
                         return {
                             type: 'HASHTAG',
                             hashtag: hashtag,
@@ -57,16 +57,20 @@ This code may only be used under the license found at https://github.com/swarmci
                     case 'detail':
                     case 'chat':
                     case 'new-request':
-                        hashtagAddress = this.route.path.split('/')[2].toLowerCase();
+                        hashtagAddress = this.route.path.split('/')[2];
+                        if (hashtagAddress) hashtagAddress = hashtagAddress.toLowerCase()
                         break;
                 }
 
                 if (hashtagAddress &&
-                    ((this.hashtag && (this.hashtag.hashtagAddress.toLowerCase() != hashtagAddress)) || !this.hashtag)) {
-                        this.hashtag = {
-                            request: hashtagAddress,
-                        };
-                        this.dispatch('HASHTAG', this.hashtag);
+                    ((this.hashtag && this.hashtag.hashtagAddress && (this.hashtag.hashtagAddress.toLowerCase() != hashtagAddress)) || !this.hashtag)) {
+                    this.hashtag = {
+                        request: hashtagAddress,
+                    };
+                    this.dispatch({
+                        type: 'HASHTAG',
+                        hashtag: this.hashtag,
+                    });
                     hashtagAddress = false;
                 }
             }

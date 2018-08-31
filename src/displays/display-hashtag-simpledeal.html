@@ -38,6 +38,7 @@ The following custom properties and mixins are available for styling:
                 box-sizing: border-box;
                 padding: 52px 0px 0px 0px;
             }
+
             .container[wide-layout] {
                 /* box-sizing: border-box;
                 padding: 0px 10vw 0px 10vw; */
@@ -198,9 +199,6 @@ The following custom properties and mixins are available for styling:
                 border-radius: 8px;
                 opacity: 0.15;
             }
-
-
-
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
@@ -209,19 +207,19 @@ The following custom properties and mixins are available for styling:
                 <div class="items_loading">
                     <div class="overlayer"></div>
                     <div class="item_loading">
-                            <div class="shape1"></div>
-                            <!-- <div class="shape2"></div> -->
-                            <div class="shapes_3_4_5_6">
+                        <div class="shape1"></div>
+                        <!-- <div class="shape2"></div> -->
+                        <div class="shapes_3_4_5_6">
 
-                                <div class="shapes_3_4">
-                                    <div class="shape3"></div>
-                                    <div class="shape4"></div>
-                                </div>
-                                <div class="shapes_5_6">
-                                    <div class="shape5"></div>
-                                    <div class="shape6"></div>
-                                </div>
+                            <div class="shapes_3_4">
+                                <div class="shape3"></div>
+                                <div class="shape4"></div>
                             </div>
+                            <div class="shapes_5_6">
+                                <div class="shape5"></div>
+                                <div class="shape6"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="item_loading">
                         <div class="shape1"></div>
@@ -327,7 +325,9 @@ The following custom properties and mixins are available for styling:
                     */
                     hashtag: {
                         type: Object,
-                        statePath: 'hashtag',
+                        statePath: (state) => {
+                            return state.hashtag
+                        },
                         observer: '_load',
                     },
                     /**
@@ -352,7 +352,7 @@ The following custom properties and mixins are available for styling:
             */
             _load() {
                 if (this.hashtag &&
-                this.hashtag.hashtagAddress) {
+                    this.hashtag.hashtagAddress) {
                     this.loadingItems = false;
                 } else {
                     this.loadingItems = true;

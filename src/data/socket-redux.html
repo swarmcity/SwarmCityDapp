@@ -221,109 +221,109 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    BALANCE: function(balance) {
+                    BALANCE: function (balance) {
                         return {
                             type: 'BALANCE',
                             balance: balance,
                         };
                     },
-                    FX: function(fx) {
+                    FX: function (fx) {
                         return {
                             type: 'FX',
                             fx: fx,
                         };
                     },
-                    NONCE: function(nonce) {
+                    NONCE: function (nonce) {
                         return {
                             type: 'NONCE',
                             nonce: nonce,
                         };
                     },
-                    TOKEY: function(tokey) {
+                    TOKEY: function (tokey) {
                         return {
                             type: 'TOKEY',
                             tokey: tokey,
                         };
                     },
-                    SHORTCODE: function(shortCode) {
+                    SHORTCODE: function (shortCode) {
                         return {
                             type: 'SHORTCODE',
                             shortCode: shortCode,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    AVATARHASH: function(avatarHash) {
+                    AVATARHASH: function (avatarHash) {
                         return {
                             type: 'AVATARHASH',
                             avatarHash: avatarHash,
                         };
                     },
-                    TXHASH: function(txHash) {
+                    TXHASH: function (txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function(txHashItem) {
+                    TXHASHITEM: function (txHashItem) {
                         return {
                             type: 'TXHASHITEM',
                             txHashItem: txHashItem,
                         };
                     },
-                    CONFIRMEDTX: function(confirmedTx) {
+                    CONFIRMEDTX: function (confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
                         };
                     },
-                    ITEMDATAHASH: function(itemDataHash) {
+                    ITEMDATAHASH: function (itemDataHash) {
                         return {
                             type: 'ITEMDATAHASH',
                             itemDataHash: itemDataHash,
                         };
                     },
-                    REPLYDATAHASH: function(replyDataHash) {
+                    REPLYDATAHASH: function (replyDataHash) {
                         return {
                             type: 'REPLYDATAHASH',
                             replyDataHash: replyDataHash,
                         };
                     },
-                    HASHTAG: function(hashtag) {
+                    HASHTAG: function (hashtag) {
                         return {
                             type: 'HASHTAG',
                             hashtag: hashtag,
                         };
                     },
-                    IPFSHASH: function(ipfsHash) {
+                    IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
                             ipfsHash: ipfsHash,
                         };
                     },
-                    USERREPUTATION: function(userReputation) {
+                    USERREPUTATION: function (userReputation) {
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
                         };
                     },
-                    HASHTAGS: function(hashtags) {
+                    HASHTAGS: function (hashtags) {
                         return {
                             type: 'HASHTAGS',
                             hashtags: hashtags,
                         };
                     },
-                    CHATHISTORY: function(chatHistory) {
+                    CHATHISTORY: function (chatHistory) {
                         return {
                             type: 'CHATHISTORY',
                             chatHistory: chatHistory,
                         };
                     },
-                    NEWCHATMESSAGE: function(newChatMessage) {
+                    NEWCHATMESSAGE: function (newChatMessage) {
                         return {
                             type: 'NEWCHATMESSAGE',
                             newChatMessage: newChatMessage,
@@ -356,39 +356,29 @@ This code may only be used under the license found at https://github.com/swarmci
 
             ready() {
                 super.ready();
-                // Get push updates of the user's balance
-                this.socket.on('balanceChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.balance = reply.data;
-                        this.dispatch('BALANCE', this.balance);
-                    }
-                });
                 // Listen for changes in the exchange rates
                 this.socket.on('fxChanged', (reply) => {
-                    this.fx = reply;
-                    this.dispatch('FX', this.fx);
-                });
-                // Get push updates of the user's nonce
-                this.socket.on('nonceChanged', (reply) => {
-                    this.nonce = reply.data.nonce;
-                    this.dispatch('NONCE', this.nonce);
+                    this.dispatch({ type: 'UPDATE_FX', fx: reply });
                 });
 
                 // Get the list of hashtags
                 this.socket.emit('subscribeToHashtags');
                 this.socket.on('hashtagsChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.hashtags = reply.data;
-                        this.dispatch('HASHTAGS', this.hashtags);
+                        this.dispatch({ type: 'UPDATE_HASHTAGS', hashtags: reply.data });
+                        this.dispatch({ type: 'UPDATE_HASHTAGS', hashtags: reply.data });
                     }
                 });
 
                 // Update the list of items on the current hashtag subscription
                 this.socket.on('hashtagItemsChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.hashtag.items = this.hashtag.items || [];
-                        Object.assign(this.hashtag.items, reply.data);
-                        this._updateHashtag();
+                        this.dispatch({
+                            type: 'HASHTAG', 
+                            hashtag: {
+                                items: reply.data
+                            }
+                        });
                     }
                 });
 
@@ -412,7 +402,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         });
                     }
                     this.socket.on('chatChanged', (reply) => {
-                        this.dispatch('CHATHISTORY', reply);
+                        this.dispatch({ type: 'CHATHISTORY', chatHistory: reply });
                     }
                     );
                 }
@@ -448,9 +438,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _updateHashtag() {
                 if (this.hashtag.items && this.hashtag.hashtagAddress) {
-                    let temp = this.hashtag;
-                    this.dispatch('HASHTAG', {});
-                    this.dispatch('HASHTAG', temp);
+                    this.dispatch({ type: 'HASHTAG', hashtag: {} });
+                    this.dispatch({ type: 'HASHTAG', hashtag: this.hashtag });
                 }
             }
 
@@ -467,26 +456,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                         storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
                         localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                        this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
+                        this.dispatch({ type: 'AVATAR', avatar: 'data:image/jpg;base64,' + reply.data });
                     }
                 });
-            }
-
-            _ipfsHashResolve() {
-                let store = JSON.parse(localStorage.getItem('IPFS'));
-                if (!(this.ipfsHash in store) && typeof (this.ipfsHash) == 'string') {
-                    this.socket.emit('ipfscat', {
-                        hash: this.ipfsHash,
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            store[this.ipfsHash] = reply.data;
-                            let resolved = {};
-                            resolved[this.ipfsHash] = reply.data;
-                            this.dispatch('IPFSHASH', resolved);
-                            localStorage.setItem('IPFS', JSON.stringify(store));
-                        }
-                    });
-                }
             }
 
             _sendSignedTx() {
@@ -495,10 +467,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     tx: this.signedTx,
                 }, (reply) => {
                     let newNonce = Number(this.nonce) + 1;
-                    this.dispatch('NONCE', newNonce);
-                    this.txHash = reply;
+                    this.dispatch({ type: 'UPDATE_NONCE', nonce: newNonce });
                     setTimeout(() => {
-                        this.dispatch('TXHASH', this.txHash);
+                        this.dispatch({ type: 'TXHASH', txHash: reply });
                     }, 2000);
                 });
             }
@@ -510,7 +481,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.avatarHash = reply.data;
-                        this.dispatch('AVATARHASH', this.avatarHash);
+                        this.dispatch({ type: 'AVATARHASH', avatarHash: reply.data });
                         localStorage.setItem('avatarHash', this.avatarHash);
                     }
                 });
@@ -521,8 +492,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     payload: this.itemToIpfs,
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.itemDataHash = reply;
-                        this.dispatch('ITEMDATAHASH', this.itemDataHash);
+                        this.dispatch({ type: 'ITEMDATAHASH', itemDataHash: reply });
                     }
                 });
             }
@@ -532,25 +502,31 @@ This code may only be used under the license found at https://github.com/swarmci
                     payload: this.replyToIpfs,
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.replyDataHash = reply.data;
-                        this.dispatch('REPLYDATAHASH', this.replyDataHash);
+                        this.dispatch({ type: 'REPLYDATAHASH', replyDataHash: reply.data });
                     }
                 });
             }
 
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
-                this.socket.emit('subscribe', {
-                    channel: 'balance',
-                    args: {
-                        address: this.publicKey,
-                    },
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.balance = reply.data;
-                        this.dispatch('BALANCE', this.balance);
-                    }
-                });
+                this.dispatch({ type: 'GET_BALANCE', address: this.publicKey });
+
+                // this.socket.emit('subscribe', {
+                //     channel: 'balance',
+                //     args: {
+                //         address: this.publicKey,
+                //     },
+                // }, (reply) => {
+                //     if (reply.response == 200) {
+                //         this.dispatch({ type: 'UPDATE_BALANCE', balance: reply.data });
+                //     }
+                // });
+                // // Get push updates of the user's balance
+                // this.socket.on('balanceChanged', (reply) => {
+                //     if (reply.response == 200) {
+                //         this.dispatch({ type: 'UPDATE_BALANCE', balance: reply.data });
+                //     }
+                // });
                 // subscribe to updates of the nonce of this publickey
                 this.socket.emit('subscribe', {
                     channel: 'nonce',
@@ -559,16 +535,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.nonce = reply.data.nonce;
-                        this.dispatch('NONCE', this.nonce);
+                        this.dispatch({ type: 'UPDATE_NONCE', nonce: reply.data.nonce });
                     }
                 });
 
                 // Fired when the users nonce changes
                 this.socket.on('nonceChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.nonce = reply.data.nonce;
-                        this.dispatch('NONCE', this.nonce);
+                        this.dispatch({ type: 'UPDATE_NONCE', nonce: reply.data.nonce });
                     }
                 });
 
@@ -580,14 +554,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.confirmedTx = reply.data;
-                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                        this.dispatch({ type: 'UPDATE_TXS', confirmedTx: reply.data });
                     }
                 });
                 this.socket.on('txHistoryChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.confirmedTx = reply.data;
-                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                        this.dispatch({ type: 'UPDATE_TXS', confirmedTx: reply.data });
                     }
                 });
             }
@@ -599,12 +571,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     if (reply.response === 200) {
                         this.tokey = reply;
                         this.tokey.found = true;
-                        this.dispatch('TOKEY', this.tokey);
+                        this.dispatch({ type: 'UPDATE_SHORTCODE_DATA', tokey: this.tokey });
                     }
                     if (reply.response === 400) {
                         this.tokey = reply;
                         this.tokey.found = false;
-                        this.dispatch('TOKEY', this.tokey);
+                        this.dispatch({ type: 'UPDATE_SHORTCODE_DATA', tokey: this.tokey });
                     }
                 });
             }
@@ -615,7 +587,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         tx: this.broadcast,
                     }, (reply) => {
                         this.txHash = reply;
-                        this.dispatch('TXHASH', this.txHash);
+                        this.dispatch({ type: 'TXHASH', txHash: reply });
                     });
                 }
             }
@@ -626,7 +598,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.socket.emit('getReputation', {
                         address: this.userReputation.request,
                     }, (reply) => {
-                        this.dispatch('USERREPUTATION', reply.data);
+                        this.dispatch({ type: 'USERREPUTATION', userReputation: reply.data });
                     });
                 }
             }
@@ -644,7 +616,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         if (reply.response == 200) {
                             this.shortCode = reply;
                             this.shortCode.received = (new Date).getTime();
-                            this.dispatch('SHORTCODE', this.shortCode);
+                            this.dispatch({ type: 'UPDATE_SHORTCODE', shortCode: this.shortCode });
                         }
                     });
                 } else {
@@ -653,7 +625,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             subscriptionId: this.shortCode.subscriptionId,
                         }, (reply) => {
                             if (reply.response == 200) {
-                                this.dispatch('SHORTCODE', null);
+                                this.dispatch({ type: 'UPDATE_SHORTCODE', shortCode: null });
                             }
                         });
                     }

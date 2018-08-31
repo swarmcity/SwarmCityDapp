@@ -33,7 +33,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 background-color: var(--sc-white);
                 width: 100%;
-                box-sizing:border-box;
+                box-sizing: border-box;
                 padding: 52px 0px 0px 0px;
             }
 
@@ -383,15 +383,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     balance: {
                         type: Number,
-                        statePath: 'balance',
-                    },
-                    /**
-                    * Geohash is the user's current geohash
-                    * @type {Object}
-                    */
-                    geohash: {
-                        type: Object,
-                        statePath: 'geohash',
+                        statePath: AppStore.selectors.balance,
                     },
                     /**
                     * ItemGeohash is the item's geohash
@@ -465,28 +457,22 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    ITEMBUDGET: function(itemBudget) {
+                    ITEMBUDGET: function (itemBudget) {
                         return {
                             type: 'ITEMBUDGET',
                             itemBudget: itemBudget,
                         };
                     },
-                    ITEMDESCRIPTION: function(itemDescription) {
+                    ITEMDESCRIPTION: function (itemDescription) {
                         return {
                             type: 'ITEMDESCRIPTION',
                             itemDescription: itemDescription,
                         };
                     },
-                    ITEMGEOHASH: function(itemGeohash) {
+                    ITEMGEOHASH: function (itemGeohash) {
                         return {
                             type: 'ITEMGEOHASH',
                             itemGeohash: itemGeohash,
-                        };
-                    },
-                    GEOHASH: function(geohash) {
-                        return {
-                            type: 'GEOHASH',
-                            geohash: geohash,
                         };
                     },
                 });
@@ -516,7 +502,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.totalcost = (parseFloat(this.budget) + parseFloat(this.hashtagFee));
                 if (this.budget) {
                     this.showSum = true;
-                    if (this.balance.swt.balanceSwt >= this.totalcost) {
+                    if (this.balance.swt >= this.totalcost) {
                         this.error = '';
                         if (this.budget) {
                             this.showSum = true;
@@ -543,7 +529,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.request.length > 0 &&
                     this.budget &&
                     this.budget.length > 0 &&
-                    this.balance.swt.balanceSwt >= parseFloat(this.budget) + this.hashtagFee
+                    this.balance.swt >= parseFloat(this.budget) + this.hashtagFee
                 ) {
                     this.$.agree.classList.add('enabled');
                     this.$.button.classList.add('active');
@@ -559,43 +545,43 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _confirm() {
                 if (this._toggleButton()) {
-                    this.dispatch('ITEMBUDGET', this.budget);
-                    this.dispatch('ITEMDESCRIPTION', this.request);
-                    this.dispatch('ITEMGEOHASH', this.itemGeohash);
+                    this.dispatch({ type: 'ITEMBUDGET', itemBudget: this.budget, });
+                    this.dispatch({ type: 'ITEMDESCRIPTION', itemDescription: this.request, });
+                    this.dispatch({ type: 'ITEMGEOHASH', itemGeohash: this.itemGeohash, });
                     this.path = 'confirm-new-request';
                 }
             }
             /**
             * Takes the user's geohash and slider value to generate an item geohash
             */
-            _getItemGeohash() {
+            _getItemGeohash(geohash) {
                 switch (this.chosenValue) {
                     case (1):
-                        this.itemGeohash = this.geohash;
+                        this.itemGeohash = geohash;
                         break;
                     case (2):
-                        this.itemGeohash = this.geohash.slice(0, 6);
+                        this.itemGeohash = geohash.slice(0, 6);
                         break;
                     case (3):
-                        this.itemGeohash = this.geohash.slice(0, 5);
+                        this.itemGeohash = geohash.slice(0, 5);
                         break;
                     case (4):
-                        this.itemGeohash = this.geohash.slice(0, 4);
+                        this.itemGeohash = geohash.slice(0, 4);
                         break;
                     case (5):
-                        this.itemGeohash = this.geohash.slice(0, 3);
+                        this.itemGeohash = geohash.slice(0, 3);
                         break;
                     case (6):
-                        this.itemGeohash = this.geohash.slice(0, 2);
+                        this.itemGeohash = geohash.slice(0, 2);
                         break;
                     case (7):
-                        this.itemGeohash = this.geohash.slice(0, 1);
+                        this.itemGeohash = geohash.slice(0, 1);
                         break;
                     case (8):
                         this.itemGeohash = null;
                         break;
                 }
-                this.dispatch('ITEMGEOHASH', this.itemGeohash);
+                this.dispatch({ type: 'ITEMGEOHASH', itemGeohash: this.itemGeohash });
             }
             /**
             * takes the user to originating page
@@ -634,13 +620,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.chosenValue = 8;
                 }
                 if (this.chosenValue != 8) {
-                    navigator.permissions.query({'name': 'geolocation'})
+                    navigator.permissions.query({ 'name': 'geolocation' })
                         .then((permission) => {
                             if (permission.state != 'granted') {
                                 this.chosenValue = 8;
                             }
                         }
-                    );
+                        );
                 }
             }
             /**
@@ -650,24 +636,18 @@ This code may only be used under the license found at https://github.com/swarmci
             _checkPermissions() {
                 this._setRangeDescription();
                 if (this.chosenValue != 8) {
-                    navigator.permissions.query({'name': 'geolocation'})
+                    navigator.permissions.query({ 'name': 'geolocation' })
                         .then((permission) => {
                             if (permission.state != 'granted') {
                                 this.path = 'location';
                             } else {
                                 this.$.location.getLocation()
-                                    .then((latlon) => {
-                                        return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
-                                    })
-                                    .then((data) => {
-                                        this.geohash = data;
-                                        this.dispatch('GEOHASH', data);
-                                        this._getItemGeohash();
-                                    });
+                                    .then(({ latitude, longitude }) => this.$.location.toGeohash(latitude, longitude))
+                                    .then(this._getItemGeohash);
                             }
                         });
                 } else {
-                    this.dispatch('ITEMGEOHASH', null);
+                    this.dispatch({ type: 'ITEMGEOHASH', itemGeohash: null });
                 }
             }
 

@@ -39,24 +39,24 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-flex;
                 @apply --layout-vertical;
                 @apply --layout-center-center;
-                box-sizing:border-box;
+                box-sizing: border-box;
                 padding-top: 5vh;
             }
 
             .container[wide-layout] .middle {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
-                @apply --layout-start;               
+                @apply --layout-start;
             }
 
             .bottom {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
-                background-color: rgba(0,0,0,0.05);
+                background-color: rgba(0, 0, 0, 0.05);
                 width: 100%;
                 max-width: 750px;
-                box-sizing:border-box;
+                box-sizing: border-box;
                 padding: 40px;
                 @apply --small-light;
                 color: var(--sc-grey4);
@@ -138,6 +138,7 @@ The following custom properties and mixins are available for styling:
                 @apply --error-msg-wide;
                 margin: 10px 0 0 0;
             }
+
             .messagebox {
                 margin-top: 2vh;
                 height: 4vh;
@@ -233,7 +234,6 @@ The following custom properties and mixins are available for styling:
                 @apply --body-bold;
                 color: var(--sc-grey3);
             }
-
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -246,66 +246,56 @@ The following custom properties and mixins are available for styling:
             </div>
             <template is="dom-if" if="{{showPasswordBox}}">
 
-            <div class="bottom">
+                <div class="bottom">
 
 
 
-                <template is="dom-if" if="{{choosePassword}}">
-                <div>{{localize('To restore an account with a private key please choose a password for it first')}}</div>
-                <div class="btn" on-click="_agreeToEnterPassword">choose password</div>
-            </template>
+                    <template is="dom-if" if="{{choosePassword}}">
+                        <div>{{localize('To restore an account with a private key please choose a password for it first')}}</div>
+                        <div class="btn" on-click="_agreeToEnterPassword">choose password</div>
+                    </template>
 
-            <template is="dom-if" if="{{passwordWarning}}">
-                <div class="box">
-                    <div class="trianglecontainer">
-                        <div class="triangle"></div>
-                    </div>
-                    <div class="textbox">
-                        <div class="inner-top">{{localize('There is no password recovery available in Swarm City.')}}</div>
-                        <div class="inner-bottom">{{localize('Choose your password with care.')}}</div>
-                    </div>
-                </div>
-                <div class="iconbtn"> 
-                    <div class="agree" on-click="_agreeToChoosePassword"></div> 
-                </div>
-            </template>
+                    <template is="dom-if" if="{{passwordWarning}}">
+                        <div class="box">
+                            <div class="trianglecontainer">
+                                <div class="triangle"></div>
+                            </div>
+                            <div class="textbox">
+                                <div class="inner-top">{{localize('There is no password recovery available in Swarm City.')}}</div>
+                                <div class="inner-bottom">{{localize('Choose your password with care.')}}</div>
+                            </div>
+                        </div>
+                        <div class="iconbtn">
+                            <div class="agree" on-click="_agreeToChoosePassword"></div>
+                        </div>
+                    </template>
 
-            <template is="dom-if" if="{{passwordSubmit}}">
-                <paper-input 
-                    id="password" 
-                    label="{{localize('password?')}}" 
-                    type="password" 
-                    on-input="_checkInput" 
-                    on-keydown="_checkForEnter" 
-                    value="{{password}}">
-                </paper-input>
-                <paper-input 
-                    id="repeat" 
-                    label="{{localize('Confirm password')}}" 
-                    type="password" 
-                    on-input="_checkInput"
-                    on-keydown="_checkForEnter" 
-                    value="{{confirmPassword}}"></paper-input>
-                <div class="errorcontainer">
-                    <span id="passwordError" class="error">{{passwordError}}</span>
-                </div>
-                <div id="agree" class="disabled"> 
-                    <div class="agree" on-click="_submit"></div> 
+                    <template is="dom-if" if="{{passwordSubmit}}">
+                        <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" on-keydown="_checkForEnter"
+                            value="{{password}}">
+                        </paper-input>
+                        <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" on-keydown="_checkForEnter"
+                            value="{{confirmPassword}}"></paper-input>
+                        <div class="errorcontainer">
+                            <span id="passwordError" class="error">{{passwordError}}</span>
+                        </div>
+                        <div id="agree" class="disabled">
+                            <div class="agree" on-click="_submit"></div>
+                        </div>
+                    </template>
+
+                    <template is="dom-if" if="{{passwordSet}}">
+                        <div class="passset">{{localize('the password is set')}}</div>
+                    </template>
+
+
+
                 </div>
             </template>
 
             <template is="dom-if" if="{{passwordSet}}">
-                <div class="passset">{{localize('the password is set')}}</div>
-            </template>
-
-
-
-            </div>
-        </template>
-
-            <template is="dom-if" if="{{passwordSet}}">
-                <div class="iconbtn"> 
-                    <div class="agree" on-click=""></div> 
+                <div class="iconbtn">
+                    <div class="agree" on-click=""></div>
                 </div>
             </template>
 
@@ -434,7 +424,7 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    PUBLICKEY: function(publicKey) {
+                    PUBLICKEY: function (publicKey) {
                         return {
                             type: 'PUBLICKEY',
                             publicKey: publicKey,
@@ -485,15 +475,15 @@ The following custom properties and mixins are available for styling:
             _checkInput() {
                 this.passwordError = '';
                 if (this.password &&
-                this.confirmPassword &&
-                this.password.length >=1 &&
-                this.confirmPassword.length >=1) {
+                    this.confirmPassword &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword.length >= 1) {
                     if (this.confirmPassword.length <= this.password.length) {
                         for (let i = 0; i < this.confirmPassword.length; i++) {
                             if (this.confirmPassword[i] != this.password[i]) {
-                            this.passwordError = this.localize('The passwords dont match.');
+                                this.passwordError = this.localize('The passwords dont match.');
+                            }
                         }
-                    }
                     } else {
                         this.passwordError = this.localize('The passwords dont match.');
                     }
@@ -502,8 +492,8 @@ The following custom properties and mixins are available for styling:
                     this.password.length >= 1 &&
                     this.confirmPassword &&
                     this.password == this.confirmPassword) {
-                        this.$$('#agree').classList.remove('disabled');
-                        this.$$('#agree').classList.add('enabled');
+                    this.$$('#agree').classList.remove('disabled');
+                    this.$$('#agree').classList.add('enabled');
                 } else {
                     this.$$('#agree').classList.add('disabled');
                     this.$$('#agree').classList.remove('enabled');
@@ -512,8 +502,8 @@ The following custom properties and mixins are available for styling:
 
             _checkKey() {
                 this.privateKeyError = '';
-                if (this.privateKey && this.privateKey. length >= 1) {
-                    if (this. privateKey.length != 64) {
+                if (this.privateKey && this.privateKey.length >= 1) {
+                    if (this.privateKey.length != 64) {
                         this.showPasswordBox = false;
                         if (this.privateKey.length < 64) {
                             this.privateKeyError =
@@ -523,7 +513,7 @@ The following custom properties and mixins are available for styling:
                                 this.localize('The private key you entered is too long.');
                         }
                     } else {
-                    this.showPasswordBox = true;
+                        this.showPasswordBox = true;
                     }
                 }
             }
@@ -542,18 +532,21 @@ The following custom properties and mixins are available for styling:
             */
             _submit() {
                 if (this.password &&
-                this.password.length >= 1 &&
-                this.confirmPassword &&
-                this.password == this.confirmPassword) {
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
                     if (this.privateKey && this.privateKey.length === 64) {
                         this.$.wallet.restoreKey(this.privateKey, this.password)
-                        .then((KeyStore) => {
-                            this.dispatch('PUBLICKEY', KeyStore.address);
-                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                            storage.keyStore = KeyStore.utcKeystore;
-                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                            this.path = 'choose-avatar-and-username';
-                        });
+                            .then((KeyStore) => {
+                                this.dispatch({
+                                    type: 'PUBLICKEY',
+                                    publicKey: KeyStore.address,
+                                });
+                                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                                storage.keyStore = KeyStore.utcKeystore;
+                                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                this.path = 'choose-avatar-and-username';
+                            });
                     }
                     else {
                         this.privateKeyError = this.localize('Please enter a key.');

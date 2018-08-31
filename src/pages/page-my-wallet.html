@@ -149,35 +149,24 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" id="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div tabindex="0" id="closebtn" class="close" on-tap="_close" on-keyPress="_close"></div>
-                <div id="swtbalance" class="swt">{{balance.swt.balanceSwt}} SWT</div>
-                <div id="fiatbalance" class="fiat">≈ {{balance.swt.balanceUsd}} USD</div>
+                <div id="swtbalance" class="swt">{{balance.swt}} SWT</div>
+                <div id="fiatbalance" class="fiat">≈ {{balance.usd}} USD</div>
             </div>
 
             <div id="divider1" class="divider"></div>
-            <display-transaction-status 
-                id="txstatus" 
-                path="{{path}}" 
-                shortcode="{{shortcode}}" 
-                send="{{send}}" 
-                start="{{start}}"
-                route-entry="{{routeEntry}}">
-            </display-transaction-status>              
+            <display-transaction-status id="txstatus" path="{{path}}" shortcode="{{shortcode}}" send="{{send}}" start="{{start}}" route-entry="{{routeEntry}}">
+            </display-transaction-status>
             <div id="divider2" class="divider"></div>
             <div class="linkbox"><span class="link" on-click="_toEtherscan">{{localize('show address on etherscan')}}</span></div>
-            <display-transaction-history id="txhistory"></display-transaction-history> 
+            <display-transaction-history id="txhistory"></display-transaction-history>
         </div>
         <dom-if if="{{toggleUnlock}}">
-                <template>
-                    <display-unlock 
-                        blue
-                        toggle-unlock="{{toggleUnlock}}"
-                        toggle-private-key="{{togglePrivateKey}}"
-                        private-key="{{privateKey}}" 
-                        qr-code-private-key="{{qrCodePrivateKey}}"
-                        qr-code-public-key="{{qrCodePublicKey}}">
-                    </display-unlock>
-                </template>
-            </dom-if>
+            <template>
+                <display-unlock blue toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
+                    qr-code-private-key="{{qrCodePrivateKey}}" qr-code-public-key="{{qrCodePublicKey}}">
+                </display-unlock>
+            </template>
+        </dom-if>
     </template>
 
     <script>
@@ -209,7 +198,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     balance: {
                         type: Object,
-                        statePath: 'balance',
+                        statePath: AppStore.selectors.balance,
                     },
                     /**
                     * Path is the current or requested path
@@ -323,9 +312,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.$.container.classList.remove('blur');
                 }
             }
-           /**
-            * Toggles the visibility of private key
-            */
+            /**
+             * Toggles the visibility of private key
+             */
             _privateKeyObserver() {
                 this.togglePrivateKey = !this.togglePrivateKey;
             }

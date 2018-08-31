@@ -148,7 +148,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .username {
-                width:100%;
+                width: 100%;
             }
 
             paper-input {
@@ -357,12 +357,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="username">
                         <paper-input label="{{localize('Username')}}" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
                     </div>
-                    <display-show-keys
-                        toggle-unlock="{{toggleUnlock}}"
-                        toggle-private-key="{{togglePrivateKey}}" 
-                        private-key="{{privateKey}}"
-                        route="{{route}}"
-                    ></display-show-keys>
+                    <display-show-keys toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
+                        route="{{route}}"></display-show-keys>
 
                 </div>
                 <div class="topright" id="notifications">
@@ -378,13 +374,8 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
-                <display-unlock 
-                    blue
-                    toggle-unlock="{{toggleUnlock}}"
-                    toggle-private-key="{{togglePrivateKey}}" 
-                    private-key="{{privateKey}}" 
-                    qr-code-private-key="{{qrCodePrivateKey}}"
-                    qr-code-public-key="{{qrCodePublicKey}}">
+                <display-unlock blue toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
+                    qr-code-private-key="{{qrCodePrivateKey}}" qr-code-public-key="{{qrCodePublicKey}}">
                 </display-unlock>
             </template>
         </dom-if>
@@ -486,7 +477,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    USERNAME: function(username) {
+                    USERNAME: function (username) {
                         return {
                             type: 'USERNAME',
                             username: username,
@@ -589,7 +580,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * save username
             */
             _saveUsername() {
-                this.dispatch('USERNAME', this.username);
+                this.dispatch({ type: 'USERNAME', username: this.username });
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));

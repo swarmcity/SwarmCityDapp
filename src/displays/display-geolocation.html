@@ -54,13 +54,9 @@ The following custom properties and mixins are available for styling:
             }
         </style>
         <data-location id="location"></data-location>
-            <div  
-                tabindex="2" 
-                on-tap="_getLocation" 
-                on-KeyPress="_getLocation"
-                class="geoloc">
-                <div></div>
-            </div>
+        <div tabindex="2" on-tap="_getLocation" on-KeyPress="_getLocation" class="geoloc">
+            <div></div>
+        </div>
     </template>
     <script>
         class DisplayGeolocation extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -85,19 +81,7 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
-            /**
-            * Redux action for setting the geoHash
-            */
-            static get actions() {
-                return Object.assign({
-                    GEOHASH: function(geoHash) {
-                        return {
-                            type: 'GEOHASH',
-                            geoHash: geoHash,
-                        };
-                    },
-                });
-            }
+
             /**
              * Get s the users location cinverts it tio a geo hash
              * and saves it to local storage
@@ -107,17 +91,17 @@ The following custom properties and mixins are available for styling:
                 if (event.keyCode === 13 || event.type == 'tap') {
                     this.loading = true;
                     this.$.location.getLocation()
-                    .then((latlon) => {
-                        return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
-                    })
-                    .then((data) => {
-                        this.geohash = data;
-                        this.dispatch('GEOHASH', data);
-                    })
-                    .then(() => {
-                        window.history.back();
-                        this.loading = false;
-                    });
+                        .then((latlon) => {
+                            return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
+                        })
+                        .then((data) => {
+                            this.geohash = data;
+                            this.dispatch({ type: 'GEOHASH', geoHash: data });
+                        })
+                        .then(() => {
+                            window.history.back();
+                            this.loading = false;
+                        });
                 }
             }
         }

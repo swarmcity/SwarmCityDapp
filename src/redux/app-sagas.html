@@ -1,14 +1,15 @@
 <script src="../../node_modules/redux-saga/dist/redux-saga.js"></script>
+<script src="../web3/web3.min.js"></script>
 <script src="./contractsData.js"></script>
 
 <script>
     (function () {
-        // Initialize web3
-        let web3 = new Web3('wss://kovan.infura.io/ws');
-        console.log('Redux-sagas is using web3 version: ' + web3.version + ', host: ' + web3.currentProvider.host)
+        // Initialize web3Local
+        let web3Local = new Web3('wss://kovan.infura.io/ws');
+        console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
 
         const { effects, eventChannel } = ReduxSaga;
-        const { call, take, put, takeEvery, all } = effects;
+        const { call, fork, take, put, takeEvery, all } = effects;
         // Contents of the ReduxSaga object:
         // CANCEL: "@@redux-saga/CANCEL_PROMISE"
         // END: { type: "@@redux-saga/CHANNEL_END" }
@@ -39,8 +40,8 @@
         // worker Saga: will be fired on LOAD_LIST actions
         function createTxsChannel(address) {
             return eventChannel(emitter => {
-                const swtContractInstance = new web3.eth.Contract(
-                    [swtToken.abi.TransferEvent],
+                const swtContractInstance = new web3Local.eth.Contract(
+                    swtToken.abi,
                     swtToken.address
                 );
                 swtContractInstance.events.Transfer({
@@ -77,7 +78,7 @@
 
         function blockHeadersChannel() {
             return eventChannel(emitter => {
-                const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
+                const subscription = web3Local.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
                     if (error) console.error(error);
                     // Emiting undefined values will throw an error
                     else emitter(blockHeader);
@@ -93,11 +94,11 @@
         }
 
         function* getBlockHeaders() {
-            const chan = yield call(blockHeadersChannel)
             try {
+                const chan = yield call(blockHeadersChannel)
                 while (true) {
                     let blockHeader = yield take(chan)
-                    console.log('blockHeader', blockHeader)
+                    // console.log('blockHeader', blockHeader)
                 }
             } finally {
                 console.log('countdown terminated')
@@ -105,8 +106,8 @@
         }
 
         async function createLogsForDirection(address) {
-            const swtContractInstance = new web3.eth.Contract(
-                [swtToken.abi.TransferEvent],
+            const swtContractInstance = new web3Local.eth.Contract(
+                swtToken.abi,
                 swtToken.address
             );
             // Fetch transactions
@@ -132,7 +133,7 @@
             }))
             // Fetch the time of the transaction, and assign it to the tx object
             await Promise.all(txs.map(tx =>
-                web3.eth.getBlock(tx.blockNumber)
+                web3Local.eth.getBlock(tx.blockNumber)
                     .then(block => tx.timestamp = block.timestamp)
                     .catch(e => console.log('Error fetching datetime of block ' + tx.blockNumber))
             ))
@@ -160,6 +161,27 @@
                 // yield put(MyApp.actions.showSpinner(false));
             }
         }
+
+        async function getTokenBalance(address) {
+            const swtContractInstance = new web3Local.eth.Contract(
+                swtToken.abi,
+                swtToken.address
+            );
+            const balance = await swtContractInstance.methods.balanceOf(address).call()
+            return balance
+        }
+
+        function* getBalance(action) {
+            try {
+                console.log('fetching', action)
+                const balance = yield call(getTokenBalance, action.address)
+                console.log('Got balance', balance)
+                yield put({ type: 'UPDATE_BALANCE', balance });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         // worker Saga: will be fired on CLEAR_LIST actions
         function* exampleFunction(action) {
             yield put(MyApp.actions.showSpinner(true));
@@ -182,10 +204,11 @@
          */
         function* rootSaga() {
             yield all([
-                yield call(getBlockHeaders),
                 yield takeEvery('GET_BLOCK', getBlock),
+                yield takeEvery('GET_BALANCE', getBalance),
                 yield takeEvery('CLEAR_LIST', exampleFunction),
-                yield takeEvery('GET_TXS', getTransactionHistory)
+                yield takeEvery('GET_TXS', getTransactionHistory),
+                yield fork(getBlockHeaders),
             ]);
         }
 

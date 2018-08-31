@@ -12,7 +12,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <dom-module id="display-complete-transaction">
     <template>
         <data-transaction id="transaction"></data-transaction>
-        </template>
+    </template>
     </template>
     <script>
         class DisplayCompleteTransaction extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -29,7 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    BROADCAST: function(broadcast) {
+                    BROADCAST: function (broadcast) {
                         return {
                             type: 'BROADCAST',
                             broadcast: broadcast,
@@ -106,7 +106,10 @@ This code may only be used under the license found at https://github.com/swarmci
                             rawTokenTx,
                             this.privateKey
                         ).then((serializedTx) => {
-                            this.dispatch('BROADCAST', '0x' + serializedTx.toString('hex'));
+                            this.dispatch({
+                                type: 'BROADCAST',
+                                broadcast: '0x' + serializedTx.toString('hex'),
+                            });
                             this.path = 'transaction-processing/';
                         }).catch((err) => {
                             this.error = err;
