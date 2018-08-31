@@ -4,10 +4,26 @@
 <script>
     (function () {
         // Initialize web3
-        let web3 = new Web3('https://kovan.infura.io/metamask');
+        let web3 = new Web3('wss://kovan.infura.io/ws');
         console.log('Redux-sagas is using web3 version: ' + web3.version + ', host: ' + web3.currentProvider.host)
 
-        const effects = ReduxSaga.effects;
+        const { effects, eventChannel } = ReduxSaga;
+        const { call, take, put, takeEvery, all } = effects;
+        // Contents of the ReduxSaga object:
+        // CANCEL: "@@redux-saga/CANCEL_PROMISE"
+        // END: { type: "@@redux-saga/CHANNEL_END" }
+        // buffers: { none: ƒ, fixed: ƒ, dropping: ƒ, sliding: ƒ, expanding: ƒ }
+        // channel: ƒ channel()
+        // default: ƒ sagaMiddlewareFactory()
+        // delay: ƒ delay(ms)
+        // detach: ƒ detach(eff)
+        // effects: { take: ƒ, takem: ƒ, put: ƒ, all: ƒ, race: ƒ, … }
+        // eventChannel: ƒ eventChannel(subscribe)
+        // runSaga: ƒ runSaga(storeInterface, saga)
+        // takeEvery: ƒ()
+        // takeLatest: ƒ()
+        // throttle: ƒ()
+        // utils: {...}
 
         // Import contract data:
         const { swtToken } = window.contractsData;
@@ -21,6 +37,72 @@
          * redux-saga worker functions
          */
         // worker Saga: will be fired on LOAD_LIST actions
+        function createTxsChannel(address) {
+            return eventChannel(emitter => {
+                const swtContractInstance = new web3.eth.Contract(
+                    [swtToken.abi.TransferEvent],
+                    swtToken.address
+                );
+                swtContractInstance.events.Transfer({
+                    filter: { _to: address },
+                }, function (error, event) {
+                    emitter(event)
+                })
+                swtContractInstance.events.Transfer({
+                    filter: { _from: address },
+                }, function (error, event) {
+                    emitter(event)
+                })
+
+                // The subscriber must return an unsubscribe function
+                return () => {
+                    // No unsubscribe function for now
+                }
+            }
+            )
+        }
+
+        function* saga() {
+            const txsChannel = yield call(createTxsChannel, address)
+            try {
+                while (true) {
+                    // take(END) will cause the saga to terminate by jumping to the finally block
+                    let event = yield take(txsChannel)
+                    console.log('Receibed event', event)
+                }
+            } finally {
+                console.log('countdown terminated')
+            }
+        }
+
+        function blockHeadersChannel() {
+            return eventChannel(emitter => {
+                const subscription = web3.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
+                    if (error) console.error(error);
+                    // Emiting undefined values will throw an error
+                    else emitter(blockHeader);
+                })
+                // The subscriber must return an unsubscribe function
+                return () => {
+                    subscription.unsubscribe((error, success) => {
+                        if (success) console.log('Successfully unsubscribed!');
+                    });
+                }
+            }
+            )
+        }
+
+        function* getBlockHeaders() {
+            const chan = yield call(blockHeadersChannel)
+            try {
+                while (true) {
+                    let blockHeader = yield take(chan)
+                    console.log('blockHeader', blockHeader)
+                }
+            } finally {
+                console.log('countdown terminated')
+            }
+        }
 
         async function createLogsForDirection(address) {
             const swtContractInstance = new web3.eth.Contract(
@@ -59,8 +141,8 @@
         }
         function* getTransactionHistory(action) {
             try {
-                const txs = yield effects.call(createLogsForDirection, action.address)
-                yield effects.put(AppStore.actions.updateTxs(txs));
+                const txs = yield call(createLogsForDirection, action.address)
+                yield put(AppStore.actions.updateTxs(txs));
                 console.log('Received txs', txs)
 
                 // The code below is left as example / reference for future functions
@@ -68,24 +150,24 @@
                 // let result = [1, 2, 3, 4, 5];
                 // // Artificial to delay to simulate a REST call like behavior
                 // yield ReduxSaga.delay(1000);
-                // yield effects.put(MyApp.actions.setLoadedList(result));
-                // yield effects.put(MyApp.actions.showSpinner(false));
-                // yield effects.put(MyApp.actions.showInfo('List loaded'));
+                // yield put(MyApp.actions.setLoadedList(result));
+                // yield put(MyApp.actions.showSpinner(false));
+                // yield put(MyApp.actions.showInfo('List loaded'));
             } catch (e) {
                 console.error(e);
-                // yield effects.put(MyApp.actions.showError('Error while fetching list', e));
-                // yield effects.put(MyApp.actions.clearLoadedList());
-                // yield effects.put(MyApp.actions.showSpinner(false));
+                // yield put(MyApp.actions.showError('Error while fetching list', e));
+                // yield put(MyApp.actions.clearLoadedList());
+                // yield put(MyApp.actions.showSpinner(false));
             }
         }
         // worker Saga: will be fired on CLEAR_LIST actions
         function* exampleFunction(action) {
-            yield effects.put(MyApp.actions.showSpinner(true));
+            yield put(MyApp.actions.showSpinner(true));
             // Artificial to delay to simulate a REST call like behavior
             yield ReduxSaga.delay(1000);
-            yield effects.put(MyApp.actions.clearLoadedList());
-            yield effects.put(MyApp.actions.showSpinner(false));
-            yield effects.put(MyApp.actions.showInfo('List cleared'));
+            yield put(MyApp.actions.clearLoadedList());
+            yield put(MyApp.actions.showSpinner(false));
+            yield put(MyApp.actions.showInfo('List cleared'));
         }
 
         function* getBlock(action) {
@@ -99,9 +181,12 @@
          * redux-saga root function, which is responsible to call the correct workers
          */
         function* rootSaga() {
-            yield effects.takeEvery('GET_BLOCK', getBlock);
-            yield effects.takeEvery('CLEAR_LIST', exampleFunction);
-            yield effects.takeEvery('GET_TXS', getTransactionHistory)
+            yield all([
+                yield call(getBlockHeaders),
+                yield takeEvery('GET_BLOCK', getBlock),
+                yield takeEvery('CLEAR_LIST', exampleFunction),
+                yield takeEvery('GET_TXS', getTransactionHistory)
+            ]);
         }
 
         if (!window.AppStore) window.AppStore = {}
