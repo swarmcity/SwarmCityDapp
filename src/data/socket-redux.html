@@ -374,7 +374,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.socket.on('hashtagItemsChanged', (reply) => {
                     if (reply.response == 200) {
                         this.dispatch({
-                            type: 'HASHTAG', 
+                            type: 'HASHTAG',
                             hashtag: {
                                 items: reply.data
                             }
@@ -510,6 +510,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
                 this.dispatch({ type: 'GET_BALANCE', address: this.publicKey });
+                this.dispatch({ type: 'GET_TXS', address: this.publicKey });
 
                 // this.socket.emit('subscribe', {
                 //     channel: 'balance',
@@ -547,21 +548,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
 
                 // subscribe to updates of the tx history
-                this.socket.emit('subscribe', {
-                    channel: 'txHistory',
-                    args: {
-                        address: this.publicKey,
-                    },
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.dispatch({ type: 'UPDATE_TXS', confirmedTx: reply.data });
-                    }
-                });
-                this.socket.on('txHistoryChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.dispatch({ type: 'UPDATE_TXS', confirmedTx: reply.data });
-                    }
-                });
+                // this.socket.emit('subscribe', {
+                //     channel: 'txHistory',
+                //     args: {
+                //         address: this.publicKey,
+                //     },
+                // }, (reply) => {
+                //     if (reply.response == 200) {
+                //         this.dispatch({ type: 'UPDATE_TXS', confirmedTx: reply.data });
+                //     }
+                // });
+                // this.socket.on('txHistoryChanged', (reply) => {
+                //     if (reply.response == 200) {
+                //         this.dispatch({ type: 'UPDATE_TXS', confirmedTx: reply.data });
+                //     }
+                // });
             }
 
             _reqToKey() {
