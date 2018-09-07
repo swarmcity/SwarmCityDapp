@@ -335,7 +335,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io('https://dev.swarm.city', // eslint-disable-line
+                this.socket = io('127.0.0.1:8011', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -386,9 +386,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 // Update the list of items on the current hashtag subscription
                 this.socket.on('hashtagItemsChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.hashtag.items = this.hashtag.items || [];
-                        Object.assign(this.hashtag.items, reply.data);
-                        this._updateHashtag();
+                        this._updateHashtag(reply.data);
                     }
                 });
 
@@ -438,20 +436,49 @@ This code may only be used under the license found at https://github.com/swarmci
                         hashtag: this.hashtag.request.toLowerCase(),
                     }, (reply) => {
                         if (reply.response == 200) {
-                            delete this.hashtag.request;
-                            Object.assign(this.hashtag, reply.data);
-                            this._updateHashtag();
+                            this._updateHashtag(reply.data);
                         }
                     });
                 }
             }
 
-            _updateHashtag() {
-                if (this.hashtag.items && this.hashtag.hashtagAddress) {
-                    let temp = this.hashtag;
-                    this.dispatch('HASHTAG', {});
-                    this.dispatch('HASHTAG', temp);
+            _updateHashtag(hashtag) {
+                this.hashtag.items = this.hashtag.items || [];
+                if (hashtag.hashtagAddress) {
+                    delete this.hashtag.request;
+                    Object.assign(this.hashtag, hashtag);
+                } else {
+                    // If the update is an item array
+                    // prepare an empty array for the items that have to be added (not overwritten)
+                    let newItems = [];
+
+                    // if no items loaded yet, set them all
+                    if (this.hashtag.items.length == 0) {
+                        newItems = hashtag;
+                    }
+                    else {
+                        // if there are already items loaded, check for update item if it needs to be added or
+                        // if it needs to overwrite an existing one
+                        for (let i = 0; i < hashtag.length; i++) {
+                            let found = false;
+                            for (let j = 0; j < this.hashtag.items.length; j++) {
+                                if (hashtag[i].itemHash == this.hashtag.items[j].itemHash) {
+                                    this.hashtag.items[j] = hashtag[i];
+                                    found = true;
+                                }
+                            }
+                            if (!found) {
+                                newItems.push(hashtag[i]);
+                            }
+                        }
+                    }
+
+                    // Add the new items
+                    this.hashtag.items = this.hashtag.items.concat(newItems);
                 }
+                let temp = this.hashtag;
+                this.dispatch('HASHTAG', {});
+                this.dispatch('HASHTAG', temp);
             }
 
             /**
