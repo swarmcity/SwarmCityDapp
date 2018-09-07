@@ -138,9 +138,9 @@ The following custom properties and mixins are available for styling:
             <div class="date">
                 [[_formatDate(selectedReply.dateTime)]]
             </div>
-            <div class="providerbox">
+            <div class="providerbox" on-up="_toUserReputation">
                 <div class="avatar">
-                    <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    <iron-image sizing="cover" preload   src="https://dev.swarm.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
                     </iron-image>
                 </div>
                 <div class="username">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
@@ -168,6 +168,14 @@ The following custom properties and mixins are available for styling:
                     * @type {String}
                     */
                     stateChange: {
+                        type: String,
+                        notify: true,
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
                         type: String,
                         notify: true,
                     },
@@ -238,6 +246,12 @@ The following custom properties and mixins are available for styling:
             */
             _toReplies() {
                 this.stateChange = 'replies';
+            }
+            /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                this.path = `user-reputation/${this.selectedReply.address}/${this.selectedReply.avatarHash}/${this.selectedReply.username}`; // eslint-disable-line
             }
         }
         window.customElements.define(MyDisplaySimpledealReplyDetail.is, MyDisplaySimpledealReplyDetail);
