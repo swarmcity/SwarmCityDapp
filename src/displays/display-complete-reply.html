@@ -150,18 +150,20 @@ The following custom properties and mixins are available for styling:
             */
             _replyToIpfs() {
                 if (this.privateKey) {
-                    // this.hashtagItem.replies[this.address] = {
-                    //     address: this.address,
-                    //     avatarHash: this.avatarHash,
-                    //     dateTime: 'pending',
-                    //     description: this.reply,
-                    //     publicKey: webpack
-                    //             .privateToPublic(new webpack.Buffer.Buffer(this.privateKey, 'hex'))
-                    //             .toString('hex'),
-                    //     reputation: '0',
-                    //     username: this.username,
-                    // }
-                    // this.dispatch('HASHTAGITEM', this.hashtagItem);
+                    this.hashtagItem.replies[this.address] = {
+                        address: this.address,
+                        avatarHash: this.avatarHash,
+                        dateTime: 'pending',
+                        description: this.reply,
+                        publicKey: webpack
+                                .privateToPublic(new webpack.Buffer.Buffer(this.privateKey, 'hex'))
+                                .toString('hex'),
+                        reputation: '',
+                        username: this.username,
+                    };
+                    let temp = this.hashtagItem;
+                    this.dispatch('HASHTAGITEM', {});
+                    this.dispatch('HASHTAGITEM', temp);
                     let reply = {
                         replier: {
                             username: this.username,

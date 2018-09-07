@@ -40,7 +40,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 box-sizing: border-box;
                 padding: 20px 25px 15px 25px;
-                background-color: var(--sc-white);
+                background-color: var(--sc-white) !important;
+            }
+
+            .pending {
+                opacity: 0.5;
             }
 
             .container[wide-layout] .box {
@@ -159,34 +163,37 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="spacer"></div>
             <template is="dom-repeat" items="{{_toArray(hashtagItem.replies)}}">
                 <div class="box">
-                    <div class="top">
-                        <div class="description">
-                            [[item.description]]
+                    <div class$="{{_checkPending(item)}}">
+                        <div class="top">
+                            <div class="description">
+                                [[item.description]]
+                            </div>
+                            <div class="price">
+                                <div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT
+                            </div>
                         </div>
-                        <div class="price">
-                            <div class="vmarkmini"></div> [[_formatValue(hashtagItem.value)]] SWT
-                        </div>
-                    </div>
 
-                    <div class="date">[[_formatDate(item.dateTime)]]</div>
+                        <div class="date">[[_formatDate(item.dateTime)]]</div>
 
-                    <div class="bottom">
-                        <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
-                        </iron-image>
+                        <div class="bottom">
+                            <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png"
+                                on-up="_toUserReputation">
+                            </iron-image>
 
-                        <template is="dom-if" if="[[!_isReplier(item)]]">
-                            <div class="user"  on-up="_toUserReputation">[[item.username]] · [[item.reputation]] SWR</div>
+                            <template is="dom-if" if="[[!_isReplier(item)]]">
+                                <div class="user" on-up="_toUserReputation">[[item.username]] · [[item.reputation]] SWR</div>
 
-                            <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
-                                <div class="choose" on-up="_replyDetail">
-                                    <div class="choose-icon"></div>
-                                </div>
+                                <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                                    <div class="choose" on-up="_replyDetail">
+                                        <div class="choose-icon"></div>
+                                    </div>
+                                </template>
                             </template>
-                        </template>
 
-                        <template is="dom-if" if="[[_isReplier(item)]]">
-                            <div class="user replier">[[item.username]] · [[item.reputation]] SWR</div>
-                        </template>
+                            <template is="dom-if" if="[[_isReplier(item)]]">
+                                <div class="user replier">[[item.username]] · [[item.reputation]] SWR</div>
+                            </template>
+                        </div>
 
                     </div>
                 </div>
@@ -261,6 +268,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {string} formatted date string
             */
             _formatDate(dateTime) {
+                if (dateTime == 'pending') return 'pending';
                 let milliseconds = dateTime * 1000;
                 if (webpack.moment().valueOf() - milliseconds < 86400000) {
                     return webpack.moment(milliseconds).fromNow();
@@ -275,6 +283,14 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+            /**
+            * verifies is item reply is still pending
+            * @param {Object} item item object
+            * @return {string} class name
+            */
+            _checkPending(item) {
+                return item.dateTime == 'pending' ? 'pending' : '';
             }
             /**
             * Here we check if a reply is owned by the current user
