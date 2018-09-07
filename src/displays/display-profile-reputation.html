@@ -126,9 +126,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     * The selected user's reputation balance
                     * @type {Object}
                     */
-                    userReputation: {
+                    myReputation: {
                         type: Object,
-                        statePath: 'userReputation',
+                        statePath: 'myReputation',
                         observer: '_showReputation',
                     },
                     /**
@@ -155,10 +155,10 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    USERREPUTATION: function(userReputation) {
+                    MYREPUTATION: function(myReputation) {
                         return {
-                            type: 'USERREPUTATION',
-                            userReputation: userReputation,
+                            type: 'MYREPUTATION',
+                            myReputation: myReputation,
                         };
                     },
                 });
@@ -167,17 +167,17 @@ This code may only be used under the license found at https://github.com/swarmci
             * Emit new user balance request over redux
             */
             _userChanged() {
-                let requestUserReputation = {
+                let requestMyReputation = {
                     request: this.userAddress,
                 };
-                this.dispatch('USERREPUTATION', requestUserReputation);
+                this.dispatch('MYREPUTATION', requestMyReputation);
             }
             /**
             * Update the reputation balance
             */
             _showReputation() {
-                if (!this.userReputation.request) {
-                    this.shownReputation = this.userReputation;
+                if (!this.myReputation.request) {
+                    this.shownReputation = this.myReputation;
                 } else {
                     this.shownReputation = [];
                 }

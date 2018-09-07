@@ -62,6 +62,12 @@ The following custom properties and mixins are available for styling:
                             chatHistory: chatHistory,
                         };
                     },
+                    HASHTAGITEM: function(hashtagItem) {
+                        return {
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
+                        };
+                    },
                 });
             }
             static get properties() {
@@ -123,6 +129,10 @@ The following custom properties and mixins are available for styling:
             _fundItem() {
                 if (this.privateKey) {
                     // this._startChat();
+                    this.hashtagItem.status = '1';
+                    let temp = this.hashtagItem;
+                    this.dispatch('HASHTAGITEM', {});
+                    this.dispatch('HASHTAGITEM', temp);
                     let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
                     this.$.simpledeal.rawFundItem(
                         this.hashtagItem.itemHash,

@@ -189,6 +189,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_getUserReputation',
                     },
                     /**
+                    * The selected user's reputation balance
+                    * @type {Object}
+                    */
+                    myReputation: {
+                        type: Object,
+                        statePath: 'myReputation',
+                        observer: '_getMyReputation',
+                    },
+                    /**
                     * The current subscriptionId string to a hashtag
                     * @type {String}
                     */
@@ -309,6 +318,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
+                        };
+                    },
+                    MYREPUTATION: function(myReputation) {
+                        return {
+                            type: 'MYREPUTATION',
+                            myReputation: myReputation,
                         };
                     },
                     HASHTAGS: function(hashtags) {
@@ -654,6 +669,18 @@ This code may only be used under the license found at https://github.com/swarmci
                         address: this.userReputation.request,
                     }, (reply) => {
                         this.dispatch('USERREPUTATION', reply.data);
+                    });
+                }
+            }
+
+
+            // Get a the current user's reputation balance
+            _getMyReputation() {
+                if (this.myReputation.request) {
+                    this.socket.emit('getReputation', {
+                        address: this.myReputation.request,
+                    }, (reply) => {
+                        this.dispatch('MYREPUTATION', reply.data);
                     });
                 }
             }
