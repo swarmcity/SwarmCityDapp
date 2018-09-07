@@ -86,7 +86,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-repeat" items="{{userReputation}}" id="domRepeat">
+            <template is="dom-repeat" items="{{shownReputation}}" id="domRepeat">
                 <div class="rep-box">
                     <div class="name">#{{item.hashtagName}}</div>
                     <div class="horizontal">
@@ -129,6 +129,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     userReputation: {
                         type: Object,
                         statePath: 'userReputation',
+                        observer: '_showReputation',
+                    },
+                    /**
+                    * The shown reputation balances
+                    * @type {Object}
+                    */
+                    shownReputation: {
+                        type: Object,
+                        value: [],
                     },
                     /**
                     * The address of the user we look up
@@ -162,6 +171,16 @@ This code may only be used under the license found at https://github.com/swarmci
                     request: this.userAddress,
                 };
                 this.dispatch('USERREPUTATION', requestUserReputation);
+            }
+            /**
+            * Update the reputation balance
+            */
+            _showReputation() {
+                if (!this.userReputation.request) {
+                    this.shownReputation = this.userReputation;
+                } else {
+                    this.shownReputation = [];
+                }
             }
         }
         window.customElements.define(MyDisplayProfileReputation.is, MyDisplayProfileReputation);
