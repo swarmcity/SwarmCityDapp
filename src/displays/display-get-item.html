@@ -75,19 +75,29 @@ This code may only be used under the license found at https://github.com/swarmci
                     ) {
                         // only get new item if the item we need doesn't yet exist in redux
                         if (
-                            // load when no hashtagitem yet loaded or if a wrong one is loaded
-                            // (!this.loadedHashtagItem ||
-                            //     (
-                            //         this.loadedHashtagItem &&
-                            //         this.loadedHashtagItem.itemHash &&
-                            //         this.route.path.split('/')[3] != this.loadedHashtagItem.itemHash
-                            //     )) &&
                             this.hashtag &&
-                            this.hashtag.hashtagAddress
+                            this.hashtag.hashtagAddress &&
+                            // only update the hashtag item from route change if
+                            // there's no item yet OR if the wrong item is loaded
+                            (!this.hashtagItem || this.hashtagItem.itemHash != this.route.path.split('/')[3])
                         ) {
                             let itemHash = this.route.path.split('/')[3];
                             for (let i = 0; i < this.hashtag.items.length; i++) {
                                 if (this.hashtag.items[i].itemHash === itemHash) {
+                                    this.hashtagItem = this.hashtag.items[i];
+                                    this.dispatch('HASHTAGITEM', this.hashtagItem);
+                                }
+                            }
+                        }
+                        // update the hashtag item when there's an interaction update
+                        if (
+                            this.hashtagItem
+                            && this.hashtagItem.itemHash
+                            && this.hashtag
+                            && this.hashtag.hashtagAddress
+                        ) {
+                            for (let i = 0; i < this.hashtag.items.length; i++) {
+                                if (this.hashtag.items[i].itemHash == this.hashtagItem.itemHash) {
                                     this.hashtagItem = this.hashtag.items[i];
                                     this.dispatch('HASHTAGITEM', this.hashtagItem);
                                 }

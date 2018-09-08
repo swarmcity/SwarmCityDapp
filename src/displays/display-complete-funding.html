@@ -62,6 +62,12 @@ The following custom properties and mixins are available for styling:
                             chatHistory: chatHistory,
                         };
                     },
+                    HASHTAGITEM: function(hashtagItem) {
+                        return {
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
+                        };
+                    },
                 });
             }
             static get properties() {
@@ -122,35 +128,34 @@ The following custom properties and mixins are available for styling:
             */
             _fundItem() {
                 if (this.privateKey) {
-                    this._startChat();
+                    // this._startChat();
+                    this.hashtagItem.status = '1';
+                    let temp = this.hashtagItem;
+                    this.dispatch('HASHTAGITEM', {});
+                    this.dispatch('HASHTAGITEM', temp);
                     let totalSum = parseInt(this.hashtagItem.value) + this.hashtag.hashtagFee / 2;
-                    webpack.decryptWithPrivateKey(
-                        this.privateKey,
-                        this.hashtagItem.selectee.secret,
-                    ).then((secret) => {
-                        this.$.simpledeal.rawFundItem(
-                            secret,
+                    this.$.simpledeal.rawFundItem(
+                        this.hashtagItem.itemHash,
+                        this.hashtag.hashtagAddress,
+                        this.hashtag.abi
+                    ).then((rawFundItem) => {
+                        this.$.transaction.rawApproveAndCall(
                             this.hashtag.hashtagAddress,
-                            abi.hashtagSimpleDeal.abi
-                        ).then((rawFundItem) => {
-                            this.$.transaction.rawApproveAndCall(
-                                this.hashtag.hashtagAddress,
-                                totalSum,
-                                rawFundItem,
+                            totalSum,
+                            rawFundItem,
+                            '0x0adbc89464cb7fa752adcf3533514949a2547589',
+                            abi.miniMeToken.abi
+                        ).then((rawApproveAndCall) => {
+                            this.$.transaction.signRawTx(
+                                this.address,
                                 '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                abi.miniMeToken.abi
-                            ).then((rawApproveAndCall) => {
-                                this.$.transaction.signRawTx(
-                                    this.address,
-                                    '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                    this.nonce,
-                                    rawApproveAndCall,
-                                    this.privateKey
-                                ).then((serializedTx) => {
-                                    this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
-                                }).catch((err) => {
-                                    this.error = err;
-                                });
+                                this.nonce,
+                                rawApproveAndCall,
+                                this.privateKey
+                            ).then((serializedTx) => {
+                                this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                            }).catch((err) => {
+                                this.error = err;
                             });
                         });
                     });
@@ -187,14 +192,14 @@ The following custom properties and mixins are available for styling:
                         // provider
                         address: this.address,
                         key: 'admin',
-                        username: this.hashtagItem.selectee.reply.username,
-                        avatarHash: this.hashtagItem.selectee.reply.avatarHash,
+                        username: this.hashtagItem.selectee.username,
+                        avatarHash: this.hashtagItem.selectee.avatarHash,
                     },
                 ];
                 this.dispatch('CHATHISTORY', {
                     instantiate: members,
                 });
-        }
+            }
 
         /**
         * to hex

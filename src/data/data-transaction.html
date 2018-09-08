@@ -40,15 +40,15 @@
             * Call the token transfer method
             * @param {String} receiverAddress - The receiver's address
             * @param {Number} weiAmount - The amount to be transferred, in wei
-            * @param {String} tokenContract - The contract containg the function's address
+            * @param {String} tokenContractAddress - The contract address containg the function's address
             * @param {Object} abi - The contract's abi
             * @return {Object} - The signed transaction
             */
-            rawTokenTx(receiverAddress, weiAmount, tokenContract, abi) {
+            rawTokenTx(receiverAddress, weiAmount, tokenContractAddress, abi) {
                 return new Promise((resolve, reject) => {
                     const tokenContract = new webpack.Contract(
                         abi,
-                        tokenContract);
+                        tokenContractAddress);
                     let rawTokenTx = tokenContract.methods.transfer(
                         receiverAddress,
                         weiAmount
@@ -68,15 +68,8 @@
             */
             rawApproveAndCall(spenderAddress, weiAmount, txData, tokenAddress, abi) {
                 return new Promise((resolve, reject) => {
-                    const tokenContract = new webpack.Contract(
-                        abi,
-                        tokenAddress);
-
-                    let rawApproveAndCall = tokenContract.methods.approveAndCall(
-                        spenderAddress,
-                        weiAmount,
-                        txData,
-                    ).encodeABI();
+                    const tokenContract = new webpack.Contract(abi, tokenAddress);
+                    let rawApproveAndCall = tokenContract.methods.approveAndCall(spenderAddress, weiAmount, txData).encodeABI();
                     resolve(rawApproveAndCall);
                 });
             }

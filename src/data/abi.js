@@ -594,6 +594,63 @@ var abi = {
             {
                 constant: true,
                 inputs: [],
+                name: "creationBlock",
+                outputs: [
+                    {
+                        name: "",
+                        type: "uint256"
+                    }
+                ],
+                payable: false,
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                constant: true,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "readItem",
+                outputs: [
+                    {
+                        name: "status",
+                        type: "uint8"
+                    },
+                    {
+                        name: "itemValue",
+                        type: "uint256"
+                    },
+                    {
+                        name: "providerRep",
+                        type: "uint256"
+                    },
+                    {
+                        name: "seekerRep",
+                        type: "uint256"
+                    },
+                    {
+                        name: "providerAddress",
+                        type: "address"
+                    },
+                    {
+                        name: "ipfsMetadata",
+                        type: "string"
+                    },
+                    {
+                        name: "numberOfReplies",
+                        type: "uint256"
+                    }
+                ],
+                payable: false,
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                constant: true,
+                inputs: [],
                 name: "ProviderRep",
                 outputs: [
                     {
@@ -603,6 +660,38 @@ var abi = {
                 ],
                 payable: false,
                 stateMutability: "view",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_payoutaddress",
+                        type: "address"
+                    }
+                ],
+                name: "setPayoutAddress",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        name: "_selectedReplier",
+                        type: "address"
+                    }
+                ],
+                name: "selectReplier",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
                 type: "function"
             },
             {
@@ -635,8 +724,68 @@ var abi = {
             },
             {
                 constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        name: "_seekerFraction",
+                        type: "uint256"
+                    }
+                ],
+                name: "resolveItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
                 inputs: [],
                 name: "renounceOwnership",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "fundItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_ipfsMetadataHash",
+                        type: "string"
+                    }
+                ],
+                name: "setMetadataHash",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "payoutItem",
                 outputs: [],
                 payable: false,
                 stateMutability: "nonpayable",
@@ -657,6 +806,46 @@ var abi = {
                 type: "function"
             },
             {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_msgsender",
+                        type: "address"
+                    },
+                    {
+                        name: "_amount",
+                        type: "uint256"
+                    },
+                    {
+                        name: "_fromcontract",
+                        type: "address"
+                    },
+                    {
+                        name: "_extraData",
+                        type: "bytes"
+                    }
+                ],
+                name: "receiveApproval",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "cancelItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
                 constant: true,
                 inputs: [],
                 name: "SeekerRep",
@@ -671,6 +860,24 @@ var abi = {
                 type: "function"
             },
             {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        name: "_ipfsMetadata",
+                        type: "string"
+                    }
+                ],
+                name: "replyItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
                 constant: true,
                 inputs: [],
                 name: "metadataHash",
@@ -682,6 +889,56 @@ var abi = {
                 ],
                 payable: false,
                 stateMutability: "view",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        name: "_itemValue",
+                        type: "uint256"
+                    },
+                    {
+                        name: "_ipfsMetadata",
+                        type: "string"
+                    }
+                ],
+                name: "newItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_newHashtagFee",
+                        type: "uint256"
+                    }
+                ],
+                name: "setHashtagFee",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                constant: false,
+                inputs: [
+                    {
+                        name: "_itemHash",
+                        type: "bytes32"
+                    }
+                ],
+                name: "disputeItem",
+                outputs: [],
+                payable: false,
+                stateMutability: "nonpayable",
                 type: "function"
             },
             {
@@ -829,6 +1086,45 @@ var abi = {
                 anonymous: false,
                 inputs: [
                     {
+                        indexed: true,
+                        name: "itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        indexed: false,
+                        name: "ipfsMetadata",
+                        type: "string"
+                    },
+                    {
+                        indexed: false,
+                        name: "provider",
+                        type: "address"
+                    }
+                ],
+                name: "ReplyItem",
+                type: "event"
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    {
+                        indexed: false,
+                        name: "itemHash",
+                        type: "bytes32"
+                    },
+                    {
+                        indexed: false,
+                        name: "selectedReplier",
+                        type: "address"
+                    }
+                ],
+                name: "SelectReplier",
+                type: "event"
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    {
                         indexed: false,
                         name: "seeker",
                         type: "address"
@@ -941,213 +1237,6 @@ var abi = {
                 ],
                 name: "OwnershipTransferred",
                 type: "event"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_msgsender",
-                        type: "address"
-                    },
-                    {
-                        name: "_amount",
-                        type: "uint256"
-                    },
-                    {
-                        name: "_fromcontract",
-                        type: "address"
-                    },
-                    {
-                        name: "_extraData",
-                        type: "bytes"
-                    }
-                ],
-                name: "receiveApproval",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_payoutaddress",
-                        type: "address"
-                    }
-                ],
-                name: "setPayoutAddress",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_ipfsMetadataHash",
-                        type: "string"
-                    }
-                ],
-                name: "setMetadataHash",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_newHashtagFee",
-                        type: "uint256"
-                    }
-                ],
-                name: "setHashtagFee",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_itemHash",
-                        type: "bytes32"
-                    },
-                    {
-                        name: "_itemValue",
-                        type: "uint256"
-                    },
-                    {
-                        name: "_ipfsMetadata",
-                        type: "string"
-                    }
-                ],
-                name: "newItem",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_itemId",
-                        type: "string"
-                    }
-                ],
-                name: "fundItem",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_itemHash",
-                        type: "bytes32"
-                    }
-                ],
-                name: "payoutItem",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_itemHash",
-                        type: "bytes32"
-                    }
-                ],
-                name: "cancelItem",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_itemHash",
-                        type: "bytes32"
-                    }
-                ],
-                name: "disputeItem",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: false,
-                inputs: [
-                    {
-                        name: "_itemHash",
-                        type: "bytes32"
-                    },
-                    {
-                        name: "_seekerFraction",
-                        type: "uint256"
-                    }
-                ],
-                name: "resolveItem",
-                outputs: [],
-                payable: false,
-                stateMutability: "nonpayable",
-                type: "function"
-            },
-            {
-                constant: true,
-                inputs: [
-                    {
-                        name: "_itemHash",
-                        type: "bytes32"
-                    }
-                ],
-                name: "readDeal",
-                outputs: [
-                    {
-                        name: "status",
-                        type: "uint8"
-                    },
-                    {
-                        name: "hashtagFee",
-                        type: "uint256"
-                    },
-                    {
-                        name: "itemValue",
-                        type: "uint256"
-                    },
-                    {
-                        name: "providerRep",
-                        type: "uint256"
-                    },
-                    {
-                        name: "seekerRep",
-                        type: "uint256"
-                    },
-                    {
-                        name: "providerAddress",
-                        type: "address"
-                    },
-                    {
-                        name: "ipfsMetadata",
-                        type: "string"
-                    }
-                ],
-                payable: false,
-                stateMutability: "view",
-                type: "function"
             }
         ]
     }

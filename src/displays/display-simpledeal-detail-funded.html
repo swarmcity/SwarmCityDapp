@@ -162,26 +162,26 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-if" if="[[_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
+            <template is="dom-if" if="[[_isInvolved(hashtagItem.seeker.address, hashtagItem.selectee.address, publicKey)]]">
                 <div class="whitebox">
                     <div class="descriptionbox">
-                        <div class="description">[[hashtagItem.provider.reply.description]]</div>
+                        <div class="description">[[hashtagItem.selectee.description]]</div>
                         <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
                     </div>
                     <div class="date">
-                        [[_formatDate(hashtagItem.provider.reply.dateTime)]]
+                        [[_formatDate(hashtagItem.selectee.dateTime)]]
                     </div>
-                    <div class="providerbox">
+                    <div class="providerbox" on-up="_toUserReputation">
                         <div class="avatar">
-                            <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.provider.reply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                            <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[hashtagItem.selectee.avatarHash]]" placeholder="../images/defaultavatar.png">
                             </iron-image>
                         </div>
                         <template is="dom-if" if="[[_isSeeker(hashtagItem.seeker.address, publicKey)]]">
-                            <div class="username">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
+                            <div class="username">[[hashtagItem.selectee.username]] · [[hashtagItem.selectee.reputation]] SWR</div>
                         </template>
 
-                        <template is="dom-if" if="[[_isProvider(hashtagItem.provider.address, publicKey)]]">
-                            <div class="replier">[[hashtagItem.provider.reply.username]] · [[hashtagItem.provider.reply.reputation]] SWR</div>
+                        <template is="dom-if" if="[[_isProvider(hashtagItem.selectee.address, publicKey)]]">
+                            <div class="replier">[[hashtagItem.selectee.username]] · [[hashtagItem.selectee.reputation]] SWR</div>
                         </template>
                     </div>
                 </div>
@@ -196,7 +196,7 @@ The following custom properties and mixins are available for styling:
                         </div>
                     </template>
             </template>
-            <template is="dom-if" if="[[!_isInvolved(hashtagItem.seeker.address, hashtagItem.provider.address, publicKey)]]">
+            <template is="dom-if" if="[[!_isInvolved(hashtagItem.seeker.address, hashtagItem.selectee.address, publicKey)]]">
                 <div class="whitebox not-involved">
                     <template is="dom-if" if="[[_hasReplied(hashtagItem.replies, publicKey)]]">
                         <div>[[hashtagItem.seeker.username]] selected a provider.</div>
@@ -305,6 +305,12 @@ The following custom properties and mixins are available for styling:
                 return providerAddress == userAddress;
             }
             /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                this.path = `user-reputation/${this.hashtagItem.selectee.address}/${this.hashtagItem.selectee.avatarHash}/${this.hashtagItem.selectee.username}`; // eslint-disable-line
+            }
+            /**
             * Here we check if the current user is seeker of this request
             * @param {String} seekerAddress the seeker's address
             * @param {String} userAddress the user's address
@@ -345,7 +351,7 @@ The following custom properties and mixins are available for styling:
             * Change the route to the chat view
             */
             _toChat() {
-                this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
+                // this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
             }
         }
         window.customElements.define(

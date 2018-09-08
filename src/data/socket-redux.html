@@ -5,7 +5,6 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
-<script src="environment.min.js"></script>
 <dom-module id="socket-redux">
 
     <script>
@@ -129,6 +128,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_itemToIpfs',
                     },
                     /**
+                    * Send new reply metadata to IPFS
+                    * @type {Object}
+                    */
+                    replyToIpfs: {
+                        type: Object,
+                        statePath: 'replyToIpfs',
+                        observer: '_replyToIpfs',
+                    },
+                    /**
                     * Send new signed tx to the blockchain
                     * @type {Object}
                     */
@@ -172,15 +180,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'hashtagItem',
                     },
                     /**
-                    * A reply to be added to a hashtagItem
-                    * @type {Object}
-                    */
-                    replyRequest: {
-                        type: Object,
-                        statePath: 'replyRequest',
-                        observer: '_sendReply',
-                    },
-                    /**
                     * The selected user's reputation balance
                     * @type {Object}
                     */
@@ -190,13 +189,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_getUserReputation',
                     },
                     /**
-                    * The payload to select a provider from the list of replies
+                    * The selected user's reputation balance
                     * @type {Object}
                     */
-                    selectProvider: {
+                    myReputation: {
                         type: Object,
-                        statePath: 'selectProvider',
-                        observer: '_selectProvider',
+                        statePath: 'myReputation',
+                        observer: '_getMyReputation',
                     },
                     /**
                     * The current subscriptionId string to a hashtag
@@ -261,12 +260,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             shortCode: shortCode,
                         };
                     },
-                    IPHONE: function(iphone) {
-                        return {
-                            type: 'IPHONE',
-                            iphone: iphone,
-                        };
-                    },
                     AVATAR: function(avatar) {
                         return {
                             type: 'AVATAR',
@@ -303,6 +296,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             itemDataHash: itemDataHash,
                         };
                     },
+                    REPLYDATAHASH: function(replyDataHash) {
+                        return {
+                            type: 'REPLYDATAHASH',
+                            replyDataHash: replyDataHash,
+                        };
+                    },
                     HASHTAG: function(hashtag) {
                         return {
                             type: 'HASHTAG',
@@ -319,6 +318,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         return {
                             type: 'USERREPUTATION',
                             userReputation: userReputation,
+                        };
+                    },
+                    MYREPUTATION: function(myReputation) {
+                        return {
+                            type: 'MYREPUTATION',
+                            myReputation: myReputation,
                         };
                     },
                     HASHTAGS: function(hashtags) {
@@ -345,7 +350,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io(environment.socketurl, // eslint-disable-line
+                this.socket = io('https://dev.swarm.city', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -366,7 +371,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             ready() {
                 super.ready();
-                this._detectIphone();
                 // Get push updates of the user's balance
                 this.socket.on('balanceChanged', (reply) => {
                     if (reply.response == 200) {
@@ -386,11 +390,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
 
                 // Get the list of hashtags
-                this.socket.emit('getHashtags', {
+                this.socket.emit('subscribeToHashtags');
+                this.socket.on('hashtagsChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this.hashtags = reply.data;
+                        this.dispatch('HASHTAGS', this.hashtags);
+                    }
+                });
 
-                }, (reply) => {
-                    this.hashtags = reply.data;
-                    this.dispatch('HASHTAGS', this.hashtags);
+                // Update the list of items on the current hashtag subscription
+                this.socket.on('hashtagItemsChanged', (reply) => {
+                    if (reply.response == 200) {
+                        this._updateHashtag(reply.data);
+                    }
                 });
 
                 // All handlers attached - please connect..
@@ -401,15 +413,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.chatHistory) {
                     if (this.chatHistory.instantiate) {
                         this.socket.emit('subscribeToChat', {
-                            emitterAddress: this.publicKey,
+                            emitterAddress: this.publicKey.toLowerCase(),
                             members: this.chatHistory.instantiate,
-                            itemHash: this.hashtagItem.itemHash,
+                            itemHash: this.hashtagItem.itemHash.toLowerCase(),
                         });
                     }
                     if (this.chatHistory.subscribe) {
                         this.socket.emit('subscribeToChat', {
-                            emitterAddress: this.publicKey,
-                            itemHash: this.chatHistory.subscribe,
+                            emitterAddress: this.publicKey.toLowerCase(),
+                            itemHash: this.chatHistory.subscribe.toLowerCase(),
                         });
                     }
                     this.socket.on('chatChanged', (reply) => {
@@ -422,15 +434,66 @@ This code may only be used under the license found at https://github.com/swarmci
             _newChatMessage() {
                 if (this.newChatMessage) {
                     this.socket.emit('newChatMessage', {
-                        itemHash: this.newChatMessage.itemHash,
+                        itemHash: this.newChatMessage.itemHash.toLowerCase(),
                         payload: {
                             message: this.newChatMessage.message,
                             avatarHash: this.avatarHash,
                             username: this.username,
-                            sender: this.publicKey,
+                            sender: this.publicKey.toLowerCase(),
                         },
                     });
                 }
+            }
+
+            _getHashtag() {
+                if (this.hashtag.request) {
+                    this.socket.emit('subscribeToHashtag', {
+                        hashtag: this.hashtag.request.toLowerCase(),
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            this._updateHashtag(reply.data);
+                        }
+                    });
+                }
+            }
+
+            _updateHashtag(hashtag) {
+                this.hashtag.items = this.hashtag.items || [];
+                if (hashtag.hashtagAddress) {
+                    delete this.hashtag.request;
+                    Object.assign(this.hashtag, hashtag);
+                } else {
+                    // If the update is an item array
+                    // prepare an empty array for the items that have to be added (not overwritten)
+                    let newItems = [];
+
+                    // if no items loaded yet, set them all
+                    if (this.hashtag.items.length == 0) {
+                        newItems = hashtag;
+                    }
+                    else {
+                        // if there are already items loaded, check for update item if it needs to be added or
+                        // if it needs to overwrite an existing one
+                        for (let i = 0; i < hashtag.length; i++) {
+                            let found = false;
+                            for (let j = 0; j < this.hashtag.items.length; j++) {
+                                if (hashtag[i].itemHash == this.hashtag.items[j].itemHash) {
+                                    this.hashtag.items[j] = hashtag[i];
+                                    found = true;
+                                }
+                            }
+                            if (!found) {
+                                newItems.push(hashtag[i]);
+                            }
+                        }
+                    }
+
+                    // Add the new items
+                    this.hashtag.items = this.hashtag.items.concat(newItems);
+                }
+                let temp = this.hashtag;
+                this.dispatch('HASHTAG', {});
+                this.dispatch('HASHTAG', temp);
             }
 
             /**
@@ -506,13 +569,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
 
-            _detectIphone() {
-                if ((navigator.userAgent.match(/iPhone/i)) || (navigator.userAgent.match(/iPod/i))) {
-                    this.dispatch('IPHONE', true);
-                } else {
-                    this.dispatch('IPHONE', false);
-                }
+            _replyToIpfs() {
+                this.socket.emit('ipfsAdd', {
+                    payload: this.replyToIpfs,
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        this.replyDataHash = reply.data;
+                        this.dispatch('REPLYDATAHASH', this.replyDataHash);
+                    }
+                });
             }
+
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
                 this.socket.emit('subscribe', {
@@ -556,13 +623,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 }, (reply) => {
                     if (reply.response == 200) {
                         this.confirmedTx = reply.data;
-                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                        // this.dispatch('CONFIRMEDTX', this.confirmedTx);
                     }
                 });
                 this.socket.on('txHistoryChanged', (reply) => {
                     if (reply.response == 200) {
                         this.confirmedTx = reply.data;
-                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                        // this.dispatch('CONFIRMEDTX', this.confirmedTx);
                     }
                 });
             }
@@ -583,12 +650,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 });
             }
-            _sendReply() {
-                this.socket.emit('replyRequest', {
-                    reply: this.replyRequest,
-                }, (reply) => {
-                });
-            }
             _broadcast() {
                 if (this.reqtokey != null) {
                     this.socket.emit('replyShortCode', {
@@ -601,85 +662,27 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-            // Subscribe to a certain hashtag
-            _getHashtag() {
-                if (this.hashtag.request) {
-                    if (this.hashtagSubscription) {
-                        this.socket.emit('unsubscribe', {
-                            subscriptionId: this.hashtagSubscription,
-                        });
-                    }
-                    this.socket.emit('subscribe', {
-                        channel: 'hashtagItems',
-                        args: {
-                            address: this.hashtag.request,
-                        },
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            this.hashtagSubscription = reply.subscriptionId;
-                            let address = this.hashtag.request;
-                            this.hashtag = JSON.parse(reply.data);
-                            this.hashtag.hashtagAddress = address;
-                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
-                            this.hashtag.hashtagFee = 600000000000000000;
-                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
-                            this.dispatch('HASHTAG', this.hashtag);
-                        }
-                    });
-                    this.socket.on('hashtagItemsChanged', (reply) => {
-                        // Only update if there is a current hashtag subscription
-                        if (reply.response == 200 && this.hashtagSubscription == reply.subscriptionId) {
-                            let address = this.hashtag.hashtagAddress;
-                            this.hashtag = JSON.parse(JSON.parse(reply.data));
-                            this.hashtag.hashtagAddress = address;
-                            // --------------- BEGIN TEMPORARY HASHTAGFEE DATA ---------------
-                            this.hashtag.hashtagFee = 600000000000000000;
-                            // --------------- END TEMPORARY HASHTAGFEE DATA ---------------
-                            this.dispatch('HASHTAG', this.hashtag);
-                        }
-                    });
-                }
-            }
-
             // Get a certain user's reputation balance by address
             _getUserReputation() {
-                // if (this.userReputation.request) {
-                //     this.socket.emit('userReputation', {
-                //         address: this.userReputation.request,
-                //     }, (reply) => {
-                //     });
-                // }
-                /* eslint-disable */
-                // --------------- BEGIN TEMPORARY REPLIES DATA ---------------
                 if (this.userReputation.request) {
-                    let mockRepData = [
-                        {
-                            "name": "Settler",
-                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
-                            "seekerRep": 1,
-                            "providerRep": 0,
-                        }, {
-                            "name": "DevOps",
-                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
-                            "seekerRep": 9,
-                            "providerRep": 12,
-                        }, {
-                            "name": "SwarmCitySwag",
-                            "address": "0xeba08e7a1d8145b25c78b473fbc35aa24973d908",
-                            "seekerRep": 4,
-                            "providerRep": 2,
-                        }
-                    ];
-                    this.dispatch('USERREPUTATION', mockRepData);
+                    this.socket.emit('getReputation', {
+                        address: this.userReputation.request,
+                    }, (reply) => {
+                        this.dispatch('USERREPUTATION', reply.data);
+                    });
                 }
-                // --------------- END TEMPORARY REPLIES DATA ---------------
-                /* eslint-enable */
             }
 
-            _selectProvider() {
-                this.socket.emit('selectProvider', {
-                    selectee: this.selectProvider,
-                });
+
+            // Get a the current user's reputation balance
+            _getMyReputation() {
+                if (this.myReputation.request) {
+                    this.socket.emit('getReputation', {
+                        address: this.myReputation.request,
+                    }, (reply) => {
+                        this.dispatch('MYREPUTATION', reply.data);
+                    });
+                }
             }
             // fired when entering needing a shortCode
             _usingShortCode() {

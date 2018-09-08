@@ -5,11 +5,10 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
-<script src="../data/webpack.min.js"></script>
 <dom-module id="display-get-hashtag">
-    
+
     <script>
-            class MyDisplayGetHashtag extends new ReduxMixin(Polymer.Element) {
+        class MyDisplayGetHashtag extends new ReduxMixin(Polymer.Element) {
             static get is() {
                 return 'display-get-hashtag';
             }
@@ -51,20 +50,24 @@ This code may only be used under the license found at https://github.com/swarmci
             * If so and not yet loaded, send data request to socket
             */
             _getHashtagAddress() {
-                let urlAddress = false;
-                for (let el of this.route.path.split('/')) {
-                    if (webpack.isValidAddress(el)) {
-                        urlAddress = el;
-                    }
+                let hashtagAddress = false;
+                switch (this.route.path.split('/')[1]) {
+                    case 'hashtag-list':
+                    case 'hashtag':
+                    case 'detail':
+                    case 'chat':
+                    case 'new-request':
+                        hashtagAddress = this.route.path.split('/')[2].toLowerCase();
+                        break;
                 }
 
-                if (urlAddress &&
-                    ((this.hashtag && (this.hashtag.hashtagAddress != urlAddress)) || !this.hashtag)) {
+                if (hashtagAddress &&
+                    ((this.hashtag && (this.hashtag.hashtagAddress.toLowerCase() != hashtagAddress)) || !this.hashtag)) {
                         this.hashtag = {
-                            request: urlAddress,
+                            request: hashtagAddress,
                         };
                         this.dispatch('HASHTAG', this.hashtag);
-                urlAddress = false;
+                    hashtagAddress = false;
                 }
             }
         }

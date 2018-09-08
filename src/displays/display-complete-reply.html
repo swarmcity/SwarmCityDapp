@@ -6,6 +6,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../redux-state.html">
+<link rel="import" href="../data/data-simpledeal.html">
+<link rel="import" href="../data/data-transaction.html">
 <script src="../data/webpack.min.js"></script>
 
 
@@ -28,6 +30,8 @@ The following custom properties and mixins are available for styling:
 -->
 <dom-module id="display-complete-reply">
     <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
     </template>
     <script>
@@ -40,15 +44,27 @@ The following custom properties and mixins are available for styling:
                 return 'display-complete-reply';
             }
             /**
-            * Redux actions for sending a reply
+            * Redux actions for send a reply tx
             * @param {string} broadcast
             */
             static get actions() {
                 return Object.assign({
-                    REPLYREQUEST: function(replyRequest) {
+                    REPLYTOIPFS: function(replyToIpfs) {
                         return {
-                            type: 'REPLYREQUEST',
-                            replyRequest: replyRequest,
+                            type: 'REPLYTOIPFS',
+                            replyToIpfs: replyToIpfs,
+                        };
+                    },
+                    SENDSIGNEDTX: function(sendSignedTx) {
+                        return {
+                            type: 'SENDSIGNEDTX',
+                            sendSignedTx: sendSignedTx,
+                        };
+                    },
+                    HASHTAGITEM: function(hashtagItem) {
+                        return {
+                            type: 'HASHTAGITEM',
+                            hashtagItem: hashtagItem,
                         };
                     },
                 });
@@ -61,7 +77,7 @@ The following custom properties and mixins are available for styling:
                     */
                     privateKey: {
                         type: String,
-                        observer: '_makeReply',
+                        observer: '_replyToIpfs',
                     },
                     /**
                     * Route is the current URL
@@ -87,43 +103,104 @@ The following custom properties and mixins are available for styling:
                         statePath: 'username',
                     },
                     /**
-                    * publickey is the wallet pubkey
+                    * The hashtag we're posting a request on
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * IPFS hash of reply metadata
+                    * @type {Object}
+                    */
+                    replyDataHash: {
+                        type: Object,
+                        statePath: 'replyDataHash',
+                        observer: '_newReplyDataHash',
+                    },
+                    /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                    },
+                    /**
+                    * The user's nonce
+                    * @type {Object}
+                    */
+                    nonce: {
+                        type: Object,
+                        statePath: 'nonce',
+                    },
+                    /**
+                    * address represents the user's public key
                     * @type {String}
                     */
-                    publicKey: {
+                    address: {
                         type: String,
                         statePath: 'publicKey',
                     },
-                    /**
-                    * replyRequest is the reply object to be added to an item
-                    * @type {Object}
-                    */
-                    replyRequest: {
-                        type: Object,
-                    },
                 };
             }
-            /**
-            * We collect all necessary information, prepare the replyRequest object
-            * and dispatch it to redux
+            /*
+            * Makes the IPFS object of the new reply and dispatches it
             */
-            _makeReply() {
+            _replyToIpfs() {
                 if (this.privateKey) {
-                    this.replyRequest = {
-                        itemHash: this.route.path.split('/')[3],
-                        hashtagAddress: this.route.path.split('/')[2],
+                    this.hashtagItem.replies[this.address] = {
+                        address: this.address,
+                        avatarHash: this.avatarHash,
+                        dateTime: 'pending',
+                        description: this.reply,
+                        publicKey: webpack
+                                .privateToPublic(new webpack.Buffer.Buffer(this.privateKey, 'hex'))
+                                .toString('hex'),
+                        reputation: '',
+                        username: this.username,
+                    };
+                    let temp = this.hashtagItem;
+                    this.dispatch('HASHTAGITEM', {});
+                    this.dispatch('HASHTAGITEM', temp);
+                    let reply = {
                         replier: {
                             username: this.username,
                             avatarHash: this.avatarHash,
-                            address: this.publicKey,
+                            address: this.address,
                             publicKey: webpack
                                 .privateToPublic(new webpack.Buffer.Buffer(this.privateKey, 'hex'))
                                 .toString('hex'),
                         },
                         description: this.reply,
                     };
-                    this.dispatch('REPLYREQUEST', JSON.stringify(this.replyRequest));
+                    this.dispatch('REPLYTOIPFS', JSON.stringify(reply));
                 }
+            }
+            /**
+            * We collect all necessary information, sign the reply transaction
+            * and dispatch it to redux
+            */
+            _newReplyDataHash() {
+                this.$.simpledeal.rawReplyItem(
+                    this.hashtagItem.itemHash,
+                    this.replyDataHash,
+                    this.hashtag.hashtagAddress,
+                    this.hashtag.abi
+                ).then((rawReplyItem) => {
+                    this.$.transaction.signRawTx(
+                        this.address,
+                        this.hashtag.hashtagAddress,
+                        this.nonce,
+                        rawReplyItem,
+                        this.privateKey
+                    ).then((serializedTx) => {
+                        this.dispatch('SENDSIGNEDTX', serializedTx.toString('hex'));
+                    }).catch((err) => {
+                        this.error = err;
+                    });
+                });
             }
         } window.customElements.define(MyCompleteReply.is, MyCompleteReply);
     </script>

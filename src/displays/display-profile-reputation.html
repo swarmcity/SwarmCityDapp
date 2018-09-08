@@ -14,7 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../shared-styles.html">
 
-<dom-module id="display-user-reputation">
+<dom-module id="display-profile-reputation">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, move it to shared styles.
@@ -27,11 +27,11 @@ This code may only be used under the license found at https://github.com/swarmci
             .container {
                 width: 100%;
                 box-sizing: border-box;
-                padding: 50px;
+                padding: 50px 50px 20px 50px;
             }
 
             .container[wide-layout] {
-                padding: 30px 10vw 50px 10vw;
+                padding: 30px 10vw 20px 10vw;
             }
 
             .rep-box {
@@ -104,13 +104,13 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
     </template>
     <script>
-        class MyDisplayUserReputation extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDisplayProfileReputation extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-user-reputation';
+                return 'display-profile-reputation';
             }
             static get properties() {
                 return {
@@ -126,9 +126,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     * The selected user's reputation balance
                     * @type {Object}
                     */
-                    userReputation: {
+                    myReputation: {
                         type: Object,
-                        statePath: 'userReputation',
+                        statePath: 'myReputation',
                         observer: '_showReputation',
                     },
                     /**
@@ -155,10 +155,10 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    USERREPUTATION: function(userReputation) {
+                    MYREPUTATION: function(myReputation) {
                         return {
-                            type: 'USERREPUTATION',
-                            userReputation: userReputation,
+                            type: 'MYREPUTATION',
+                            myReputation: myReputation,
                         };
                     },
                 });
@@ -167,23 +167,22 @@ This code may only be used under the license found at https://github.com/swarmci
             * Emit new user balance request over redux
             */
             _userChanged() {
-                let requestUserReputation = {
+                let requestMyReputation = {
                     request: this.userAddress,
-                    hoi: 'hoi',
                 };
-                this.dispatch('USERREPUTATION', requestUserReputation);
+                this.dispatch('MYREPUTATION', requestMyReputation);
             }
             /**
             * Update the reputation balance
             */
             _showReputation() {
-                if (!this.userReputation.request) {
-                    this.shownReputation = this.userReputation;
+                if (!this.myReputation.request) {
+                    this.shownReputation = this.myReputation;
                 } else {
                     this.shownReputation = [];
                 }
             }
         }
-        window.customElements.define(MyDisplayUserReputation.is, MyDisplayUserReputation);
+        window.customElements.define(MyDisplayProfileReputation.is, MyDisplayProfileReputation);
     </script>
 </dom-module>
