@@ -17,7 +17,7 @@
             * @return {Object} - The Raw new item tx data
             */
             rawNewItem(itemHash, weiAmount, ipfsHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
                         abi,
                         contractAddress
@@ -40,7 +40,7 @@
             * @return {Object} - The Raw reply tx data
             */
             rawReplyItem(itemHash, ipfsHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
                         abi,
                         contractAddress
@@ -62,7 +62,7 @@
             * @return {Object} - The Raw reply tx data
             */
             rawSelectReplier(itemHash, replierAddress, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
                         abi,
                         contractAddress
@@ -83,7 +83,7 @@
             * @return {Object} - The Raw new item tx data
             */
             rawFundItem(itemHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
                         abi,
                         contractAddress
@@ -103,7 +103,7 @@
             * @return {Object} - The Raw payout item tx data
             */
             rawPayoutItem(itemHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(abi, contractAddress);
                     let rawPayoutItem = simpleDealContract.methods.payoutItem(itemHash).encodeABI();
                     resolve(rawPayoutItem);
@@ -118,7 +118,7 @@
             * @argument {String} involved if true, return the items the user is involved with
             */
             getHashtagItems(hashtag, userAddress, involved) {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     let items = Object.values(hashtag.items)
                         .filter((item) => {
                             let isInvolved = false;
@@ -129,6 +129,8 @@
                             if (item.seeker.address == userAddress) {
                                 isInvolved = true;
                             }
+                            // Don't add completed deals to items involved
+                            if (item.status && item.status == 2) isInvolved = false;
                             if (involved) {
                                 // only return items the user is involved with
                                 return isInvolved;
