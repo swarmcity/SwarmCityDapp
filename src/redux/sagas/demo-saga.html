@@ -1,0 +1,117 @@
+<script>
+    (function () {
+        // Items initialized in setup.html
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        // ReduxSaga methods
+        const { effects, eventChannel, delay } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all } = effects;
+        // Contents of the ReduxSaga object:
+        // CANCEL: "@@redux-saga/CANCEL_PROMISE"
+        // END: { type: "@@redux-saga/CHANNEL_END" }
+        // buffers: { none: ƒ, fixed: ƒ, dropping: ƒ, sliding: ƒ, expanding: ƒ }
+        // channel: ƒ channel()
+        // default: ƒ sagaMiddlewareFactory()
+        // delay: ƒ delay(ms)
+        // detach: ƒ detach(eff)
+        // effects: { take: ƒ, takem: ƒ, put: ƒ, all: ƒ, race: ƒ, … }
+        // eventChannel: ƒ eventChannel(subscribe)
+        // runSaga: ƒ runSaga(storeInterface, saga)
+        // takeEvery: ƒ()
+        // takeLatest: ƒ()
+        // throttle: ƒ()
+        // utils: {...}
+
+        // Import contract data:
+        const { swtToken, hashtagList, simpleDeal } = contractsData;
+
+        /*
+         * Selector functions
+         */
+        const getFirebaseApp = (state) => state.firebaseApp;
+        const getUser = (state) => state.user;
+
+
+        function blockHeadersChannel() {
+            return eventChannel(emitter => {
+                const subscription = web3Local.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
+                    if (error) console.error(error);
+                    // Emiting undefined values will throw an error
+                    else emitter(blockHeader);
+                })
+                // The subscriber must return an unsubscribe function
+                return () => {
+                    subscription.unsubscribe((error, success) => {
+                        if (success) console.log('Successfully unsubscribed!');
+                    });
+                }
+            }
+            )
+        }
+
+        function* getBlockHeaders() {
+            try {
+                const chan = yield call(blockHeadersChannel)
+                while (true) {
+                    let blockHeader = yield take(chan)
+                    // console.log('blockHeader', blockHeader)
+                }
+            } finally {
+                console.log('countdown terminated')
+            }
+        }
+
+        // worker Saga: will be fired on CLEAR_LIST actions
+        function* exampleFunction(action) {
+            yield put(MyApp.actions.showSpinner(true));
+            // Artificial to delay to simulate a REST call like behavior
+            yield ReduxSaga.delay(1000);
+            yield put(MyApp.actions.clearLoadedList());
+            yield put(MyApp.actions.showSpinner(false));
+            yield put(MyApp.actions.showInfo('List cleared'));
+        }
+
+
+        /** 
+         * 
+         * To subscribe
+         * 
+            const subscription = myContract.events.MyEvent({
+                filter: {myIndexedParam: [20,23], myOtherIndexedParam: '0x123456789...'}, // Using an array means OR: e.g. 20 or 23
+                fromBlock: 0
+            }, (error, event) => {
+                console.log(event)
+            })
+
+         * 
+         * To unsubscribe
+         * 
+        
+            subscription.unsubscribe((error, success) => {
+                // success is just a boolean
+                if(success) console.log('Successfully unsubscribed!');
+            });
+
+        */
+
+
+        function* getBlock(action) {
+            try {
+                console.log('GET BLOCK req', action)
+            } catch (e) {
+                // 
+            }
+        }
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield all([
+                yield takeEvery('GET_HASHTAG', getHashtag),
+            ]);
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        if (!window.AppStore.sagas) window.AppStore.sagas = []
+        window.AppStore.sagas.push(rootSaga)
+    }());
+</script>

@@ -1,0 +1,28 @@
+<script>
+    (function () {
+        // Items initialized in setup.html
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        // ReduxSaga methods
+        const { effects, eventChannel, delay } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all } = effects;
+
+
+        function* getItem(action) {
+            console.log('GET ITEM req', action)
+        }
+
+
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield all([
+                yield takeEvery('GET_ITEM', getItem),
+            ]);
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        if (!window.AppStore.sagas) window.AppStore.sagas = []
+        window.AppStore.sagas.push(rootSaga)
+    }());
+</script>

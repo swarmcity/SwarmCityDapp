@@ -1,4 +1,5 @@
 <script src="../../node_modules/redux/dist/redux.min.js"></script>
+<script src="../../node_modules/deepmerge/dist/umd.js"></script>
 <script src="../defaultAvatar.js"></script>
 
 <script>
@@ -51,6 +52,8 @@
                 },
             },
             hashtags: [],
+            fetching: {},
+            hashtagNew: {}
         };
 
         /**
@@ -102,7 +105,7 @@
         }
 
         const reducer = function (state = initialState, action) {
-            console.log('NEW Top reducer: ', action)
+            // console.log('NEW Top reducer: ', action)
             switch (action.type) {
                 // Received shortcode, update the state
                 case 'UPDATE_SHORTCODE': {
@@ -400,6 +403,43 @@
                         ...state,
                         newChatMessage: action.newChatMessage
                     }
+                }
+                // To display 'loading' icons while fetching data
+                case 'UPDATE_FETCHING': {
+                    return {
+                        ...state,
+                        fetching: {
+                            ...state.fetching,
+                            [action.topic]: action.fetching
+                        }
+                    }
+                }
+                case 'UPDATE_ITEMS': {
+                    return deepmerge(state, {
+                        hashtagNew: {
+                            [action.hashtagAddress]: {
+                                items: action.items
+                            }
+                        }
+                    })
+                }
+                case 'UPDATE_ITEM': {
+                    return deepmerge(state, {
+                        hashtagNew: {
+                            [action.hashtagAddress]: {
+                                items: {
+                                    [action.itemHash]: action.data
+                                }
+                            }
+                        }
+                    })
+                }
+                case 'UPDATE_NEWHASHTAG': {
+                    return deepmerge(state, {
+                        hashtagNew: {
+                            [action.hashtagAddress]: action.data
+                        }
+                    })
                 }
                 default: {
                     return state

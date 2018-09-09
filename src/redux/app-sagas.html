@@ -1,15 +1,24 @@
 <script src="../../node_modules/redux-saga/dist/redux-saga.js"></script>
+<script src="../../node_modules/ethjs/dist/ethjs.min.js"></script>
+<script src="../../node_modules/ipfs-api/dist/index.min.js"></script>
 <script src="../web3/web3.min.js"></script>
 <script src="./contractsData.js"></script>
+
+<!-- Import the setup first -->
+<link rel="import" href="./sagas/setup.html">
+<!-- Then import the saga modules -->
+<link rel="import" href="./sagas/hashtag-saga.html">
+<link rel="import" href="./sagas/hashtagList-saga.html">
+<link rel="import" href="./sagas/item-saga.html">
+<link rel="import" href="./sagas/router-saga.html">
 
 <script>
     (function () {
         // Initialize web3Local
-        let web3Local = new Web3('wss://kovan.infura.io/ws');
-        console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
+        // const url = 'wss://kovan.infura.io/ws'
 
-        const { effects, eventChannel } = ReduxSaga;
-        const { call, fork, take, put, takeEvery, all } = effects;
+        const { effects } = ReduxSaga;
+        const { call, all } = effects;
         // Contents of the ReduxSaga object:
         // CANCEL: "@@redux-saga/CANCEL_PROMISE"
         // END: { type: "@@redux-saga/CHANNEL_END" }
@@ -25,191 +34,11 @@
         // takeLatest: ƒ()
         // throttle: ƒ()
         // utils: {...}
-
-        // Import contract data:
-        const { swtToken } = window.contractsData;
-        /*
-         * Selector functions
-         */
-        const getFirebaseApp = (state) => state.firebaseApp;
-        const getUser = (state) => state.user;
-
-        /*
-         * redux-saga worker functions
-         */
-        // worker Saga: will be fired on LOAD_LIST actions
-        function createTxsChannel(address) {
-            return eventChannel(emitter => {
-                const swtContractInstance = new web3Local.eth.Contract(
-                    swtToken.abi,
-                    swtToken.address
-                );
-                swtContractInstance.events.Transfer({
-                    filter: { _to: address },
-                }, function (error, event) {
-                    emitter(event)
-                })
-                swtContractInstance.events.Transfer({
-                    filter: { _from: address },
-                }, function (error, event) {
-                    emitter(event)
-                })
-
-                // The subscriber must return an unsubscribe function
-                return () => {
-                    // No unsubscribe function for now
-                }
-            }
-            )
-        }
-
-        function* saga() {
-            const txsChannel = yield call(createTxsChannel, address)
-            try {
-                while (true) {
-                    // take(END) will cause the saga to terminate by jumping to the finally block
-                    let event = yield take(txsChannel)
-                    console.log('Receibed event', event)
-                }
-            } finally {
-                console.log('countdown terminated')
-            }
-        }
-
-        function blockHeadersChannel() {
-            return eventChannel(emitter => {
-                const subscription = web3Local.eth.subscribe('newBlockHeaders', (error, blockHeader) => {
-                    if (error) console.error(error);
-                    // Emiting undefined values will throw an error
-                    else emitter(blockHeader);
-                })
-                // The subscriber must return an unsubscribe function
-                return () => {
-                    subscription.unsubscribe((error, success) => {
-                        if (success) console.log('Successfully unsubscribed!');
-                    });
-                }
-            }
-            )
-        }
-
-        function* getBlockHeaders() {
-            try {
-                const chan = yield call(blockHeadersChannel)
-                while (true) {
-                    let blockHeader = yield take(chan)
-                    // console.log('blockHeader', blockHeader)
-                }
-            } finally {
-                console.log('countdown terminated')
-            }
-        }
-
-        async function createLogsForDirection(address) {
-            const swtContractInstance = new web3Local.eth.Contract(
-                swtToken.abi,
-                swtToken.address
-            );
-            // Fetch transactions
-            const [incoming, outgoing] = await Promise.all([
-                swtContractInstance.getPastEvents('Transfer', {
-                    'fromBlock': swtToken.deployBlock,
-                    'filter': { _to: address },
-                }),
-                swtContractInstance.getPastEvents('Transfer', {
-                    'fromBlock': swtToken.deployBlock,
-                    'filter': { _from: address },
-                })
-            ])
-            // Merge transactions, mark outgoing as so. For incoming, tx.outgoing is false
-            // Keep only the relevant data
-            const txs = [...incoming, ...outgoing].map(tx => ({
-                transactionHash: tx.transactionHash,
-                to: tx.returnValues._to,
-                from: tx.returnValues._from,
-                amount: tx.returnValues._amount,
-                outgoing: tx.returnValues._from === address,
-                blockNumber: tx.blockNumber
-            }))
-            // Fetch the time of the transaction, and assign it to the tx object
-            await Promise.all(txs.map(tx =>
-                web3Local.eth.getBlock(tx.blockNumber)
-                    .then(block => tx.timestamp = block.timestamp)
-                    .catch(e => console.log('Error fetching datetime of block ' + tx.blockNumber))
-            ))
-            // Return the result
-            return txs
-        }
-        function* getTransactionHistory(action) {
-            try {
-                const txs = yield call(createLogsForDirection, action.address)
-                yield put(AppStore.actions.updateTxs(txs));
-                console.log('Received txs', txs)
-
-                // The code below is left as example / reference for future functions
-
-                // let result = [1, 2, 3, 4, 5];
-                // // Artificial to delay to simulate a REST call like behavior
-                // yield ReduxSaga.delay(1000);
-                // yield put(MyApp.actions.setLoadedList(result));
-                // yield put(MyApp.actions.showSpinner(false));
-                // yield put(MyApp.actions.showInfo('List loaded'));
-            } catch (e) {
-                console.error(e);
-                // yield put(MyApp.actions.showError('Error while fetching list', e));
-                // yield put(MyApp.actions.clearLoadedList());
-                // yield put(MyApp.actions.showSpinner(false));
-            }
-        }
-
-        async function getTokenBalance(address) {
-            const swtContractInstance = new web3Local.eth.Contract(
-                swtToken.abi,
-                swtToken.address
-            );
-            const balance = await swtContractInstance.methods.balanceOf(address).call()
-            return balance
-        }
-
-        function* getBalance(action) {
-            try {
-                console.log('fetching', action)
-                const balance = yield call(getTokenBalance, action.address)
-                console.log('Got balance', balance)
-                yield put({ type: 'UPDATE_BALANCE', balance });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        // worker Saga: will be fired on CLEAR_LIST actions
-        function* exampleFunction(action) {
-            yield put(MyApp.actions.showSpinner(true));
-            // Artificial to delay to simulate a REST call like behavior
-            yield ReduxSaga.delay(1000);
-            yield put(MyApp.actions.clearLoadedList());
-            yield put(MyApp.actions.showSpinner(false));
-            yield put(MyApp.actions.showInfo('List cleared'));
-        }
-
-        function* getBlock(action) {
-            try {
-                console.log('GET BLOCK req', action)
-            } catch (e) {
-                // 
-            }
-        }
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
         function* rootSaga() {
-            yield all([
-                yield takeEvery('GET_BLOCK', getBlock),
-                yield takeEvery('GET_BALANCE', getBalance),
-                yield takeEvery('CLEAR_LIST', exampleFunction),
-                yield takeEvery('GET_TXS', getTransactionHistory),
-                yield fork(getBlockHeaders),
-            ]);
+            yield all(window.AppStore.sagas.map(saga => call(saga)));
         }
 
         if (!window.AppStore) window.AppStore = {}

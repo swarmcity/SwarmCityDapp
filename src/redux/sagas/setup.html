@@ -1,0 +1,46 @@
+<script src="../../../node_modules/redux-saga/dist/redux-saga.js"></script>
+<script src="../../../node_modules/ethjs/dist/ethjs.min.js"></script>
+<script src="../../../node_modules/ipfs-api/dist/index.min.js"></script>
+<script src="../../web3/web3.min.js"></script>
+<script src="../contractsData.js"></script>
+
+<script>
+    (function () {
+        // Initialize web3Local
+        // const url = 'wss://kovan.infura.io/ws'
+        const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
+        window.web3Local = new Web3(url);
+        console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
+
+        /*
+         * Setup IPFS with a simple retry async flow. 
+         * It will attempt each function 3 times before returning the error
+         * 
+        **/
+        const ipfs = IpfsApi('localhost', '5001', { protocol: 'http' })
+        console.log('Redux-sagas is using ipfs at http://localhost:5001')
+
+        const retryable = (fn, times = 3) => (...args) => new Promise((resolve, reject) => {
+            let attempt = 0
+            function retryAttempt() {
+                fn(...args).then(
+                    resolve,
+                    e => {
+                        if (e && attempt++ < times) setTimeout(retryAttempt, 1000 * Math.random())
+                        else reject(e)
+                    }
+                )
+            }
+            retryAttempt()
+        })
+
+        window.ipfs = {
+            add: retryable(ipfs.add),
+            cat: retryable(ipfs.cat)
+        }
+
+        // Import contract data:
+        // const { swtToken, hashtagList, simpleDeal } = window.contractsData;
+
+    }());
+</script>

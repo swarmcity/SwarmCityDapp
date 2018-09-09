@@ -1,0 +1,81 @@
+<script>
+    (function () {
+        // Items initialized in setup.html
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        // ReduxSaga methods
+        const { effects, eventChannel, delay } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all } = effects;
+        // Contents of the ReduxSaga object:
+        // CANCEL: "@@redux-saga/CANCEL_PROMISE"
+        // END: { type: "@@redux-saga/CHANNEL_END" }
+        // buffers: { none: ƒ, fixed: ƒ, dropping: ƒ, sliding: ƒ, expanding: ƒ }
+        // channel: ƒ channel()
+        // default: ƒ sagaMiddlewareFactory()
+        // delay: ƒ delay(ms)
+        // detach: ƒ detach(eff)
+        // effects: { take: ƒ, takem: ƒ, put: ƒ, all: ƒ, race: ƒ, … }
+        // eventChannel: ƒ eventChannel(subscribe)
+        // runSaga: ƒ runSaga(storeInterface, saga)
+        // takeEvery: ƒ()
+        // takeLatest: ƒ()
+        // throttle: ƒ()
+        // utils: {...}
+
+        // Import contract data:
+        const { swtToken, hashtagList, simpleDeal } = contractsData;
+
+        /*
+         * redux-saga worker functions
+         */
+
+
+        /**
+         * Gets hashtags from the blockchain
+         */
+        async function getHashtagsFromHashtagList() {
+            const hashtagListContract = new web3Local.eth.Contract(
+                hashtagList.abi,
+                hashtagList.address
+            );
+            const numberOfHashtags = parseInt(
+                await hashtagListContract.methods.numberOfHashtags().call()
+            );
+            const hashtags = [];
+            for (let i = 0; i < numberOfHashtags; i++) {
+                const hashtag = await hashtagListContract.methods.readHashtag(i).call();
+                hashtags.push({
+                    hashtagName: decodeURI(hashtag.hashtagName), // string :  Settler
+                    hashtagMetaIPFS: hashtag.hashtagMetaIPFS, // string :  zb2rhbixVsHPSfBCUowDPDpkQ4QZR84rRpBSDym44i57NWmtE
+                    hashtagAddress: hashtag.hashtagAddress, // address :  0x3a1a67501b75fbc2d0784e91ea6cafef6455a066
+                    hashtagShown: hashtag.hashtagShown, // bool :  false
+                });
+            }
+            return hashtags
+        }
+
+        function* getHashtags(action) {
+            try {
+                yield put({ type: 'UPDATE_FETCHING', topic: 'hashtags', fetching: true });
+                const hashtags = yield call(getHashtagsFromHashtagList)
+                yield put({ type: 'UPDATE_FETCHING', topic: 'hashtags', fetching: false });
+                yield put({ type: 'UPDATE_HASHTAGS', hashtags });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield all([
+                yield takeEvery('GET_HASHTAGS', getHashtags),
+            ]);
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        if (!window.AppStore.sagas) window.AppStore.sagas = []
+        window.AppStore.sagas.push(rootSaga)
+    }());
+</script>

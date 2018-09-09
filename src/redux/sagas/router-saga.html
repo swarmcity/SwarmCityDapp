@@ -1,0 +1,85 @@
+<script>
+    (function () {
+
+        const { effects, eventChannel, delay } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all } = effects;
+
+        const locationChangedChannel = () => eventChannel(emitter => {
+            // Fired when the user click the back or forth history arrows
+            window.onpopstate = function (event) {
+                emitter('popState');
+            };
+            // Fired when polymer one-page-app router changes the path
+            window.addEventListener('location-changed', () => {
+                emitter('location-changed');
+            });
+            return () => { } // channel must return unsubscribe function
+        })
+
+        // Cache values, to track changes
+        let _pageName, _hashtag, _itemHash;
+
+        function* checkPath() {
+            const path = window.location.pathname
+            //     [0 /  [1]  /    [2]   /   [3]
+            // path = /hashtag/0xCeb...fE/0x2342tds
+            const [, pageName, hashtag, itemHash] = path.split('/')
+            // console.log('Path: ' + path, pageName, hashtag, itemHash)
+
+            // The listener of each part of the path will be fired only if it 
+            // actually changes to a different value, ignoring undefined.
+            // If the user is at a hashtag page (hashtag = '0xC3a9...') goes
+            // to the wallet view (hashtag = undefined) and returns to the hashtag
+            // we don't want to trigger another hastag load. Only if the user 
+            // visits a DIFFERENT hashtag, it will trigger a reload.
+
+            // On pageName change
+            if (pageName && pageName !== _pageName) {
+                if (pageName === 'hashtag-list') {
+                    yield put({ type: 'GET_HASHTAGS' })
+                }
+                _pageName = pageName;
+            }
+
+            // On hashtag change
+            if (hashtag && hashtag !== _hashtag) {
+                yield put({ type: 'GET_HASHTAG', hashtag })
+                _hashtag = hashtag;
+            }
+
+            // On itemhash change
+            if (itemHash && itemHash !== _itemHash) {
+                yield put({ type: 'GET_ITEM', itemHash })
+                _itemHash = itemHash;
+            }
+        }
+
+        function* routerWatcher() {
+            try {
+                // initial check
+                yield call(checkPath)
+                // subscribe to further changes
+                const chan = yield call(locationChangedChannel)
+                while (true) {
+                    yield take(chan)
+                    yield call(checkPath)
+                }
+            } finally {
+                console.error('routerWatcher terminated')
+            }
+        }
+
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield all([
+                yield call(routerWatcher),
+            ]);
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        if (!window.AppStore.sagas) window.AppStore.sagas = []
+        window.AppStore.sagas.push(rootSaga)
+    }());
+</script>
