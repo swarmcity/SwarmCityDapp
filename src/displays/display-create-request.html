@@ -33,7 +33,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 background-color: var(--sc-white);
                 width: 100%;
-                box-sizing:border-box;
+                box-sizing: border-box;
                 padding: 52px 0px 0px 0px;
             }
 
@@ -378,6 +378,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         notify: true,
                     },
                     /**
+                    * Route is the current browser route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_reset',
+                    },
+                    /**
                     * Balance is the users current balance
                     * @type {Number}
                     */
@@ -407,14 +415,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     error: {
                         type: String,
                         observer: '_showError',
-                    },
-                    /**
-                    * routeEntry triggers the entry animations
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                        observer: '_reset',
                     },
                     /**
                     * Value is the value of the slider
@@ -621,12 +621,8 @@ This code may only be used under the license found at https://github.com/swarmci
             * empties all input fields if not coming confirm-new-request page
             */
             _reset() {
-                if (
-                    !((this.routeEntry.includes('confirm-new-request')
-                        || this.routeEntry.includes('location')
-                    ) && this.routeEntry.includes('new-request'))
-
-                ) {
+                if ((this.route.path.split('/')[1] != 'new-request')
+                    && (this.route.path.split('/')[1] != 'confirm-new-request')) {
                     this.request = '';
                     this.budget = '';
                     this.totalcost = 0;
@@ -640,7 +636,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 this.chosenValue = 8;
                             }
                         }
-                    );
+                        );
                 }
             }
             /**
