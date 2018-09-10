@@ -56,8 +56,6 @@
         */
 
 
-
-
         /**
          * Gets hashtag from the blockchain
          */
@@ -77,7 +75,7 @@
         }
 
         async function getPastItems(hashtagContract, fromBlock) {
-            const events = await hashtagContract.getPastEvents('NewItemForTwo', {
+            const events = await hashtagContract.getPastEvents('NewItem', {
                 fromBlock,
                 toBlock: 'latest',
             })
@@ -147,8 +145,12 @@
 
                 // Step 2A. Resolve hashtagMetadata with IPFS
                 //   - ipfs.cat(hashtagMetadata) -> description
-                const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.metadataHash)
-                yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
+                try {
+                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.metadataHash)
+                    yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
+                } catch (e) {
+                    console.error('Error fetching hashtag metadata of ' + hashtagAddress, e);
+                }
 
                 // Step 2B. Get hashtag items from past events
                 //   - getPastEvents('NewItem') -> itemHash, ipfsMetadata, itemValue, seekerAddr, seekerRep, blockNumber
@@ -176,29 +178,23 @@
             }
         }
 
-
-        function readItem(itemHash, hashtagContract) {
-            return hashtagContract.methods.readItem(itemHash).call();
+        function readItemData(itemHash, hashtagContract) {
+            return hashtagContract.methods.readItemData(itemHash).call();
         }
 
         function* getItemState(item, hashtagContract) {
-            console.log('Requested state ' + item.itemHash)
+            const { itemHash } = item;
+            const hashtagAddress = hashtagContract._address;
             try {
-                const { itemHash } = item;
-                const res = yield call(readItem, itemHash, hashtagContract)
-                const hashtagAddress = hashtagContract._address
+                const res = yield call(readItemData, itemHash, hashtagContract)
                 yield put({
                     type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        ipfsMetadata: res.ipfsMetadata,
-                        itemValue: res.itemValue,
                         numberOfReplies: res.numberOfReplies,
                         providerAddress: res.providerAddress,
                         providerRep: res.providerRep,
-                        seekerRep: res.seekerRep,
                         status: res.status,
                     }
                 });
-                console.log('Got       state ' + item.itemHash)
             } catch (e) {
                 console.log('Error calling readItem() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
             }
@@ -209,7 +205,6 @@
         }
 
         function* getItemMetadata(item, hashtagAddress) {
-            console.log('Requested metadata ' + item.itemHash)
             try {
                 const { ipfsMetadata: hash, itemHash } = item;
                 const res = yield call(catIpfsMetadata, hash)
@@ -221,7 +216,6 @@
                         username: res.username,
                     }
                 });
-                console.log('Got       metadata ' + item.itemHash)
             } catch (e) {
                 console.log('Error getting IPFS metadata for item: ' + item.itemHash + ' in hashtag: ' + hashtagAddress, e);
             }

@@ -14,65 +14,8 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    /**
-                    * Route is the current URL
-                    * @type {Object}
-                    */
-                    route: {
-                        type: Object,
-                        observer: '_getHashtagAddress',
-                    },
-                    /**
-                    * the selected hashtag
-                    * @type {Object}
-                    */
-                    hashtag: {
-                        type: Object,
-                        statePath: 'hashtag',
-                    },
-                };
-            }
-            /**
-            * Redux action for sending the hashtag request
-            */
-            static get actions() {
-                return Object.assign({
-                    HASHTAG: function (hashtag) {
-                        return {
-                            type: 'HASHTAG',
-                            hashtag: hashtag,
-                        };
-                    },
-                });
-            }
-            /**
-            * Decide if the current url contains a hashtag address
-            * If so and not yet loaded, send data request to socket
-            */
-            _getHashtagAddress() {
-                let hashtagAddress = false;
-                switch (this.route.path.split('/')[1]) {
-                    case 'hashtag-list':
-                    case 'hashtag':
-                    case 'detail':
-                    case 'chat':
-                    case 'new-request':
-                        hashtagAddress = this.route.path.split('/')[2];
-                        if (hashtagAddress) hashtagAddress = hashtagAddress.toLowerCase()
-                        break;
-                }
 
-                if (hashtagAddress &&
-                    ((this.hashtag && this.hashtag.hashtagAddress && (this.hashtag.hashtagAddress.toLowerCase() != hashtagAddress)) || !this.hashtag)) {
-                    this.hashtag = {
-                        request: hashtagAddress,
-                    };
-                    this.dispatch({
-                        type: 'HASHTAG',
-                        hashtag: this.hashtag,
-                    });
-                    hashtagAddress = false;
-                }
+                };
             }
         }
         window.customElements.define(MyDisplayGetHashtag.is, MyDisplayGetHashtag);

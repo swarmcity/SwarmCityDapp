@@ -206,70 +206,26 @@ The following custom properties and mixins are available for styling:
             <template is="dom-if" if="{{loadingItems}}">
                 <div class="items_loading">
                     <div class="overlayer"></div>
-                    <div class="item_loading">
-                        <div class="shape1"></div>
-                        <!-- <div class="shape2"></div> -->
-                        <div class="shapes_3_4_5_6">
-
-                            <div class="shapes_3_4">
-                                <div class="shape3"></div>
-                                <div class="shape4"></div>
-                            </div>
-                            <div class="shapes_5_6">
-                                <div class="shape5"></div>
-                                <div class="shape6"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item_loading">
-                        <div class="shape1"></div>
-                        <!-- <div class="shape2"></div> -->
-                        <div class="shapes_3_4_5_6">
-
-                            <div class="shapes_3_4">
-                                <div class="shape3"></div>
-                                <div class="shape4"></div>
-                            </div>
-                            <div class="shapes_5_6">
-                                <div class="shape5"></div>
-                                <div class="shape6"></div>
+                    <template is="dom-repeat" items="{{numberOfLoadingItems}}">
+                        <div class="item_loading">
+                            <div class="shape1"></div>
+                            <!-- <div class="shape2"></div> -->
+                            <div class="shapes_3_4_5_6">
+                                <div class="shapes_3_4">
+                                    <div class="shape3"></div>
+                                    <div class="shape4"></div>
+                                </div>
+                                <div class="shapes_5_6">
+                                    <div class="shape5"></div>
+                                    <div class="shape6"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="item_loading">
-                        <div class="shape1"></div>
-                        <!-- <div class="shape2"></div> -->
-                        <div class="shapes_3_4_5_6">
-
-                            <div class="shapes_3_4">
-                                <div class="shape3"></div>
-                                <div class="shape4"></div>
-                            </div>
-                            <div class="shapes_5_6">
-                                <div class="shape5"></div>
-                                <div class="shape6"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item_loading">
-                        <div class="shape1"></div>
-                        <!-- <div class="shape2"></div> -->
-                        <div class="shapes_3_4_5_6">
-
-                            <div class="shapes_3_4">
-                                <div class="shape3"></div>
-                                <div class="shape4"></div>
-                            </div>
-                            <div class="shapes_5_6">
-                                <div class="shape5"></div>
-                                <div class="shape6"></div>
-                            </div>
-                        </div>
-                    </div>
+                    </template>
                 </div>
             </template>
             <template is="dom-if" if="{{!loadingItems}}">
-                <display-simpledeal-items involved path={{path}} count="{{count}}"></display-simpledeal-items>
+                <display-simpledeal-items involved path="{{path}}" count="{{count}}"></display-simpledeal-items>
                 <div class="middle">
                     <div class="filterbox">filter deals</div>
                     <div class="flex"></div>
@@ -279,7 +235,7 @@ The following custom properties and mixins are available for styling:
                         </div>
                     </template>
                 </div>
-                <display-simpledeal-items path={{path}}></display-simpledeal-items>
+                <display-simpledeal-items hashtag="[[hashtag]]" path="{{path}}"></display-simpledeal-items>
             </template>
         </div>
     </template>
@@ -294,6 +250,10 @@ The following custom properties and mixins are available for styling:
             }
             static get properties() {
                 return {
+                    numberOfLoadingItems: {
+                        type: Array,
+                        value: new Array(4)
+                    },
                     /**
                     * Path signals to the parent to change the path
                     * @type {Boolean}
@@ -325,9 +285,6 @@ The following custom properties and mixins are available for styling:
                     */
                     hashtag: {
                         type: Object,
-                        statePath: (state) => {
-                            return state.hashtag
-                        },
                         observer: '_load',
                     },
                     /**
@@ -351,12 +308,7 @@ The following custom properties and mixins are available for styling:
             * This functions will switch the view from loading to loaded whenever all the required data is in redux
             */
             _load() {
-                if (this.hashtag &&
-                    this.hashtag.hashtagAddress) {
-                    this.loadingItems = false;
-                } else {
-                    this.loadingItems = true;
-                }
+                console.log('(Parent) Got hashtag: ', this.hashtag)
             }
             /**
             * takes the user back to the top of the page

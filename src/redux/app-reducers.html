@@ -51,9 +51,10 @@
                     balanceUsd: 0,
                 },
             },
-            hashtags: [],
+            hashtagList: [],
             fetching: {},
-            hashtagNew: {}
+            hashtags: {},
+            current: {}
         };
 
         /**
@@ -147,7 +148,7 @@
                     console.log('UPDATING hashtags: ', action.hashtags)
                     return {
                         ...state,
-                        hashtags: action.hashtags
+                        hashtagList: action.hashtags
                     }
                 }
                 // Language of the site. Change on settings page
@@ -354,19 +355,6 @@
                     }
                 }
 
-                // Hashtag will set the current hashtag we're on
-                // ##### Triggers _getHashtag() at socket-redux
-                // Result gets store at HASHTAG
-                case 'HASHTAG': {
-                    return {
-                        ...state,
-                        hashtag: {
-                            ...state.hashtag,
-                            ...action.hashtag
-                        }
-                    }
-                }
-
                 // HashtagItem will set the current hashtag item we're on
                 // ##### DANGEROUS code in display-get-item.html
                 // It does selector work and then dispatches a state change 
@@ -416,7 +404,7 @@
                 }
                 case 'UPDATE_ITEMS': {
                     return deepmerge(state, {
-                        hashtagNew: {
+                        hashtags: {
                             [action.hashtagAddress]: {
                                 items: action.items
                             }
@@ -425,7 +413,7 @@
                 }
                 case 'UPDATE_ITEM': {
                     return deepmerge(state, {
-                        hashtagNew: {
+                        hashtags: {
                             [action.hashtagAddress]: {
                                 items: {
                                     [action.itemHash]: action.data
@@ -436,8 +424,22 @@
                 }
                 case 'UPDATE_NEWHASHTAG': {
                     return deepmerge(state, {
-                        hashtagNew: {
+                        hashtags: {
                             [action.hashtagAddress]: action.data
+                        }
+                    })
+                }
+                case 'CURRENT_HASHTAG': {
+                    return deepmerge(state, {
+                        current: {
+                            hashtag: action.hashtag
+                        }
+                    })
+                }
+                case 'CURRENT_ITEM': {
+                    return deepmerge(state, {
+                        current: {
+                            item: action.itemHash
                         }
                     })
                 }

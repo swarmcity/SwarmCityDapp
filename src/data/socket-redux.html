@@ -163,15 +163,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'confirmedTx',
                     },
                     /**
-                    * An Object containing the data for a hashtag
-                    * @type {Object}
-                    */
-                    hashtag: {
-                        type: Object,
-                        statePath: 'hashtag',
-                        observer: '_getHashtag',
-                    },
-                    /**
                     * An Object containing the data for a hashtagItem
                     * @type {Object}
                     */
@@ -293,12 +284,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             replyDataHash: replyDataHash,
                         };
                     },
-                    HASHTAG: function (hashtag) {
-                        return {
-                            type: 'HASHTAG',
-                            hashtag: hashtag,
-                        };
-                    },
                     IPFSHASH: function (ipfsHash) {
                         return {
                             type: 'IPFSHASH',
@@ -371,18 +356,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 //     }
                 // });
 
-                // Update the list of items on the current hashtag subscription
-                this.socket.on('hashtagItemsChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.dispatch({
-                            type: 'HASHTAG',
-                            hashtag: {
-                                items: reply.data,
-                            },
-                        });
-                    }
-                });
-
                 // All handlers attached - please connect..
                 this.socket.connect();
             }
@@ -420,27 +393,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             sender: this.publicKey.toLowerCase(),
                         },
                     });
-                }
-            }
-
-            _getHashtag() {
-                if (this.hashtag.request) {
-                    this.socket.emit('subscribeToHashtag', {
-                        hashtag: this.hashtag.request.toLowerCase(),
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            delete this.hashtag.request;
-                            Object.assign(this.hashtag, reply.data);
-                            this._updateHashtag();
-                        }
-                    });
-                }
-            }
-
-            _updateHashtag() {
-                if (this.hashtag.items && this.hashtag.hashtagAddress) {
-                    this.dispatch({ type: 'HASHTAG', hashtag: {} });
-                    this.dispatch({ type: 'HASHTAG', hashtag: this.hashtag });
                 }
             }
 
