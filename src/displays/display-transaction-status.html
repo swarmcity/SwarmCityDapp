@@ -640,6 +640,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                     },
                     /**
+                    * route represents the curent route
+                    * @type {String}
+                    */
+                    route: {
+                        type: String,
+                        observer: '_routeReset',
+                    },
+                    /**
                     * Shortcode for public key
                     * @type {Object}
                     */
@@ -701,14 +709,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     timeLeft: {
                         type: Number,
                         observer: '_timeLeft',
-                    },
-                    /**
-                    * routeEntry will reset the page once exit animations are finished
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                        observer: '_routeReset',
                     },
                 };
             }
@@ -955,7 +955,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * When changing page, restore to start state
             */
             _routeReset() {
-                if (this.routeEntry[0] == 'my-wallet') {
+                if (this.route.path == '/my-wallet') {
                     let e = {
                         type: 'functionCall',
                     };
