@@ -208,6 +208,11 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-horizontal;
             }
 
+            .subtext {
+                @apply --smallest-light;
+                color: var(--sc-grey3);
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -246,10 +251,13 @@ The following custom properties and mixins are available for styling:
                                         <div class="user horizontal">
                                             <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]] SWR</div>
                                 </template>
-
                                 <template is="dom-if" if="[[_isSeeker(item)]]">
                                         <div class="user seeker horizontal">
                                             <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]] SWR</div>
+                                </template>
+
+                                <template is="dom-if" if="[[_isUnfunded(item)]]">
+                                    <span class="subtext">No provider selected</span>
                                 </template>
 
                             </div>
@@ -398,6 +406,14 @@ The following custom properties and mixins are available for styling:
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+            /**
+            * Checks if item status = 0 (not funded yet)
+            * @param {Object} item the item
+            * @return {Boolean} true when item status is 0
+            */
+            _isUnfunded(item) {
+                return !item.hasOwnProperty('selectee');
             }
         }
 
