@@ -38,6 +38,7 @@ The following custom properties and mixins are available for styling:
             :host {
                 display: block;
             }
+
             iron-image {
                 height: 40px;
                 width: 40px;
@@ -112,6 +113,10 @@ The following custom properties and mixins are available for styling:
                 background-color: var(--sc-blue);
             }
 
+            .disabled {
+                opacity: 0.5;
+            }
+
             .white-text {
                 @apply --body-bold;
                 color: var(--sc-white);
@@ -141,6 +146,28 @@ The following custom properties and mixins are available for styling:
             .button:active {
                 @apply --button-active;
             }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: center;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -154,24 +181,37 @@ The following custom properties and mixins are available for styling:
                 </div>
                 <div class="providerbox" on-up="_toUserReputation">
                     <div class="avatar">
-                        <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[hashtagItem.selectee.avatarHash]]" placeholder="../images/defaultavatar.png">
+                        <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[hashtagItem.selectee.avatarHash]]"
+                            placeholder="../images/defaultavatar.png">
                         </iron-image>
                     </div>
                     <template is="dom-if" if="[[!_isReplier(hashtagItem.selectee, publicKey)]]">
-                        <div class="username">[[hashtagItem.selectee.username]] · [[hashtagItem.selectee.reputation]] SWR</div>
+                        <div class="username">[[hashtagItem.selectee.username]] · [[hashtagItem.selectee.reputation]]
+                            SWR</div>
                     </template>
 
                     <template is="dom-if" if="[[_isReplier(hashtagItem.selectee, publicKey)]]">
-                        <div class="replier">[[hashtagItem.selectee.username]] · [[hashtagItem.selectee.reputation]] SWR</div>
+                        <div class="replier">[[hashtagItem.selectee.username]] · [[hashtagItem.selectee.reputation]]
+                            SWR</div>
                     </template>
                 </div>
             </div>
             <div class="bluebox">
                 <template is="dom-if" if="[[_isReplier(hashtagItem.selectee, publicKey)]]">
                     <div class="white-text">[[hashtagItem.seeker.username]] selected you to make a deal. Do you accept?</div>
+                    <template is="dom-if" if="{{showError}}">
+                        <div class="errorcontainer">
+                            <span id="error">{{error}}</span>
+                        </div>
+                    </template>
                     <div class="choice">
                         <display-button-disagree></display-button-disagree>
-                        <display-button-confirm on-up="_fund"></display-button-confirm>
+                        <template is="dom-if" if="{{allowFund}}">
+                            <display-button-confirm on-up="_fund"></display-button-confirm>
+                        </template>
+                        <template is="dom-if" if="{{!allowFund}}">
+                            <display-button-confirm class="disabled"></display-button-confirm>
+                        </template>
                     </div>
                 </template>
                 <template is="dom-if" if="[[!_isReplier(hashtagItem.selectee, publicKey)]]">
@@ -211,6 +251,7 @@ The following custom properties and mixins are available for styling:
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
+                        observer: '_checkBalance',
                     },
                     /**
                     * PublicKey represents the user's public key
@@ -236,6 +277,39 @@ The following custom properties and mixins are available for styling:
                     hashtag: {
                         type: Object,
                         statePath: 'hashtag',
+                    },
+                    /**
+                    * Show user error
+                    * @type {Boolean}
+                    */
+                    showError: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * If user balance is sufficient, allow reply
+                    * @type {Boolean}
+                    */
+                    allowFund: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Object}
+                    */
+                    balance: {
+                        type: Object,
+                        statePath: 'balance',
+                        observer: '_checkBalance',
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_showError',
                     },
                 };
             }
@@ -281,6 +355,21 @@ The following custom properties and mixins are available for styling:
             _toUserReputation() {
                 this.path = `user-reputation/${this.hashtagItem.selectee.address}/${this.hashtagItem.selectee.avatarHash}/${this.hashtagItem.selectee.username}`; // eslint-disable-line
             }
+
+            /**
+            * Only allow users to send replies
+            */
+            _checkBalance() {
+                let totalCost = parseInt(this.hashtagItem.value) + parseInt(this.hashtagItem.hashtagFee / 2);
+                let userBalance = parseInt(this.balance.swt.balance);
+                if (userBalance - totalCost >= 0) {
+                    this.allowFund = true;
+                    this.error = '';
+                } else {
+                    this.error = 'You have insufficient to participate in this deal.';
+                    this.allowFund = false;
+                }
+            }
             /**
             * Change the route to confirm funding page
             */
@@ -291,6 +380,16 @@ The following custom properties and mixins are available for styling:
                 };
                 sessionStorage.setItem('detail', JSON.stringify(detail));
                 this.path = 'confirm-funding';
+            }
+            /**
+            * Verifies user balance and displays error message
+            */
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
             }
         }
         window.customElements.define(
