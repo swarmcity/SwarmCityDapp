@@ -118,22 +118,11 @@ The following custom properties and mixins are available for styling:
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <paper-input 
-                id="password" 
-                label="{{localize('password?')}}" 
-                type="password" 
-                on-input="_checkInput" 
-                value="{{password}}" 
-                autofocus
-                on-keydown="_checkForEnter">
+            <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}"
+                autofocus on-keydown="_checkForEnter">
             </paper-input>
-            <paper-input 
-                id="repeat" 
-                label="{{localize('Confirm password')}}" 
-                type="password" 
-                on-input="_checkInput" 
-                value="{{confirmPassword}}"
-                on-keydown="_checkForEnter">
+            <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput"
+                value="{{confirmPassword}}" on-keydown="_checkForEnter">
             </paper-input>
             <div class="errorcontainer">
                 <span id="error">{{error}}</span>
@@ -203,11 +192,10 @@ The following custom properties and mixins are available for styling:
                         observer: '_resetValues',
                     },
                     /**
-                    * routeEntry contains routing information
-                    * @type {Array}
+                    * The current route
                     */
-                    routeEntry: {
-                        type: Array,
+                    route: {
+                        type: Object,
                         observer: '_resetValues',
                     },
                 };
@@ -243,20 +231,18 @@ The following custom properties and mixins are available for styling:
             * When leaving the page, entered values get reset
             */
             _resetValues() {
-                // if (this.routeEntry[0] == 'choose-password') {
-                //     this.password = null;
-                //     this.confirmPassword = null;
-                //     this.error = null;
-                // }
+                this.password = null;
+                this.confirmPassword = null;
+                this.error = null;
             }
             /**
             * takes the user to the next page in user creation
             */
             _agree() {
                 if (this.password &&
-                this.password.length >= 1 &&
-                this.confirmPassword &&
-                this.password == this.confirmPassword) {
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
                     this.$.wallet.createKey(this.password)
                         .then((keyStore) => {
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
@@ -273,15 +259,15 @@ The following custom properties and mixins are available for styling:
             _checkInput() {
                 this.error = '';
                 if (this.password &&
-                this.confirmPassword &&
-                this.password.length >=1 &&
-                this.confirmPassword.length >=1) {
+                    this.confirmPassword &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword.length >= 1) {
                     if (this.confirmPassword.length <= this.password.length) {
                         for (let i = 0; i < this.confirmPassword.length; i++) {
                             if (this.confirmPassword[i] != this.password[i]) {
-                            this.error = this.localize('The passwords dont match.');
+                                this.error = this.localize('The passwords dont match.');
+                            }
                         }
-                    }
                     } else {
                         this.error = this.localize('The passwords dont match.');
                     }
