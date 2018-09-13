@@ -27,13 +27,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 display: block;
                 background-image: var(--sc-bg);
             }
+
             .container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
                 width: 100%;
-                min-height: 100%;
+                min-height: 100vh;
             }
+
             .close {
                 @apply --xmark-grey4-small;
                 @apply --close;
@@ -48,6 +50,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 100px 10vw 0 10vw;
             }
+
             .container[wide-layout] .key-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -69,6 +72,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 word-break: break-all;
                 margin: 2px 0 0 0;
             }
+
             .container[wide-layout] .key {
                 text-align: left;
             }
@@ -135,6 +139,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 0 10vw 40px 10vw;
                 background-image: var(--sc-bg);
             }
+
             .container[wide-layout] .privkey-container {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
@@ -145,9 +150,10 @@ This code may only be used under the license found at https://github.com/swarmci
             .divider {
                 width: 100vw;
                 height: 1px;
-                border-top:1px dotted var(--sc-grey2);
+                border-top: 1px dotted var(--sc-grey2);
                 margin: 60px 0px;
             }
+
             .blur {
                 @apply --unlock-blur;
             }
@@ -163,7 +169,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .blueandcopied {
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
-                @apply --layout-start;                
+                @apply --layout-start;
             }
 
             .copied {
@@ -181,24 +187,22 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 0px;
                 margin-bottom: -5px;
                 visibility: hidden;
-                background-image: var(--sc-bg);                
+                background-image: var(--sc-bg);
             }
 
             .showcopied {
                 visibility: visible;
-                /* height: auto;
-                margin-bottom: 0px; */
             }
 
-.button {
-    @apply --layout-horizontal;
-    @apply --layout-center-justified;
-    @apply --text-button-big-fullwhite;
-    white-space: nowrap;
-    width: 100%;
-    max-width: 320px;
-    margin-top: 30px;
-} 
+            .button {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --text-button-big-fullwhite;
+                white-space: nowrap;
+                width: 100%;
+                max-width: 320px;
+                margin-top: 30px;
+            }
 
             .qrcodeprivate {
                 margin: 4vh 0 0 0;
@@ -207,24 +211,29 @@ This code may only be used under the license found at https://github.com/swarmci
                 min-width: 180px;
                 min-height: 180px;
             }
+
             .divider {
                 width: 100vw;
                 background-color: #9B9B9B;
                 opacity: 0.2;
                 height: 1px;
             }
+
             .warning {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 text-align: center;
                 margin: 1vh 0 3vh 0;
             }
+
             .container[wide-layout] .warning {
                 text-align: left;
             }
+
             .blur {
                 @apply --unlock-blur;
             }
+
             .key {
                 word-break: break-all;
                 -webkit-user-select: text;
@@ -250,7 +259,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 @apply --sc-paper-checkbox;
                 margin-top: 30px;
-            } 
+            }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
@@ -321,11 +330,7 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
-                <display-unlock 
-                    blue
-                    toggle-unlock="{{toggleUnlock}}" 
-                    private-key="{{privateKey}}" 
-                    qr-code-private-key="{{qrCodePrivateKey}}"
+                <display-unlock blue toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}" qr-code-private-key="{{qrCodePrivateKey}}"
                     qr-code-public-key="{{qrCodePublicKey}}">
                 </display-unlock>
             </template>
@@ -472,10 +477,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 copied.animate(
                     this.anim.moveUp.arr,
                     this.anim.moveUp.obj
-                    );
-                    setTimeout(() => {
+                );
+                setTimeout(() => {
                     copied.classList.remove('showcopied');
-                    }, 500);
+                }, 500);
             }
             /**
              * copies the private key to the desktop
@@ -487,10 +492,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 copiedpriv.animate(
                     this.anim.moveUp.arr,
                     this.anim.moveUp.obj
-                    );
-                    setTimeout(() => {
+                );
+                setTimeout(() => {
                     copiedpriv.classList.remove('showcopied');
-                    }, 500);
+                }, 500);
             }
             /**
              * copy a string to the clipboard. supports iOS>10
@@ -500,22 +505,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 let textArea = document.createElement('textarea');
                 textArea.value = str;
                 document.body.appendChild(textArea);
-                if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
-                    let editable = textArea.contentEditable;
-                    let readOnly = textArea.readOnly;
-                    textArea.contentEditable = true;
-                    textArea.readOnly = true;
-                    let range = document.createRange();
-                    range.selectNodeContents(textArea);
-                    let selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    textArea.setSelectionRange(0, 999999);
-                    textArea.contentEditable = editable;
-                    textArea.readOnly = readOnly;
-                } else {
-                    textArea.select();
-                }
+                textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
             }
@@ -582,8 +572,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 });
                 if (this.$$('#checkbox')
-                && this.$$('#checkbox').checked
-                && navigator.userAgent.match(/ipad|ipod|iphone/i)) {
+                    && this.$$('#checkbox').checked
+                    && navigator.userAgent.match(/ipad|ipod|iphone/i)) {
                     this.showEnterbutton = true;
                 } else {
                     this.showEnterbutton = false;
@@ -602,6 +592,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
         }
-    window.customElements.define(MyKeys.is, MyKeys);
+        window.customElements.define(MyKeys.is, MyKeys);
     </script>
 </dom-module>
