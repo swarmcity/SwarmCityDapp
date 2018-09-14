@@ -98,6 +98,10 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-vertical;
             }
 
+            .down {
+                margin: 5px 0 0 53px;
+            }
+
             .bottom {
                 @apply --layout-horizontal;
                 @apply --layout-end;
@@ -112,6 +116,17 @@ The following custom properties and mixins are available for styling:
                 background-size: 24px;
             }
 
+            .avatar-double {
+                @apply --layout-horizontal;
+                width: 43px;
+                height: 24px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 24px;
+
+            }
+
             .container[wide-layout] .avatar {
                 width: 20px;
                 height: 20px;
@@ -124,6 +139,23 @@ The following custom properties and mixins are available for styling:
                 border-radius: 50%;
                 width: 100%;
                 height: 100%;
+                z-index: 2;
+            }
+
+
+
+            .item-avatar-selectee {
+                border-radius: 50%;
+                width: 100%;
+                height: 100%;
+                margin-left: -5px;
+                z-index: 1;
+            }
+
+            .item-avatar-topright {
+                border-radius: 50%;
+                height: 24px;
+                width: 24px;
             }
 
             .date {
@@ -213,10 +245,22 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-grey3);
             }
 
+            .bold-dark {
+                @apply --body-bold;
+                font-size: 14px;
+                color: var(--sc-grey4);
+            }
+
+            .icon-green-v {
+                margin-left: 5px;
+                @apply --vmark-green-mini;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .replyicon {
+                .replyicon, 
+                .icon-green-v {
                     @apply --retina;
                 }
             }
@@ -237,27 +281,72 @@ The following custom properties and mixins are available for styling:
                         </div>
                         <div class="replycount">[[_replycount(item.replies)]]</div>
                         <div class="replyicon"></div>
+
+                        <template is="dom-if" if="[[_hasSelectee(item)]]">
+                            <iron-image class="item-avatar-topright" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.selectee.avatarHash]]"
+                                placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </template>
+
+
                     </div>
                     <div class="bottom">
                         <div class="avatarandmeta">
-                            <div class="avatar">
-                                <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
-                                    placeholder="../images/defaultavatar.png">
-                                </iron-image>
-                            </div>
+
+                            <template is="dom-if" if="[[_doubleAvatar(item)]]">
+                                <div class="avatar-double">
+                                    <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
+                                        placeholder="../images/defaultavatar.png">
+                                    </iron-image>
+                                    <iron-image class="item-avatar-selectee" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.selectee.avatarHash]]"
+                                        placeholder="../images/defaultavatar.png">
+                                    </iron-image>
+                                </div>
+                            </template>
+
+                            <template is="dom-if" if="[[!_doubleAvatar(item)]]">
+                                <div class="avatar">
+                                    <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
+                                        placeholder="../images/defaultavatar.png">
+                                    </iron-image>
+                                </div>
+                            </template>
                             <div class="meta">
 
-                                <template is="dom-if" if="[[!_isSeeker(item)]]">
+                                <template is="dom-if" if="[[!_inDeal(item)]]">
+                                    <template is="dom-if" if="[[!_isSeeker(item)]]">
                                         <div class="user horizontal">
-                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]] SWR</div>
-                                </template>
-                                <template is="dom-if" if="[[_isSeeker(item)]]">
+                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;·
+                                            [[item.seeker.rep]]
+                                            SWR
+                                        </div>
+                                    </template>
+                                    <template is="dom-if" if="[[_isSeeker(item)]]">
                                         <div class="user seeker horizontal">
-                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]] SWR</div>
+                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;·
+                                            [[item.seeker.rep]]
+                                            SWR
+                                        </div>
+                                    </template>
+
+                                    <template is="dom-if" if="[[_isSelectee(item)]]">
+                                        <div class="user seeker horizontal">
+                                            <div class="truncate">[[item.selectee.username]]</div>&nbsp;·
+                                            [[item.selectee.reputation]]
+                                            SWR
+                                        </div>
+                                    </template>
+
+                                    <template is="dom-if" if="[[_isOpen(item)]]">
+                                        <span class="subtext">No provider selected</span>
+                                    </template>
                                 </template>
 
-                                <template is="dom-if" if="[[_isUnfunded(item)]]">
-                                    <span class="subtext">No provider selected</span>
+                                <template is="dom-if" if="[[_inDeal(item)]]">
+                                    <div class="horizontal">
+                                        <span class="bold-dark">You are in this deal</span>
+                                        <div class="icon-green-v"></div>
+                                    </div>
                                 </template>
 
                             </div>
@@ -269,6 +358,11 @@ The following custom properties and mixins are available for styling:
                         </div>
 
                     </div>
+
+
+                    <template is="dom-if" if="[[_isSelectee(item)]]">
+                        <span class="subtext down">You have been selected as the provider.</span>
+                    </template>
                 </div>
             </template>
 
@@ -408,12 +502,56 @@ The following custom properties and mixins are available for styling:
                 return value / 1e18;
             }
             /**
-            * Checks if item status = 0 (not funded yet)
+            * Checks if a replier has been selected yet
+            * @param {Object} item the item
+            * @return {Boolean} true when item has selectee
+            */
+            _isOpen(item) {
+                return !item.hasOwnProperty('selectee');
+            }
+            /**
+            * Checks if current user is the chosen selectee and item is not funded
+            * @param {Object} item the item
+            * @return {Boolean} true when item status is 0 and there is selectee
+            */
+            _isSelectee(item) {
+                return item.selectee && this.publicKey == item.selectee.address && item.status == '0';
+            }
+            /**
+            * Checks if current user is the chosen selectee
             * @param {Object} item the item
             * @return {Boolean} true when item status is 0
             */
-            _isUnfunded(item) {
-                return !item.hasOwnProperty('selectee');
+            _doubleAvatar(item) {
+                return (
+                    item.selectee && this.publicKey == item.selectee.address ||
+                    item.status == '1' && item.providerAddress == this.publicKey);
+            }
+            /**
+            * Checks if the item has a selectee
+            * @param {Object} item the item
+            * @return {Boolean} true when item has selectee
+            */
+            _hasSelectee(item) {
+                return item.hasOwnProperty('selectee');
+            }
+            /**
+            * Checks if the item has a provider
+            * @param {Object} item the item
+            * @return {Boolean} true when item has selectee
+            */
+            _getStatus(item) {
+                return item.status('selectee');
+            }
+
+            /**
+            * Checks if the user is in the deal
+            * @param {Object} item the item
+            * @return {Boolean} true when item status 1 & user is either seeker or provider
+            */
+            _inDeal(item) {
+                return item.status == '1' &&
+                    (item.providerAddress == this.publicKey || item.seeker.address == this.publicKey);
             }
         }
 
