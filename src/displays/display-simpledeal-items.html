@@ -259,7 +259,8 @@ The following custom properties and mixins are available for styling:
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .replyicon, 
+
+                .replyicon,
                 .icon-green-v {
                     @apply --retina;
                 }
@@ -344,9 +345,13 @@ The following custom properties and mixins are available for styling:
 
                                 <template is="dom-if" if="[[_inDeal(item)]]">
                                     <div class="horizontal">
-                                        <span class="bold-dark">You are in this deal</span>
+                                        <span class="bold-dark">You are in the deal</span>
                                         <div class="icon-green-v"></div>
                                     </div>
+                                </template>
+
+                                <template is="dom-if" if="[[_isCompleted(item)]]">
+                                    <span class="subtext">This deal has been completed</span>
                                 </template>
 
                             </div>
@@ -361,7 +366,7 @@ The following custom properties and mixins are available for styling:
 
 
                     <template is="dom-if" if="[[_isSelectee(item)]]">
-                        <span class="subtext down">You have been selected as the provider.</span>
+                        <span class="subtext down">You have been selected as the provider</span>
                     </template>
                 </div>
             </template>
@@ -552,6 +557,14 @@ The following custom properties and mixins are available for styling:
             _inDeal(item) {
                 return item.status == '1' &&
                     (item.providerAddress == this.publicKey || item.seeker.address == this.publicKey);
+            }
+            /**
+            * Checks if the item has been completed
+            * @param {Object} item the item
+            * @return {Boolean} true when item status 2
+            */
+            _isCompleted(item) {
+                return item.status == '2';
             }
         }
 
