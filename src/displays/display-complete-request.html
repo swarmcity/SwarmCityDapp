@@ -60,6 +60,12 @@ The following custom properties and mixins are available for styling:
                             sendSignedTx: sendSignedTx,
                         };
                     },
+                    HASHTAG: function(hashtag) {
+                        return {
+                            type: 'HASHTAG',
+                            hashtag: hashtag,
+                        };
+                    },
                 });
             }
             static get properties() {
@@ -200,6 +206,34 @@ The following custom properties and mixins are available for styling:
                     UUIDCollection[UUIDv4] = itemHashHex;
                     localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
                     let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
+
+
+                    let pendingItem = {
+                        itemHash: itemHashHex,
+                        hashtagAddress: this.hashtag.hashtagAddress,
+                        hashtagFee: this.hashtag.hashtagFee,
+                        ipfsMetadata: this.itemDataHash.data,
+                        value: itemBudgetWei,
+                        seeker: {
+                            address: this.address,
+                            username: this.username,
+                            avatarHash: localStorage.getItem('avatarHash'),
+                            rep: '0',
+                        },
+                        description: this.itemDescription,
+                        dateTime: 'pending',
+                        location: '',
+                        status: '0',
+                        itemValue: itemBudgetWei,
+                        providerRep: '0',
+                        seekerRep: '0',
+                        providerAddress: '0x0000000000000000000000000000000000000000',
+                    };
+
+                    this.hashtag.items.unshift(pendingItem);
+                    let temp = this.hashtag;
+                    this.dispatch('HASHTAG', {});
+                    this.dispatch('HASHTAG', temp);
 
                     this.$.simpledeal.rawNewItem(
                         itemHashHex,

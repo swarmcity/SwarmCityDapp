@@ -115,9 +115,9 @@
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
                 .close,
-                .rotate-icon,
-                .disagree,
-                .agree {
+                .container .rotate-icon,
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                     @apply --retina;
                 }
             }
@@ -190,6 +190,13 @@
                         notify: true,
                     },
                     /**
+                    * The current route
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_firstLoad',
+                    },
+                    /**
                     * Default Avatar represents the users IPFS to their avatar image
                     * @type {String}
                     */
@@ -203,14 +210,6 @@
                     avatar: {
                         type: String,
                         statePath: 'avatar',
-                    },
-                    /**
-                    * routeEntry changes the exact moment pages change when routing
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * The image

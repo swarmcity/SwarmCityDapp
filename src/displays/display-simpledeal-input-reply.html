@@ -75,6 +75,32 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-grey4);
             }
 
+            .disabled {
+                opacity: 0.5;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
+
             paper-textarea {
                 text-indent: 2px;
                 margin-top: 5px;
@@ -114,9 +140,21 @@ The following custom properties and mixins are available for styling:
                     <div class="price">for [[_formatValue(hashtagItem.value)]] SWT </div>
                 </div>
             </div>
+
+            <template is="dom-if" if="{{showError}}">
+                <div class="errorcontainer">
+                    <span id="error">{{error}}</span>
+                </div>
+            </template>
             <div class="choice">
                 <display-button-disagree on-up="_toReplies"></display-button-disagree>
-                <display-button-confirm on-up="_unlock"></display-button-confirm>
+
+                <template is="dom-if" if="{{allowReply}}">
+                    <display-button-confirm on-up="_unlock"></display-button-confirm>
+                </template>
+                <template is="dom-if" if="{{!allowReply}}">
+                    <display-button-confirm class="disabled"></display-button-confirm>
+                </template>
             </div>
         </div>
     </template>
@@ -131,6 +169,14 @@ The following custom properties and mixins are available for styling:
             }
             static get properties() {
                 return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
                     /**
                     * State contains the current view
                     * @type {String}
@@ -154,6 +200,7 @@ The following custom properties and mixins are available for styling:
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
+                        observer: '_checkBalance',
                     },
                     /**
                     * the reply sent to IPFS
@@ -179,8 +226,49 @@ The following custom properties and mixins are available for styling:
                     */
                     reply: {
                         type: String,
+                        observer: '_checkBalance',
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Object}
+                    */
+                    balance: {
+                        type: Object,
+                        statePath: 'balance',
+                    },
+                    /**
+                    * If user balance is sufficient, allow reply
+                    * @type {Boolean}
+                    */
+                    allowReply: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Show user error
+                    * @type {Boolean}
+                    */
+                    showError: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_showError',
                     },
                 };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this._checkBalance();
             }
             /**
             * formats the item value
@@ -200,8 +288,33 @@ The following custom properties and mixins are available for styling:
             * changes the current view to show all replies
             */
             _toReplies() {
+                this.allowReply = false;
                 this.stateChange = 'replies';
                 this.reply = '';
+            }
+            /**
+            * Only allow users to send replies
+            */
+            _checkBalance() {
+                let totalCost = parseInt(this.hashtagItem.value) + parseInt(this.hashtagItem.hashtagFee / 2);
+                let userBalance = parseInt(this.balance.swt.balance);
+                if (userBalance - totalCost >= 0) {
+                    this.allowReply = true;
+                    this.error = '';
+                } else {
+                    this.error = 'You have insufficient funds to participate in this deal.';
+                    this.allowReply = false;
+                }
+            }
+            /**
+            * Verifies user input and displays error message
+            */
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
             }
         }
         window.customElements.define(MyDisplaySimpledealInputReply.is, MyDisplaySimpledealInputReply);
