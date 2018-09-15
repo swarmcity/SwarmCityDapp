@@ -229,7 +229,6 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-yellow);
             }
 
-
             .container[wide-layout] .for {
                 @apply --body-bold;
                 font-size: 10px;
@@ -256,6 +255,10 @@ The following custom properties and mixins are available for styling:
                 @apply --vmark-green-mini;
             }
 
+            .pending {
+                opacity: 0.5;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -272,102 +275,104 @@ The following custom properties and mixins are available for styling:
         <div class="container" wide-layout$="{{wide}}">
 
             <template is="dom-repeat" items="{{items}}">
-                <div tabindex="5" class="box" on-tap="_toItem">
-                    <div class="top">
-                        <div class="datedescript">
-                            <div class="description">[[item.description]]</div>
-                            <div class="date">
-                                [[_formatDate(item.dateTime)]]
+                <div class$="{{_checkPending(item)}}">
+                    <div tabindex="5" class="box" on-tap="_toItem">
+                        <div class="top">
+                            <div class="datedescript">
+                                <div class="description">[[item.description]]</div>
+                                <div class="date">
+                                    [[_formatDate(item.dateTime)]]
+                                </div>
                             </div>
+                            <div class="replycount">[[_replycount(item.replies)]]</div>
+                            <div class="replyicon"></div>
+
+                            <template is="dom-if" if="[[_hasSelectee(item)]]">
+                                <iron-image class="item-avatar-topright" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.selectee.avatarHash]]"
+                                    placeholder="../images/defaultavatar.png">
+                                </iron-image>
+                            </template>
+
+
                         </div>
-                        <div class="replycount">[[_replycount(item.replies)]]</div>
-                        <div class="replyicon"></div>
+                        <div class="bottom">
+                            <div class="avatarandmeta">
 
-                        <template is="dom-if" if="[[_hasSelectee(item)]]">
-                            <iron-image class="item-avatar-topright" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.selectee.avatarHash]]"
-                                placeholder="../images/defaultavatar.png">
-                            </iron-image>
-                        </template>
-
-
-                    </div>
-                    <div class="bottom">
-                        <div class="avatarandmeta">
-
-                            <template is="dom-if" if="[[_doubleAvatar(item)]]">
-                                <div class="avatar-double">
-                                    <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
-                                        placeholder="../images/defaultavatar.png">
-                                    </iron-image>
-                                    <iron-image class="item-avatar-selectee" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.selectee.avatarHash]]"
-                                        placeholder="../images/defaultavatar.png">
-                                    </iron-image>
-                                </div>
-                            </template>
-
-                            <template is="dom-if" if="[[!_doubleAvatar(item)]]">
-                                <div class="avatar">
-                                    <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
-                                        placeholder="../images/defaultavatar.png">
-                                    </iron-image>
-                                </div>
-                            </template>
-                            <div class="meta">
-
-                                <template is="dom-if" if="[[!_inDeal(item)]]">
-                                    <template is="dom-if" if="[[!_isSeeker(item)]]">
-                                        <div class="user horizontal">
-                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;·
-                                            [[item.seeker.rep]]
-                                            SWR
-                                        </div>
-                                    </template>
-                                    <template is="dom-if" if="[[_isSeeker(item)]]">
-                                        <div class="user seeker horizontal">
-                                            <div class="truncate">[[item.seeker.username]]</div>&nbsp;·
-                                            [[item.seeker.rep]]
-                                            SWR
-                                        </div>
-                                    </template>
-
-                                    <template is="dom-if" if="[[_isSelectee(item)]]">
-                                        <div class="user seeker horizontal">
-                                            <div class="truncate">[[item.selectee.username]]</div>&nbsp;·
-                                            [[item.selectee.reputation]]
-                                            SWR
-                                        </div>
-                                    </template>
-
-                                    <template is="dom-if" if="[[_isOpen(item)]]">
-                                        <span class="subtext">No provider selected</span>
-                                    </template>
-                                </template>
-
-                                <template is="dom-if" if="[[_inDeal(item)]]">
-                                    <div class="horizontal">
-                                        <span class="bold-dark">You are in the deal</span>
-                                        <div class="icon-green-v"></div>
+                                <template is="dom-if" if="[[_doubleAvatar(item)]]">
+                                    <div class="avatar-double">
+                                        <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
+                                            placeholder="../images/defaultavatar.png">
+                                        </iron-image>
+                                        <iron-image class="item-avatar-selectee" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.selectee.avatarHash]]"
+                                            placeholder="../images/defaultavatar.png">
+                                        </iron-image>
                                     </div>
                                 </template>
 
-                                <template is="dom-if" if="[[_isCompleted(item)]]">
-                                    <span class="subtext">This deal has been completed</span>
+                                <template is="dom-if" if="[[!_doubleAvatar(item)]]">
+                                    <div class="avatar">
+                                        <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
+                                            placeholder="../images/defaultavatar.png">
+                                        </iron-image>
+                                    </div>
                                 </template>
+                                <div class="meta">
 
+                                    <template is="dom-if" if="[[!_inDeal(item)]]">
+                                        <template is="dom-if" if="[[!_isSeeker(item)]]">
+                                            <div class="user horizontal">
+                                                <div class="truncate">[[item.seeker.username]]</div>&nbsp;·
+                                                [[item.seeker.rep]]
+                                                SWR
+                                            </div>
+                                        </template>
+                                        <template is="dom-if" if="[[_isSeeker(item)]]">
+                                            <div class="user seeker horizontal">
+                                                <div class="truncate">[[item.seeker.username]]</div>&nbsp;·
+                                                [[item.seeker.rep]]
+                                                SWR
+                                            </div>
+                                        </template>
+
+                                        <template is="dom-if" if="[[_isSelectee(item)]]">
+                                            <div class="user seeker horizontal">
+                                                <div class="truncate">[[item.selectee.username]]</div>&nbsp;·
+                                                [[item.selectee.reputation]]
+                                                SWR
+                                            </div>
+                                        </template>
+
+                                        <template is="dom-if" if="[[_isOpen(item)]]">
+                                            <span class="subtext">No provider selected</span>
+                                        </template>
+                                    </template>
+
+                                    <template is="dom-if" if="[[_inDeal(item)]]">
+                                        <div class="horizontal">
+                                            <span class="bold-dark">You are in the deal</span>
+                                            <div class="icon-green-v"></div>
+                                        </div>
+                                    </template>
+
+                                    <template is="dom-if" if="[[_isCompleted(item)]]">
+                                        <span class="subtext">This deal has been completed</span>
+                                    </template>
+
+                                </div>
                             </div>
+
+                            <div class="pricebox">
+                                <div class="for">SWT</div>
+                                <div class="price">[[_formatValue(item.value)]]</div>
+                            </div>
+
                         </div>
 
-                        <div class="pricebox">
-                            <div class="for">SWT</div>
-                            <div class="price">[[_formatValue(item.value)]]</div>
-                        </div>
 
+                        <template is="dom-if" if="[[_isSelectee(item)]]">
+                            <span class="subtext down">You have been selected as the provider</span>
+                        </template>
                     </div>
-
-
-                    <template is="dom-if" if="[[_isSelectee(item)]]">
-                        <span class="subtext down">You have been selected as the provider</span>
-                    </template>
                 </div>
             </template>
 
@@ -467,6 +472,7 @@ The following custom properties and mixins are available for styling:
             * @return {string} formatted date string
             */
             _formatDate(dateTime) {
+                if (dateTime == 'pending') return 'pending';
                 let milliseconds = dateTime * 1000;
                 if (webpack.moment().valueOf() - milliseconds < 86400000) {
                     return webpack.moment(milliseconds).fromNow();
@@ -512,7 +518,7 @@ The following custom properties and mixins are available for styling:
             * @return {Boolean} true when item has selectee
             */
             _isOpen(item) {
-                return !item.hasOwnProperty('selectee') && item.replies.length;
+                return !item.hasOwnProperty('selectee') && item.replies && item.replies.length;
             }
             /**
             * Checks if current user is the chosen selectee and item is not funded
@@ -532,7 +538,7 @@ The following custom properties and mixins are available for styling:
                     item.selectee && this.publicKey == item.selectee.address ||
                     (item.status == '1' && item.providerAddress == this.publicKey) ||
                     (item.status == '1' && item.seeker.address == this.publicKey)
-                    );
+                );
             }
             /**
             * Checks if the item has a selectee
@@ -567,6 +573,15 @@ The following custom properties and mixins are available for styling:
             */
             _isCompleted(item) {
                 return item.status == '2';
+            }
+
+            /**
+            * verifies if item is still pending
+            * @param {Object} item item object
+            * @return {string} class name
+            */
+            _checkPending(item) {
+                return item.dateTime == 'pending' ? 'pending' : '';
             }
         }
 
