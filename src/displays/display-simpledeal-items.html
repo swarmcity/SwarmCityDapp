@@ -512,7 +512,7 @@ The following custom properties and mixins are available for styling:
             * @return {Boolean} true when item has selectee
             */
             _isOpen(item) {
-                return !item.hasOwnProperty('selectee');
+                return !item.hasOwnProperty('selectee') && item.replies.length;
             }
             /**
             * Checks if current user is the chosen selectee and item is not funded
@@ -530,7 +530,9 @@ The following custom properties and mixins are available for styling:
             _doubleAvatar(item) {
                 return (
                     item.selectee && this.publicKey == item.selectee.address ||
-                    item.status == '1' && item.providerAddress == this.publicKey);
+                    (item.status == '1' && item.providerAddress == this.publicKey) ||
+                    (item.status == '1' && item.seeker.address == this.publicKey)
+                    );
             }
             /**
             * Checks if the item has a selectee
