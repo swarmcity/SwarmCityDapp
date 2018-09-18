@@ -21,10 +21,17 @@ Swarm City users can:
 - build communities of like-minded individuals to benefit from economies of scale.
 - get rewarded for being a good actor by earning immutable reputation.
 
+Find us on:
 [Slack] (https://slackinvite.swarm.city/)
+
 [Medium] (https://medium.com/swarm-city-times)
+
 [Github] (https://github.com/swarmcity)
+
 [Twitter] (https://twitter.com/swarmcitydapp)
+
 [Youtube] (https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg)
+
 [Facebook] (https://www.facebook.com/groups/SwarmCity/)
+
 [Reddit] (https://www.reddit.com/r/SwarmCity/)
