@@ -21,10 +21,10 @@ Swarm City users can:
 - build communities of like-minded individuals to benefit from economies of scale.
 - get rewarded for being a good actor by earning immutable reputation.
 
-                <p><a href="https://slackinvite.swarm.city/" target="_blank">Slack</a></p>
-                <p><a href="https://medium.com/swarm-city-times" target="_blank">Medium</a></p>
-                <p><a href="https://github.com/swarmcity" target="_blank">Github</a></p>
-                <p><a href="https://twitter.com/swarmcitydapp" target="_blank">Twitter</a></p>
-                <p><a href="https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg" target="_blank">Youtube</a></p>
-                <p><a href="https://www.facebook.com/groups/SwarmCity/" target="_blank">Facebook</a></p>
-                <p><a href="https://www.reddit.com/r/SwarmCity/" target="_blank">Reddit</a></p>
+                <a href="https://slackinvite.swarm.city/" target="_blank">Slack</a>
+                <a href="https://medium.com/swarm-city-times" target="_blank">Medium</a>
+                <a href="https://github.com/swarmcity" target="_blank">Github</a>
+                <a href="https://twitter.com/swarmcitydapp" target="_blank">Twitter</a></p>
+                <a href="https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg" target="_blank">Youtube</a>
+                <a href="https://www.facebook.com/groups/SwarmCity/" target="_blank">Facebook</a>
+                <a href="https://www.reddit.com/r/SwarmCity/" target="_blank">Reddit</a>
