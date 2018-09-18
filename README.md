@@ -22,16 +22,17 @@ Swarm City users can:
 - get rewarded for being a good actor by earning immutable reputation.
 
 Find us on:
-[Slack] (https://slackinvite.swarm.city/)
 
-[Medium] (https://medium.com/swarm-city-times)
+[Slack](https://slackinvite.swarm.city/)
 
-[Github] (https://github.com/swarmcity)
+[Medium](https://medium.com/swarm-city-times)
 
-[Twitter] (https://twitter.com/swarmcitydapp)
+[Github](https://github.com/swarmcity)
 
-[Youtube] (https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg)
+[Twitter](https://twitter.com/swarmcitydapp)
 
-[Facebook] (https://www.facebook.com/groups/SwarmCity/)
+[Youtube](https://www.youtube.com/channel/UCsHBWn_ytZ3xdMbTyYe5Ifg)
 
-[Reddit] (https://www.reddit.com/r/SwarmCity/)
+[Facebook](https://www.facebook.com/groups/SwarmCity/)
+
+[Reddit](https://www.reddit.com/r/SwarmCity/)
