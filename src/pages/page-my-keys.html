@@ -268,6 +268,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     @apply --retina;
                 }
             }
+            
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -322,8 +323,13 @@ This code may only be used under the license found at https://github.com/swarmci
                             </paper-checkbox>
                         </template>
             <template is="dom-if" if="{{showEnterbutton}}">
-                            <div id="enterButton" class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
-                        </template>
+                    <template is="dom-if" if="{{!enteredCity}}">
+                        <div id="enterButton" class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
+                    </template>
+            <template is="dom-if" if="{{enteredCity}}">
+                            <div id="enterButton" class="button" on-click="_enter" id="buttons">back to profile</div>
+                    </template>
+            </template>
             </template>
         </dom-if>
     </div>
@@ -441,6 +447,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         value: false,
                         observer: '_blur',
                     },
+                    /**
+                     * shows if the user has entered the city
+                     * @type {Boolean}
+                     */
+                    enteredCity: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
 
@@ -448,6 +462,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     super.connectedCallback();
                     this.loadResources(this.resolveUrl('../text-translations.json'));
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    this.enteredCity = storage.user.entered;
                     this.publicKey = JSON.stringify(storage.keyStore.address).replace(/['"]+/g, '');
                     this._loadAnimations();
                 }
@@ -630,11 +645,18 @@ This code may only be used under the license found at https://github.com/swarmci
                  * takes the user to the initiating hashtag page
                  */
             _enter() {
+                let storage = JSON.parse(localStorage.getItem("SwarmCity"))
+                storage.user.entered = true;
+                localStorage.setItem("SwarmCity", JSON.stringify(storage));
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
                 } else {
-                    this.set('route.path', 'hashtag-list');
+                    if (this.enteredCity) {
+                        this.set('route.path', 'my-profile');
+                    } else {
+                        this.set('route.path', 'hashtag-list');
+                    }
                 }
             }
         }
