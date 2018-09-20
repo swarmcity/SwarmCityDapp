@@ -8,7 +8,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../redux-state.html">
 <!--
     Displays and shared styles only
@@ -190,15 +189,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="bluetext-margins" id="keys">
                     <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
                 </div>
-
-                <template is="dom-if" if="{{_showCheckbox()}}" restamp="true">
-                    <paper-checkbox
-                        id="checkbox"
-                        noink
-                        on-active-changed="_enter">
-                        {{localize('Ive copied my key and stored it in a safe location and want this to count as my backup.')}}
-                    </paper-checkbox>
-                </template>
     </div>
     </div>
     <dom-if if="{{toggleUnlock}}">
@@ -262,18 +252,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 };
             }
             connectedCallback() {
-                    super.connectedCallback();
-                    this.loadResources(this.resolveUrl('../text-translations.json'));
-                }
-                /**
-                 * is the user on an ios device? 
-                 */
-            _showCheckbox() {
-                    return (navigator.userAgent.match(/ipad|ipod|iphone/i));
-                }
-                /**
-                 * takes the user to page-stop-signup
-                 */
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+
+            /**
+             * takes the user to page-stop-signup
+             */
             _close() {
                     this.path = 'stop-signup/';
                 }
