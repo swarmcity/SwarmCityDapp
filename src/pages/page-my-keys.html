@@ -328,10 +328,11 @@ This code may only be used under the license found at https://github.com/swarmci
         </dom-if>
     </div>
     </div>
+
     <dom-if if="{{toggleUnlock}}">
         <template>
                 <display-unlock blue toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}" qr-code-private-key="{{qrCodePrivateKey}}"
-                    qr-code-public-key="{{qrCodePublicKey}}">
+                    qr-code-public-key="{{qrCodePublicKey}}" id="displayUnlock">
                 </display-unlock>
             </template>
     </dom-if>
@@ -375,6 +376,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     privateKey: {
                         type: String,
                         observer: '_showPrivateKey',
+                    },
+                    /**
+                     * contains the current route
+                     * @type {String}
+                     */
+                    route: {
+                        type: String,
+                        observer: '_routeChanged'
                     },
                     /**
                      * contains the public key
@@ -441,6 +450,17 @@ This code may only be used under the license found at https://github.com/swarmci
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     this.publicKey = JSON.stringify(storage.keyStore.address).replace(/['"]+/g, '');
                     this._loadAnimations();
+                }
+                /**
+                 * Delete any preexisting keys when the page loads and reset state.
+                 */
+
+            _routeChanged() {
+                    if (this.route.path === '/my-keys/') {
+                        this.showPrivateKey = false;
+                        this.connectedCallback();
+                        this.$.displayUnlock.connectedCallback();
+                    }
                 }
                 /**
                  * All animations this page needs
@@ -538,6 +558,10 @@ This code may only be used under the license found at https://github.com/swarmci
                  */
             _close() {
                     window.history.back();
+                    this.publicKey = '';
+                    this.privateKey = '';
+                    this.qrCodePrivateKey = '';
+                    this.qrCodePublicKey = '';
                 }
                 /**
                  * toggles the unlock display
