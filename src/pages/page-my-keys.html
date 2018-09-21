@@ -273,6 +273,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
+                {{!enteredCity}}
             <div class="close" on-click="_close"></div>
             <div class="key-container" id="keycontainer">
                 <div class="greytext">{{localize('Your public key')}}</div>
@@ -322,13 +323,9 @@ This code may only be used under the license found at https://github.com/swarmci
                                 {{localize('Ive copied my key and stored it in a safe location and want this to count as my backup.')}}
                             </paper-checkbox>
                         </template>
+
             <template is="dom-if" if="{{showEnterbutton}}">
-                    <template is="dom-if" if="{{!enteredCity}}">
-                        <div id="enterButton" class="button" on-click="_enter" id="buttons">{{localize('enter swarm.city')}}</div>
-                    </template>
-            <template is="dom-if" if="{{enteredCity}}">
-                            <div id="enterButton" class="button" on-click="_enter" id="buttons">back to profile</div>
-                    </template>
+                        <div id="enterButton" class="button" on-click="_enter" id="buttons">{{enteredCityText}}</div>
             </template>
             </template>
         </dom-if>
@@ -454,17 +451,30 @@ This code may only be used under the license found at https://github.com/swarmci
                     enteredCity: {
                         type: Boolean,
                         value: false,
+                        observer: '_setButtonText'
                     },
+                    enteredCityText: {
+                        type: Text,
+                        value: 'enter swarm.city'
+                    }
                 };
             }
 
             connectedCallback() {
-                    super.connectedCallback();
-                    this.loadResources(this.resolveUrl('../text-translations.json'));
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    this.enteredCity = storage.user.entered;
-                    this.publicKey = JSON.stringify(storage.keyStore.address).replace(/['"]+/g, '');
-                    this._loadAnimations();
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.enteredCity = storage.user.entered;
+                this.publicKey = JSON.stringify(storage.keyStore.address).replace(/['"]+/g, '');
+                this._loadAnimations();
+            }
+
+            _setButtonText() {
+                    if (this.enteredCity) {
+                        this.enteredCityText = 'return to my profile'
+                    } else {
+                        this.enteredCityText = 'enter swarm.city'
+                    }
                 }
                 /**
                  * Delete any preexisting keys when the page loads and reset state.
@@ -637,9 +647,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.$$('#checkbox').checked &&
                         navigator.userAgent.match(/ipad|ipod|iphone/i)) {
                         this.showEnterbutton = true;
+                        console.log('true')
                     } else {
+                        console.log('false')
                         this.showEnterbutton = false;
                     }
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    this.enteredCity = storage.user.entered;
                 }
                 /**
                  * takes the user to the initiating hashtag page
@@ -662,4 +676,4 @@ This code may only be used under the license found at https://github.com/swarmci
         }
         window.customElements.define(MyKeys.is, MyKeys);
     </script>
-</dom-module>
+</dom-module>oper
