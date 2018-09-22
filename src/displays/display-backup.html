@@ -74,8 +74,8 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
-            <p>Your OS type has been detected as: </p>{{osType}}
-            <dom-if if="[[_isShowDownload()]]" restamp="true">
+            <p>Your OS type is now: </p>{{osType}}
+            <dom-if if="{{showJsonButton}}" restamp="true">
                 <template>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </template>
@@ -151,6 +151,9 @@ The following custom properties and mixins are available for styling:
                             type: String,
                             notify: true,
                         },
+                        showJsonButton: {
+                            type: Boolean,
+                        }
                     };
                 }
                 /**
@@ -158,6 +161,7 @@ The following custom properties and mixins are available for styling:
                  */
             connectedCallback() {
                     super.connectedCallback();
+                    this._isShowDownload();
                     this.loadResources(this.resolveUrl('../text-translations.json'));
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     this.publicKey = storage.keyStore.address;
@@ -307,38 +311,30 @@ The following custom properties and mixins are available for styling:
                  * @return {boolean} boolean
                  */
             _isShowDownload() {
-                    this.getOS()
-                        .then(() => {
-                            return this.osType !== 'iOS';
-                        });
-                }
-                /**
-                 * update the osType variable (operating system)
-                 * @return {string} Mac OS,iOS,Windows,Android,Android
-                 */
-            getOS() {
-                return new Promise((resolve, reject) => {
-                    let userAgent = window.navigator.userAgent;
-                    let platform = window.navigator.platform;
-                    let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
-                    let windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
-                    let iosPlatforms = ['iPhone', 'iPad', 'iPod'];
-                    let os = null;
+                let userAgent = window.navigator.userAgent;
+                let platform = window.navigator.platform;
+                let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+                let windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+                let iosPlatforms = ['iPhone', 'iPad', 'iPod'];
+                let os = null;
 
-                    if (macosPlatforms.indexOf(platform) !== -1) {
-                        os = 'Mac OS';
-                    } else if (iosPlatforms.indexOf(platform) !== -1) {
-                        os = 'iOS';
-                    } else if (windowsPlatforms.indexOf(platform) !== -1) {
-                        os = 'Windows';
-                    } else if (/Android/.test(userAgent)) {
-                        os = 'Android';
-                    } else if (!os && /Linux/.test(platform)) {
-                        os = 'Linux';
-                    }
-                    this.osType = os;
-                    resolve(os);
-                })
+                if (macosPlatforms.indexOf(platform) !== -1) {
+                    os = 'Mac OS';
+                } else if (iosPlatforms.indexOf(platform) !== -1) {
+                    os = 'iOS';
+                } else if (windowsPlatforms.indexOf(platform) !== -1) {
+                    os = 'Windows';
+                } else if (/Android/.test(userAgent)) {
+                    os = 'Android';
+                } else if (!os && /Linux/.test(platform)) {
+                    os = 'Linux';
+                }
+                this.osType = os;
+                if (this.osType === 'iOS') {
+                    this.showJsonButton = false;
+                } else {
+                    this.showJsonButton = true;
+                }
             }
         }
         window.customElements.define(MyDisplayBackup.is, MyDisplayBackup);
