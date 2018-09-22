@@ -74,7 +74,6 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
-            <p>Your OS type is now: </p>{{osType}}
             <dom-if if="{{showJsonButton}}" restamp="true">
                 <template>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
@@ -288,18 +287,21 @@ The following custom properties and mixins are available for styling:
                  * downloads account info, after success routs to download-success
                  */
             _download() {
+                    alert('Point A')
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    const filename = 'SwarmCity - UTC KeyStore';
+                    const filename = `SwarmCity - UTC KeyStore ${storage.keyStore.address}`;
                     storage.keyStore.avatar = storage.user.avatar;
                     storage.keyStore.username = storage.user.username;
                     const text = JSON.stringify(storage.keyStore);
+                    alert('Point B')
                     const element = document.createElement('a');
-                    element.setAttribute('href', 'data:application/json;charset=utf-8,' +
-                        encodeURIComponent(text));
+                    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
                     element.setAttribute('download', filename);
                     element.style.display = 'none';
                     document.body.appendChild(element);
+                    alert('Point C')
                     element.click();
+                    alert('Point D')
                     document.body.removeChild(element);
                     if (this.route.path == '/make-backup/') {
                         this.path = 'download-success/';
