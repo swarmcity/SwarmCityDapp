@@ -78,6 +78,7 @@ The following custom properties and mixins are available for styling:
                 <template>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </template>
+    <a href="[[linkUrl]]">Click here on Android</a>
     </dom-if>
     </div>
     </template>
@@ -153,6 +154,9 @@ The following custom properties and mixins are available for styling:
                         showJsonButton: {
                             type: Boolean,
                             value: true,
+                        },
+                        linkUrl: {
+                            type: Text,
                         }
                     };
                 }
@@ -287,21 +291,19 @@ The following custom properties and mixins are available for styling:
                  * downloads account info, after success routs to download-success
                  */
             _download() {
-                    alert('Point A')
+
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     const filename = `SwarmCity - UTC KeyStore ${storage.keyStore.address}`;
                     storage.keyStore.avatar = storage.user.avatar;
                     storage.keyStore.username = storage.user.username;
                     const text = JSON.stringify(storage.keyStore);
-                    alert('Point B')
+                    this.linkUrl = `data:application/json;charset=utf-8,${encodeURIComponent(text)}`;
                     const element = document.createElement('a');
                     element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
                     element.setAttribute('download', filename);
                     element.style.display = 'none';
                     document.body.appendChild(element);
-                    alert('Point C')
                     element.click();
-                    alert('Point D')
                     document.body.removeChild(element);
                     if (this.route.path == '/make-backup/') {
                         this.path = 'download-success/';
