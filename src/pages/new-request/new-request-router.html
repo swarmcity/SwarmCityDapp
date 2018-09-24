@@ -1,0 +1,174 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./new-request-create.html">
+<dom-module id="page-new-request">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+        -->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+
+        <!-- CREATE REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
+            <new-request-create></new-request-create>
+        </template>
+
+        <!-- CONFIRM REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+            <div id="container" class="container" wide-layout$="{{wide}}">
+                <div class="top">
+                    <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
+                    <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[_calculatedFee()]]
+                        SWT
+                        {{localize('hashtagfee is included')}}.</div>
+                </div>
+                <div class="flexer">
+                </div>
+                <div class="bottom">
+                    <div class="confirmers" id="buttons">
+                        <div on-click="_disagree"></div>
+                        <div on-click="_unlock">
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <dom-if if="{{toggleUnlock}}">
+                <template>
+                    <display-unlock white toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}">
+                    </display-unlock>
+                </template>
+            </dom-if>
+        </template>
+
+        <!-- PROCESSING REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
+            new-request
+        </template>
+
+        <!-- SUCCESSFUL REQUEST -->
+        <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
+            confirm
+        </template>
+        <!-- ERROR ON REQUEST -->
+        <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
+            error
+        </template>
+
+    </template>
+
+    <script>
+        class MyNewRequestRoot extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-new-request';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * Hashtags contains all hashtag objects
+                    * @type {Object}
+                    */
+                    hashtags: {
+                        type: Object,
+                        statePath: 'hashtags',
+                    },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'new-request',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    status: {
+                        type: String,
+                        value: 'new-request',
+                    },
+                };
+            }
+            ready() {
+                super.ready();
+                // this.$.myButton.addEventListener('click', e => { this._handleClick(e) });
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnConfirm(e) {
+                const { itemBudget, itemDescription, itemGeohash } = e.detail
+                console.log('handleOnConfirm', { itemBudget, itemDescription, itemGeohash })
+                this.status = 'confirm'
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyNewRequestRoot.is, MyNewRequestRoot);
+    </script>
+</dom-module>
