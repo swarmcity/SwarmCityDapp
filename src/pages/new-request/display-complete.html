@@ -11,12 +11,11 @@ This code may only be used under the license found at https://github.com/swarmci
 <script src="../data/abi.js"></script>
 
 
+
+
 <!--
 
 Example:
-```
-<display-complete-request></display-complete-request>
-```
 
 ### Styling
 
@@ -143,7 +142,7 @@ The following custom properties and mixins are available for styling:
                     */
                     hashtag: {
                         type: Object,
-                        statePath: 'hashtag',
+                        statePath: AppStore.selectors.hashtag,
                     },
                     /**
                     * Address is the ethereum address the transaction is to be sent from
@@ -221,7 +220,8 @@ The following custom properties and mixins are available for styling:
                             this.$.transaction.signRawTx(
                                 this.address,
                                 '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                this.nonce,
+                                // ##### TEMP FIX, this.nonce = -1 often
+                                this.nonce > 0 ? this.nonce : Date.now(),
                                 rawApproveAndCall,
                                 this.privateKey
                             ).then((serializedTx) => {

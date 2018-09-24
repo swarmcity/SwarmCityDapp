@@ -111,7 +111,7 @@
             // Return the result
             return txs
         }
-        function* getTransactionHistory(action) {
+        function* getTxs(action) {
             try {
                 const txs = yield call(createLogsForDirection, action.address)
                 yield put(AppStore.actions.updateTxs(txs));
@@ -157,9 +157,12 @@
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
+
+
         function* rootSaga() {
             yield all([
-                yield fork('GET_HASHTAG', getHashtag),
+                yield takeEvery('GET_BALANCE', getBalance),
+                yield takeEvery('GET_TXS', getTxs),
             ]);
         }
 

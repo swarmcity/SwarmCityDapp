@@ -235,7 +235,7 @@ The following custom properties and mixins are available for styling:
                         </div>
                     </template>
                 </div>
-                <display-simpledeal-items hashtag="[[hashtag]]" path="{{path}}"></display-simpledeal-items>
+                <display-simpledeal-items items="[[_getItems(hashtag)]]" path="{{path}}"></display-simpledeal-items>
             </template>
         </div>
     </template>
@@ -293,9 +293,13 @@ The following custom properties and mixins are available for styling:
                     */
                     loadingItems: {
                         type: Boolean,
-                        value: true,
+                        value: false,
                     },
                 };
+            }
+            _getItems(hashtag) {
+                // #### Sorting goes here
+                return Object.values(hashtag.items || {})
             }
             /**
             * This functions returns the showcounter boolean depending on the amount of
@@ -308,7 +312,7 @@ The following custom properties and mixins are available for styling:
             * This functions will switch the view from loading to loaded whenever all the required data is in redux
             */
             _load() {
-                console.log('(Parent) Got hashtag: ', this.hashtag)
+                // console.log('(Parent) Got hashtag: ', this.hashtag)
             }
             /**
             * takes the user back to the top of the page

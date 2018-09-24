@@ -419,6 +419,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.socket.emit('sendSignedTx', {
                     tx: this.signedTx,
                 }, (reply) => {
+                    console.log('sendSignedTx reply', reply)
                     let newNonce = Number(this.nonce) + 1;
                     this.dispatch({ type: 'UPDATE_NONCE', nonce: newNonce });
                     setTimeout(() => {
@@ -441,13 +442,23 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _itemToIpfs() {
-                this.socket.emit('ipfsAdd', {
-                    payload: this.itemToIpfs,
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.dispatch({ type: 'ITEMDATAHASH', itemDataHash: reply });
-                    }
-                });
+                window.ipfs.add(this.itemToIpfs).then((res) => {
+                    console.log('Uploaded successfully to IPFS: ', this.itemToIpfs, res)
+                    this.dispatch({
+                        type: 'ITEMDATAHASH', itemDataHash: {
+                            response: 200,
+                            data: res.bytes32
+                        }
+                    });
+                }).catch(err => {
+                    console.error('Error posting to IPFS: ', this.itemToIpfs, err)
+                    this.dispatch({
+                        type: 'ITEMDATAHASH', itemDataHash: {
+                            response: 500,
+                            data: err.message
+                        }
+                    });
+                })
             }
 
             _replyToIpfs() {

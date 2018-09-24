@@ -1,6 +1,8 @@
 <script src="../../../node_modules/redux-saga/dist/redux-saga.js"></script>
 <script src="../../../node_modules/ethjs/dist/ethjs.min.js"></script>
 <script src="../../../node_modules/ipfs-api/dist/index.min.js"></script>
+<script src="./bs58.js"></script>
+<script src="./Buffer.js"></script>
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
 
@@ -34,9 +36,63 @@
             retryAttempt()
         })
 
+        // Dependencies:
+        const bs58 = window.bs58
+        const Buffer = window.buffer.Buffer
+
+        // Return bytes32 hex string from base58 encoded ipfs hash,
+        // stripping leading 2 bytes from 34 byte IPFS hash
+        // Assume IPFS defaults: function:0x12=sha2, size:0x20=256 bits
+        // E.g. "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL" -->
+        // "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
+
+        function hashToBytes32(hash) {
+            if (!hash) return
+            if (!hash.startsWith('Qm')) {
+                throw Error('Hash must use sha2-256 hashAlg, and start with \'Qm\'')
+            }
+            return "0x" + bs58.decode(hash).slice(2).toString('hex')
+        }
+
+        // Return base58 encoded ipfs hash from bytes32 hex string,
+        // Add our default ipfs values for first 2 bytes:
+        // function:0x12=sha2, size:0x20=256 bits
+        // and cut off leading "0x"
+        // E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
+        // --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
+
+        function bytes32ToHash(bytes32) {
+            if (!bytes32) {
+                throw Error('In ipfs.bytes32ToHash, hash or bytes32 is not defined')
+            }
+            const hashHex = "1220" + bytes32.slice(2)
+            const hashBytes = Buffer.from(hashHex, 'hex');
+            const hashStr = bs58.encode(hashBytes)
+            return hashStr
+        }
+
+
+        function ipfsAdd(data) {
+            if (!Buffer.isBuffer(data)) {
+                data = Buffer.from(data, 'utf8')
+            }
+            return ipfs.add(data, { hashAlg: 'sha2-256' }).then(res => ({
+                hash: res[0].hash,
+                bytes32: hashToBytes32(res[0].hash)
+            }))
+        }
+
+        function ipfsCat(hash) {
+            if (hash && !hash.startsWith('Qm')) {
+                // Assuming hash is actually a bytes32
+                hash = bytes32ToHash(hash)
+            }
+            return ipfs.cat(hash).then(file => file.toString('utf8'))
+        }
+
         window.ipfs = {
-            add: retryable(ipfs.add),
-            cat: retryable(ipfs.cat)
+            add: retryable(ipfsAdd),
+            cat: retryable(ipfsCat)
         }
 
         // Import contract data:

@@ -23,7 +23,7 @@
          * Step 1. Call contract state: 
          *   - hashtagName() -> hashtagName
          *   - hashtagMetadata() -> hashtagMetadata
-         *   - creationBlock() -> creationBlock
+         *   - deployBlock() -> deployBlock
          * 
          * Step 2A. Resolve hashtagMetadata with IPFS
          *   - ipfs.cat(hashtagMetadata) -> description
@@ -60,17 +60,18 @@
          * Gets hashtag from the blockchain
          */
         async function getHashtagContractData(hashtagContract) {
-            let creationBlock;
+            let deployBlock;
             try {
-                creationBlock = parseInt(await hashtagContract.methods.creationBlock().call())
+                deployBlock = parseInt(await hashtagContract.methods.deployBlock().call())
             } catch (e) {
-                console.log('Error retrieving creationBlock from ' + hashtagContract._address, e, e.stack)
+                console.log('Error retrieving deployBlock from ' + hashtagContract._address, e, e.stack)
             }
             return {
                 hashtagName: await hashtagContract.methods.hashtagName().call(),
-                metadataHash: await hashtagContract.methods.metadataHash().call(),
+                hashtagMetadataHash: await hashtagContract.methods.hashtagMetadataHash().call(),
                 hashtagFee: parseInt(await hashtagContract.methods.hashtagFee().call()),
-                creationBlock: creationBlock || 8149489
+                deployBlock: deployBlock || 8149489,
+                address: hashtagContract._address
             }
         }
 
@@ -79,6 +80,7 @@
                 fromBlock,
                 toBlock: 'latest',
             })
+            console.log('events', events, 'fromBlock', fromBlock)
             const items = {}
             for (event of events) {
                 items[event.returnValues.itemHash] = {
@@ -89,7 +91,6 @@
                     itemValue: event.returnValues.itemValue,
                     seekerAddress: event.returnValues.owner, // owner => seeker
                     seekerRep: event.returnValues.seekerRep,
-                    totalValue: event.returnValues.totalValue,
                 }
             }
             return items;
@@ -115,11 +116,17 @@
         }
 
         async function getHashtagMetadata(hash) {
-            const res = await ipfs.cat(hash).then(file => file.toString('utf8')).then(JSON.parse)
+            const metadataString = await ipfs.cat(hash)
+            let metadata;
+            try {
+                metadata = JSON.parse(metadataString)
+            } catch (e) {
+                throw Error('JSON parsing error, string: ' + metadataString)
+            }
             return {
-                description: res.description,
-                hashtagContract: res.hashtagContract,
-                webcomponent: res.webcomponent
+                description: metadata.description,
+                hashtagContract: metadata.hashtagContract,
+                webcomponent: metadata.webcomponent
             }
         }
 
@@ -139,14 +146,14 @@
                 // Step 1. Call contract state: 
                 //   - hashtagName() -> hashtagName
                 //   - hashtagMetadata() -> hashtagMetadata
-                //   - creationBlock() -> creationBlock
+                //   - deployBlock() -> deployBlock
                 const hashtagContractData = yield call(getHashtagContractData, hashtagContract)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagContractData });
 
                 // Step 2A. Resolve hashtagMetadata with IPFS
                 //   - ipfs.cat(hashtagMetadata) -> description
                 try {
-                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.metadataHash)
+                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
                     yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
                 } catch (e) {
                     console.error('Error fetching hashtag metadata of ' + hashtagAddress, e);
@@ -154,7 +161,7 @@
 
                 // Step 2B. Get hashtag items from past events
                 //   - getPastEvents('NewItem') -> itemHash, ipfsMetadata, itemValue, seekerAddr, seekerRep, blockNumber
-                const items = yield call(getPastItems, hashtagContract, hashtagContractData.creationBlock)
+                const items = yield call(getPastItems, hashtagContract, hashtagContractData.deployBlock)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: { items } });
 
                 const itemsTimestamp = yield call(multipleGetBlockTime, items)
@@ -201,7 +208,7 @@
         }
 
         function catIpfsMetadata(hash) {
-            return ipfs.cat(hash).then(file => file.toString('utf8')).then(JSON.parse)
+            return ipfs.cat(hash).then(JSON.parse)
         }
 
         function* getItemMetadata(item, hashtagAddress) {
@@ -210,10 +217,10 @@
                 const res = yield call(catIpfsMetadata, hash)
                 yield put({
                     type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        avatarHash: res.avatarHash,
+                        seekerAvatarHash: res.avatarHash,
                         description: res.description,
-                        publicKey: res.publicKey,
-                        username: res.username,
+                        seekerPublicKey: res.publicKey,
+                        seekerUsername: res.username,
                     }
                 });
             } catch (e) {
@@ -349,7 +356,6 @@
                 providerAddress,
                 ipfsMetadata,
             }
-            const { itemHash, provider: providerAddress } = event.returnValues
             yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
 
             // Step 2. Resolve its metadata

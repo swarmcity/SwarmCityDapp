@@ -3,21 +3,21 @@
 Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../redux-state.html">
-<link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
-<link rel="import" href="../data/data-location.html">
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../data/data-location.html">
 
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../../shared-styles.html">
 
 <dom-module id="display-create-request">
     <template>
@@ -307,11 +307,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
             </div>
             <div class="inputs">
-                <paper-textarea id="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}" on-input="_toggleButton"
-                    autofocus></paper-textarea>
+                <paper-textarea id="request" label="{{localize('What are you looking for?')}}" type="txt" value="{{request}}"
+                    on-input="_toggleButton" autofocus></paper-textarea>
                 <div class="horizontal">
-                    <paper-input id="budget" type="Number" class="budget" label="{{localize('What is your offer?')}}" allowed-pattern="[0-9\.\,]"
-                        on-input="_checkBudget" value="{{budget}}"></paper-input>
+                    <paper-input id="budget" type="Number" class="budget" label="{{localize('What is your offer?')}}"
+                        allowed-pattern="[0-9\.\,]" on-input="_checkBudget" value="{{budget}}"></paper-input>
                     <div class="currency">SWT</div>
                 </div>
                 <div class="fee"> + [[hashtagFee]] SWT {{localize('hashtagfee')}}</div>
@@ -439,7 +439,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     hashtag: {
                         type: Object,
-                        statePath: 'hashtag',
+                        statePath: AppStore.selectors.hashtag,
                         observer: '_setHashtagValues',
                     },
                     /**
@@ -482,7 +482,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             connectedCallback() {
                 super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
             }
             /**
             * Verifies user input and displays error message
@@ -545,10 +545,13 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _confirm() {
                 if (this._toggleButton()) {
-                    this.dispatch({ type: 'ITEMBUDGET', itemBudget: this.budget, });
-                    this.dispatch({ type: 'ITEMDESCRIPTION', itemDescription: this.request, });
-                    this.dispatch({ type: 'ITEMGEOHASH', itemGeohash: this.itemGeohash, });
-                    this.path = 'confirm-new-request';
+                    this.dispatchEvent(new CustomEvent('confirm', {
+                        detail: {
+                            itemBudget: this.budget,
+                            itemDescription: this.request,
+                            itemGeohash: this.itemGeohash,
+                        }
+                    }));
                 }
             }
             /**

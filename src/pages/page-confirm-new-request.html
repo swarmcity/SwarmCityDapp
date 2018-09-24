@@ -104,50 +104,26 @@ This code may only be used under the license found at https://github.com/swarmci
             .flexer {
                 @apply --titlepage-flexer;
             }
-            
-            .blur { 
+
+            .blur {
                 @apply --unlock-blur;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
+
                 .container .confirmers>div:nth-child(1),
-                .container .confirmers>div:nth-child(2)>div:nth-child(1){
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                     @apply --retina
                 }
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
-        <display-complete-request
-            private-key="[[privateKey]]">
+        <display-complete-request private-key="[[privateKey]]">
         </display-complete-request>
-        <div id="container" class="container" wide-layout$="{{wide}}">
-            <div class="top">
-                <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
-                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[_calculatedFee()]] SWT {{localize('hashtagfee is included')}}.</div>
-            </div>
-            <div class="flexer">
-            </div>
-            <div class="bottom">
-                <div class="confirmers" id="buttons">
-                    <div on-click="_disagree"></div>
-                    <div on-click="_unlock">
-                        <div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <dom-if if="{{toggleUnlock}}">
-            <template>
-                <display-unlock 
-                    white
-                    toggle-unlock="{{toggleUnlock}}" 
-                    private-key="{{privateKey}}">
-                </display-unlock>
-            </template>
-        </dom-if>
+
     </template>
 
     <script>
@@ -204,7 +180,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     hashtag: {
                         type: String,
-                        statePath: 'hashtag',
+                        statePath: AppStore.selectors.hashtag,
                     },
                     /**
                     * pageID is an id givven to every page specific
@@ -241,14 +217,14 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Number} the total cost of posting a request
             */
             _totalSum() {
-                return parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee/2e18);
+                return parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
             }
             /**
             * Returns the SWT size hashtagFee
             * @return {Number} the total cost of posting a request
             */
             _calculatedFee() {
-                return parseFloat(this.hashtag.hashtagFee/2e18);
+                return parseFloat(this.hashtag.hashtagFee / 2e18);
             }
 
             /**
@@ -281,4 +257,3 @@ This code may only be used under the license found at https://github.com/swarmci
         window.customElements.define(MyConfirmNewRequest.is, MyConfirmNewRequest);
     </script>
 </dom-module>
-

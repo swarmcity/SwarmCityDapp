@@ -216,6 +216,7 @@ The following custom properties and mixins are available for styling:
                 }
             }
         </style>
+        <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <display-language language="{{language}}"></display-language>
         <data-simpledeal id="sort"></data-simpledeal>
@@ -227,7 +228,7 @@ The following custom properties and mixins are available for styling:
                         <div class="datedescript">
                             <div class="description">[[item.description]]</div>
                             <div class="date">
-                                [[_formatDate(item.dateTime)]]
+                                [[_formatDate(item.timestamp)]]
                             </div>
                         </div>
                         <div class="replycount">[[_replycount(item.replies)]]</div>
@@ -236,7 +237,7 @@ The following custom properties and mixins are available for styling:
                     <div class="bottom">
                         <div class="avatarandmeta">
                             <div class="avatar">
-                                <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seeker.avatarHash]]"
+                                <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seekerAvatarHash]]"
                                     placeholder="../images/defaultavatar.png">
                                 </iron-image>
                             </div>
@@ -244,14 +245,14 @@ The following custom properties and mixins are available for styling:
 
                                 <template is="dom-if" if="[[!_isSeeker(item)]]">
                                     <div class="user horizontal">
-                                        <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]]
+                                        <div class="truncate">[[item.seekerUsername]]</div>&nbsp;· [[item.seekerRep]]
                                         SWR
                                     </div>
                                 </template>
 
                                 <template is="dom-if" if="[[_isSeeker(item)]]">
                                     <div class="user seeker horizontal">
-                                        <div class="truncate">[[item.seeker.username]]</div>&nbsp;· [[item.seeker.rep]]
+                                        <div class="truncate">[[item.seekerUsername]]</div>&nbsp;· [[item.seekerRep]]
                                         SWR
                                     </div>
                                 </template>
@@ -261,7 +262,7 @@ The following custom properties and mixins are available for styling:
 
                         <div class="pricebox">
                             <div class="for">SWT</div>
-                            <div class="price">[[_formatValue(item.value)]]</div>
+                            <div class="price">[[_formatValue(item.itemValue)]]</div>
                         </div>
 
                     </div>
@@ -303,9 +304,9 @@ The following custom properties and mixins are available for styling:
                     * Hashtag is the hashtag we're one
                     * @type {Object}
                     */
-                    hashtag: {
+                    hashtagAddress: {
                         type: Object,
-                        observer: '_load',
+                        statePath: 'current.hashtag',
                     },
                     /**
                     * publicKey is the user's address
@@ -350,7 +351,7 @@ The following custom properties and mixins are available for styling:
                 if (this.hashtag && this.hashtag.hashtagAddress) {
                     this.$.sort.getHashtagItems(this.hashtag, this.publicKey, this.involved)
                         .then((items) => {
-                            this.set('items', items);
+                            // this.set('items', items);
                             if (this.involved) {
                                 this.count = items.length;
                             }
@@ -376,14 +377,14 @@ The following custom properties and mixins are available for styling:
             * @return {number} number of replies
             */
             _replycount(replies) {
-                return replies ? Object.keys(replies).length : 0;
+                return Object.keys(replies || {}).length;
             }
             /**
             * routes to the corresponding item detail page
             * @param {event} event item object that has been tapped
             */
             _toItem(event) {
-                this.path = 'detail/' + this.hashtag.hashtagAddress
+                this.path = 'detail/' + this.hashtagAddress
                     + '/' + event.model.__data.item.itemHash;
             }
             /**
@@ -392,7 +393,7 @@ The following custom properties and mixins are available for styling:
             * @return {Boolean} true when user owns this item
             */
             _isSeeker(item) {
-                return item.seeker.address == this.publicKey;
+                return item.seekerAddress == this.publicKey;
             }
             /**
             * formats the item value
@@ -403,7 +404,7 @@ The following custom properties and mixins are available for styling:
                 return value / 1e18;
             }
             _load() {
-                console.log('(Children) Got hashtag: ', this.hashtag)
+                console.log('(Children) Got hashtagAddress: ', this.hashtagAddress)
             }
         }
 

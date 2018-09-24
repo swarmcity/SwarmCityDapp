@@ -365,6 +365,7 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
+
                 .icon,
                 .close {
                     @apply --retina;
@@ -411,29 +412,31 @@ This code may only be used under the license found at https://github.com/swarmci
                             [[hashtagItem.description]]
                         </div>
                         <div class="date">
-                            [[_formatDate(hashtagItem.dateTime)]]
+                            [[_formatDate(hashtagItem.timestamp)]]
                         </div>
                         <div class="seeker">
 
-                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seeker.avatarHash]]"
+                            <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seekerAvatarHash]]"
                                 placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                             </iron-image>
 
                             <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
                                 <div id="seeker" class="seeker-info seeker-owner horizontal" on-up="_toUserReputation">
-                                    <div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]
+                                    <div class="truncate">[[hashtagItem.seekerUsername]]</div>&nbsp;·
+                                    [[hashtagItem.seekerRep]]
                                 </div>
                             </template>
 
                             <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
                                 <div id="seeker" class="seeker-info horizontal" on-up="_toUserReputation">
-                                    <div class="truncate">[[hashtagItem.seeker.username]]</div>&nbsp;· [[hashtagItem.seeker.rep]]
+                                    <div class="truncate">[[hashtagItem.seekerUsername]]</div>&nbsp;·
+                                    [[hashtagItem.seekerRep]]
                                 </div>
                             </template>
 
                             <div class="pricebox">
                                 <div class="unit">SWT</div>
-                                <div class="value">[[_formatValue(hashtagItem.value)]]</div>
+                                <div class="value">[[_formatValue(hashtagItem.itemValue)]]</div>
                             </div>
                         </div>
                         <div class="linkbox">
@@ -445,7 +448,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
                         <!-- The default, all replies view -->
                         <template is="dom-if" if="[[_getState('replies', state)]]">
-                            <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}" selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
+                            <display-simpledeal-itemreplies path="{{path}}" state-change="{{stateChange}}"
+                                selected-reply="{{selectedReply}}"></display-simpledeal-itemreplies>
                             <template is="dom-if" if="[[_showReplyButton(hashtagItem)]]">
                                 <display-button-reply on-up="_reply"></display-button-reply>
                             </template>
@@ -456,13 +460,14 @@ This code may only be used under the license found at https://github.com/swarmci
 
                         <!-- The reply input view -->
                         <template is="dom-if" if="[[_getState('input', state)]]">
-                            <display-simpledeal-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"></display-simpledeal-input-reply>
+                            <display-simpledeal-input-reply state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}"
+                                private-key="{{privateKey}}"></display-simpledeal-input-reply>
                         </template>
 
                         <!-- The detailed view of a reply, with option to select the replier as provider -->
                         <template is="dom-if" if="[[_getState('detail', state)]]">
-                            <display-simpledeal-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}"
-                                selected-reply="{{selectedReply}}"></display-simpledeal-reply-detail>
+                            <display-simpledeal-reply-detail state-change="{{stateChange}}" toggle-unlock="{{toggleUnlock}}"
+                                private-key="{{privateKey}}" selected-reply="{{selectedReply}}"></display-simpledeal-reply-detail>
                             <template is="dom-if" if="[[_showCancelButton(hashtagItem)]]">
                                 <display-button-cancel></display-button-cancel>
                             </template>
@@ -527,7 +532,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     hashtag: {
                         type: Object,
-                        statePath: 'hashtag',
+                        statePath: AppStore.selectors.hashtag,
                     },
                     /**
                     * the hashtag item we've subscribed to
@@ -535,7 +540,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     hashtagItem: {
                         type: Object,
-                        statePath: 'hashtagItem',
+                        statePath: (state) => {
+                            const hashtag = state.hashtags[state.current.hashtag] || {}
+                            return (hashtag.items || {})[state.current.item] || {}
+                        },
                         observer: '_load',
                     },
                     /**
@@ -544,7 +552,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     loadingItem: {
                         type: Boolean,
-                        value: true,
+                        value: false,
                     },
                     /**
                     * PublicKey represents the user's public key
@@ -618,7 +626,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the selected user reputation page
             */
             _toUserReputation() {
-                this.path = `user-reputation/${this.hashtagItem.seeker.address}/${this.hashtagItem.seeker.avatarHash}/${this.hashtagItem.seeker.username}`; // eslint-disable-line
+                this.path = `user-reputation/${this.hashtagItem.seekerAddress}/${this.hashtagItem.seekerAvatarHash}/${this.hashtagItem.seekerUsername}`; // eslint-disable-line
             }
             /**
             * Toggles betweeen loading & loaded state & switches the state
@@ -632,7 +640,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             // Open item
                             if (this.hashtagItem.selectee &&
                                 (this.hashtagItem.selectee.address == this.publicKey ||
-                                    this.hashtagItem.seeker.address == this.publicKey)
+                                    this.hashtagItem.seekerAddress == this.publicKey)
                             ) {
                                 this.stateChange = 'selected';
                             } else {
@@ -706,7 +714,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _showReplyButton(item) {
                 if (item.seeker &&
-                    item.seeker.address == this.publicKey) {
+                    item.seekerAddress == this.publicKey) {
                     return false;
                 } else if (item.replies && item.replies[this.publicKey]) {
                     return false;
@@ -721,7 +729,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _showConflictButton(item) {
                 if (item.selectee) {
-                    return (item.seeker.address == this.publicKey ||
+                    return (item.seekerAddress == this.publicKey ||
                         item.selectee.address == this.publicKey);
                 }
             }
@@ -731,7 +739,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Boolean} true when user owns this request
             */
             _isSeeker(hashtagItem) {
-                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
+                return hashtagItem.seeker && hashtagItem.seekerAddress == this.publicKey;
             }
             /**
             * Changes the state with its passed value.
@@ -747,7 +755,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Boolean} true when button should be visible
             */
             _showCancelButton(item) {
-                return (item.seeker && item.seeker.address == this.publicKey);
+                return (item.seeker && item.seekerAddress == this.publicKey);
             }
             /**
             * Set the view to write a reply

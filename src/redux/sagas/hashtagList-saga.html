@@ -21,9 +21,6 @@
         // throttle: ƒ()
         // utils: {...}
 
-        // Import contract data:
-        const { swtToken, hashtagList, simpleDeal } = contractsData;
-
         /*
          * redux-saga worker functions
          */
@@ -34,31 +31,31 @@
          */
         async function getHashtagsFromHashtagList() {
             const hashtagListContract = new web3Local.eth.Contract(
-                hashtagList.abi,
-                hashtagList.address
+                contractsData.hashtagList.abi,
+                contractsData.hashtagList.address
             );
             const numberOfHashtags = parseInt(
                 await hashtagListContract.methods.numberOfHashtags().call()
             );
-            const hashtags = [];
+            const hashtagList = [];
             for (let i = 0; i < numberOfHashtags; i++) {
                 const hashtag = await hashtagListContract.methods.readHashtag(i).call();
-                hashtags.push({
+                hashtagList.push({
                     hashtagName: decodeURI(hashtag.hashtagName), // string :  Settler
                     hashtagMetaIPFS: hashtag.hashtagMetaIPFS, // string :  zb2rhbixVsHPSfBCUowDPDpkQ4QZR84rRpBSDym44i57NWmtE
                     hashtagAddress: hashtag.hashtagAddress, // address :  0x3a1a67501b75fbc2d0784e91ea6cafef6455a066
                     hashtagShown: hashtag.hashtagShown, // bool :  false
                 });
             }
-            return hashtags
+            return hashtagList
         }
 
         function* getHashtags(action) {
             try {
-                yield put({ type: 'UPDATE_FETCHING', topic: 'hashtags', fetching: true });
-                const hashtags = yield call(getHashtagsFromHashtagList)
-                yield put({ type: 'UPDATE_FETCHING', topic: 'hashtags', fetching: false });
-                yield put({ type: 'UPDATE_HASHTAGS', hashtags });
+                yield put({ type: 'UPDATE_FETCHING', topic: 'hashtagList', fetching: true });
+                const hashtagList = yield call(getHashtagsFromHashtagList)
+                yield put({ type: 'UPDATE_FETCHING', topic: 'hashtagList', fetching: false });
+                yield put({ type: 'UPDATE_HASHTAG_LIST', hashtagList });
             } catch (e) {
                 console.error(e);
             }
