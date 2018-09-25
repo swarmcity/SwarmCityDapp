@@ -1,16 +1,12 @@
-
-
 <!--
 @license
 Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../data/data-transaction.html">
-<link rel="import" href="../data/data-simpledeal.html">
-<link rel="import" href="../redux-state.html">
-<script src="../data/webpack.min.js"></script>
-<script src="../data/abi.js"></script>
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../redux-state.html">
+<script src="../../data/webpack.min.js"></script>
+<script src="../../data/abi.js"></script>
 
 
 
@@ -27,56 +23,138 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--display-complete-request` | Mixin applied to the deal button | `{}` |
+| `--new-request-confirm` | Mixin applied to the deal button | `{}` |
 -->
-<dom-module id="display-complete-request">
+<dom-module id="new-request-confirm">
     <template>
-        <data-simpledeal id="simpledeal"></data-simpledeal>
-        <data-transaction id="transaction"></data-transaction>
+        <style include="shared-styles">
+            :host {
+                background-color: var(--sc-blue);
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                background-color: var(--sc-blue);
+                @apply --titlepage-closed-container;
+            }
+
+            .container .top {
+                @apply --titlepage-closed-container-top;
+            }
+
+            .container .bottom {
+                @apply --titlepage-closed-container-bottom;
+            }
+
+            .container .title {
+                @apply --titlepage-title;
+                color: var(--sc-white);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
+            }
+
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
+            }
+
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+            .container .confirmers {
+                @apply --titlepage-confirmers;
+            }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
+            }
+
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+
+            .blur {
+                @apply --unlock-blur;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                    @apply --retina
+                }
+            }
+        </style>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="title" id="title">{{localize('Post this request for')}} [[totalSum]] SWT?</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[hashtagFee]] SWT
+                    {{localize('hashtagfee is included')}}.</div>
+            </div>
+            <div class="flexer">
+            </div>
+            <div class="bottom">
+                <div class="confirmers" id="buttons">
+                    <div on-click="_reject"></div>
+                    <div on-click="_confirm">
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </template>
     <script>
-        class MyCompleteRequest extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyNewRequestConfirm extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-complete-request';
-            }
-            /**
-            * Redux actions for completing a request
-            * @param {string} broadcast
-            */
-            static get actions() {
-                return Object.assign({
-                    ITEMTOIPFS: function (itemToIpfs) {
-                        return {
-                            type: 'ITEMTOIPFS',
-                            itemToIpfs: itemToIpfs,
-                        };
-                    },
-                    SENDSIGNEDTX: function (sendSignedTx) {
-                        return {
-                            type: 'SENDSIGNEDTX',
-                            sendSignedTx: sendSignedTx,
-                        };
-                    },
-                });
+                return 'new-request-confirm';
             }
             static get properties() {
                 return {
-                    /**
-                    * private key that is asocated with the from address
-                    * @type {String}
-                    */
-                    privateKey: {
-                        type: String,
-                        observer: '_itemToIpfs',
-                    },
-                    /**
-                    * Path signals to the parent to change the path
-                    * @type {Boolean}
-                    */
+                    // Path signals to the parent to change the path
                     path: {
                         type: String,
                         reflectToAttribute: true,
@@ -98,146 +176,37 @@ The following custom properties and mixins are available for styling:
                         type: Object,
                         statePath: 'username',
                     },
-                    /**
-                    * The description of the request
-                    * @type {Object}
-                    */
-                    itemDescription: {
-                        type: Object,
-                        statePath: 'itemDescription',
-                    },
-                    /**
-                    * contains the request budget
-                    * @type {String}
-                    */
-                    itemBudget: {
+                    totalSum: {
                         type: String,
-                        statePath: 'itemBudget',
                     },
-                    /**
-                    * IPFS hash of request metadata
-                    * @type {Object}
-                    */
-                    itemDataHash: {
-                        type: Object,
-                        statePath: 'itemDataHash',
-                        observer: '_newItemDataHash',
-                    },
-                    /**
-                    * Geohash of the new request
-                    * @type {Object}
-                    */
-                    itemGeohash: {
-                        type: Object,
-                        statePath: 'itemGeohash',
-                    },
-                    /**
-                    * Signed TX to send
-                    * @type {Object}
-                    */
-                    sendSignedTx: {
-                        type: Object,
-                    },
-                    /**
-                    * The hashtag we're posting a request on
-                    * @type {Object}
-                    */
-                    hashtag: {
-                        type: Object,
-                        statePath: AppStore.selectors.hashtag,
-                    },
-                    /**
-                    * Address is the ethereum address the transaction is to be sent from
-                    * @type {String}
-                    */
-                    address: {
+                    hashtagFee: {
                         type: String,
-                        statePath: 'publicKey',
-                    },
-                    /**
-                    * The user's nonce
-                    * @type {Object}
-                    */
-                    nonce: {
-                        type: Object,
-                        statePath: 'nonce',
                     },
                 };
             }
-
-            /*
-            * Makes the IPFS object of the new request and dispatches it
+            /**
+            * Takes the user to the previous page
             */
-            _itemToIpfs() {
-                if (this.privateKey) {
-                    let publicKeySeeker = webpack
-                        .privateToPublic(
-                            new webpack.Buffer.Buffer(this.privateKey, 'hex')
-                        )
-                        .toString('hex');
-                    let item = {
-                        'username': this.username,
-                        'avatarHash': localStorage.getItem('avatarHash'),
-                        'description': this.itemDescription,
-                        'publicKey': publicKeySeeker,
-                    };
-                    if (this.itemGeohash != null) {
-                        item.location = this.itemGeohash;
-                    }
-                    this.dispatch({
-                        type: 'ITEMTOIPFS',
-                        itemToIpfs: JSON.stringify(item),
-                    });
+            _reject() {
+                this.dispatchEvent(new CustomEvent('reject'))
+            }
+            _confirm() {
+                this.dispatchEvent(new CustomEvent('confirm'))
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.privateKey = null;
+                    this.$.container.classList.add('blur');
+                }
+                else {
+                    this.$.container.classList.remove('blur');
                 }
             }
 
-            /*
-            * Proceed to sign the contract interaction
-            */
-            _newItemDataHash() {
-                if (this.itemDataHash.response == 200) {
-                    const UUIDv4 = webpack.uuid.v4();
-                    let itemBudgetWei = this.itemBudget * 1e18;
-                    let itemHashBuffer = webpack.sha3(UUIDv4);
-                    let itemHashHex = webpack.addHexPrefix(itemHashBuffer.toString('hex'));
-                    let UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
-                    UUIDCollection[UUIDv4] = itemHashHex;
-                    localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
-                    let totalSum = itemBudgetWei + this.hashtag.hashtagFee / 2;
 
-                    this.$.simpledeal.rawNewItem(
-                        itemHashHex,
-                        itemBudgetWei,
-                        this.itemDataHash.data,
-                        this.hashtag.hashtagAddress,
-                        abi.hashtagSimpleDeal.abi
-                    ).then((rawNewItem) => {
-                        this.$.transaction.rawApproveAndCall(
-                            this.hashtag.hashtagAddress,
-                            totalSum,
-                            rawNewItem,
-                            '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                            abi.miniMeToken.abi
-                        ).then((rawApproveAndCall) => {
-                            this.$.transaction.signRawTx(
-                                this.address,
-                                '0x0adbc89464cb7fa752adcf3533514949a2547589',
-                                // ##### TEMP FIX, this.nonce = -1 often
-                                this.nonce > 0 ? this.nonce : Date.now(),
-                                rawApproveAndCall,
-                                this.privateKey
-                            ).then((serializedTx) => {
-                                this.dispatch({
-                                    type: 'SENDSIGNEDTX',
-                                    sendSignedTx: serializedTx.toString('hex'),
-                                });
-                            }).catch((err) => {
-                                this.error = err;
-                            });
-                        });
-                    });
-                }
-            }
-        } window.customElements.define(MyCompleteRequest.is, MyCompleteRequest);
+        } window.customElements.define(MyNewRequestConfirm.is, MyNewRequestConfirm);
     </script>
 </dom-module>

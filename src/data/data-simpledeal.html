@@ -2,9 +2,115 @@
 
 <dom-module id="data-simpledeal">
     <script>
+
+        // Import libraries
+        const Tx = webpack.EthereumTx
+        const Buffer = webpack.Buffer.Buffer
+        const _web3 = window.web3Local
+        const sha3 = webpack.sha3
+        const ipfs = window.ipfs
+
+        const { swtToken, hashtagList, simpleDeal } = contractsData;
+
+        // Define async methods, because 
+        // oh hi classes can u support async/await plz tkns
+        async function createNewItemAsync({ seeker, item, hashtag }) {
+
+            console.log(seeker)
+
+            // 0. Upload to IPFS
+            const metadataHash = await ipfs.add(JSON.stringify({
+                username: seeker.username,
+                avatarHash: localStorage.getItem('avatarHash'),
+                description: item.description,
+                location: item.location,
+                publicKeySeeker: webpack
+                    .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
+                    .toString('hex')
+            }))
+
+            const UUIDv4 = webpack.uuid.v4();
+            const itemHashHex = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
+            const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
+            UUIDCollection[UUIDv4] = itemHashHex;
+            localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
+            const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
+            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
+
+            // 1. Encode the newItem method to be sent through ApproveAndCall
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            console.log('simpleDealContract.methods.newItem', itemHashHex, itemBudgetWei, metadataHash.bytes32)
+            const rawNewItem = simpleDealContract.methods.newItem(
+                itemHashHex,
+                parseInt(itemBudgetWei),
+                metadataHash.bytes32
+            ).encodeABI();
+
+            const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
+            console.log('tokenContract.methods.approveAndCall', hashtag.address, totalSum, rawNewItem)
+            const rawApproveAndCall = tokenContract.methods.approveAndCall(
+                hashtag.address, // spender
+                totalSum, // totalSum
+                rawNewItem, // next call data
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address)
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtag.tokenAddress,
+                data: rawApproveAndCall,
+                chainId: 42,
+            });
+            debugger
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const receipt = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return receipt
+        }
+
+        function sendSignedTransaction(tx) {
+            return new Promise((resolve, reject) => {
+                _web3.eth.sendSignedTransaction(tx)
+                    .once('transactionHash', (hash) => {
+                        console.log('transactionHash', hash);
+                    })
+                    .on('receipt', resolve)
+                    .on('error', (err, receipt) => {
+                        if (err.message &&
+                            err.message.startsWith('Failed to check for transaction receipt')
+                        ) {
+                            console.log('Another complaint about the receipt ignored.');
+                        } else {
+                            if (receipt) {
+                                console.error('We might be out of Gas: %j', receipt);
+                            } else {
+                                console.error(err);
+                            }
+                            reject(new Error('Transaction error: ' + err));
+                        }
+                    });
+            })
+        }
+
         class DataSimpledeal extends Polymer.Element {
             static get is() {
                 return 'data-simpledeal';
+            }
+
+            /**
+            * Create a new hashtag item
+            */
+            createNewItem(args) {
+                return createNewItemAsync(args)
             }
 
             /**
@@ -17,18 +123,15 @@
             * @return {Object} - The Raw new item tx data
             */
             rawNewItem(itemHash, weiAmount, ipfsHash, contractAddress, abi) {
-                return new Promise((resolve) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawNewItem = simpleDealContract.methods.newItem(
-                        itemHash,
-                        weiAmount,
-                        ipfsHash
-                    ).encodeABI();
-                    resolve(rawNewItem);
-                });
+                const simpleDealContract = new webpack.Contract(
+                    abi,
+                    contractAddress
+                );
+                let rawNewItem = simpleDealContract.methods.newItem(
+                    itemHash,
+                    weiAmount,
+                    ipfsHash
+                ).encodeABI();
             }
 
             /**

@@ -373,7 +373,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </template>
                     <div class="buttonbox">
-                        <div id="button" class="round-button" on-click="_confirm" on-keypress="_confirm" tabindex="1">
+                        <div id="button" class="round-button" on-click="_create" on-keypress="_create" tabindex="1">
                             <div id="agree" class="agree"></div>
                         </div>
                     </div>
@@ -481,6 +481,23 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../../text-translations.json'));
             }
+
+            /**
+            * takes the user to confirm page
+            */
+            _create() {
+                if (this._toggleButton()) {
+                    this.dispatchEvent(new CustomEvent('create', {
+                        detail: {
+                            itemBudget: this.budget,
+                            itemDescription: this.request,
+                            itemGeohash: this.itemGeohash,
+                        }
+                    }));
+                }
+            }
+
+
             /**
             * Verifies user input and displays error message
             */
@@ -537,20 +554,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     return false;
                 }
             }
-            /**
-            * takes the user to confirm page
-            */
-            _confirm() {
-                if (this._toggleButton()) {
-                    this.dispatchEvent(new CustomEvent('confirm', {
-                        detail: {
-                            itemBudget: this.budget,
-                            itemDescription: this.request,
-                            itemGeohash: this.itemGeohash,
-                        }
-                    }));
-                }
-            }
+
             /**
             * Takes the user's geohash and slider value to generate an item geohash
             */

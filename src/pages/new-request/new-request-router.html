@@ -9,79 +9,66 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-transaction.html">
+<link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
+<link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
+<link rel="import" href="./new-request-confirm.html">
+<link rel="import" href="./new-request-processing.html">
+<link rel="import" href="./new-request-error.html">
+<link rel="import" href="./new-request-success.html">
 <dom-module id="page-new-request">
     <template>
-        <!--
-    Page specific styles, if the style is used on more than one page, moveit to shared styles.
-        -->
-        <style include="shared-styles">
-            :host {
-                display: block;
-            }
-        </style>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
         <!-- CREATE REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
-            <new-request-create on-confirm="_handleOnConfirm"></new-request-create>
+            <new-request-create on-create="_handleOnCreate"></new-request-create>
         </template>
 
         <!-- CONFIRM REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            confirm!
-            <!-- <div id="container" class="container" wide-layout$="{{wide}}">
-                <div class="top">
-                    <div class="title" id="title">{{localize('Post this request for')}} [[_totalSum()]] SWT?</div>
-                    <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[_calculatedFee()]]
-                        SWT
-                        {{localize('hashtagfee is included')}}.</div>
-                </div>
-                <div class="flexer">
-                </div>
-                <div class="bottom">
-                    <div class="confirmers" id="buttons">
-                        <div on-click="_disagree"></div>
-                        <div on-click="_unlock">
-                            <div></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <dom-if if="{{toggleUnlock}}">
-                <template>
-                    <display-unlock white toggle-unlock="{{toggleUnlock}}" private-key="{{privateKey}}">
-                    </display-unlock>
-                </template>
-            </dom-if> -->
+            <new-request-confirm on-confirm="_handleOnConfirm" on-reject="_handleOnReject" totalSum="[[totalSum]]"
+                hashtagFee="[[hashtagFee]]"></new-request-confirm>
+        </template>
+
+        <!-- UNLOCK PASSOWORK -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'unlock')}}">
+            <display-unlock white on-unlock="_handleUnlock"></display-unlock>
         </template>
 
         <!-- PROCESSING REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
-            new-request
+            <new-request-processing></new-request-processing>
         </template>
 
         <!-- SUCCESSFUL REQUEST -->
+
         <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
-            confirm
+            <new-request-success></new-request-success>
         </template>
+
         <!-- ERROR ON REQUEST -->
+
         <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
-            error
+            <new-request-error errorMessage="[[errorMessage]]"></new-request-error>
         </template>
 
     </template>
 
     <script>
-        class MyNewRequestRoot extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyNewRequestRouter extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
@@ -139,6 +126,30 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'new-request',
                     },
+                    errorMessage: {
+                        type: String,
+                        value: '',
+                    },
+                    totalSum: {
+                        type: String,
+                        value: 0,
+                    },
+                    hashtagFee: {
+                        type: String,
+                        value: 0,
+                    },
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    itemRequest: {
+                        type: Object,
+                        value: {},
+                    },
                 };
             }
             ready() {
@@ -148,11 +159,75 @@ This code may only be used under the license found at https://github.com/swarmci
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
-            _handleOnConfirm(e) {
+            _handleOnCreate(e) {
                 this.status = 'confirm'
                 const { itemBudget, itemDescription, itemGeohash } = e.detail
-                console.log('handleOnConfirm', { itemBudget, itemDescription, itemGeohash })
+                // Construct item object
+                this.itemRequest = { itemBudget, itemDescription, itemGeohash }
+                if (!this.hashtag) {
+                    console.error('hashtag property is not defined')
+                } else {
+                    this.totalSum = parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
+                    this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
+                }
             }
+            _handleOnReject(e) {
+                this.status = 'new-request'
+            }
+            _handleOnConfirm(e) {
+                this.status = 'unlock'
+            }
+            _handleUnlock(e) {
+                try {
+                    const { privateKey, address } = e.detail
+                    this.status = 'processing'
+
+                    console.log('Received privateKey', privateKey)
+
+                    if (!privateKey) {
+                        throw Error('Missing public key')
+                    }
+                    const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
+                    const item = {
+                        budget: itemBudget,
+                        description: itemDescription,
+                        location: itemGeohash,
+                    }
+                    const seeker = {
+                        username: this.username,
+                        address,
+                        privateKey
+                    }
+                    const hashtag = {
+                        address: this.hashtag.address,
+                        fee: this.hashtag.hashtagFee,
+                        tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                    }
+
+                    console.log('About to post item: ', { seeker, item, hashtag })
+
+                    this.$.simpledeal.createNewItem({ seeker, item, hashtag })
+                        .then(receipt => {
+                            console.log('Successfully posted item, receipt:', receipt)
+                            this.status = 'success'
+                        })
+                        .catch(err => {
+                            this.errorMessage = err.message
+                            console.log('Error posting item:', err)
+                            this.status = 'error'
+                        })
+
+                    /*
+                    * Create item and send it to IPFS
+                    */
+
+                } catch (e) {
+                    this.errorMessage = e.message
+                    console.error('Error posting item (catch block): ', e.stack)
+                    this.status = 'error'
+                }
+            }
+
             /**
             * Fired when the component is connected
             */
@@ -170,6 +245,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.path = null;
             }
         }
-        window.customElements.define(MyNewRequestRoot.is, MyNewRequestRoot);
+        window.customElements.define(MyNewRequestRouter.is, MyNewRequestRouter);
     </script>
 </dom-module>
