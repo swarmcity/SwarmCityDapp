@@ -273,7 +273,6 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
-                {{!enteredCity}}
             <div class="close" on-click="_close"></div>
             <div class="key-container" id="keycontainer">
                 <div class="greytext">{{localize('Your public key')}}</div>
@@ -659,18 +658,18 @@ This code may only be used under the license found at https://github.com/swarmci
                  * takes the user to the initiating hashtag page
                  */
             _enter() {
+                console.log('click')
                 let storage = JSON.parse(localStorage.getItem("SwarmCity"))
                 storage.user.entered = true;
                 localStorage.setItem("SwarmCity", JSON.stringify(storage));
                 if (sessionStorage.getItem('origin')) {
                     this.path = sessionStorage.getItem('origin');
                     sessionStorage.removeItem('origin');
+                }
+                if (this.enteredCity) {
+                    this.set('route.path', 'my-profile');
                 } else {
-                    if (this.enteredCity) {
-                        this.set('route.path', 'my-profile');
-                    } else {
-                        this.set('route.path', 'hashtag-list');
-                    }
+                    this.set('route.path', 'hashtag-list');
                 }
             }
         }
