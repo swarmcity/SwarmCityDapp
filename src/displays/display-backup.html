@@ -73,13 +73,13 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <a href="[[linkUrl]]">Click here on Android</a>
+        </br></br></br>
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
             <dom-if if="{{showJsonButton}}" restamp="true">
                 <template>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </template>
-    
+
     </dom-if>
     </div>
     </template>
@@ -156,9 +156,6 @@ The following custom properties and mixins are available for styling:
                             type: Boolean,
                             value: true,
                         },
-                        linkUrl: {
-                            type: Text,
-                        }
                     };
                 }
                 /**
@@ -292,20 +289,20 @@ The following custom properties and mixins are available for styling:
                  * downloads account info, after success routs to download-success
                  */
             _download() {
-
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    const filename = `SwarmCity - UTC KeyStore ${storage.keyStore.address}`;
+                    const filename = `SwarmCity - UTC KeyStore`;
                     storage.keyStore.avatar = storage.user.avatar;
                     storage.keyStore.username = storage.user.username;
                     const text = JSON.stringify(storage.keyStore);
-                    this.linkUrl = `data:application/json;charset=utf-8,${encodeURIComponent(text)}`;
+                    alert('Stage 1')
                     const element = document.createElement('a');
-                    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+                    element.setAttribute('href', `data:application/json;charset=utf-8,${encodeURIComponent(text)}`);
                     element.setAttribute('download', filename);
                     element.style.display = 'none';
                     document.body.appendChild(element);
                     element.click();
                     document.body.removeChild(element);
+                    alert('Stage 2')
                     if (this.route.path == '/make-backup/') {
                         this.path = 'download-success/';
                     } else {
