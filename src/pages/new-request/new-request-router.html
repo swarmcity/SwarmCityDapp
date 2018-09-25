@@ -37,13 +37,15 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CONFIRM REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            <new-request-confirm on-confirm="_handleOnConfirm" on-reject="_handleOnReject" totalSum="[[totalSum]]"
-                hashtagFee="[[hashtagFee]]"></new-request-confirm>
+            <new-request-confirm on-confirm="_handleOnConfirm" on-reject="_handleOnReject" total-sum="[[totalSum]]"
+                hashtag-fee="[[hashtagFee]]"></new-request-confirm>
         </template>
 
-        <!-- UNLOCK PASSOWORK -->
+        <!-- UNLOCK PASSWORK -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'unlock')}}">
+            <new-request-confirm style="filter: blur(8px); margin: 0; height: 100%; overflow: hidden"
+                total-sum="[[totalSum]]" hashtag-fee="[[hashtagFee]]"></new-request-confirm>
             <display-unlock white on-unlock="_handleUnlock"></display-unlock>
         </template>
 
@@ -167,7 +169,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (!this.hashtag) {
                     console.error('hashtag property is not defined')
                 } else {
-                    this.totalSum = parseFloat(this.itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
+                    this.totalSum = parseFloat(itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
                     this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
                 }
             }
@@ -175,7 +177,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.status = 'new-request'
             }
             _handleOnConfirm(e) {
-                this.status = 'unlock'
+                this.status = 'unlock';
             }
             _handleUnlock(e) {
                 try {
