@@ -34,25 +34,35 @@
             const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
             UUIDCollection[UUIDv4] = itemHashHex;
             localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
-            const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
+            // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
+            const itemBudgetWei = item.budget * 1e18;
+            const itemBudgetHex = this._toHex(itemBudgetWei);
             const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
+            
+            
+
+            window.testFoo = (_itemValue) => {
+                return simpleDealContract.methods.newItem(
+                    itemHashHex,
+                    _itemValue,
+                    metadataHash.bytes32
+                ).encodeABI();
+            }
 
             // 1. Encode the newItem method to be sent through ApproveAndCall
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             console.log('simpleDealContract.methods.newItem', itemHashHex, itemBudgetWei, metadataHash.bytes32)
 
-            debugger;
-
             const rawNewItem = simpleDealContract.methods.newItem(
                 itemHashHex,
-                parseInt(itemBudgetWei),
+                3000000000000000000,
                 metadataHash.bytes32
             ).encodeABI();
             const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
             console.log('tokenContract.methods.approveAndCall', hashtag.address, totalSum, rawNewItem)
             const rawApproveAndCall = tokenContract.methods.approveAndCall(
                 hashtag.address, // spender
-                totalSum, // totalSum
+                3300000000000000000, // totalSum
                 rawNewItem, // next call data
             ).encodeABI();
 
@@ -77,6 +87,18 @@
             // Extra line for clarity
             const receipt = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
             return receipt
+        }
+
+
+        /**
+        * to hex
+        * @param {String} dec - The data to convert
+        * @return {Object} - the input data in hex format
+        */
+        function _toHex(dec) {
+            let hex = Number(dec).toString(16);
+            let result = '000000'.substr(0, 6 - hex.length) + hex;
+            return '0x' + result;
         }
 
         function sendSignedTransaction(tx) {
