@@ -50,7 +50,7 @@
 <link rel="lazy-import" href="pages/page-location.html">
 <link rel="lazy-import" href="pages/page-new-hashtag.html">
 <link rel="lazy-import" href="pages/page-new-here.html">
-<link rel="lazy-import" href="pages/new-request/page-root.html">
+<link rel="lazy-import" href="pages/new-request/new-request-router.html">
 <link rel="lazy-import" href="pages/page-payout-processing.html">
 <link rel="lazy-import" href="pages/page-print-success-profile.html">
 <link rel="lazy-import" href="pages/page-resolve-payout-processing.html">
@@ -84,7 +84,6 @@
 
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
-
     <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
       <page-welcome name="welcome"></page-welcome>
       <page-language name="language"></page-language>
@@ -169,6 +168,10 @@
         ];
       }
 
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
       _routePageChanged(page) {
         this.page = page || 'welcome';
       }
@@ -176,7 +179,7 @@
       _pageChanged(page) {
         let resolvedPageUrl;
         if (page == 'new-request') {
-          resolvedPageUrl = this.resolveUrl('pages/new-request/page-root.html');
+          resolvedPageUrl = this.resolveUrl('pages/new-request/new-request-router.html');
         } else {
           resolvedPageUrl = this.resolveUrl('pages/page-' + page + '.html');
         }
