@@ -4,6 +4,7 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="data/socket-redux.html">
 <link rel="import" href="displays/display-get-hashtag.html">
+<link rel="import" href="displays/display-unlock.html">
 <!-- <link rel="import" href="redux-state.html"> -->
 <link rel="import" href="web3/web3-connection.html">
 <link rel="import" href="redux/app-store.html">
@@ -72,6 +73,14 @@
       :host {
         display: block;
       }
+
+      .blur {
+        filter: blur(8px);
+        opacity: 0.75;
+        margin: 0;
+        height: 100%;
+        overflow: hidden
+      }
     </style>
 
     <socket-redux></socket-redux>
@@ -85,7 +94,17 @@
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
-    <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+    <dom-if if="{{unlockBlue}}">
+      <template>
+        <display-unlock blue></display-unlock>
+      </template>
+    </dom-if>
+    <dom-if if="{{unlockWhite}}">
+      <template>
+        <display-unlock white></display-unlock>
+      </template>
+    </dom-if>
+    <iron-pages id="pages" selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
       <page-welcome name="welcome"></page-welcome>
       <page-language name="language"></page-language>
       <page-hashtag-list name="hashtag-list"></page-hashtag-list>
@@ -160,6 +179,14 @@
           routeData: Object,
           subroute: Object,
           rootPath: String,
+          unlockWhite: {
+            type: Boolean,
+            value: false,
+          },
+          unlockBlue: {
+            type: Boolean,
+            value: false,
+          },
         };
       }
 
@@ -167,6 +194,23 @@
         return [
           '_routePageChanged(routeData.page)',
         ];
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener('unlock', e => this._unlock(e));
+      }
+      _unlock(e) {
+        console.log(e);
+        if (e.detail.color == 'blue') {
+          this.unlockBlue = !this.unlockBlue;
+          this.$.pages.classList.add('blur');
+        } else if (e.detail.color == 'white') {
+          this.unlockWhite = !this.unlockWhite;
+          this.$.pages.classList.add('blur');
+        } else {
+          this.$.pages.classList.remove('blur');
+        }
       }
 
       _routePageChanged(page) {

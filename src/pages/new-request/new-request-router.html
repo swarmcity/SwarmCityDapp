@@ -37,16 +37,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CONFIRM REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            <new-request-confirm on-confirm="_handleOnConfirm" on-reject="_handleOnReject" total-sum="[[totalSum]]"
+            <new-request-confirm on-unlocked="_handleUnlock" on-reject="_handleOnReject" total-sum="[[totalSum]]"
                 hashtag-fee="[[hashtagFee]]"></new-request-confirm>
-        </template>
-
-        <!-- UNLOCK PASSWORK -->
-
-        <template is="dom-if" if="{{_isEqualTo(status, 'unlock')}}">
-            <new-request-confirm style="filter: blur(8px); margin: 0; height: 100%; overflow: hidden"
-                total-sum="[[totalSum]]" hashtag-fee="[[hashtagFee]]"></new-request-confirm>
-            <display-unlock white on-unlock="_handleUnlock"></display-unlock>
         </template>
 
         <!-- PROCESSING REQUEST -->
@@ -156,7 +148,14 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             ready() {
                 super.ready();
-                // this.$.myButton.addEventListener('click', e => { this._handleClick(e) });
+                this.dispatchEvent(new CustomEvent('unlock', {
+                    detail: {
+                        color: 'blue',
+                    },
+                    bubbles: true,
+                    composed: true
+                }
+                ));
             }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
@@ -180,6 +179,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.status = 'unlock';
             }
             _handleUnlock(e) {
+                console.log('unlocked');
                 try {
                     const { privateKey, address } = e.detail
                     this.status = 'processing'

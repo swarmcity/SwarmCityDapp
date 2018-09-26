@@ -163,42 +163,42 @@ The following custom properties and mixins are available for styling:
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div id="container" class="container" wide-layout$="{{wide}}">
-            <img src="{{avatar}}">
-            <dom-if if="{{blue}}">
-                <template>
-                    <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}" type="password"
-                        value="{{password}}" on-tap="_changeInput" on-keydown="_checkForEnter">
-                    </paper-input>
-                </template>
-            </dom-if>
-            <dom-if if="{{white}}">
-                <template>
-                    <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}" addAttr="autofocus"
-                        type="password" value="{{password}}" on-tap="_changeInput" on-keydown="_checkForEnter">
-                    </paper-input>
-                </template>
-            </dom-if>
-            {{error}}
-            <div class="buttonbox">
-                <div tabindex="2" class="disagree" on-tap="_disagree" on-keyPress="_disagree"></div>
-                <dom-if if="{{blue}}">
-                    <template>
-                        <div tabindex="3" class="submit submit-blue" on-up="_getPrivKey">
-                            <div class="icon-submit-blue"></div>
-                        </div>
-                    </template>
-                </dom-if>
-                <dom-if if="{{white}}">
-                    <template>
-                        <div tabindex="3" class="submit submit-white" on-up="_getPrivKey">
-                            <div class="icon-submit-white"></div>
-                        </div>
-                    </template>
-                </dom-if>
-            </div>
-        </div>
 
+                <div id="container" class="container" wide-layout$="{{wide}}">
+                    <img src="{{avatar}}">
+                    <dom-if if="{{blue}}">
+                        <template>
+                            <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}"
+                                type="password" value="{{password}}" on-tap="_changeInput">
+                            </paper-input>
+                        </template>
+                    </dom-if>
+                    <dom-if if="{{white}}">
+                        <template>
+                            <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}"
+                                addAttr="autofocus" type="password" value="{{password}}" on-tap="_changeInput">
+                            </paper-input>
+                        </template>
+                    </dom-if>
+                    {{error}}
+                    <div class="buttonbox">
+                        <div tabindex="2" class="disagree" on-tap="_disagree"></div>
+                        <dom-if if="{{blue}}">
+                            <template>
+                                <div tabindex="3" class="submit submit-blue" on-tap="_getPrivKey">
+                                    <div class="icon-submit-blue"></div>
+                                </div>
+                            </template>
+                        </dom-if>
+                        <dom-if if="{{white}}">
+                            <template>
+                                <div tabindex="3" class="submit submit-white" on-tap="_getPrivKey">
+                                    <div class="icon-submit-white"></div>
+                                </div>
+                            </template>
+                        </dom-if>
+                    </div>
+                </div>
     </template>
     <script>
         class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -226,15 +226,6 @@ The following custom properties and mixins are available for styling:
                     avatar: {
                         type: String,
                         value: '[[importPath]]../../images/defaultavatar.png',
-                    },
-                    /**
-                    * toggles the unlock display
-                    * @type {Boolean}
-                    */
-                    toggleUnlock: {
-                        type: Boolean,
-                        notify: true,
-                        observer: '_openDisplay',
                     },
                     /*
                     * toggles the view to show private key
@@ -354,15 +345,6 @@ The following custom properties and mixins are available for styling:
                 this.error = '';
             }
             /**
-            * Checks for enter key input
-            * @param {Object} e element clicked.
-            */
-            _checkForEnter(e) {
-                if (e.keyCode === 13) {
-                    this._getPrivKey(e);
-                }
-            }
-            /**
             * Checks for correct password, returns private key and closes this display
             * @param {Object} event element clicked.
             */
@@ -380,12 +362,15 @@ The following custom properties and mixins are available for styling:
                             /**
                             * Got private key, emit event
                             */
-                            this.dispatchEvent(new CustomEvent('unlock', {
+                            this.dispatchEvent(new CustomEvent('unlocked', {
                                 detail: {
                                     privateKey,
                                     address: storage.keyStore.address
-                                }
-                            }));
+                                },
+                                bubbles: true,
+                                composed: true
+                            }
+                            ));
 
                             this.password = '';
                             this.$.wallet.makeQRCode(this.privateKey)
