@@ -4,7 +4,6 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="data/socket-redux.html">
 <link rel="import" href="displays/display-get-hashtag.html">
-<link rel="import" href="displays/display-unlock.html">
 <!-- <link rel="import" href="redux-state.html"> -->
 <link rel="import" href="web3/web3-connection.html">
 <link rel="import" href="redux/app-store.html">
@@ -73,20 +72,6 @@
       :host {
         display: block;
       }
-
-      .blur {
-        filter: blur(8px);
-        opacity: 0.99;
-        margin: 0;
-        height: 100%;
-        overflow: hidden;
-        transform: scale(1.1);
-      }
-
-      .top {
-        position: absolute;
-        z-index: 99;
-      }
     </style>
 
     <socket-redux></socket-redux>
@@ -99,16 +84,7 @@
 
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
-
-    <template is="dom-if" if="{{unlockBlue}}">
-      <display-unlock class="top" on-lock="_lock" blue></display-unlock>
-    </template>
-
-    <template is="dom-if" if="{{unlockWhite}}">
-      <display-unlock class="top" on-lock="_lock" white></display-unlock>
-    </template>
-
-    <iron-pages id="pages" selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+    <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
       <page-welcome name="welcome"></page-welcome>
       <page-language name="language"></page-language>
       <page-hashtag-list name="hashtag-list"></page-hashtag-list>
@@ -183,14 +159,6 @@
           routeData: Object,
           subroute: Object,
           rootPath: String,
-          unlockWhite: {
-            type: Boolean,
-            value: false,
-          },
-          unlockBlue: {
-            type: Boolean,
-            value: false,
-          },
         };
       }
 
@@ -202,19 +170,6 @@
 
       connectedCallback() {
         super.connectedCallback();
-        this.addEventListener('unlock', e => this._unlock(e));
-      }
-      _unlock(e) {
-        this.$.pages.classList.add('blur');
-        if (e.detail.color == 'blue') {
-          this.unlockBlue = !this.unlockBlue;
-        } else if (e.detail.color == 'white') {
-          this.unlockWhite = !this.unlockWhite;
-        }
-      }
-      _lock(e) {
-        this.$.pages.classList.remove('blur');
-        this.unlockBlue, this.unlockWhite = false;
       }
 
       _routePageChanged(page) {

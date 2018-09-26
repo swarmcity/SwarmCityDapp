@@ -37,8 +37,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CONFIRM REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            <new-request-confirm on-reject="_handleOnReject" total-sum="[[totalSum]]"
-                hashtag-fee="[[hashtagFee]]"></new-request-confirm>
+            <new-request-confirm on-reject="_handleOnReject" on-unlock="_handleOnUnlock" total-sum="[[totalSum]]" hashtag-fee="[[hashtagFee]]"></new-request-confirm>
         </template>
 
         <!-- PROCESSING REQUEST -->
@@ -146,9 +145,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                 };
             }
-            ready() {
-                super.ready();
-            }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
@@ -167,10 +163,7 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnReject(e) {
                 this.status = 'new-request'
             }
-            _handleOnConfirm(e) {
-                this.status = 'unlock';
-            }
-            _handleUnlock(e) {
+            _handleOnUnlock(e) {
                 console.log('unlocked');
                 try {
                     const { privateKey, address } = e.detail
