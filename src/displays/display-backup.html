@@ -73,7 +73,7 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-        <p><a href="{{downloadLink}}">Backup 3: {{downloadLink}}</a></p>   
+        <div id="dwn-btn" >Download by clicking here</div>
         </br></br></br>
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
             <dom-if if="{{showJsonButton}}" restamp="true">
@@ -157,17 +157,25 @@ The following custom properties and mixins are available for styling:
                             type: Boolean,
                             value: true,
                         },
-                        downloadLink: {
-                            type: String,
-                        },
                     };
                 }
                 /**
                  * Fired when the component is connected
                  */
             connectedCallback() {
-                    this.downloadLink = 'data:application/json;charset=utf-8,' + encodeURIComponent("This is the content of my file")
                     super.connectedCallback();
+
+                    document.getElementById("dwn-btn").addEventListener("click", function() {
+                        alert('Clicked')
+                        var element = document.createElement('a');
+                        element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent("This is the content of my file"));
+                        element.setAttribute('download', "SwarmCity - UTC KeyStore.json");
+                        element.style.display = 'none';
+                        document.body.appendChild(element);
+                        element.click();
+                    }, false);
+
+
                     this._isShowDownload();
                     this.loadResources(this.resolveUrl('../text-translations.json'));
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
@@ -294,6 +302,7 @@ The following custom properties and mixins are available for styling:
                  * downloads account info, after success routs to download-success
                  */
             _download() {
+                    this.$.testClick.click();
                     // var element = document.createElement('a');
                     // element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent("This is the content of my file"));
                     // element.setAttribute('download', "SwarmCity - UTC KeyStore.json");
@@ -302,23 +311,23 @@ The following custom properties and mixins are available for styling:
                     // //element.click();
                     // //document.body.removeChild(element);
 
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    const filename = `SwarmCity - UTC KeyStore`;
-                    storage.keyStore.avatar = storage.user.avatar;
-                    storage.keyStore.username = storage.user.username;
-                    const text = JSON.stringify(storage.keyStore);
-                    const element = document.createElement('a');
-                    element.setAttribute('href', `data:application/json;charset=utf-8,${encodeURIComponent(text)}`);
-                    element.setAttribute('download', filename);
-                    element.style.display = 'none';
-                    document.body.appendChild(element);
-                    element.click();
-                    document.body.removeChild(element);
-                    if (this.route.path == '/make-backup/') {
-                        this.path = 'download-success/';
-                    } else {
-                        this.path = 'download-success-profile/';
-                    }
+                    // let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    // const filename = `SwarmCity - UTC KeyStore`;
+                    // storage.keyStore.avatar = storage.user.avatar;
+                    // storage.keyStore.username = storage.user.username;
+                    // const text = JSON.stringify(storage.keyStore);
+                    // const element = document.createElement('a');
+                    // element.setAttribute('href', `data:application/json;charset=utf-8,${encodeURIComponent(text)}`);
+                    // element.setAttribute('download', filename);
+                    // element.style.display = 'none';
+                    // document.body.appendChild(element);
+                    // element.click();
+                    // document.body.removeChild(element);
+                    // if (this.route.path == '/make-backup/') {
+                    //     this.path = 'download-success/';
+                    // } else {
+                    //     this.path = 'download-success-profile/';
+                    // }
                 }
                 /**
                  * check for operating system for enable/disable the download backup file link
