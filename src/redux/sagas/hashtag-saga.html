@@ -29,13 +29,13 @@
          *   - ipfs.cat(hashtagMetadata) -> description
          * 
          * Step 2B. Get hashtag items from past events
-         *   - getPastEvents('NewItem') -> itemHash, ipfsMetadata, itemValue, seekerAddr, seekerRep, blockNumber
+         *   - getPastEvents('NewItem') -> itemHash, itemMetadataHash, itemValue, seekerAddr, seekerRep, blockNumber
          * 
          * Step 3B. Call contract state to get item status
          *   - readItem(itemHash) -> status, providerAddress, numberOfReplies
          * 
-         * Step 3C. Resolve ipfsMetadata
-         *   - ipfs.cat(ipfsMetadata) -> seeker, avatarHash, description, publicKey
+         * Step 3C. Resolve itemMetadataHash
+         *   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
          * 
          * 
          * SUBSCRIPTION
@@ -43,15 +43,15 @@
          * 
          * A subscription to all hashtag items will be activated. 
          * The relevant events to listen are:
-         * - NewItem(owner, itemHash, ipfsMetadata, itemValue, hashtagFee, seekerRep)
+         * - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
          *   - Emitted on: newItem
-         *   - After receiving: resolve ipfsMetadata
+         *   - After receiving: resolve itemMetadataHash
          * - ItemChange(indexed itemHash, newstatus, providerAddress)
          *   - Emitted on: selectReplier, fundItem, payoutItem, cancelItem, disputeItem, resolveItem
          *   - After receiving: -
-         * - ReplyItem(indexed itemHash, ipfsMetadata, provider) // provider => providerAddress
+         * - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
          *   - Emitted on: replyItem
-         *   - After receiving: resolve ipfsMetadata
+         *   - After receiving: resolve replyMetadataHash
          * 
         */
 
@@ -86,7 +86,7 @@
                 items[event.returnValues.itemHash] = {
                     blockNumber: event.blockNumber,
                     hashtagFee: event.returnValues.hashtagFee,
-                    ipfsMetadata: event.returnValues.ipfsMetadata,
+                    itemMetadataHash: event.returnValues.itemMetadataHash,
                     itemHash: event.returnValues.itemHash,
                     itemValue: event.returnValues.itemValue,
                     seekerAddress: event.returnValues.owner, // owner => seeker
@@ -160,7 +160,7 @@
                 }
 
                 // Step 2B. Get hashtag items from past events
-                //   - getPastEvents('NewItem') -> itemHash, ipfsMetadata, itemValue, seekerAddr, seekerRep, blockNumber
+                //   - getPastEvents('NewItem') -> itemHash, itemMetadataHash, itemValue, seekerAddr, seekerRep, blockNumber
                 const items = yield call(getPastItems, hashtagContract, hashtagContractData.deployBlock)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: { items } });
 
@@ -171,8 +171,8 @@
                 // Step 3B. Call contract state to get item status
                 //   - readItem(itemHash) -> status, providerAddress, numberOfReplies
                 // 
-                // Step 3C. Resolve ipfsMetadata
-                //   - ipfs.cat(ipfsMetadata) -> seeker, avatarHash, description, publicKey
+                // Step 3C. Resolve itemMetadataHash
+                //   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
                 yield all(Object.values(items).map(item => all([
                     call(getItemState, item, hashtagContract),
                     call(getItemMetadata, item, hashtagAddress)
@@ -237,15 +237,15 @@
          * 
          * A subscription to all hashtag items will be activated. 
          * The relevant events to listen are:
-         * - NewItem(owner, itemHash, ipfsMetadata, itemValue, hashtagFee, seekerRep)
+         * - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
          *   - Emitted on: newItem
-         *   - After receiving: resolve ipfsMetadata
+         *   - After receiving: resolve itemMetadataHash
          * - ItemChange(indexed itemHash, newstatus, providerAddress)
          *   - Emitted on: selectReplier, fundItem, payoutItem, cancelItem, disputeItem, resolveItem
          *   - After receiving: -
-         * - ReplyItem(indexed itemHash, ipfsMetadata, provider) // provider => providerAddress
+         * - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
          *   - Emitted on: replyItem
-         *   - After receiving: resolve ipfsMetadata
+         *   - After receiving: resolve replyMetadataHash
          * 
         */
 
@@ -253,9 +253,9 @@
         function createHashtagSubscriptionChannel(hashtagContract) {
             return eventChannel(emitter => {
                 // Unique place to subscribe to all hashtag relevant events
-                //  - NewItem(owner, itemHash, ipfsMetadata, itemValue, hashtagFee, seekerRep)
+                //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
                 //  - ItemChange(indexed itemHash, newstatus, providerAddress)
-                //  - ReplyItem(indexed itemHash, ipfsMetadata, provider) // provider => providerAddress
+                //  - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
                 const events = ['NewItem', 'ItemChange', 'ReplyItem']
                 const subscribeInstances = events.map(eventName => {
                     try {
@@ -287,13 +287,13 @@
         }
 
         function* handleNewItem(event, hashtagAddress) {
-            // NewItem(owner, itemHash, ipfsMetadata, itemValue, hashtagFee, seekerRep)
+            // NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
             // Step 1. Store the item info
             console.log('Handling NewItem', event)
             const item = {
                 blockNumber: event.blockNumber,
                 hashtagFee: event.returnValues.hashtagFee,
-                ipfsMetadata: event.returnValues.ipfsMetadata,
+                iitemMetadataHash: event.returnValues.itemMetadataHash,
                 itemHash: event.returnValues.itemHash,
                 itemValue: event.returnValues.itemValue,
                 seekerAddress: event.returnValues.owner, // owner => seeker
@@ -301,7 +301,7 @@
                 totalValue: event.returnValues.totalValue,
                 status: 0,
             }
-            const { itemHash, ipfsMetadata } = event.returnValues
+            const { itemHash, itemMetadataHash } = event.returnValues
             yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
 
             // Step 2. Resolve its metadata
@@ -331,7 +331,7 @@
 
         function* getReplyMetadata(reply, itemHash, hashtagAddress) {
             try {
-                const { ipfsMetadata: hash, providerAddress } = item;
+                const { replyMetadataHash: hash, providerAddress } = item;
                 const res = yield call(catIpfsMetadata, hash)
                 yield put({
                     type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
@@ -347,14 +347,14 @@
         }
 
         function* handleReplyItem(event, hashtagAddress) {
-            // ReplyItem(indexed itemHash, ipfsMetadata, provider) // provider => providerAddress
+            // ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
             // Step 1. Store the reply info
             console.log('Handling ReplyEvent', event)
-            const { itemHash, ipfsMetadata, provider: providerAddress } = event.returnValues
+            const { itemHash, replyMetadataHash, provider: providerAddress } = event.returnValues
             const reply = {
                 blockNumber: event.blockNumber,
                 providerAddress,
-                ipfsMetadata,
+                replyMetadataHash,
             }
             yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
 
@@ -380,9 +380,9 @@
                     // take(END) will cause the saga to terminate by jumping to the finally block
                     let event = yield take(hashtagSubscriptionChannel)
                     // Unique place to subscribe to all hashtag relevant events
-                    //  - NewItem(owner, itemHash, ipfsMetadata, itemValue, hashtagFee, seekerRep)
+                    //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
                     //  - ItemChange(indexed itemHash, newstatus, providerAddress)
-                    //  - ReplyItem(indexed itemHash, ipfsMetadata, provider)
+                    //  - ReplyItem(indexed itemHash, replyMetadataHash, provider)
                     switch (event.event) {
                         case 'NewItem':
                             yield fork(handleNewItem, event, hashtagAddress)

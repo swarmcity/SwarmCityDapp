@@ -37,7 +37,7 @@
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
             const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
-            
+
             // 1. Encode the newItem method to be sent through ApproveAndCall
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             console.log('simpleDealContract.methods.newItem', itemHashHex, itemBudgetWei, metadataHash.bytes32)
@@ -68,7 +68,7 @@
                 data: rawApproveAndCall,
                 chainId: 42,
             });
-            
+
             tx.sign(new Buffer(seeker.privateKey, 'hex'));
             const serializedTx = tx.serialize();
 
@@ -92,11 +92,16 @@
 
         function sendSignedTransaction(tx) {
             return new Promise((resolve, reject) => {
+                let _hash;
                 _web3.eth.sendSignedTransaction(tx)
                     .once('transactionHash', (hash) => {
-                        console.log('transactionHash', hash);
+                        resolve(hash)
+                        _hash = hash
+                        console.log('received transactionHash', hash);
                     })
-                    .on('receipt', resolve)
+                    .on('receipt', (receipt) => {
+                        console.log('received receipt for txHash: ' + hash, receipt);
+                    })
                     .on('error', (err, receipt) => {
                         if (err.message &&
                             err.message.startsWith('Failed to check for transaction receipt')
