@@ -81,8 +81,8 @@
         height: 100%;
         overflow: hidden;
         transform: scale(1.1);
-
       }
+
       .top {
         position: absolute;
         z-index: 99;
@@ -100,16 +100,14 @@
     <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
-    <dom-if if="{{unlockBlue}}">
-      <template>
-        <display-unlock class="top" blue></display-unlock>
-      </template>
-    </dom-if>
-    <dom-if if="{{unlockWhite}}">
-      <template>
-        <display-unlock class="top" white></display-unlock>
-      </template>
-    </dom-if>
+    <template is="dom-if" if="{{unlockBlue}}">
+      <display-unlock class="top" on-lock="_lock" blue></display-unlock>
+    </template>
+
+    <template is="dom-if" if="{{unlockWhite}}">
+      <display-unlock class="top" on-lock="_lock" white></display-unlock>
+    </template>
+
     <iron-pages id="pages" selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
       <page-welcome name="welcome"></page-welcome>
       <page-language name="language"></page-language>
@@ -207,16 +205,16 @@
         this.addEventListener('unlock', e => this._unlock(e));
       }
       _unlock(e) {
-        console.log(e);
+        this.$.pages.classList.add('blur');
         if (e.detail.color == 'blue') {
           this.unlockBlue = !this.unlockBlue;
-          this.$.pages.classList.add('blur');
         } else if (e.detail.color == 'white') {
           this.unlockWhite = !this.unlockWhite;
-          this.$.pages.classList.add('blur');
-        } else {
-          this.$.pages.classList.remove('blur');
         }
+      }
+      _lock(e) {
+        this.$.pages.classList.remove('blur');
+        this.unlockBlue, this.unlockWhite = false;
       }
 
       _routePageChanged(page) {

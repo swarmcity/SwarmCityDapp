@@ -164,41 +164,41 @@ The following custom properties and mixins are available for styling:
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
-                <div id="container" class="container" wide-layout$="{{wide}}">
-                    <img src="{{avatar}}">
-                    <dom-if if="{{blue}}">
-                        <template>
-                            <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}"
-                                type="password" value="{{password}}" on-tap="_changeInput">
-                            </paper-input>
-                        </template>
-                    </dom-if>
-                    <dom-if if="{{white}}">
-                        <template>
-                            <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}"
-                                addAttr="autofocus" type="password" value="{{password}}" on-tap="_changeInput">
-                            </paper-input>
-                        </template>
-                    </dom-if>
-                    {{error}}
-                    <div class="buttonbox">
-                        <div tabindex="2" class="disagree" on-tap="_disagree"></div>
-                        <dom-if if="{{blue}}">
-                            <template>
-                                <div tabindex="3" class="submit submit-blue" on-tap="_getPrivKey">
-                                    <div class="icon-submit-blue"></div>
-                                </div>
-                            </template>
-                        </dom-if>
-                        <dom-if if="{{white}}">
-                            <template>
-                                <div tabindex="3" class="submit submit-white" on-tap="_getPrivKey">
-                                    <div class="icon-submit-white"></div>
-                                </div>
-                            </template>
-                        </dom-if>
-                    </div>
-                </div>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <img src="{{avatar}}">
+            <dom-if if="{{blue}}">
+                <template>
+                    <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}" type="password"
+                        value="{{password}}" on-tap="_changeInput">
+                    </paper-input>
+                </template>
+            </dom-if>
+            <dom-if if="{{white}}">
+                <template>
+                    <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}" addAttr="autofocus"
+                        type="password" value="{{password}}" on-tap="_changeInput">
+                    </paper-input>
+                </template>
+            </dom-if>
+            {{error}}
+            <div class="buttonbox">
+                <div tabindex="2" class="disagree" on-tap="_disagree"></div>
+                <dom-if if="{{blue}}">
+                    <template>
+                        <div tabindex="3" class="submit submit-blue" on-tap="_getPrivKey">
+                            <div class="icon-submit-blue"></div>
+                        </div>
+                    </template>
+                </dom-if>
+                <dom-if if="{{white}}">
+                    <template>
+                        <div tabindex="3" class="submit submit-white" on-tap="_getPrivKey">
+                            <div class="icon-submit-white"></div>
+                        </div>
+                    </template>
+                </dom-if>
+            </div>
+        </div>
     </template>
     <script>
         class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -332,11 +332,9 @@ The following custom properties and mixins are available for styling:
             * Toggles the visibility of this display
             * @param {Object} event element clicked.
             */
-            _disagree(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    this.toggleUnlock = !this.toggleUnlock;
-                    this.password = '';
-                }
+            _disagree() {
+                this.password = '';
+                this.dispatchEvent(new CustomEvent('lock'));
             }
             /**
             * Resets the error warning
