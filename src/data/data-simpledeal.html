@@ -36,33 +36,22 @@
             localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
-            const itemBudgetHex = this._toHex(itemBudgetWei);
             const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
             
-            
-
-            window.testFoo = (_itemValue) => {
-                return simpleDealContract.methods.newItem(
-                    itemHashHex,
-                    _itemValue,
-                    metadataHash.bytes32
-                ).encodeABI();
-            }
-
             // 1. Encode the newItem method to be sent through ApproveAndCall
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             console.log('simpleDealContract.methods.newItem', itemHashHex, itemBudgetWei, metadataHash.bytes32)
 
             const rawNewItem = simpleDealContract.methods.newItem(
                 itemHashHex,
-                3000000000000000000,
+                itemBudgetWei,
                 metadataHash.bytes32
             ).encodeABI();
             const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
             console.log('tokenContract.methods.approveAndCall', hashtag.address, totalSum, rawNewItem)
             const rawApproveAndCall = tokenContract.methods.approveAndCall(
                 hashtag.address, // spender
-                3300000000000000000, // totalSum
+                totalSum, // totalSum
                 rawNewItem, // next call data
             ).encodeABI();
 
@@ -79,7 +68,7 @@
                 data: rawApproveAndCall,
                 chainId: 42,
             });
-            debugger
+            
             tx.sign(new Buffer(seeker.privateKey, 'hex'));
             const serializedTx = tx.serialize();
 
