@@ -34,28 +34,28 @@ This code may only be used under the license found at https://github.com/swarmci
             <new-request-create on-create="_handleOnCreate" path="{{path}}"></new-request-create>
         </template>
 
-    <!-- CONFIRM REQUEST -->
+        <!-- CONFIRM REQUEST -->
 
-    <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+        <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
             <new-request-confirm on-reject="_handleOnReject" on-unlock="_handleOnUnlock" total-sum="[[totalSum]]"
                 hashtag-fee="[[hashtagFee]]"></new-request-confirm>
         </template>
 
-    <!-- PROCESSING REQUEST -->
+        <!-- PROCESSING REQUEST -->
 
-    <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
+        <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
             <new-request-processing></new-request-processing>
         </template>
 
-    <!-- SUCCESSFUL REQUEST -->
+        <!-- SUCCESSFUL REQUEST -->
 
-    <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
+        <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
             <new-request-success></new-request-success>
         </template>
 
-    <!-- ERROR ON REQUEST -->
+        <!-- ERROR ON REQUEST -->
 
-    <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
+        <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
             <new-request-error errorMessage="[[errorMessage]]"></new-request-error>
         </template>
 
@@ -63,8 +63,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
     <script>
         class MyNewRequestRouter extends new ReduxMixin(Polymer.mixinBehaviors([
-                Polymer.AppLocalizeBehavior,
-            ],
+            Polymer.AppLocalizeBehavior,
+        ],
             Polymer.Element
         )) {
             static get is() {
@@ -156,7 +156,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     itemDescription,
                     itemGeohash
                 } = e.detail
-                    // Construct item object
+                // Construct item object
                 this.itemRequest = {
                     itemBudget,
                     itemDescription,
@@ -195,10 +195,10 @@ This code may only be used under the license found at https://github.com/swarmci
 
 
                     this.$.simpledeal.createNewItem({
-                            seeker,
-                            item,
-                            hashtag
-                        })
+                        seeker,
+                        item,
+                        hashtag
+                    })
                         .then(() => {
                             this.status = 'success'
                         })
@@ -221,17 +221,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.status = 'error'
                 }
             }
-
             /**
-             * Fired when the component is connected
+             * changes the current path
              */
-            connectedCallback() {
-                    super.connectedCallback();
-                    this.loadResources(this.resolveUrl('../../text-translations.json'));
-                }
-                /**
-                 * changes the current path
-                 */
             _path() {
                 if (this.path != null) {
                     this.set('route.path', this.path);
