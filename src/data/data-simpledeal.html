@@ -2,7 +2,6 @@
 
 <dom-module id="data-simpledeal">
     <script>
-
         // Import libraries
         const Tx = webpack.EthereumTx
         const Buffer = webpack.Buffer.Buffer
@@ -10,14 +9,19 @@
         const sha3 = webpack.sha3
         const ipfs = window.ipfs
 
-        const { swtToken, hashtagList, simpleDeal } = contractsData;
+        const {
+            swtToken,
+            hashtagList,
+            simpleDeal
+        } = contractsData;
 
         // Define async methods, because 
         // oh hi classes can u support async/await plz tkns
-        async function createNewItemAsync({ seeker, item, hashtag }) {
-
-            console.log(seeker)
-
+        async function createNewItemAsync({
+            seeker,
+            item,
+            hashtag
+        }) {
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: seeker.username,
@@ -78,10 +82,10 @@
 
 
         /**
-        * to hex
-        * @param {String} dec - The data to convert
-        * @return {Object} - the input data in hex format
-        */
+         * to hex
+         * @param {String} dec - The data to convert
+         * @return {Object} - the input data in hex format
+         */
         function _toHex(dec) {
             let hex = Number(dec).toString(16);
             let result = '000000'.substr(0, 6 - hex.length) + hex;
@@ -123,21 +127,21 @@
             }
 
             /**
-            * Create a new hashtag item
-            */
+             * Create a new hashtag item
+             */
             createNewItem(args) {
                 return createNewItemAsync(args)
             }
 
             /**
-            * Create a new hashtag item
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {Number} weiAmount - The item value in wei
-            * @param {String} ipfsHash - The item's metadata ipfs hash
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw new item tx data
-            */
+             * Create a new hashtag item
+             * @param {String} itemHash - The itemHash in Hex (with prefix)
+             * @param {Number} weiAmount - The item value in wei
+             * @param {String} ipfsHash - The item's metadata ipfs hash
+             * @param {String} contractAddress - The hashtag's address
+             * @param {Object} abi - The hashtag contract's abi
+             * @return {Object} - The Raw new item tx data
+             */
             rawNewItem(itemHash, weiAmount, ipfsHash, contractAddress, abi) {
                 const simpleDealContract = new webpack.Contract(
                     abi,
@@ -151,13 +155,13 @@
             }
 
             /**
-            * Reply to an item
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {String} ipfsHash - The reply data ipfs hash
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw reply tx data
-            */
+             * Reply to an item
+             * @param {String} itemHash - The itemHash in Hex (with prefix)
+             * @param {String} ipfsHash - The reply data ipfs hash
+             * @param {String} contractAddress - The hashtag's address
+             * @param {Object} abi - The hashtag contract's abi
+             * @return {Object} - The Raw reply tx data
+             */
             rawReplyItem(itemHash, ipfsHash, contractAddress, abi) {
                 return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
@@ -173,13 +177,13 @@
             }
 
             /**
-            * As seeker, select a replier to your item as potential provider
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {String} replierAddress - The replier's address
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw reply tx data
-            */
+             * As seeker, select a replier to your item as potential provider
+             * @param {String} itemHash - The itemHash in Hex (with prefix)
+             * @param {String} replierAddress - The replier's address
+             * @param {String} contractAddress - The hashtag's address
+             * @param {Object} abi - The hashtag contract's abi
+             * @return {Object} - The Raw reply tx data
+             */
             rawSelectReplier(itemHash, replierAddress, contractAddress, abi) {
                 return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
@@ -195,12 +199,12 @@
             }
 
             /**
-            * Fund a hashtag item
-            * @param {String} itemHash - The itemHash of the item
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw new item tx data
-            */
+             * Fund a hashtag item
+             * @param {String} itemHash - The itemHash of the item
+             * @param {String} contractAddress - The hashtag's address
+             * @param {Object} abi - The hashtag contract's abi
+             * @return {Object} - The Raw new item tx data
+             */
             rawFundItem(itemHash, contractAddress, abi) {
                 return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(
@@ -215,12 +219,12 @@
             }
 
             /**
-            * Pay the provider the full sum
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw payout item tx data
-            */
+             * Pay the provider the full sum
+             * @param {String} itemHash - The itemHash in Hex (with prefix)
+             * @param {String} contractAddress - The hashtag's address
+             * @param {Object} abi - The hashtag contract's abi
+             * @return {Object} - The Raw payout item tx data
+             */
             rawPayoutItem(itemHash, contractAddress, abi) {
                 return new Promise((resolve) => {
                     const simpleDealContract = new webpack.Contract(abi, contractAddress);
@@ -230,12 +234,12 @@
             }
 
             /**
-            * Filter the hashtag object to return a formatted list of items the user is involved in
-            * @return {items} The array with items the user is involved in
-            * @argument {object} hashtag the current hashtag
-            * @argument {String} userAddress the user's address
-            * @argument {String} involved if true, return the items the user is involved with
-            */
+             * Filter the hashtag object to return a formatted list of items the user is involved in
+             * @return {items} The array with items the user is involved in
+             * @argument {object} hashtag the current hashtag
+             * @argument {String} userAddress the user's address
+             * @argument {String} involved if true, return the items the user is involved with
+             */
             getHashtagItems(hashtag, userAddress, involved) {
                 return new Promise((resolve) => {
                     let items = Object.values(hashtag.items)
@@ -272,6 +276,7 @@
                     resolve(items);
                 });
             }
-        } window.customElements.define(DataSimpledeal.is, DataSimpledeal);
+        }
+        window.customElements.define(DataSimpledeal.is, DataSimpledeal);
     </script>
 </dom-module>
