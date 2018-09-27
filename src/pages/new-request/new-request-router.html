@@ -37,7 +37,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CONFIRM REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            <new-request-confirm on-reject="_handleOnReject" on-unlock="_handleOnUnlock" total-sum="[[totalSum]]" hashtag-fee="[[hashtagFee]]"></new-request-confirm>
+            <new-request-confirm on-reject="_handleOnReject" on-unlock="_handleOnUnlock" total-sum="[[totalSum]]"
+                hashtag-fee="[[hashtagFee]]"></new-request-confirm>
         </template>
 
         <!-- PROCESSING REQUEST -->
@@ -185,13 +186,15 @@ This code may only be used under the license found at https://github.com/swarmci
                         address,
                         privateKey
                     }
+                    
+
                     const hashtag = {
                         address: this.hashtag.address,
                         fee: this.hashtag.hashtagFee,
                         tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
                     }
 
-                    console.log('About to post item: ', { seeker, item, hashtag })
+                    console.log('About to post item: ', { seeker, item, hashtag });
 
                     this.$.simpledeal.createNewItem({ seeker, item, hashtag })
                         .then(receipt => {
@@ -207,6 +210,11 @@ This code may only be used under the license found at https://github.com/swarmci
                     /*
                     * Create item and send it to IPFS
                     */
+
+                    // Suggested temporary solution for signing tx:
+                    // Accessing the sign function contained withing display-unlock at the highest possible root level
+                    // Currently we need to find a way to put display-unlock at global root, now we can make it work within directory root
+                    // the display-unlock will contain the signing logic
 
                 } catch (e) {
                     this.errorMessage = e.message
