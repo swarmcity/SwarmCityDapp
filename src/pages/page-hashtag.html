@@ -127,24 +127,24 @@ This code may only be used under the license found at https://github.com/swarmci
                     </display-deal-btn>
                 </div>
             </template>
-            <div class="header">
-                <div class="topleft">
-                    <display-my-info path="{{path}}" route="{{route}}" id="displaymyinfo">
-                    </display-my-info>
-                </div>
-                <div class="topright">
-                    <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back">
-                    </div>
-                </div>
-            </div>
-            <display-simpledeal-title id="simpledealtitle" hashtag=[[hashtag]]></display-simpledeal-title>
-            <display-hashtag-simpledeal path={{path}} hashtag=[[hashtag]] id="simpledealdisplay"></display-hashtag-simpledeal>
+    <div class="header">
+        <div class="topleft">
+            <display-my-info path="{{path}}" route="{{route}}" id="displaymyinfo">
+            </display-my-info>
         </div>
+        <div class="topright">
+            <div tabindex="2" class="back" on-tap="_back" id="back" on-KeyPress="_back">
+            </div>
+        </div>
+    </div>
+    <display-simpledeal-title id="simpledealtitle" hashtag=[[hashtag]]></display-simpledeal-title>
+    <display-hashtag-simpledeal path={{path}} hashtag=[[hashtag]] id="simpledealdisplay"></display-hashtag-simpledeal>
+    </div>
     </template>
     <script>
         class MyHashtag extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
+                Polymer.AppLocalizeBehavior,
+            ],
             Polymer.Element
         )) {
             static get is() {
@@ -153,64 +153,64 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                    * language is the user selected language
-                    * @type {String}
-                    */
+                     * language is the user selected language
+                     * @type {String}
+                     */
                     language: {
                         type: String,
                         statePath: 'language',
                     },
                     /**
-                    * Route is the current browser route
-                    * @type {Object}
-                    */
+                     * Route is the current browser route
+                     * @type {Object}
+                     */
                     route: {
                         type: Object,
                         notify: true,
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
+                     * Path is the current or requested path
+                     * @type {String}
+                     */
                     path: {
                         type: String,
                         observer: '_path',
                     },
                     /**
-                    * PublicKey represents the user's public key
-                    * @type {String}
-                    */
+                     * PublicKey represents the user's public key
+                     * @type {String}
+                     */
                     publicKey: {
                         type: String,
                         statePath: 'publicKey',
                     },
                     /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
+                     * pageID is an id givven to every page specific
+                     * @type {String}
+                     */
                     pageID: {
                         type: String,
                         value: 'hashtag',
                     },
                     /**
-                    * scrollToHeight is the scrollheight page hashtag should scroll to
-                    * @type {Number}
-                    */
+                     * scrollToHeight is the scrollheight page hashtag should scroll to
+                     * @type {Number}
+                     */
                     scrollToHeight: {
                         type: Number,
                     },
                     /**
-                    * loadingHashtag is the currently loaded hashtag object
-                    * @type {Object}
-                    */
+                     * loadingHashtag is the currently loaded hashtag object
+                     * @type {Object}
+                     */
                     loadingHashtag: {
                         type: Boolean,
                         value: false,
                     },
                     /**
-                    * Current hashtag
-                    * @type {Object}
-                    */
+                     * Current hashtag
+                     * @type {Object}
+                     */
                     hashtag: {
                         type: Object,
                         statePath: (state) => state.hashtags[state.current.hashtag] || {}
@@ -223,28 +223,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
 
-            _debug() {
-                console.log('this.hashtag', this.hashtag)
-            }
 
             /**
-            * takes the user to the hashtag list page
-            * @param {Object} event element clicked.
-            */
+             * takes the user to the hashtag list page
+             * @param {Object} event element clicked.
+             */
             _back(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    this.path = 'hashtag-list/';
+                    if (event.keyCode === 13 || event.type == 'tap') {
+                        this.path = 'hashtag-list/';
+                    }
                 }
-            }
-            /**
-            * triggered after the user selects a language
-            */
+                /**
+                 * triggered after the user selects a language
+                 */
             _path() {
                 if (this.path) {
                     this.set('route.path', this.path);
                     this.path = null;
                 }
             }
-        } window.customElements.define(MyHashtag.is, MyHashtag);
+        }
+        window.customElements.define(MyHashtag.is, MyHashtag);
     </script>
 </dom-module>
