@@ -7,14 +7,12 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../redux-state.html">
 <link rel="import" href="../../data/data-transaction.html">
 <link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
@@ -31,7 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CREATE REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
-            <new-request-create on-create="_handleOnCreate" path="{{path}}"></new-request-create>
+            <new-request-create on-create="_handleOnCreate"></new-request-create>
         </template>
 
         <!-- CONFIRM REQUEST -->
@@ -73,22 +71,6 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                    * Language is the user selected language
-                    * @type {String}
-                    */
-                    language: {
-                        type: String,
-                        statePath: 'language',
-                    },
-                    /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        observer: '_path',
-                    },
-                    /**
                     * Hashtags contains all hashtag objects
                     * @type {Object}
                     */
@@ -103,14 +85,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
-                    },
-                    /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
-                    pageID: {
-                        type: String,
-                        value: 'new-request',
                     },
                     /**
                     * pageID is an id givven to every page specific
@@ -236,23 +210,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     console.error('Error posting item (catch block): ', e.stack)
                     this.status = 'error'
                 }
-            }
-
-            /**
-            * Fired when the component is connected
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../../text-translations.json'));
-            }
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
             }
         }
         window.customElements.define(MyNewRequestRouter.is, MyNewRequestRouter);

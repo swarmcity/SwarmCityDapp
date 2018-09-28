@@ -220,18 +220,18 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="seeker">
 
-                <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[hashtagItem.seekerAvatarHash]]"
+                <iron-image class="seeker-avatar" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seekerAvatarHash]]"
                     placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                 </iron-image>
 
-                <template is="dom-if" if="[[_isSeeker(hashtagItem)]]">
+                <template is="dom-if" if="[[_isSeeker(item)]]">
                     <div id="seeker" class="seeker-info seeker-owner horizontal" on-up="_toUserReputation">
                         <div class="truncate">[[item.seekerUsername]]</div>&nbsp;·
                         [[item.seekerRep]]
                     </div>
                 </template>
 
-                <template is="dom-if" if="[[!_isSeeker(hashtagItem)]]">
+                <template is="dom-if" if="[[!_isSeeker(item)]]">
                     <div id="seeker" class="seeker-info horizontal" on-up="_toUserReputation">
                         <div class="truncate">[[item.seekerUsername]]</div>&nbsp;·
                         [[item.seekerRep]]
@@ -261,9 +261,8 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    item: {
-                        type: Object,
-                    }
+                    item:  Object,
+                    address: String,
                 }
             }
             /**
@@ -295,6 +294,14 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(item) {
+                return item.seekerAddress == this.address;
             }
         }
         window.customElements.define(MyDetailSimpledealMain.is, MyDetailSimpledealMain);

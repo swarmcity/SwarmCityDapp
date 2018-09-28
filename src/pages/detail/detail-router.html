@@ -25,7 +25,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
-        <detail-simpledeal status="[[status]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal>
+        <detail-simpledeal status="[[status]]" item="[[item]]" address="[[address]]" on-close="_handleOnClose" on-status="_handleOnStatus">
+        </detail-simpledeal>
     </template>
     <script>
         class MyDetailRouter extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -66,11 +67,27 @@ This code may only be used under the license found at https://github.com/swarmci
                     item: {
                         type: Object,
                         observer: '_itemChanged',
+                    },
+                    address: {
+                        type: String,
                     }
                 };
             }
+
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.address = storage.keyStore.address;
+            }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
+            }
+            _handleOnStatus(e) {
+                this.status = e.detail;
             }
             /**
             * changes the current path

@@ -12,9 +12,11 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./detail-button-reply.html">
 <link rel="import" href="./detail-simpledeal-loading.html">
 <link rel="import" href="./detail-simpledeal-main.html">
 <link rel="import" href="./detail-simpledeal-replies.html">
+<link rel="import" href="./detail-simpledeal-input.html">
 
 
 <dom-module id="detail-simpledeal">
@@ -34,6 +36,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 0px 10px 25px 10px;
             }
+
+            detail-button-reply {
+                position: fixed;
+                bottom: 10vh;
+                right: 10vw;
+            }
+
+            .container[wide-layout] detail-button-reply {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -43,10 +57,18 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
 
             <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
-                <detail-simpledeal-main item="[[item]]"></detail-simpledeal-main>
+                <detail-simpledeal-main address="[[address]]" item="[[item]]"></detail-simpledeal-main>
 
                 <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
                     <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
+
+                    <template is="dom-if" if="[[_showReplyButton(item)]]">
+                        <detail-button-reply on-tap="_reply"></detail-button-reply>
+                    </template>
+                </template>
+
+                <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+                    <detail-simpledeal-input item="[[item]]"></detail-simpledeal-input>
                 </template>
 
             </template>
@@ -64,17 +86,34 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    status: {
-                        type: String,
-                    },
-                    item: {
-                        type: Object,
-                    }
+                    status: String,
+                    item: Object,
+                    address: String,
                 }
             }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
+            /**
+            * Set the conditions for showing the reply button
+            * @param {Object} item the hashtagItem object
+            * @return {Boolean} true when button should be visible
+            */
+            _showReplyButton(item) {
+                if (item.seeker &&
+                    item.seekerAddress == this.address) {
+                    return false;
+                } else if (item.replies && item.replies[this.address]) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+            _reply() {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'input',
+            }));
+        }
         }
         window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
     </script>
