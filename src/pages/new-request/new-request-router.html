@@ -4,13 +4,17 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../redux-state.html">
 <link rel="import" href="../../data/data-transaction.html">
 <link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
+<link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
@@ -22,6 +26,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <data-simpledeal id="simpledeal"></data-simpledeal>
         <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
         <!-- CREATE REQUEST -->
 
@@ -68,48 +73,49 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                     * Language is the user selected language
-                     * @type {String}
-                     */
+                    * Language is the user selected language
+                    * @type {String}
+                    */
                     language: {
                         type: String,
                         statePath: 'language',
                     },
                     /**
-                    * Route represents the current route
-                    * @type {Object}
+                    * Path is the current or requested path
+                    * @type {String}
                     */
-                    route: {
-                        type: Object,
-                    },
-                    /**
-                     * Path is the current or requested path
-                     * @type {String}
-                     */
                     path: {
                         type: String,
                         observer: '_path',
                     },
                     /**
-                     * Hashtags contains all hashtag objects
-                     * @type {Object}
-                     */
+                    * Hashtags contains all hashtag objects
+                    * @type {Object}
+                    */
                     hashtags: {
                         type: Object,
                         statePath: 'hashtags',
                     },
                     /**
-                     * the selected hashtag
-                     * @type {Object}
-                     */
+                    * the selected hashtag
+                    * @type {Object}
+                    */
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
                     },
                     /**
-                     * pageID is an id givven to every page specific
-                     * @type {String}
-                     */
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
+                    pageID: {
+                        type: String,
+                        value: 'new-request',
+                    },
+                    /**
+                    * pageID is an id givven to every page specific
+                    * @type {String}
+                    */
                     status: {
                         type: String,
                         value: 'new-request',
@@ -145,25 +151,23 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnCreate(e) {
                 this.status = 'confirm'
-                const {
-                    itemBudget,
-                    itemDescription,
-                    itemGeohash
-                } = e.detail
+                const { itemBudget, itemDescription, itemGeohash } = e.detail
                 // Construct item object
-                this.itemRequest = {
-                    itemBudget,
-                    itemDescription,
-                    itemGeohash
+                this.itemRequest = { itemBudget, itemDescription, itemGeohash }
+                if (!this.hashtag) {
+                    console.error('hashtag property is not defined')
+                } else {
+                    this.totalSum = parseFloat(itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
+                    this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
                 }
-                this.totalSum = parseFloat(itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
-                this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
             }
-            _handleOnReject() {
+            _handleOnReject(e) {
                 this.status = 'new-request'
             }
-            _handleOnUnlock() {
+            _handleOnUnlock(e) {
+                console.log('unlocked');
                 try {
+                    const { privateKey, address } = e.detail
                     this.status = 'processing'
 
                     console.log('Received privateKey', privateKey)
@@ -185,8 +189,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                     const seeker = {
                         username: this.username,
+                        address,
+                        privateKey
                     }
-
 
                     const hashtag = {
                         address: this.hashtag.address,
@@ -194,6 +199,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
                     }
 
+                    console.log('About to post item: ', { seeker, item, hashtag });
 
                     this.$.simpledeal.createNewItem({ seeker, item, hashtag })
                         .then(receipt => {
@@ -212,12 +218,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         })
                         .catch(err => {
                             this.errorMessage = err.message
+                            console.log('Error posting item:', err)
                             this.status = 'error'
                         })
 
                     /*
-                     * Create item and send it to IPFS
-                     */
+                    * Create item and send it to IPFS
+                    */
 
                     // Suggested temporary solution for signing tx:
                     // Accessing the sign function contained withing display-unlock at the highest possible root level
@@ -226,12 +233,21 @@ This code may only be used under the license found at https://github.com/swarmci
 
                 } catch (e) {
                     this.errorMessage = e.message
+                    console.error('Error posting item (catch block): ', e.stack)
                     this.status = 'error'
                 }
             }
+
             /**
-             * changes the current path
-             */
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+            /**
+            * changes the current path
+            */
             _path() {
                 if (this.path != null) {
                     this.set('route.path', this.path);
