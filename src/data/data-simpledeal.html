@@ -16,8 +16,6 @@
         // oh hi classes can u support async/await plz tkns
         async function createNewItemAsync({ seeker, item, hashtag }) {
 
-            console.log(seeker)
-
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: seeker.username,
@@ -29,25 +27,19 @@
                     .toString('hex')
             }))
 
-            const UUIDv4 = webpack.uuid.v4();
-            const itemHashHex = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
-            const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
-            UUIDCollection[UUIDv4] = itemHashHex;
-            localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
+
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
             const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
 
             // 1. Encode the newItem method to be sent through ApproveAndCall
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
-            console.log('simpleDealContract.methods.newItem', itemHashHex, itemBudgetWei, metadataHash.bytes32)
             const rawNewItem = simpleDealContract.methods.newItem(
-                itemHashHex,
+                item.hash,
                 itemBudgetWei,
                 metadataHash.bytes32
             ).encodeABI();
             const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
-            console.log('tokenContract.methods.approveAndCall', hashtag.address, totalSum, rawNewItem)
             const rawApproveAndCall = tokenContract.methods.approveAndCall(
                 hashtag.address, // spender
                 totalSum, // totalSum
@@ -72,8 +64,8 @@
 
             // 4. Send transaction, await receipt. 
             // Extra line for clarity
-            const receipt = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
-            return receipt
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
         }
 
 
@@ -95,7 +87,6 @@
                     .once('transactionHash', (hash) => {
                         resolve(hash)
                         _hash = hash
-                        console.log('received transactionHash', hash);
                     })
                     .on('receipt', (receipt) => {
                         console.log('received receipt for txHash: ' + hash, receipt);
