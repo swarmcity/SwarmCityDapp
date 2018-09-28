@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../redux-state.html">
 
 <!--
     Displays and shared styles only
@@ -118,7 +119,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <img src="{{avatar}}">
                 <div class="inputbox">
                     <paper-textarea label="Your reply" type="txt" value="{{reply}}" autofocus></paper-textarea>
-                    <div class="price">for [[_formatValue(hashtagItem.value)]] SWT </div>
+                    <div class="price">for [[_formatValue(item.itemValue)]] SWT </div>
                 </div>
             </div>
 
@@ -128,7 +129,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </template>
             <div class="choice">
-                <display-button-disagree on-up="_toReplies"></display-button-disagree>
+                <display-button-disagree on-tap="_close"></display-button-disagree>
 
                 <template is="dom-if" if="{{allowReply}}">
                     <display-button-confirm on-tap="_reply"></display-button-confirm>
@@ -170,9 +171,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     * the hashtag item we've subscribed to
                     * @type {Object}
                     */
-                    hashtagItem: {
+                    item: {
                         type: Object,
-                        statePath: 'hashtagItem',
                         observer: '_checkBalance',
                     },
                     /**
@@ -184,11 +184,11 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_checkBalance',
                     },
                     /**
-                    * Balance is the users current balance
-                    * @type {Object}
+                    * Balance represents the users SWT balance
+                    * @type {Number}
                     */
                     balance: {
-                        type: Object,
+                        type: String,
                         statePath: 'balance',
                     },
                     /**
@@ -215,6 +215,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_showError',
                     },
+                    /**
+                    * The current display status.
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_reset',
+                    },
                 };
             }
             /**
@@ -233,29 +241,38 @@ This code may only be used under the license found at https://github.com/swarmci
                 return value / 1e18;
             }
             /**
-            * changes the current view to show all replies
+            * takes the user to originating page
             */
-            _toReplies() {
-                this.allowReply = false;
-                this.stateChange = 'replies';
-                this.reply = '';
+            _close() {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'replies',
+                    bubbles: true,
+                    composed: true
+                }));
             }
             _reply() {
                 
+            }
+            _reset() {
+                if (this.status != 'input') {
+                    this.error = '';
+                    this.reply = '';
+                }
             }
             /**
             * Only allow users to send replies
             */
             _checkBalance() {
-                let totalCost = parseInt(this.hashtagItem.value) + parseInt(this.hashtagItem.hashtagFee / 2);
-                let userBalance = parseInt(this.balance.swt.balance);
-                if (userBalance - totalCost >= 0) {
-                    this.allowReply = true;
-                    this.error = '';
-                } else {
-                    this.error = 'You have insufficient funds to participate in this deal.';
-                    this.allowReply = false;
-                }
+                console.log(this.balance);
+                // let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
+                // // let userBalance = this.balance.swt;
+                // if (userBalance - totalCost >= 0) {
+                //     this.allowReply = true;
+                //     this.error = '';
+                // } else {
+                //     this.error = 'You have insufficient funds to participate in this deal.';
+                //     this.allowReply = false;
+                // }
             }
             /**
             * Verifies user input and displays error message
