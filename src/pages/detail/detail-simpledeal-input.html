@@ -57,6 +57,32 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-grey4);
             }
 
+            .disabled {
+                opacity: 0.5;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
+
             paper-textarea {
                 text-indent: 2px;
                 margin-top: 5px;
@@ -95,9 +121,21 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="price">for [[_formatValue(hashtagItem.value)]] SWT </div>
                 </div>
             </div>
+
+            <template is="dom-if" if="{{showError}}">
+                <div class="errorcontainer">
+                    <span id="error">{{error}}</span>
+                </div>
+            </template>
             <div class="choice">
                 <display-button-disagree on-up="_toReplies"></display-button-disagree>
-                <display-button-confirm on-up="_unlock"></display-button-confirm>
+
+                <template is="dom-if" if="{{allowReply}}">
+                    <display-button-confirm on-tap="_reply"></display-button-confirm>
+                </template>
+                <template is="dom-if" if="{{!allowReply}}">
+                    <display-button-confirm class="disabled"></display-button-confirm>
+                </template>
             </div>
         </div>
     </template>
@@ -113,6 +151,14 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
                     * Avatar represents the user's base64 of their avatar image
                     * @type {String}
                     */
@@ -121,13 +167,62 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'avatar',
                     },
                     /**
+                    * the hashtag item we've subscribed to
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                        observer: '_checkBalance',
+                    },
+                    /**
                     * The reply string
                     * @type {String}
                     */
                     reply: {
                         type: String,
+                        observer: '_checkBalance',
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Object}
+                    */
+                    balance: {
+                        type: Object,
+                        statePath: 'balance',
+                    },
+                    /**
+                    * If user balance is sufficient, allow reply
+                    * @type {Boolean}
+                    */
+                    allowReply: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Show user error
+                    * @type {Boolean}
+                    */
+                    showError: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_showError',
                     },
                 };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
             }
             /**
             * formats the item value
@@ -136,6 +231,41 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _formatValue(value) {
                 return value / 1e18;
+            }
+            /**
+            * changes the current view to show all replies
+            */
+            _toReplies() {
+                this.allowReply = false;
+                this.stateChange = 'replies';
+                this.reply = '';
+            }
+            _reply() {
+                
+            }
+            /**
+            * Only allow users to send replies
+            */
+            _checkBalance() {
+                let totalCost = parseInt(this.hashtagItem.value) + parseInt(this.hashtagItem.hashtagFee / 2);
+                let userBalance = parseInt(this.balance.swt.balance);
+                if (userBalance - totalCost >= 0) {
+                    this.allowReply = true;
+                    this.error = '';
+                } else {
+                    this.error = 'You have insufficient funds to participate in this deal.';
+                    this.allowReply = false;
+                }
+            }
+            /**
+            * Verifies user input and displays error message
+            */
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
             }
         }
         window.customElements.define(MyDetailSimpledealInput.is, MyDetailSimpledealInput);

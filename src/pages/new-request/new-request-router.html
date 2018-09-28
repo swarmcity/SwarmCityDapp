@@ -29,7 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CREATE REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
-            <new-request-create on-create="_handleOnCreate"></new-request-create>
+            <new-request-create on-create="_handleOnCreate" on-close="_handleOnClose"></new-request-create>
         </template>
 
         <!-- CONFIRM REQUEST -->
@@ -77,6 +77,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtags: {
                         type: Object,
                         statePath: 'hashtags',
+                    },
+                    /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
                     },
                     /**
                     * the selected hashtag
@@ -137,6 +144,9 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnReject(e) {
                 this.status = 'new-request'
+            }
+            _handleOnClose() {
+                this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
             }
             _handleOnUnlock(e) {
                 console.log('unlocked');
