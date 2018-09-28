@@ -5,7 +5,6 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../redux-state.html">
 
@@ -14,6 +13,9 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./detail-simpledeal-loading.html">
+<link rel="import" href="./detail-simpledeal-main.html">
+<link rel="import" href="./detail-simpledeal-replies.html">
+
 
 <dom-module id="detail-simpledeal">
     <template>
@@ -26,15 +28,28 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .container {
-                @apply --layout-flex;
-                @apply --layout-vertical;
                 background-image: var(--sc-bg);
-                height: calc(100vh - 159px);
+                min-height: calc(100vh - 159px);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 10px 25px 10px;
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <detail-simpledeal-loading></detail-simpledeal-loading>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'loading')}}">
+                <detail-simpledeal-loading></detail-simpledeal-loading>
+            </template>
+
+            <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
+                <detail-simpledeal-main item="[[item]]"></detail-simpledeal-main>
+
+                <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
+                    <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
+                </template>
+
+            </template>
         </div>
 
     </template>
@@ -49,25 +64,16 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    /**
-                    * Language is the user selected language
-                    * @type {String}
-                    */
-                    language: {
+                    status: {
                         type: String,
-                        statePath: 'language',
+                    },
+                    item: {
+                        type: Object,
                     }
                 }
             }
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-            * takes the user to originating page
-            */
-            _close() {
-                this.dispatchEvent(new CustomEvent('close'));
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
             }
         }
         window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
