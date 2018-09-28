@@ -1,4 +1,3 @@
-
 <!--
 @license
 Copyright (c) 2018 Swarm City
@@ -6,85 +5,27 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-transaction.html">
+<link rel="import" href="../../data/data-simpledeal.html">
 
 <!--
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./detail-simpledeal.html">
 <link rel="import" href="../../displays/display-my-info.html">
-<link rel="import" href="../../displays/display-get-item.html">
+<link rel="import" href="../../displays/display-hashtag-about.html">
 <link rel="import" href="../../displays/display-simpledeal-title.html">
-<!-- <link rel="import" href="./display-simpledeal-detail.html"> -->
 
 <dom-module id="page-detail">
     <template>
-        <!--
-    Page specific styles, if the style is used on more than one page, move it to shared styles.
--->
-        <style include="shared-styles">
-            :host {
-                width: 100vw;
-                display: block;
-            }
-
-            .container {
-                width: 100%;
-                background-image: var(--sc-bg);
-                min-height: 100vh;
-                @apply --layout-vertical;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-            }
-
-            .container display-my-info {
-                @apply --layout-horizontal;
-                box-sizing: border-box;
-                padding: 40px 40px 20px 40px;
-                position: fixed;
-                z-index: 999;
-                min-height: 107px;
-                width: 100%;
-                background-image: url('../../images/bg-header3.png');
-            }
-
-            .container[wide-layout] display-my-info {
-                box-sizing: border-box;
-                padding: 50px 10vw 20px 10vw;
-            }
-
-
-            .container display-simpledeal-title {
-                width: 100%;
-                z-index: 999;
-                margin-top: 106px;
-                position: fixed;
-            }
-
-            .container[wide-layout] display-simpledeal-title {
-                margin-top: 120px;
-            }
-
-            .container display-simpledeal-detail {
-                width: 100%;
-                margin-top: 158px;
-            }
-
-            .container[wide-layout] display-simpledeal-detail {
-                margin-top: 172px;
-            }
-        </style>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
-        <!-- <display-get-item route={{route}}></display-get-item> -->
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
-            <display-my-info path="{{path}}" route="{{route}}"></display-my-info>
-            <display-simpledeal-title></display-simpledeal-title>
-            <!-- <display-simpledeal-detail path="{{path}}" route-entry="{{routeEntry}}" private-key="{{privateKey}}"
-                toggle-unlock="{{toggleUnlock}}" reply="{{reply}}" id="detaildisplay"></display-simpledeal-detail> -->
-        </div>
+        <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
+        <detail-simpledeal status="[[status]]" on-close="_handleOnClose"></detail-simpledeal>
     </template>
     <script>
         class MyDetailRouter extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -98,12 +39,12 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
+                    * Route represents the current route
+                    * @type {Object}
                     */
-                    path: {
-                        type: String,
-                        observer: '_path',
+                    route: {
+                        type: Object,
+                        observer: '_load'
                     },
                     /**
                     * hashtag is the currently loaded hashtag
@@ -114,23 +55,40 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: AppStore.selectors.hashtag,
                     },
                     /**
-                    * the hashtag item we've subscribed to
-                    * @type {Object}
-                    */
-                    hashtagItem: {
-                        type: Object,
-                        statePath: 'hashtagItem',
+                     * pageID is an id givven to every page specific
+                     * @type {String}
+                     */
+                    status: {
+                        type: String,
+                        value: 'loading',
                     },
                 };
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
             }
             /**
             * changes the current path
             */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
+            _handleOnClose() {
+                console.log(this.hashtag)
+                // this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
+            }
+            _load() {
+
+                
+(foo || {}).subFoo
+
+
+if(hashtag && hashtag.items) {
+
+                hashtag.items[itemHASH];
+}
+
+                let itemHash = this.route.path.split('/')[3];
+                let item = this.hashtag && this.hashtag.items.hasOwnProperty(itemHash) ? this.hashtag.items[itemHash] : null;
+                console.log(item);
+
             }
         }
         window.customElements.define(MyDetailRouter.is, MyDetailRouter);

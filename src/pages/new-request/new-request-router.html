@@ -4,29 +4,24 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../redux-state.html">
 <link rel="import" href="../../data/data-transaction.html">
 <link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
 <link rel="import" href="./new-request-processing.html">
-<link rel="import" href="./new-request-error.html">
+<link rel="import" href="../displays/display-error.html">
 <link rel="import" href="./new-request-success.html">
 <dom-module id="page-new-request">
     <template>
         <data-simpledeal id="simpledeal"></data-simpledeal>
         <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
         <!-- CREATE REQUEST -->
 
@@ -56,7 +51,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- ERROR ON REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
-            <new-request-error errorMessage="[[errorMessage]]"></new-request-error>
+            <display-error errorMessage="[[errorMessage]]"></display-error>
         </template>
 
     </template>
@@ -81,6 +76,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
                      * Path is the current or requested path
                      * @type {String}
                      */
@@ -103,14 +105,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
-                    },
-                    /**
-                     * pageID is an id givven to every page specific
-                     * @type {String}
-                     */
-                    pageID: {
-                        type: String,
-                        value: 'new-request',
                     },
                     /**
                      * pageID is an id givven to every page specific
