@@ -165,15 +165,23 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnUnlock() {
                 try {
                     this.status = 'processing'
-                    const {
-                        itemBudget,
-                        itemDescription,
-                        itemGeohash
-                    } = this.itemRequest
+
+                    console.log('Received privateKey', privateKey)
+
+                    if (!privateKey) {
+                        throw Error('Missing public key')
+                    }
+                    const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
+                    const UUIDv4 = webpack.uuid.v4();
+                    const itemHash = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
+                    const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
+                    UUIDCollection[UUIDv4] = itemHash;
+                    localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
                     const item = {
                         budget: itemBudget,
                         description: itemDescription,
                         location: itemGeohash,
+                        hash: itemHash
                     }
                     const seeker = {
                         username: this.username,
@@ -187,14 +195,20 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
 
 
-
-                    this.$.simpledeal.createNewItem({
-                        seeker,
-                        item,
-                        hashtag
-                    })
-                        .then(() => {
+                    this.$.simpledeal.createNewItem({ seeker, item, hashtag })
+                        .then(receipt => {
+                            console.log('Successfully transacted item, receipt:', receipt)
                             this.status = 'success'
+                            this.dispatch({
+                                type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
+                                    hashtagFee: this.hashtag.hashtagFee,
+                                    itemValue: itemBudget * 1e18,
+                                    seekerAddress: address,
+                                    timestamp: 'pending',
+                                    status: 0,
+                                    description: itemDescription
+                                }
+                            })
                         })
                         .catch(err => {
                             this.errorMessage = err.message

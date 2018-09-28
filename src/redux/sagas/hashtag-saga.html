@@ -1,7 +1,7 @@
 <script>
     (function () {
         // Items initialized in setup.html
-        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        const { web3Local, ipfs, ReduxSaga, contractsData, bs58 } = window;
         // ReduxSaga methods
         const { effects, eventChannel, delay, END } = ReduxSaga;
         const { call, fork, take, put, takeEvery, all } = effects;
@@ -99,7 +99,12 @@
         async function getBlockTime(blockNumber) {
             try {
                 const block = await web3Local.eth.getBlock(blockNumber);
-                return parseInt(block.timestamp);
+                if (block && block.timestamp) {
+                    return parseInt(block.timestamp);
+                } else {
+                    console.error('Error fetching block ' + blockNumber + ' :', block)
+                    return 'error';
+                }
             } catch (e) {
                 console.error('Error fetching timestamp for block ' + blockNumber, e)
             }
@@ -293,12 +298,11 @@
             const item = {
                 blockNumber: event.blockNumber,
                 hashtagFee: event.returnValues.hashtagFee,
-                iitemMetadataHash: event.returnValues.itemMetadataHash,
+                itemMetadataHash: event.returnValues.itemMetadataHash,
                 itemHash: event.returnValues.itemHash,
                 itemValue: event.returnValues.itemValue,
                 seekerAddress: event.returnValues.owner, // owner => seeker
                 seekerRep: event.returnValues.seekerRep,
-                totalValue: event.returnValues.totalValue,
                 status: 0,
             }
             const { itemHash, itemMetadataHash } = event.returnValues
@@ -308,10 +312,9 @@
             yield fork(getItemMetadata, item, hashtagAddress)
 
             // Step 3. Get the timestamp
-            const timestamp = yield call(getBlockTime, event.blockNumber)
-            yield put({
+            if (item.blockNumber) yield put({
                 type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    timestamp
+                    timestamp: yield call(getBlockTime, item.blockNumber)
                 }
             });
         }
@@ -388,10 +391,10 @@
                             yield fork(handleNewItem, event, hashtagAddress)
                             break;
                         case 'ItemChange':
-                            yield fork(handleNewItem, event)
+                            yield fork(handleItemChange, event)
                             break;
                         case 'ReplyItem':
-                            yield fork(handleNewItem, event)
+                            yield fork(handleReplyItem, event)
                             break;
                         default:
                             console.error('Received unknown event ' + event.event, event)
