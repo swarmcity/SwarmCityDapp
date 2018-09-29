@@ -7,7 +7,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../../redux-state.html">
 
 <!--
     Displays and shared styles only
@@ -56,10 +55,6 @@ This code may only be used under the license found at https://github.com/swarmci
             .price {
                 @apply --body-bold;
                 color: var(--sc-grey4);
-            }
-
-            .disabled {
-                opacity: 0.5;
             }
 
             .container .errorcontainer {
@@ -122,21 +117,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="price">for [[_formatValue(item.itemValue)]] SWT </div>
                 </div>
             </div>
-
-            <template is="dom-if" if="{{showError}}">
-                <div class="errorcontainer">
-                    <span id="error">{{error}}</span>
-                </div>
-            </template>
             <div class="choice">
                 <display-button-disagree on-tap="_close"></display-button-disagree>
-
-                <template is="dom-if" if="{{allowReply}}">
-                    <display-button-confirm on-tap="_reply"></display-button-confirm>
-                </template>
-                <template is="dom-if" if="{{!allowReply}}">
-                    <display-button-confirm class="disabled"></display-button-confirm>
-                </template>
+                <display-button-confirm on-tap="_reply"></display-button-confirm>
             </div>
         </div>
     </template>
@@ -173,7 +156,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     item: {
                         type: Object,
-                        observer: '_checkBalance',
                     },
                     /**
                     * The reply string
@@ -181,47 +163,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     reply: {
                         type: String,
-                        observer: '_checkBalance',
-                    },
-                    /**
-                    * Balance represents the users SWT balance
-                    * @type {Number}
-                    */
-                    balance: {
-                        type: String,
-                        statePath: 'balance',
-                    },
-                    /**
-                    * If user balance is sufficient, allow reply
-                    * @type {Boolean}
-                    */
-                    allowReply: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * Show user error
-                    * @type {Boolean}
-                    */
-                    showError: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * Error
-                    * @type {String}
-                    */
-                    error: {
-                        type: String,
-                        observer: '_showError',
-                    },
-                    /**
-                    * The current display status.
-                    * @type {String}
-                    */
-                    error: {
-                        type: String,
-                        observer: '_reset',
                     },
                 };
             }
@@ -249,40 +190,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     bubbles: true,
                     composed: true
                 }));
-            }
-            _reply() {
-                
+                this._reset();
             }
             _reset() {
-                if (this.status != 'input') {
-                    this.error = '';
-                    this.reply = '';
-                }
-            }
-            /**
-            * Only allow users to send replies
-            */
-            _checkBalance() {
-                console.log(this.balance);
-                // let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
-                // // let userBalance = this.balance.swt;
-                // if (userBalance - totalCost >= 0) {
-                //     this.allowReply = true;
-                //     this.error = '';
-                // } else {
-                //     this.error = 'You have insufficient funds to participate in this deal.';
-                //     this.allowReply = false;
-                // }
-            }
-            /**
-            * Verifies user input and displays error message
-            */
-            _showError() {
-                if (this.error) {
-                    this.showError = true;
-                } else {
-                    this.showError = false;
-                }
+                this.reply = '';
             }
         }
         window.customElements.define(MyDetailSimpledealInput.is, MyDetailSimpledealInput);

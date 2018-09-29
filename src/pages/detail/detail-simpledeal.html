@@ -57,7 +57,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
 
             <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
-                <detail-simpledeal-main address="[[address]]" item="[[item]]"></detail-simpledeal-main>
+                <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
 
                 <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
                     <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
@@ -68,7 +68,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </template>
 
                 <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-                    <detail-simpledeal-input item="[[item]]" status="[[status]]"></detail-simpledeal-input>
+                    <detail-simpledeal-input id="input" item="[[item]]" status="[[status]]"></detail-simpledeal-input>
                 </template>
 
             </template>
@@ -89,6 +89,11 @@ This code may only be used under the license found at https://github.com/swarmci
                     status: String,
                     item: Object,
                     address: String,
+                    balance: {
+                        type: String,
+                        // statePath: 'balance',
+                        value: 15e17,
+                    },
                 }
             }
             _isEqualTo(string1, string2) {
@@ -109,10 +114,30 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             _reply() {
-                this.dispatchEvent(new CustomEvent('status', {
-                    detail: 'input',
-            }));
-        }
+                // only allow reply if sufficient balance
+                if (this._allowReply) {
+                    this.dispatchEvent(new CustomEvent('status', {
+                        detail: 'input',
+                    }));
+                }
+            }
+
+            /**
+            * Only allow users to send replies
+            */
+            _allowReply() {
+                let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
+                let userBalance = parseInt(this.balance);
+                return userBalance - totalCost >= 0 ? true : false;
+            }
+            /**
+            * changes the current path
+            */
+            _handleOnClose() {
+                let el = this.shadowRoot.querySelector('#input');
+                if (el) el._reset();
+                this.dispatchEvent(new CustomEvent('close'));
+            }
         }
         window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
     </script>
