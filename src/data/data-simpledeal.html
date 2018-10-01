@@ -26,33 +26,34 @@
                 description: reply.description,
             }))
 
-            // 1. Encode the replyItem method to be sent through ApproveAndCall
+            // 1. Encode the raw replyItem
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            debugger;
             const rawReplyItem = simpleDealContract.methods.replyItem(
                 reply.itemhash,
                 metadataHash.bytes32
             ).encodeABI();
-            const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
-            const rawApproveAndCall = tokenContract.methods.approveAndCall(
-                hashtag.address, // spender
-                totalSum, // totalSum
-                rawReplyItem, // next call data
-            ).encodeABI();
 
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(replier.address);
 
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: replier.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtag.address,
+                data: rawReplyItem,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(replier.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
 
-
-            // return new Promise((resolve) => {
-            //     const simpleDealContract = new webpack.Contract(
-            //         abi,
-            //         contractAddress
-            //     );
-            //     let rawReplyItem = simpleDealContract.methods.replyItem(
-            //         itemHash,
-            //         ipfsHash
-            //     ).encodeABI();
-            //     resolve(rawReplyItem);
-            // });
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
 
         }
 
