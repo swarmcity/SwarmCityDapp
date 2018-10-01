@@ -15,6 +15,47 @@
             simpleDeal
         } = contractsData;
 
+        async function createNewReplyAsync({ replier, reply, hashtag }) {
+            // 0. Upload to IPFS
+            const metadataHash = await ipfs.add(JSON.stringify({
+                replier: {
+                    username: replier.username,
+                    avatarHash: localStorage.getItem('avatarHash'),
+                    address: replier.address,
+                },
+                description: reply.description,
+            }))
+
+            // 1. Encode the replyItem method to be sent through ApproveAndCall
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            const rawReplyItem = simpleDealContract.methods.replyItem(
+                reply.itemhash,
+                metadataHash.bytes32
+            ).encodeABI();
+            const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
+            const rawApproveAndCall = tokenContract.methods.approveAndCall(
+                hashtag.address, // spender
+                totalSum, // totalSum
+                rawReplyItem, // next call data
+            ).encodeABI();
+
+
+
+
+            // return new Promise((resolve) => {
+            //     const simpleDealContract = new webpack.Contract(
+            //         abi,
+            //         contractAddress
+            //     );
+            //     let rawReplyItem = simpleDealContract.methods.replyItem(
+            //         itemHash,
+            //         ipfsHash
+            //     ).encodeABI();
+            //     resolve(rawReplyItem);
+            // });
+
+        }
+
         // Define async methods, because 
         // oh hi classes can u support async/await plz tkns
         async function createNewItemAsync({ seeker, item, hashtag }) {
@@ -29,7 +70,6 @@
                     .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
                     .toString('hex')
             }))
-
 
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
@@ -121,6 +161,13 @@
              */
             createNewItem(args) {
                 return createNewItemAsync(args)
+            }
+
+            /**
+             * Create a new item reply
+             */
+            createNewReply(args) {
+                return createNewReplyAsync(args)
             }
 
             /**

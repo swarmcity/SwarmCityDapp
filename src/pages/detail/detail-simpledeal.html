@@ -17,6 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-main.html">
 <link rel="import" href="./detail-simpledeal-replies.html">
 <link rel="import" href="./detail-simpledeal-input.html">
+<link rel="import" href="../../displays/display-unlock.html">
 
 
 <dom-module id="detail-simpledeal">
@@ -68,9 +69,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 </template>
 
                 <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-                    <detail-simpledeal-input id="input" item="[[item]]" status="[[status]]"></detail-simpledeal-input>
+                    <detail-simpledeal-input id="input" item="[[item]]" reply="{{reply}}" on-reply="_toggleUnlock"
+                        on-status="_handleOnStatus">
+                    </detail-simpledeal-input>
                 </template>
 
+                <template is="dom-if" if="{{unlock}}">
+                    <display-unlock on-unlock="_handleOnUnlock" on-lock="_toggleUnlock" blue>
+                    </display-unlock>
+                </template>
             </template>
         </div>
 
@@ -91,9 +98,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     address: String,
                     balance: {
                         type: String,
-                        // statePath: 'balance',
-                        value: 15e17,
+                        statePath: 'balance',
                     },
+                    unlock: Boolean,
+                    reply: String,
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    }
+
                 }
             }
             _isEqualTo(string1, string2) {
@@ -122,6 +135,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
+            _handleOnStatus(e) {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: e.detail,
+                }));
+            }
+
             /**
             * Only allow users to send replies
             */
@@ -137,6 +156,72 @@ This code may only be used under the license found at https://github.com/swarmci
                 let el = this.shadowRoot.querySelector('#input');
                 if (el) el._reset();
                 this.dispatchEvent(new CustomEvent('close'));
+            }
+            _toggleUnlock() {
+                this.unlock = !this.unlock;
+            }
+
+            _handleOnUnlock(e) {
+                const { privateKey, address } = e.detail
+                switch (this.status) {
+                    case ('input'):
+                        this._sendReply({ privateKey, address });
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+            _sendReply({ privateKey, address }) {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'replies',
+                }));
+                let reply = this.reply;
+                let el = this.shadowRoot.querySelector('#input');
+                if (el) el._reset();
+                this._toggleUnlock();
+
+
+                try {
+                    const { privateKey, address } = e.detail
+                    console.log('Received privateKey', privateKey)
+
+                    if (!privateKey) {
+                        throw Error('Missing address')
+                    }
+                    const replier = {
+                        username: this.username,
+                        address,
+                        privateKey
+                    }
+
+                    const reply = {
+                        description: this.reply,
+                        itemhash: this.item.itemhash,
+                    }
+
+                    const hashtag = {
+                        address: this.hashtag.address,
+                        fee: this.hashtag.hashtagFee,
+                        tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                    }
+
+                    console.log('About to post reply: ', { replier, reply, hashtag });
+
+                    this.$.simpledeal.createNewReply({ replier, reply, hashtag })
+                        .then(receipt => {
+                            console.log('Successfully transacted reply, receipt:', receipt)
+                        })
+                        .catch(err => {
+                            console.log('Error posting reply:', err)
+                        })
+
+                } 
+                catch (e) {
+                    console.error('Error posting reply (catch block): ', e.stack)
+                }
+
             }
         }
         window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);

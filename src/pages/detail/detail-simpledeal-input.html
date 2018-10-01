@@ -163,6 +163,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     reply: {
                         type: String,
+                        notify: true,
                     },
                 };
             }
@@ -187,13 +188,17 @@ This code may only be used under the license found at https://github.com/swarmci
             _close() {
                 this.dispatchEvent(new CustomEvent('status', {
                     detail: 'replies',
-                    bubbles: true,
-                    composed: true
                 }));
                 this._reset();
             }
             _reset() {
                 this.reply = '';
+            }
+            _reply() {
+                if (this.reply) {
+                    this.dispatchEvent(new CustomEvent('reply'));
+
+                }
             }
         }
         window.customElements.define(MyDetailSimpledealInput.is, MyDetailSimpledealInput);
