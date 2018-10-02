@@ -99,7 +99,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'balance',
                     },
-                    unlock: Boolean,
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
@@ -122,8 +121,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         if (el) el._reset();
                         try {
                             const { privateKey, address } = res;
-                            console.log('Received privateKey', privateKey)
-
                             if (!privateKey) {
                                 throw Error('Missing address')
                             }
@@ -132,20 +129,15 @@ This code may only be used under the license found at https://github.com/swarmci
                                 address,
                                 privateKey
                             }
-
                             const reply = {
                                 message: message,
                                 itemhash: this.item.itemHash,
                             }
-
                             const hashtag = {
                                 address: this.hashtag.address,
                                 fee: this.hashtag.hashtagFee,
                                 tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
                             }
-
-                            console.log('About to post reply: ', { replier, reply, hashtag });
-
                             this.$.simpledeal.createNewReply({ replier, reply, hashtag })
                                 .then(receipt => {
                                     console.log('Successfully transacted reply, receipt:', receipt)
@@ -157,18 +149,11 @@ This code may only be used under the license found at https://github.com/swarmci
                         catch (e) {
                             console.error('Error posting reply (catch block): ', e.stack)
                         }
-
                     });
-
             }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
-            /**
-            * Set the conditions for showing the reply button
-            * @param {Object} item the hashtagItem object
-            * @return {Boolean} true when button should be visible
-            */
             _showReplyButton(item) {
                 if ((item.seekerAddress || {}) == this.address) {
                     return false;
@@ -179,7 +164,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             _input() {
-                // only allow reply if sufficient balance
                 if (this._allowReply) {
                     this.dispatchEvent(new CustomEvent('status', {
                         detail: 'input',
@@ -191,16 +175,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (el) el._reset();
                 this.dispatchEvent(new CustomEvent('close'));
             }
-
             _handleOnStatus(e) {
                 this.dispatchEvent(new CustomEvent('status', {
                     detail: e.detail,
                 }));
             }
-
-            /**
-            * Only allow users to send replies
-            */
             _allowReply() {
                 let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
                 let userBalance = parseInt(this.balance);
