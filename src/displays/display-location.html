@@ -192,6 +192,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <data-location id="location"></data-location>
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title" id="title">{{localize('Can we ask for your location')}}</div>
@@ -201,9 +202,9 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="bottom" id="buttons">
                 <template is="dom-if" if="{{!loading}}">
                     <div class="confirmers">
-                        <div tabindex="1" on-tap="_goBack" on-KeyPress="_goBack"></div>
+                        <div tabindex="1" on-tap="_goBack"></div>
                         <data-location id="location"></data-location>
-                        <div tabindex="2" on-tap="_getLocation" on-KeyPress="_getLocation" class="geoloc">
+                        <div tabindex="2" on-tap="_getLocation" class="geoloc">
                             <div></div>
                         </div>
                     </div>
@@ -255,30 +256,27 @@ This code may only be used under the license found at https://github.com/swarmci
             * @param {Object} event element clicked.
              */
             _getLocation(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    this.loading = true;
-                    this.$.location.getLocation()
-                        .then((latlon) => {
-                            return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
-                        })
-                        .then((data) => {
-                            this.geohash = data;
-                            this.dispatch({ type: 'GEOHASH', geoHash: data });
-                        })
-                        .then(() => {
-                            window.history.back();
-                            this.loading = false;
-                        });
-                }
+                this.loading = true;
+                console.log('getting location');
+                this.$.location.getLocation()
+                    .then((latlon) => {
+                        return this.$.location.toGeohash(latlon.latitude, latlon.longitude);
+                    })
+                    .then((data) => {
+                        this.geohash = data;
+                        this.dispatch({ type: 'GEOHASH', geoHash: data });
+                    })
+                    .then(() => {
+                        this.dispatchEvent(new CustomEvent('location-accept'));
+                        this.loading = false;
+                    });
             }
             /**
             * takes the user to the hashtag list page
             * @param {Object} event element clicked.
             */
             _goBack(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    window.history.back();
-                }
+                this.dispatchEvent(new CustomEvent('location-reject'));
             }
         }
         window.customElements.define(MyDisplayLocation.is, MyDisplayLocation);
