@@ -16,9 +16,9 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
+<link rel="import" href="./new-request-processing.html">
 <link rel="import" href="./new-request-error.html">
 <link rel="import" href="./new-request-success.html">
-<link rel="import" href="../../displays/display-processing.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
 <dom-module id="page-new-request">
@@ -46,19 +46,19 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- PROCESSING REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
-            <display-processing></display-processing>
+            <new-request-processing></new-request-processing>
         </template>
 
         <!-- SUCCESSFUL REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
-            <new-request-success on-close="_handleOnClose"></new-request-success>
+            <new-request-success></new-request-success>
         </template>
 
         <!-- ERROR ON REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
-            <new-request-error errorMessage="[[errorMessage]]" on-close="_handleOnClose"></new-request-error>
+            <new-request-error errorMessage="[[errorMessage]]"></new-request-error>
         </template>
 
     </template>
@@ -88,7 +88,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     route: {
                         type: Object,
-                        observer: '_routeChanged'
                     },
                     /**
                     * the selected hashtag
@@ -134,9 +133,6 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
-            }
-            _routeChanged() {
-                this.status = 'new-request';
             }
             _handleOnCreate(e) {
                 this.status = 'confirm'

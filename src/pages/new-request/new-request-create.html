@@ -476,6 +476,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             itemGeohash: this.itemGeohash,
                         }
                     }));
+                    this._reset();
                 }
             }
 
@@ -573,6 +574,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to originating page
             */
             _close() {
+                this._reset();
                 this.dispatchEvent(new CustomEvent('close'));
             }
             /**
@@ -587,27 +589,11 @@ This code may only be used under the license found at https://github.com/swarmci
             * empties all input fields if not coming confirm-new-request page
             */
             _reset() {
-                if (
-                    !((this.routeEntry.includes('confirm-new-request')
-                        || this.routeEntry.includes('location')
-                    ) && this.routeEntry.includes('new-request'))
-
-                ) {
-                    this.request = '';
-                    this.budget = '';
-                    this.totalcost = 0;
-                    this.showSum = false;
-                    this.chosenValue = 8;
-                }
-                if (this.chosenValue != 8) {
-                    navigator.permissions.query({ 'name': 'geolocation' })
-                        .then((permission) => {
-                            if (permission.state != 'granted') {
-                                this.chosenValue = 8;
-                            }
-                        }
-                        );
-                }
+                this.request = '';
+                this.budget = '';
+                this.totalcost = 0;
+                this.showSum = false;
+                this.chosenValue = 8;
             }
             /**
             * After a range has been chosen, check for permissions

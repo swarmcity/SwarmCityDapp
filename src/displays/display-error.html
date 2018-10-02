@@ -6,15 +6,13 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../../redux-state.html">
 <!--
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
 
-<dom-module id="new-request-processing">
+<dom-module id="display-error">
     <template>
         <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
@@ -263,16 +261,15 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <div class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title">Processing</div>
+                <div class="title">Something went wrong.</div>
                 <div class="dividerbox"></div>
                 <div class="statusbox">
                     <div class="bar">
-                        <div class="loading">
-                            <div class="smallpoint" id="point1"></div>
-                            <div class="smallpoint" id="point2"></div>
-                            <div class="smallpoint" id="point3"></div>
-                        </div>
+                        <div class="icon-xmark continue"></div>
                     </div>
+                    <div class="flexer"></div>
+                    <div class="darkline"></div>
+                    <div class="failure-text">{{errorMessage}}</div>
                 </div>
             </div>
             <div class="flexer"></div>
@@ -287,13 +284,13 @@ This code may only be used under the license found at https://github.com/swarmci
     </template>
 
     <script>
-        class MyNewRequestProcessing extends new ReduxMixin(Polymer.mixinBehaviors([
-                Polymer.AppLocalizeBehavior,
-            ],
+        class MyDisplayError extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
             Polymer.Element
         )) {
             static get is() {
-                return 'new-request-processing';
+                return 'display-error';
             }
             static get properties() {
                 return {
@@ -304,6 +301,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: {
                         type: String,
                         statePath: 'language',
+                    },
+                    errorMessage: {
+                        type: String,
                     },
                 };
             }
@@ -317,15 +317,10 @@ This code may only be used under the license found at https://github.com/swarmci
              * takes the user back to my-wallet page
              */
             _next() {
-                if (!this.waiting) {
-                    if (sessionStorage.getItem('hashtag')) {
-                        this.set('route.path', '/hashtag/' + sessionStorage.getItem('hashtag'));
-                        sessionStorage.removeItem('hashtag');
-                    }
-                }
+                this.dispatchEvent(new CustomEvent('close'));
             }
         }
         window.customElements
-            .define(MyNewRequestProcessing.is, MyNewRequestProcessing);
+            .define(MyDisplayError.is, MyDisplayError);
     </script>
 </dom-module>
