@@ -308,9 +308,8 @@ The following custom properties and mixins are available for styling:
                     color: {
                         type: String,
                     },
-                    confirmed: {
-                        type: Boolean,
-                        value: false,
+                    resolve: {
+                        type: Object,
                     }
                 };
             }
@@ -355,36 +354,7 @@ The following custom properties and mixins are available for styling:
             _getPrivateKey() {
                 this.$.container.classList.remove('hidden');
                 return new Promise((resolve, reject) => {
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    this.keyStore = storage.keyStore;
-                    setInterval(() => {
-                        if (this.password && this.confirmed) {
-                            this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
-                                .then(uintArray => uintArray.toString('hex'))
-                                .then(privateKey => {
-                                    this.privateKey = privateKey
-                                    this.$.container.classList.add('hidden');
-                                    this.password = '';
-                                    this.$.wallet.makeQRCode(this.privateKey)
-                                        .then((qrCodePrivateKey) => {
-                                            this.qrCodePrivateKey = qrCodePrivateKey;
-                                        });
-                                    this.$.wallet.makeQRCode(this.publicKey)
-                                        .then((qrCodePublicKey) => {
-                                            this.qrCodePublicKey = qrCodePublicKey;
-                                        });
-                                    const address = this.publicKey;
-                                    this.confirmed = false;
-                                    resolve({ privateKey, address });
-                                })
-                                .catch(() => {
-                                    this.password = '';
-                                    this.confirmed = false;
-                                    this.error = 'Wrong Password, try again';
-                                });
-                        }
-                    }, 100);
-
+                    this.resolve = resolve;
                 });
             }
             /**
@@ -392,7 +362,34 @@ The following custom properties and mixins are available for styling:
             * @param {Object} event element clicked.
             */
             _confirm() {
-                this.confirmed = true;
+                if (this.password) {
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    this.keyStore = storage.keyStore;
+                    this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
+                        .then(uintArray => uintArray.toString('hex'))
+                        .then(privateKey => {
+                            this.privateKey = privateKey
+                            this.$.container.classList.add('hidden');
+                            this.password = '';
+                            this.$.wallet.makeQRCode(this.privateKey)
+                                .then((qrCodePrivateKey) => {
+                                    this.qrCodePrivateKey = qrCodePrivateKey;
+                                });
+                            this.$.wallet.makeQRCode(this.publicKey)
+                                .then((qrCodePublicKey) => {
+                                    this.qrCodePublicKey = qrCodePublicKey;
+                                });
+                            const address = this.publicKey;
+                            this.confirmed = false;
+                            this.resolve({ privateKey, address });
+                        })
+                        .catch(() => {
+                            this.password = '';
+                            this.confirmed = false;
+                            this.error = 'Wrong Password, try again';
+                        });
+
+                }
             }
         }
         window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
