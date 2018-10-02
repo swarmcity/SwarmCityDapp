@@ -8,80 +8,34 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../redux-state.html">
-<link rel="import" href="../../data/data-transaction.html">
-<link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
-<link rel="import" href="./new-request-create.html">
-<link rel="import" href="./new-request-confirm.html">
-<link rel="import" href="./new-request-processing.html">
-<link rel="import" href="./new-request-error.html">
-<link rel="import" href="./new-request-success.html">
-<link rel="import" href="../../displays/display-unlock.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-hashtag-about.html">
+<link rel="import" href="../../displays/display-simpledeal-title.html">
 
-<dom-module id="page-new-request">
+<dom-module id="page-hashtag">
     <template>
-        <data-simpledeal id="simpledeal"></data-simpledeal>
-        <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-
-        <display-unlock id="unlock" white></display-unlock>
-
-        <!-- CREATE REQUEST -->
-
-        <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
-            <new-request-create on-create="_handleOnCreate" on-close="_handleOnClose"></new-request-create>
-        </template>
-
-        <!-- CONFIRM REQUEST -->
-
-        <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            <new-request-confirm on-reject="_handleOnReject" on-confirm="_handleOnConfirm" total-sum="[[totalSum]]"
-                hashtag-fee="[[hashtagFee]]"></new-request-confirm>
-        </template>
-
-        <!-- PROCESSING REQUEST -->
-
-        <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
-            <new-request-processing></new-request-processing>
-        </template>
-
-        <!-- SUCCESSFUL REQUEST -->
-
-        <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
-            <new-request-success></new-request-success>
-        </template>
-
-        <!-- ERROR ON REQUEST -->
-
-        <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
-            <new-request-error errorMessage="[[errorMessage]]"></new-request-error>
-        </template>
+        <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
 
     </template>
 
     <script>
-        class MyNewRequestRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyHashtagRouter extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'page-new-request';
+                return 'page-hashtag';
             }
             static get properties() {
                 return {
-                    /**
-                    * Hashtags contains all hashtag objects
-                    * @type {Object}
-                    */
-                    hashtags: {
-                        type: Object,
-                        statePath: 'hashtags',
-                    },
                     /**
                     * Route represents the current route
                     * @type {Object}
@@ -97,133 +51,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
                     },
-                    /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
-                    status: {
-                        type: String,
-                        value: 'new-request',
-                    },
-                    errorMessage: {
-                        type: String,
-                        value: '',
-                    },
-                    totalSum: {
-                        type: String,
-                        value: 0,
-                    },
-                    hashtagFee: {
-                        type: String,
-                        value: 0,
-                    },
-                    username: {
-                        type: String,
-                        statePath: 'username',
-                    },
-                    avatar: {
-                        type: String,
-                        statePath: 'avatar',
-                    },
-                    itemRequest: {
-                        type: Object,
-                        value: {},
-                    },
                 };
             }
-            _isEqualTo(string1, string2) {
-                return string1 == string2;
-            }
-            _handleOnCreate(e) {
-                this.status = 'confirm'
-                const { itemBudget, itemDescription, itemGeohash } = e.detail
-                // Construct item object
-                this.itemRequest = { itemBudget, itemDescription, itemGeohash }
-                if (!this.hashtag) {
-                    console.error('hashtag property is not defined')
-                } else {
-                    this.totalSum = parseFloat(itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
-                    this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
-                }
-            }
-            _handleOnReject(e) {
-                this.status = 'new-request'
-            }
-            _handleOnClose() {
-                this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
-            }
-            _handleOnConfirm() {
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        console.log('unlocked');
-                        try {
-                            const { privateKey, address } = res;
-                            this.status = 'processing'
-
-                            console.log('Received privateKey', privateKey)
-
-                            if (!privateKey) {
-                                throw Error('Missing public key')
-                            }
-                            const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
-                            const UUIDv4 = webpack.uuid.v4();
-                            const itemHash = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
-                            const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
-                            UUIDCollection[UUIDv4] = itemHash;
-                            localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
-                            const item = {
-                                budget: itemBudget,
-                                description: itemDescription,
-                                location: itemGeohash,
-                                hash: itemHash
-                            }
-                            const seeker = {
-                                username: this.username,
-                                address,
-                                privateKey
-                            }
-
-                            const hashtag = {
-                                address: this.hashtag.address,
-                                fee: this.hashtag.hashtagFee,
-                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
-                            }
-
-                            console.log('About to post item: ', { seeker, item, hashtag });
-
-                            this.$.simpledeal.createNewItem({ seeker, item, hashtag })
-                                .then(receipt => {
-                                    console.log('Successfully transacted item, receipt:', receipt)
-                                    this.status = 'success'
-                                    this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
-                                            hashtagFee: this.hashtag.hashtagFee,
-                                            itemValue: itemBudget * 1e18,
-                                            seekerAddress: address,
-                                            timestamp: 'pending',
-                                            status: 0,
-                                            description: itemDescription
-                                        }
-                                    })
-                                })
-                                .catch(err => {
-                                    this.errorMessage = err.message
-                                    console.log('Error posting item:', err)
-                                    this.status = 'error'
-                                })
-
-                            /*
-                            * Create item and send it to IPFS
-                            */
-
-                        } catch (e) {
-                            this.errorMessage = e.message
-                            console.error('Error posting item (catch block): ', e.stack)
-                            this.status = 'error'
-                        }
-                    });
-            }
         }
-        window.customElements.define(MyNewRequestRouter.is, MyNewRequestRouter);
+        window.customElements.define(MyHashtagRouter.is, MyHashtagRouter);
     </script>
 </dom-module>
