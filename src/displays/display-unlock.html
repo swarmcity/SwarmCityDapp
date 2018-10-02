@@ -47,6 +47,11 @@ The following custom properties and mixins are available for styling:
                 min-width: 100vw;
                 min-height: 100vh;
                 background-color: rgba(240, 240, 240, 0.90);
+                z-index: 2;
+            }
+
+            .hidden {
+                visibility: hidden;
             }
 
             .container[wide-layout] {
@@ -165,7 +170,7 @@ The following custom properties and mixins are available for styling:
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
-        <div id="container" class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container hidden" wide-layout$="{{wide}}">
             <img src="{{avatar}}">
             <dom-if if="{{blue}}">
                 <template>
@@ -186,14 +191,14 @@ The following custom properties and mixins are available for styling:
                 <div tabindex="2" class="disagree" on-tap="_disagree"></div>
                 <dom-if if="{{blue}}">
                     <template>
-                        <div tabindex="3" class="submit submit-blue" on-tap="_getPrivKey">
+                        <div tabindex="3" class="submit submit-blue" on-tap="_confirm">
                             <div class="icon-submit-blue"></div>
                         </div>
                     </template>
                 </dom-if>
                 <dom-if if="{{white}}">
                     <template>
-                        <div tabindex="3" class="submit submit-white" on-tap="_getPrivKey">
+                        <div tabindex="3" class="submit submit-white" on-tap="_confirm">
                             <div class="icon-submit-white"></div>
                         </div>
                     </template>
@@ -303,6 +308,10 @@ The following custom properties and mixins are available for styling:
                     color: {
                         type: String,
                     },
+                    confirmed: {
+                        type: Boolean,
+                        value: false,
+                    }
                 };
             }
             /**
@@ -335,7 +344,7 @@ The following custom properties and mixins are available for styling:
             */
             _disagree() {
                 this.password = '';
-                this.dispatchEvent(new CustomEvent('lock'));
+                this.$.container.classList.add('hidden');
             }
             /**
             * Resets the error warning
@@ -343,48 +352,46 @@ The following custom properties and mixins are available for styling:
             _changeInput() {
                 this.error = '';
             }
+            _getPrivateKey() {
+                this.$.container.classList.remove('hidden');
+                return new Promise((resolve, reject) => {
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    this.keyStore = storage.keyStore;
+                    setInterval(() => {
+                        if (this.password && this.confirmed) {
+                            this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
+                                .then(uintArray => uintArray.toString('hex'))
+                                .then(privateKey => {
+                                    this.privateKey = privateKey
+                                    this.$.container.classList.add('hidden');
+                                    this.password = '';
+                                    this.$.wallet.makeQRCode(this.privateKey)
+                                        .then((qrCodePrivateKey) => {
+                                            this.qrCodePrivateKey = qrCodePrivateKey;
+                                        });
+                                    this.$.wallet.makeQRCode(this.publicKey)
+                                        .then((qrCodePublicKey) => {
+                                            this.qrCodePublicKey = qrCodePublicKey;
+                                        });
+                                    const address = this.publicKey;
+                                    this.confirmed = false;
+                                    resolve({ privateKey, address });
+                                })
+                                .catch(() => {
+                                    this.confirmed = false;
+                                    this.error = 'Wrong Password, try again';
+                                });
+                        }
+                    }, 100)
+
+                });
+            }
             /**
             * Checks for correct password, returns private key and closes this display
             * @param {Object} event element clicked.
             */
-            _getPrivKey() {
-                if (this.password) {
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    this.keyStore = storage.keyStore;
-                    // check password && if correct populate private key property
-                    this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
-                        .then(uintArray => uintArray.toString('hex'))
-                        .then(privateKey => {
-                            this.toggleUnlock = !this.toggleUnlock;
-                            this.privateKey = privateKey
-
-                            /**
-                            * Got private key, emit event
-                            */
-                            this.dispatchEvent(new CustomEvent('unlock', {
-                                detail: {
-                                    privateKey,
-                                    address: storage.keyStore.address
-                                },
-                                bubbles: true,
-                                composed: true,
-                            }
-                            ));
-
-                            this.password = '';
-                            this.$.wallet.makeQRCode(this.privateKey)
-                                .then((qrCodePrivateKey) => {
-                                    this.qrCodePrivateKey = qrCodePrivateKey;
-                                });
-                            this.$.wallet.makeQRCode(this.publicKey)
-                                .then((qrCodePublicKey) => {
-                                    this.qrCodePublicKey = qrCodePublicKey;
-                                });
-                        })
-                        .catch(() => {
-                            this.error = 'Wrong Password, try again';
-                        });
-                }
+            _confirm() {
+                this.confirmed = true;
             }
         }
         window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
