@@ -7,20 +7,20 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
-<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../redux-state.html">
 <link rel="import" href="../../data/data-transaction.html">
 <link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
 <link rel="import" href="./new-request-processing.html">
 <link rel="import" href="./new-request-error.html">
 <link rel="import" href="./new-request-success.html">
+<link rel="import" href="../../displays/display-unlock.html">
+
 <dom-module id="page-new-request">
     <template>
         <data-simpledeal id="simpledeal"></data-simpledeal>
@@ -28,16 +28,18 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
+        <display-unlock id="unlock" white></display-unlock>
+
         <!-- CREATE REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
-            <new-request-create on-create="_handleOnCreate" path="{{path}}"></new-request-create>
+            <new-request-create on-create="_handleOnCreate" on-close="_handleOnClose"></new-request-create>
         </template>
 
         <!-- CONFIRM REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
-            <new-request-confirm on-reject="_handleOnReject" on-unlock="_handleOnUnlock" total-sum="[[totalSum]]"
+            <new-request-confirm on-reject="_handleOnReject" on-confirm="_handleOnConfirm" total-sum="[[totalSum]]"
                 hashtag-fee="[[hashtagFee]]"></new-request-confirm>
         </template>
 
@@ -73,22 +75,6 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                    * Language is the user selected language
-                    * @type {String}
-                    */
-                    language: {
-                        type: String,
-                        statePath: 'language',
-                    },
-                    /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        observer: '_path',
-                    },
-                    /**
                     * Hashtags contains all hashtag objects
                     * @type {Object}
                     */
@@ -97,20 +83,19 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'hashtags',
                     },
                     /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
                     * the selected hashtag
                     * @type {Object}
                     */
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
-                    },
-                    /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
-                    pageID: {
-                        type: String,
-                        value: 'new-request',
                     },
                     /**
                     * pageID is an id givven to every page specific
@@ -164,95 +149,79 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnReject(e) {
                 this.status = 'new-request'
             }
-            _handleOnUnlock(e) {
-                console.log('unlocked');
-                try {
-                    const { privateKey, address } = e.detail
-                    this.status = 'processing'
+            _handleOnClose() {
+                this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
+            }
+            _handleOnConfirm() {
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        console.log('unlocked');
+                        try {
+                            const { privateKey, address } = res;
+                            this.status = 'processing'
 
-                    console.log('Received privateKey', privateKey)
+                            console.log('Received privateKey', privateKey)
 
-                    if (!privateKey) {
-                        throw Error('Missing public key')
-                    }
-                    const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
-                    const UUIDv4 = webpack.uuid.v4();
-                    const itemHash = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
-                    const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
-                    UUIDCollection[UUIDv4] = itemHash;
-                    localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
-                    const item = {
-                        budget: itemBudget,
-                        description: itemDescription,
-                        location: itemGeohash,
-                        hash: itemHash
-                    }
-                    const seeker = {
-                        username: this.username,
-                        address,
-                        privateKey
-                    }
+                            if (!privateKey) {
+                                throw Error('Missing public key')
+                            }
+                            const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
+                            const UUIDv4 = webpack.uuid.v4();
+                            const itemHash = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
+                            const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
+                            UUIDCollection[UUIDv4] = itemHash;
+                            localStorage.setItem('UUIDCollection', JSON.stringify(UUIDCollection));
+                            const item = {
+                                budget: itemBudget,
+                                description: itemDescription,
+                                location: itemGeohash,
+                                hash: itemHash
+                            }
+                            const seeker = {
+                                username: this.username,
+                                address,
+                                privateKey
+                            }
 
-                    const hashtag = {
-                        address: this.hashtag.address,
-                        fee: this.hashtag.hashtagFee,
-                        tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
-                    }
+                            const hashtag = {
+                                address: this.hashtag.address,
+                                fee: this.hashtag.hashtagFee,
+                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                            }
 
-                    console.log('About to post item: ', { seeker, item, hashtag });
+                            console.log('About to post item: ', { seeker, item, hashtag });
 
-                    this.$.simpledeal.createNewItem({ seeker, item, hashtag })
-                        .then(receipt => {
-                            console.log('Successfully transacted item, receipt:', receipt)
-                            this.status = 'success'
-                            this.dispatch({
-                                type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
-                                    hashtagFee: this.hashtag.hashtagFee,
-                                    itemValue: itemBudget * 1e18,
-                                    seekerAddress: address,
-                                    timestamp: 'pending',
-                                    status: 0,
-                                    description: itemDescription
-                                }
-                            })
-                        })
-                        .catch(err => {
-                            this.errorMessage = err.message
-                            console.log('Error posting item:', err)
+                            this.$.simpledeal.createNewItem({ seeker, item, hashtag })
+                                .then(receipt => {
+                                    console.log('Successfully transacted item, receipt:', receipt)
+                                    this.status = 'success'
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
+                                            hashtagFee: this.hashtag.hashtagFee,
+                                            itemValue: itemBudget * 1e18,
+                                            seekerAddress: address,
+                                            timestamp: 'pending',
+                                            status: 0,
+                                            description: itemDescription
+                                        }
+                                    })
+                                })
+                                .catch(err => {
+                                    this.errorMessage = err.message
+                                    console.log('Error posting item:', err)
+                                    this.status = 'error'
+                                })
+
+                            /*
+                            * Create item and send it to IPFS
+                            */
+
+                        } catch (e) {
+                            this.errorMessage = e.message
+                            console.error('Error posting item (catch block): ', e.stack)
                             this.status = 'error'
-                        })
-
-                    /*
-                    * Create item and send it to IPFS
-                    */
-
-                    // Suggested temporary solution for signing tx:
-                    // Accessing the sign function contained withing display-unlock at the highest possible root level
-                    // Currently we need to find a way to put display-unlock at global root, now we can make it work within directory root
-                    // the display-unlock will contain the signing logic
-
-                } catch (e) {
-                    this.errorMessage = e.message
-                    console.error('Error posting item (catch block): ', e.stack)
-                    this.status = 'error'
-                }
-            }
-
-            /**
-            * Fired when the component is connected
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../../text-translations.json'));
-            }
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
+                        }
+                    });
             }
         }
         window.customElements.define(MyNewRequestRouter.is, MyNewRequestRouter);

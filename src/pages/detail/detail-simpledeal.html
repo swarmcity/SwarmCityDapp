@@ -1,0 +1,192 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-transaction.html">
+<link rel="import" href="../../data/data-simpledeal.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./detail-button-reply.html">
+<link rel="import" href="./detail-simpledeal-loading.html">
+<link rel="import" href="./detail-simpledeal-main.html">
+<link rel="import" href="./detail-simpledeal-replies.html">
+<link rel="import" href="./detail-simpledeal-input.html">
+<link rel="import" href="../../displays/display-unlock.html">
+
+
+<dom-module id="detail-simpledeal">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                background-image: var(--sc-bg);
+                min-height: calc(100vh - 159px);
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 10px 25px 10px;
+            }
+
+            detail-button-reply {
+                position: fixed;
+                bottom: 10vh;
+                right: 10vw;
+            }
+
+            .container[wide-layout] detail-button-reply {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+
+            <display-unlock id="unlock" blue></display-unlock>
+            <data-simpledeal id="simpledeal"></data-simpledeal>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'loading')}}">
+                <detail-simpledeal-loading></detail-simpledeal-loading>
+            </template>
+
+            <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
+                <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
+
+                <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
+                    <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
+
+                    <template is="dom-if" if="[[_showReplyButton(item)]]">
+                        <detail-button-reply on-tap="_input"></detail-button-reply>
+                    </template>
+                </template>
+
+                <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+                    <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
+                    </detail-simpledeal-input>
+                </template>
+            </template>
+        </div>
+
+    </template>
+    <script>
+        class MyDetailSimpledeal extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal';
+            }
+            static get properties() {
+                return {
+                    status: String,
+                    item: Object,
+                    address: String,
+                    balance: {
+                        type: String,
+                        statePath: 'balance',
+                    },
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    },
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+
+                }
+            }
+            _handleOnReply(e) {
+                const message = e.detail;
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        this.dispatchEvent(new CustomEvent('status', {
+                            detail: 'replies',
+                        }));
+                        let el = this.shadowRoot.querySelector('#input');
+                        if (el) el._reset();
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const replier = {
+                                username: this.username,
+                                address,
+                                privateKey
+                            }
+                            const reply = {
+                                message: message,
+                                itemhash: this.item.itemHash,
+                            }
+                            const hashtag = {
+                                address: this.hashtag.address,
+                                fee: this.hashtag.hashtagFee,
+                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                            }
+                            this.$.simpledeal.createNewReply({ replier, reply, hashtag })
+                                .then(receipt => {
+                                    console.log('Successfully transacted reply, receipt:', receipt)
+                                })
+                                .catch(err => {
+                                    console.log('Error posting reply:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error posting reply (catch block): ', e.stack)
+                        }
+                    });
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _showReplyButton(item) {
+                if ((item.seekerAddress || {}) == this.address) {
+                    return false;
+                } else if (item.replies && item.replies[this.address]) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+            _input() {
+                if (this._allowReply) {
+                    this.dispatchEvent(new CustomEvent('status', {
+                        detail: 'input',
+                    }));
+                }
+            }
+            _handleOnClose() {
+                let el = this.shadowRoot.querySelector('#input');
+                if (el) el._reset();
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+            _handleOnStatus(e) {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: e.detail,
+                }));
+            }
+            _allowReply() {
+                let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
+                let userBalance = parseInt(this.balance);
+                return userBalance - totalCost >= 0 ? true : false;
+            }
+
+        }
+        window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
+    </script>
+</dom-module>

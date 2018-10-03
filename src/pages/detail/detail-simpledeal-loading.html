@@ -1,0 +1,209 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+
+<dom-module id="detail-simpledeal-loading">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+                height: 100%;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 10vw 25px 10vw;
+            }
+
+            .container .overlayer {
+                width: 95%;
+                background: -moz-linear-gradient(top, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* FF3.6-15 */
+                background: -webkit-linear-gradient(top, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* Chrome10-25,Safari5.1-6 */
+                background: linear-gradient(to bottom, rgba(241, 241, 241, 0) 0%, rgba(241, 241, 241, 0.01) 1%, rgba(241, 241, 241, 1) 100%);
+                /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                height: 300px;
+                margin-top: 50px;
+                position: absolute;
+            }
+
+            .container .itemloading {
+                width: 100%;
+                background-color: white;
+                height: 350px;
+                box-sizing: border-box;
+            }
+
+            .closebox_loading {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                width: 100%;
+                z-index: 99;
+                padding: 10px 10px 0px 0px;
+            }
+
+            .container[wide-layout] .itemloading,
+            .container[wide-layout] .overlayer {
+                max-width: 68vw;
+            }
+
+            .allshapes {
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+                padding: 0px 30px 40px 30px;
+            }
+
+            .shape1 {
+                height: 12px;
+                width: 200px;
+                background-color: var(--sc-grey1);
+                border-radius: 8px;
+            }
+
+            .shape2 {
+                height: 10px;
+                width: 100px;
+                background-color: var(--sc-grey1);
+                border-radius: 8px;
+                margin-top: 10px;
+            }
+
+            .shapes_3_4_5_6 {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+            }
+
+            .shapes_3_4 {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+                margin-top: 20px;
+            }
+
+            .shape3 {
+                height: 40px;
+                width: 40px;
+                border-radius: 20px;
+                background-color: rgba(36, 177, 255, 0.1);
+            }
+
+            .shape4 {
+                height: 10px;
+                width: 60px;
+                background-color: var(--sc-grey2);
+                border-radius: 8px;
+                margin-left: 20px;
+                opacity: 0.35;
+            }
+
+            .shapes_5_6 {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-center-justified;
+                margin-top: 20px;
+            }
+
+            .shape5 {
+                height: 8px;
+                width: 20px;
+                background-color: var(--sc-yellow);
+                border-radius: 8px;
+                margin-bottom: 10px;
+                opacity: 0.15;
+            }
+
+            .shape6 {
+                height: 12px;
+                width: 40px;
+                background-color: var(--sc-yellow);
+                border-radius: 8px;
+                opacity: 0.15;
+            }
+
+
+            .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+            }
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+
+            <div class="itemloading">
+                <div class="overlayer"></div>
+                <div class="closebox_loading">
+                    <div class="close" on-click="_close" on-keypress="_close" tabindex="1"></div>
+                </div>
+                <div class="allshapes">
+                    <div class="shape1"></div>
+                    <div class="shape2"></div>
+                    <div class="shapes_3_4_5_6">
+
+                        <div class="shapes_3_4">
+                            <div class="shape3"></div>
+                            <div class="shape4"></div>
+                        </div>
+                        <div class="shapes_5_6">
+                            <div class="shape5"></div>
+                            <div class="shape6"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyDetailSimpledealLoading extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-loading';
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                this.dispatchEvent(new CustomEvent('close', {
+                    bubbles: true,
+                    composed: true
+                }));
+            }
+        }
+        window.customElements.define(MyDetailSimpledealLoading.is, MyDetailSimpledealLoading);
+    </script>
+</dom-module>

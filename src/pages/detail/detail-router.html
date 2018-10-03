@@ -1,0 +1,141 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-transaction.html">
+<link rel="import" href="../../data/data-simpledeal.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./detail-simpledeal.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-hashtag-about.html">
+<link rel="import" href="../../displays/display-simpledeal-title.html">
+
+<dom-module id="page-detail">
+    <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
+        <app-location route="{{route}}"></app-location>
+        <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
+        <detail-simpledeal status="[[status]]" item="[[item]]" address="[[address]]" 
+            on-status="_handleOnStatus" on-close="_handleOnClose">
+        </detail-simpledeal>
+    </template>
+    <script>
+        class MyDetailRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-detail';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_routeChanged',
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                        observer: '_hashtagChanged',
+                    },
+                    /**
+                     * pageID is an id givven to every page specific
+                     * @type {String}
+                     */
+                    status: {
+                        type: String,
+                        value: 'loading',
+                    },
+                    item: {
+                        type: Object,
+                        observer: '_itemChanged',
+                    },
+                    address: {
+                        type: String,
+                    }
+                };
+            }
+
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.address = storage.keyStore.address;
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnStatus(e) {
+                this.status = e.detail;
+            }
+            /**
+            * changes the current path
+            */
+            _handleOnClose() {
+
+                console.log('should close');
+                this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
+                this.status = 'replies';
+            }
+            // hashtag update: set item if it's not set yet, or merge possible updates
+            _hashtagChanged() {
+                if (this.route.path.split('/')[1] == 'detail') {
+                    let urlItemHash = this.route.path.split('/')[3];
+                    if (this.item) {
+                        // if an item is already loaded, update the item
+                        // if (this.hashtag && this.hashtag.items && this.hashtag.items.hasOwnProperty(urlItemHash)) {
+                        //     this.item = { ...this.item, ...this.hashtag.items[urlItemHash] };
+                        // }
+                    } else {
+                        this.item = this._getItem(urlItemHash)
+                    }
+                }
+            }
+            // Whenever item changes, determine status change
+            _itemChanged() {
+                if (this.item) {
+                    if (this.status != 'input') {
+                        this.status = 'replies';
+                    }
+                }
+            }
+            // Executed when route changes, set item from hashtag object if found or reset it.
+            _routeChanged() {
+                if (this.route.path.split('/')[1] == 'detail') {
+                    let urlItemHash = this.route.path.split('/')[3];
+                    this.item = this.item && this.item.itemHash == urlItemHash ? this.item : this._getItem(urlItemHash);
+                }
+            }
+            // Executed when route changes, set item from hashtag object if found or reset it.
+            _getItem(urlItemHash) {
+                let item = this.hashtag && this.hashtag.items && this.hashtag.items.hasOwnProperty(urlItemHash) ?
+                    this.hashtag.items[urlItemHash] : null;
+                if (item) console.log('item: ', item);
+                return item;
+            }
+        }
+        window.customElements.define(MyDetailRouter.is, MyDetailRouter);
+    </script>
+</dom-module>
