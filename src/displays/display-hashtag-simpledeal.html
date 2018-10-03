@@ -48,6 +48,7 @@ The following custom properties and mixins are available for styling:
                 background-image: var(--sc-bg);
                 z-index: 99;
                 position: sticky;
+                position: -webkit-sticky;
                 top: 158px;
                 width: 100%;
                 box-sizing: border-box;
@@ -55,6 +56,7 @@ The following custom properties and mixins are available for styling:
             }
 
             .container[wide-layout] .middle {
+                position: -webkit-sticky;
                 position: sticky;
                 top: 172px;
                 padding: 0px 0 10px 10vw;
@@ -201,7 +203,13 @@ The following custom properties and mixins are available for styling:
                 opacity: 0.15;
             }
 
-
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon-scroll {
+                    @apply --retina;
+                }
+            }
 
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -364,11 +372,11 @@ The following custom properties and mixins are available for styling:
             * takes the user back to the top of the page
             */
             _backToTop() {
-                let scrollDuration = 500;
-                let scrollStep = -window.scrollY / (scrollDuration / 15);
+                let scrollDuration = 250;
+                let scrollStep = -this.parentElement.scrollTop / (scrollDuration / 15);
                 let scrollInterval = setInterval(() => {
-                    if (window.scrollY != 0) {
-                        window.scrollBy(0, scrollStep);
+                    if (this.parentElement.scrollTop != 0) {
+                        this.parentElement.scrollTop += scrollStep;
                     }
                     else clearInterval(scrollInterval);
                 },

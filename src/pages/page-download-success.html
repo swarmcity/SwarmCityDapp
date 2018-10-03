@@ -114,8 +114,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
     <script>
         class MyDownloadSuccess extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
+                Polymer.AppLocalizeBehavior,
+            ],
             Polymer.Element
         )) {
             static get is() {
@@ -136,9 +136,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
+                     * pageID is an id givven to every page specific
+                     * @type {String}
+                     */
                     pageID: {
                         type: String,
                         value: 'download-success',
@@ -147,30 +147,32 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-             * takes the user to page-stop-signup
-             */
+                    super.connectedCallback();
+                    this.loadResources(this.resolveUrl('../text-translations.json'));
+                }
+                /**
+                 * takes the user to page-stop-signup
+                 */
             _close() {
-                this.path = 'stop-signup/';
-            }
-            /**
-             * takes the user to the initiating hashtag page
-             */
+                    this.path = 'stop-signup/';
+                }
+                /**
+                 * takes the user to the initiating hashtag page
+                 */
             _enter() {
-                if (sessionStorage.getItem('origin')) {
-                    this.path = sessionStorage.getItem('origin');
-                    sessionStorage.removeItem('origin');
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    storage.user.entered = true;
+                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                    if (sessionStorage.getItem('origin')) {
+                        this.path = sessionStorage.getItem('origin');
+                        sessionStorage.removeItem('origin');
+                    } else {
+                        this.set('route.path', 'hashtag-list');
+                    }
                 }
-                else {
-                    this.set('route.path', 'hashtag-list');
-                }
-            }
-            /**
-             * changes the current path
-             */
+                /**
+                 * changes the current path
+                 */
             _path() {
                 if (this.path != null) {
                     this.set('route.path', this.path);

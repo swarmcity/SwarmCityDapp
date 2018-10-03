@@ -273,7 +273,7 @@ The following custom properties and mixins are available for styling:
                 <div class="btn" on-click="_agreeToEnterPassword">choose password</div>
             </template>
 
-            <template is="dom-if" if="{{passwordWarning}}">
+    <template is="dom-if" if="{{passwordWarning}}">
                 <div class="box">
                     <div class="trianglecontainer">
                         <div class="triangle"></div>
@@ -288,7 +288,7 @@ The following custom properties and mixins are available for styling:
                 </div>
             </template>
 
-            <template is="dom-if" if="{{passwordSubmit}}">
+    <template is="dom-if" if="{{passwordSubmit}}">
                 <paper-input 
                     id="password" 
                     label="{{localize('password?')}}" 
@@ -312,25 +312,25 @@ The following custom properties and mixins are available for styling:
                 </div>
             </template>
 
-            <template is="dom-if" if="{{passwordSet}}">
+    <template is="dom-if" if="{{passwordSet}}">
                 <div class="passset">{{localize('the password is set')}}</div>
             </template>
 
-            </div>
-        </template>
+    </div>
+    </template>
 
-            <template is="dom-if" if="{{passwordSet}}">
+    <template is="dom-if" if="{{passwordSet}}">
                 <div class="iconbtn"> 
                     <div class="agree" on-click=""></div> 
                 </div>
             </template>
 
-        </div>
+    </div>
     </template>
     <script>
         class DisplayRestorePrivateKey extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
+                Polymer.AppLocalizeBehavior,
+            ],
             Polymer.Element
         )) {
             static get is() {
@@ -339,104 +339,104 @@ The following custom properties and mixins are available for styling:
             static get properties() {
                 return {
                     /**
-                    * language is the user selected language
-                    * @type {String}
-                    */
+                     * language is the user selected language
+                     * @type {String}
+                     */
                     language: {
                         type: String,
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
+                     * Path is the current or requested path
+                     * @type {String}
+                     */
                     path: {
                         type: String,
                         reflectToAttribute: true,
                         notify: true,
                     },
                     /**
-                    * routeEntry contains routing information
-                    * @type {Array}
-                    */
+                     * routeEntry contains routing information
+                     * @type {Array}
+                     */
                     routeEntry: {
                         type: Array,
                         observer: '_resetValues',
                     },
                     /**
-                    * choosePassword if true gives the option to choose password
-                    * @type {Boolean}
-                    */
+                     * choosePassword if true gives the option to choose password
+                     * @type {Boolean}
+                     */
                     choosePassword: {
                         type: Boolean,
                         value: true,
                     },
                     /**
-                    * passwordWarning if true shows a warning about password
-                    * @type {Boolean}
-                    */
+                     * passwordWarning if true shows a warning about password
+                     * @type {Boolean}
+                     */
                     passwordWarning: {
                         type: Boolean,
                         value: false,
                     },
                     /**
-                    * passwordSubmit if true give the option to submit a passw
-                    * @type {Boolean}
-                    */
+                     * passwordSubmit if true give the option to submit a passw
+                     * @type {Boolean}
+                     */
                     passwordSubmit: {
                         type: Boolean,
                         value: false,
                     },
                     /**
-                    * showPasswordBox if true show the password-box
-                    * @type {Boolean}
-                    */
+                     * showPasswordBox if true show the password-box
+                     * @type {Boolean}
+                     */
                     showPasswordBox: {
                         type: Boolean,
                         value: false,
                     },
                     /**
-                    * passwordSet if true shows that passw is set
-                    * @type {Boolean}
-                    */
+                     * passwordSet if true shows that passw is set
+                     * @type {Boolean}
+                     */
                     passwordSet: {
                         type: Boolean,
                         value: false,
                     },
                     /**
-                    * The password the user has entered
-                    * @type {String}
-                    */
+                     * The password the user has entered
+                     * @type {String}
+                     */
                     password: {
                         type: String,
                     },
                     /**
-                    * The password the user has entered the second time
-                    * @type {String}
-                    */
+                     * The password the user has entered the second time
+                     * @type {String}
+                     */
                     confirmPassword: {
                         type: String,
                     },
                     /**
-                    * User input error prompt on password input
-                    * @type {String}
-                    */
+                     * User input error prompt on password input
+                     * @type {String}
+                     */
                     passwordError: {
                         type: String,
                         value: '',
                     },
                     /**
-                    * User input error prompt on private key input
-                    * @type {String}
-                    */
+                     * User input error prompt on private key input
+                     * @type {String}
+                     */
                     privateKeyError: {
                         type: String,
                         value: '',
                     },
                     /**
-                    * PublicKey represents the user's public Key
-                    * @type {String}
-                    */
+                     * PublicKey represents the user's public Key
+                     * @type {String}
+                     */
                     publicKey: {
                         type: String,
                     },
@@ -445,9 +445,9 @@ The following custom properties and mixins are available for styling:
             }
 
             /**
-            * Redux action for setting publicKey
-            * @param {String} publicKey
-            */
+             * Redux action for setting publicKey
+             * @param {String} publicKey
+             */
             static get actions() {
                 return Object.assign({
                     PUBLICKEY: function(publicKey) {
@@ -460,29 +460,29 @@ The following custom properties and mixins are available for styling:
             }
 
             /**
-            * Fired when the component first loads
-            */
+             * Fired when the component first loads
+             */
             connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-            * The user agrees to enter a password
-            */
+                    super.connectedCallback();
+                    this.loadResources(this.resolveUrl('../text-translations.json'));
+                }
+                /**
+                 * The user agrees to enter a password
+                 */
             _agreeToEnterPassword() {
-                this.choosePassword = false;
-                this.passwordWarning = true;
-            }
-            /**
-            * The user agrees to choose a password with care
-            */
+                    this.choosePassword = false;
+                    this.passwordWarning = true;
+                }
+                /**
+                 * The user agrees to choose a password with care
+                 */
             _agreeToChoosePassword() {
-                this.passwordWarning = false;
-                this.passwordSubmit = true;
-            }
-            /**
-            * When leaving the page, entered values get reset
-            */
+                    this.passwordWarning = false;
+                    this.passwordSubmit = true;
+                }
+                /**
+                 * When leaving the page, entered values get reset
+                 */
             _resetValues() {
                 if (this.routeEntry[0] == 'private-key') {
                     this.password = null;
@@ -495,21 +495,31 @@ The following custom properties and mixins are available for styling:
                     this.passwordSet = false;
                 }
             }
-            /**
-            * Compares input realtime and toggles button and error message
-            */
+            closeResetValues() {
+                    this.password = null;
+                    this.confirmPassword = null;
+                    this.privateKey = null;
+                    this.privateKeyError = '';
+                    this.choosePassword = true;
+                    this.passwordWarning = false;
+                    this.passwordSubmit = false;
+                    this.passwordSet = false;
+                }
+                /**
+                 * Compares input realtime and toggles button and error message
+                 */
             _checkInput() {
                 this.passwordError = '';
                 if (this.password &&
-                this.confirmPassword &&
-                this.password.length >=1 &&
-                this.confirmPassword.length >=1) {
+                    this.confirmPassword &&
+                    this.password.length >= 1 &&
+                    this.confirmPassword.length >= 1) {
                     if (this.confirmPassword.length <= this.password.length) {
                         for (let i = 0; i < this.confirmPassword.length; i++) {
                             if (this.confirmPassword[i] != this.password[i]) {
-                            this.passwordError = this.localize('The passwords dont match.');
+                                this.passwordError = this.localize('The passwords dont match.');
+                            }
                         }
-                    }
                     } else {
                         this.passwordError = this.localize('The passwords dont match.');
                     }
@@ -518,8 +528,8 @@ The following custom properties and mixins are available for styling:
                     this.password.length >= 1 &&
                     this.confirmPassword &&
                     this.password == this.confirmPassword) {
-                        this.$$('#agree').classList.remove('disabled');
-                        this.$$('#agree').classList.add('enabled');
+                    this.$$('#agree').classList.remove('disabled');
+                    this.$$('#agree').classList.add('enabled');
                 } else {
                     this.$$('#agree').classList.add('disabled');
                     this.$$('#agree').classList.remove('enabled');
@@ -528,8 +538,8 @@ The following custom properties and mixins are available for styling:
 
             _checkKey() {
                 this.privateKeyError = '';
-                if (this.privateKey && this.privateKey. length >= 1) {
-                    if (this. privateKey.length != 64) {
+                if (this.privateKey && this.privateKey.length >= 1) {
+                    if (this.privateKey.length != 64) {
                         this.showPasswordBox = false;
                         if (this.privateKey.length < 64) {
                             this.privateKeyError =
@@ -539,43 +549,46 @@ The following custom properties and mixins are available for styling:
                                 this.localize('The private key you entered is too long.');
                         }
                     } else {
-                    this.showPasswordBox = true;
+                        this.showPasswordBox = true;
                     }
                 }
             }
 
             /**
-            * Checks for enter key input
-            * @param {Object} e element clicked.
-            */
+             * Checks for enter key input
+             * @param {Object} e element clicked.
+             */
             _checkForEnter(e) {
-                if (e.keyCode === 13) {
-                    this._submit();
+                    if (e.keyCode === 13) {
+                        this._submit();
+                    }
                 }
-            }
-            /**
-            * The password and key have been entered
-            */
+                /**
+                 * The password and key have been entered
+                 */
             _submit() {
                 if (this.password &&
-                this.password.length >= 1 &&
-                this.confirmPassword &&
-                this.password == this.confirmPassword) {
+                    this.password.length >= 1 &&
+                    this.confirmPassword &&
+                    this.password == this.confirmPassword) {
                     if (this.privateKey && this.privateKey.length === 64) {
                         this.$.wallet.restoreKey(this.privateKey, this.password)
-                        .then((KeyStore) => {
-                            this.dispatch('PUBLICKEY', KeyStore.address);
-                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                            storage.keyStore = KeyStore.utcKeystore;
-                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                            this.path = 'choose-avatar-and-username';
-                        });
-                    }
-                    else {
+                            .then((KeyStore) => {
+                                this.dispatch('PUBLICKEY', KeyStore.address);
+                                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                                storage.keyStore = KeyStore.utcKeystore;
+                                localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                this.path = 'choose-avatar-and-username';
+                            })
+                            .then(() => {
+                                this.closeResetValues();
+                            });
+                    } else {
                         this.privateKeyError = this.localize('Please enter a key.');
                     }
                 }
             }
-        } window.customElements.define(DisplayRestorePrivateKey.is, DisplayRestorePrivateKey);
+        }
+        window.customElements.define(DisplayRestorePrivateKey.is, DisplayRestorePrivateKey);
     </script>
 </dom-module>

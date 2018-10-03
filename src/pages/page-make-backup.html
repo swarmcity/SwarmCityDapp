@@ -189,10 +189,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="bluetext-margins" id="keys">
                     <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
                 </div>
-            </div>
-        </div>
-        <dom-if if="{{toggleUnlock}}">
-            <template>
+    </div>
+    </div>
+    <dom-if if="{{toggleUnlock}}">
+        <template>
                 <display-unlock 
                     blue
                     toggle-unlock="{{toggleUnlock}}" 
@@ -201,14 +201,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     qr-code-public-key="{{qrCodePublicKey}}">
                 </display-unlock> 
             </template>
-        </dom-if>
+    </dom-if>
 
     </template>
 
     <script>
         class MyMakeBackup extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
+                Polymer.AppLocalizeBehavior,
+            ],
             Polymer.Element
         )) {
             static get is() {
@@ -217,33 +217,33 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                    * Language is the user selected language
-                    * @type {String}
-                    */
+                     * Language is the user selected language
+                     * @type {String}
+                     */
                     language: {
                         type: String,
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
+                     * Path is the current or requested path
+                     * @type {String}
+                     */
                     path: {
                         type: String,
                         observer: '_path',
                     },
                     /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
+                     * pageID is an id givven to every page specific
+                     * @type {String}
+                     */
                     pageID: {
                         type: String,
                         value: 'make-backup',
                     },
                     /**
-                    * toggles the unlock display
-                    * @type {Boolean}
-                    */
+                     * toggles the unlock display
+                     * @type {Boolean}
+                     */
                     toggleUnlock: {
                         type: Boolean,
                         value: false,
@@ -255,35 +255,41 @@ This code may only be used under the license found at https://github.com/swarmci
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
             }
+
             /**
-            * takes the user to page-stop-signup
-            */
+             * takes the user to page-stop-signup
+             */
             _close() {
-                this.path = 'stop-signup/';
-            }
-            /**
-            * changes the current path to my-keys
-            */
-            _toKeys() {
-                this.path = 'my-keys/';
-            }
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
+                    this.path = 'stop-signup/';
                 }
-                this.path = null;
-            }
-            /**
-            * blurs the current page
-            */
+                /**
+                 * changes the current path to hashtag-list
+                 */
+            _enter() {
+                    this.path = 'hashtag-list/';
+                }
+                /**
+                 * changes the current path to my-keys
+                 */
+            _toKeys() {
+                    this.path = 'my-keys/';
+                }
+                /**
+                 * changes the current path
+                 */
+            _path() {
+                    if (this.path != null) {
+                        this.set('route.path', this.path);
+                    }
+                    this.path = null;
+                }
+                /**
+                 * blurs the current page
+                 */
             _blur() {
                 if (this.toggleUnlock) {
                     this.$.container.classList.add('blur');
-                }
-                else {
+                } else {
                     this.$.container.classList.remove('blur');
                 }
             }
