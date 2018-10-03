@@ -1,0 +1,136 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../redux-state.html">
+<!--
+
+Example:
+```
+<hashtag-button-new></hashtag-button-new>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--hashtag-button-new` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="hashtag-button-new">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .button {
+                @apply --icon-button-big;
+                cursor: pointer;
+                box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -webkit-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -moz-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -o-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+            }
+
+            .container[wide-layout] .button {
+                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+
+            .icon {
+                @apply --plus-blue-normal;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div tabindex="6" class="container" wide-layout$="{{wide}}" on-tap="_next" on-KeyPress="_next">
+            <div class="button">
+                <div class="icon"></div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyHashtagButtonNew extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'hashtag-button-new';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Loading indicates if the component is loading
+                    * @type {Boolean}
+                    */
+                    loading: {
+                        type: Boolean,
+                        value: false,
+                        notify: true,
+                    },
+                    /**
+                    * route data represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * Path signals to the parent to change the path
+                    * @type {Boolean}
+                    */
+                    path: {
+                        type: String,
+                        value: null,
+                        notify: true,
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
+            /**
+            * Fired on initial element load.
+            */
+            ready() {
+                super.ready();
+            }
+            /**
+            * Either go to the new here or new deal page depending if the user has a
+            * complete acocunt.
+            * @param {Object} event element clicked.
+            */
+            _next(event) {
+                if (event.keyCode === 13 || event.type == 'tap') {
+                    sessionStorage.setItem('hashtag', this.route.path.split('/')[2]);
+                    if (this.publicKey) {
+                        this.path = 'new-request/' + this.route.path.split('/')[2];
+                    } else {
+                        this.path = 'new-here/';
+                    }
+                }
+            }
+        }
+        window.customElements.define(MyHashtagButtonNew.is, MyHashtagButtonNew);
+    </script>
+</dom-module>
