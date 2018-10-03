@@ -1,0 +1,59 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-hashtag-about.html">
+<link rel="import" href="../../displays/display-simpledeal-title.html">
+
+<dom-module id="page-hashtag">
+    <template>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
+
+    </template>
+
+    <script>
+        class MyHashtagRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-hashtag';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    },
+                };
+            }
+        }
+        window.customElements.define(MyHashtagRouter.is, MyHashtagRouter);
+    </script>
+</dom-module>

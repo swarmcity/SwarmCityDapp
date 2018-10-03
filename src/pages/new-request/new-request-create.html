@@ -382,14 +382,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        notify: true,
-                    },
-                    /**
                     * Balance is the users current balance
                     * @type {Number}
                     */
@@ -429,6 +421,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Number,
                         observer: '_checkPermissions',
                         value: 8,
+                        notify: true,
                     },
                     /**
                     * rangeDescription is the description of the range
@@ -476,10 +469,9 @@ This code may only be used under the license found at https://github.com/swarmci
                             itemGeohash: this.itemGeohash,
                         }
                     }));
+                    this._reset();
                 }
             }
-
-
             /**
             * Verifies user input and displays error message
             */
@@ -536,12 +528,11 @@ This code may only be used under the license found at https://github.com/swarmci
                     return false;
                 }
             }
-
             /**
             * Takes the user's geohash and slider value to generate an item geohash
             */
-            _getItemGeohash(geohash) {
-                switch (this.chosenValue) {
+            _getItemGeohash(geohash, range) {
+                switch (range) {
                     case (1):
                         this.itemGeohash = geohash;
                         break;
@@ -567,12 +558,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         this.itemGeohash = null;
                         break;
                 }
-                this.dispatch({ type: 'ITEMGEOHASH', itemGeohash: this.itemGeohash });
             }
             /**
             * takes the user to originating page
             */
             _close() {
+                this._reset();
                 this.dispatchEvent(new CustomEvent('close'));
             }
             /**
@@ -587,27 +578,12 @@ This code may only be used under the license found at https://github.com/swarmci
             * empties all input fields if not coming confirm-new-request page
             */
             _reset() {
-                if (
-                    !((this.routeEntry.includes('confirm-new-request')
-                        || this.routeEntry.includes('location')
-                    ) && this.routeEntry.includes('new-request'))
-
-                ) {
-                    this.request = '';
-                    this.budget = '';
-                    this.totalcost = 0;
-                    this.showSum = false;
-                    this.chosenValue = 8;
-                }
-                if (this.chosenValue != 8) {
-                    navigator.permissions.query({ 'name': 'geolocation' })
-                        .then((permission) => {
-                            if (permission.state != 'granted') {
-                                this.chosenValue = 8;
-                            }
-                        }
-                        );
-                }
+                this.request = '';
+                this.budget = '';
+                this.totalcost = 0;
+                this.showSum = false;
+                this.chosenValue = 8;
+                this.itemGeohash = null;
             }
             /**
             * After a range has been chosen, check for permissions
@@ -616,18 +592,17 @@ This code may only be used under the license found at https://github.com/swarmci
             _checkPermissions() {
                 this._setRangeDescription();
                 if (this.chosenValue != 8) {
+                    const range = this.chosenValue;
                     navigator.permissions.query({ 'name': 'geolocation' })
                         .then((permission) => {
                             if (permission.state != 'granted') {
-                                this.path = 'location';
+                                this.dispatchEvent(new CustomEvent('location'));
                             } else {
                                 this.$.location.getLocation()
                                     .then(({ latitude, longitude }) => this.$.location.toGeohash(latitude, longitude))
-                                    .then(this._getItemGeohash);
+                                    .then((geohash) => this._getItemGeohash(geohash, range));
                             }
                         });
-                } else {
-                    this.dispatch({ type: 'ITEMGEOHASH', itemGeohash: null });
                 }
             }
 

@@ -16,10 +16,11 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
-<link rel="import" href="./new-request-processing.html">
 <link rel="import" href="./new-request-error.html">
 <link rel="import" href="./new-request-success.html">
+<link rel="import" href="../../displays/display-processing.html">
 <link rel="import" href="../../displays/display-unlock.html">
+<link rel="import" href="../../displays/display-location.html">
 
 <dom-module id="page-new-request">
     <template>
@@ -33,7 +34,14 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- CREATE REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
-            <new-request-create on-create="_handleOnCreate" on-close="_handleOnClose"></new-request-create>
+            <new-request-create chosen-value="{{range}}" on-create="_handleOnCreate" on-close="_handleOnClose"
+                on-location="_handleOnLocation"></new-request-create>
+        </template>
+
+        <!-- ALLOWING LOCATION -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'location')}}">
+            <display-location on-location-accept="_handleOnLocationAccept" on-location-reject="_handleOnLocationReject"></display-location>
         </template>
 
         <!-- CONFIRM REQUEST -->
@@ -46,19 +54,19 @@ This code may only be used under the license found at https://github.com/swarmci
         <!-- PROCESSING REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
-            <new-request-processing></new-request-processing>
+            <display-processing></display-processing>
         </template>
 
         <!-- SUCCESSFUL REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
-            <new-request-success></new-request-success>
+            <new-request-success on-close="_handleOnClose"></new-request-success>
         </template>
 
         <!-- ERROR ON REQUEST -->
 
         <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
-            <new-request-error errorMessage="[[errorMessage]]"></new-request-error>
+            <new-request-error errorMessage="[[errorMessage]]" on-close="_handleOnClose"></new-request-error>
         </template>
 
     </template>
@@ -88,6 +96,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     */
                     route: {
                         type: Object,
+                        observer: '_routeChanged'
                     },
                     /**
                     * the selected hashtag
@@ -129,16 +138,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         value: {},
                     },
+                    range: {
+                        type: Number,
+                    }
                 };
             }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
+            _routeChanged() {
+                this.status = 'new-request';
+            }
             _handleOnCreate(e) {
                 this.status = 'confirm'
                 const { itemBudget, itemDescription, itemGeohash } = e.detail
                 // Construct item object
-                this.itemRequest = { itemBudget, itemDescription, itemGeohash }
+                this.itemRequest = { itemBudget, itemDescription, itemGeohash };
                 if (!this.hashtag) {
                     console.error('hashtag property is not defined')
                 } else {
@@ -146,8 +161,18 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
                 }
             }
-            _handleOnReject(e) {
-                this.status = 'new-request'
+            _handleOnReject() {
+                this.status = 'new-request';
+            }
+            _handleOnLocation() {
+                this.status = 'location';
+            }
+            _handleOnLocationAccept() {
+                this.status = 'new-request';
+            }
+            _handleOnLocationReject(){
+                this.status = 'new-request';
+                this.range = 8;
             }
             _handleOnClose() {
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
@@ -166,6 +191,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 throw Error('Missing public key')
                             }
                             const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
+                            console.log(this.itemRequest);
                             const UUIDv4 = webpack.uuid.v4();
                             const itemHash = webpack.addHexPrefix(sha3(UUIDv4).toString('hex'));
                             const UUIDCollection = JSON.parse(localStorage.getItem('UUIDCollection')) || {};
