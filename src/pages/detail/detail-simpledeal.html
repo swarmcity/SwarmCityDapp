@@ -34,10 +34,24 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-image: var(--sc-bg);
+                @apply --layout-vertical;
                 min-height: calc(100vh - 159px);
+                height: 100%;
+                width: 100%;
+            }
+
+            .itemcontainer {
+                background-color: var(--sc-white);
                 width: 100%;
                 box-sizing: border-box;
                 padding: 0px 10px 25px 10px;
+                margin: 0px 10px 50px 0px;
+            }
+
+            .container[wide-layout] .itemcontainer {
+                max-width: 68vw;
+                margin: 0px 10vw 150px 10vw;
+
             }
 
             detail-button-reply {
@@ -63,20 +77,22 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
 
             <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
-                <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
+                <div class="itemcontainer">
+                    <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
 
-                <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
-                    <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
+                    <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
+                        <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
 
-                    <template is="dom-if" if="[[_showReplyButton(item)]]">
-                        <detail-button-reply on-tap="_input"></detail-button-reply>
+                        <template is="dom-if" if="[[_showReplyButton(item)]]">
+                            <detail-button-reply on-tap="_input"></detail-button-reply>
+                        </template>
                     </template>
-                </template>
 
-                <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-                    <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
-                    </detail-simpledeal-input>
-                </template>
+                    <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+                        <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
+                        </detail-simpledeal-input>
+                    </template>
+                </div>
             </template>
         </div>
 
