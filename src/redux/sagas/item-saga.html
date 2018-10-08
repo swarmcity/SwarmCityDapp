@@ -13,11 +13,11 @@
         /**
          * Action creators
          */
-        function updateReply(hashtagAddress, itemHash, providerAddress, data) {
+        function updateReply(hashtagAddress, itemHash, replierAddress, data) {
             return {
                 type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
                     replies: {
-                        [providerAddress]: data
+                        [replierAddress]: data
                     }
                 }
             }
@@ -80,8 +80,8 @@
             console.log('Resolving reply of ' + replyMetadataHash)
             const res = yield call(catIpfsMetadata, replyMetadataHash)
             console.log('Resolved reply: ', res)
-            const providerAddress = res.providerAddress || '0x0000000000000000000000000000000000000000'
-            yield put(updateReply(hashtagAddress, itemHash, providerAddress, res))
+            const replierAddress = res.replierAddress || '0x0000000000000000000000000000000000000000'
+            yield put(updateReply(hashtagAddress, itemHash, replierAddress, res))
         }
 
         function* getItemReplies(hashtagAddress, hashtagContract, itemHash) {
