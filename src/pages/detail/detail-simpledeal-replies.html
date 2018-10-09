@@ -12,7 +12,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="../../shared-styles.html">
 <link rel="import" href="../../displays/display-button-disagree.html">
 <link rel="import" href="../../displays/display-button-confirm.html">
 <link>
@@ -177,7 +176,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <template is="dom-if" if="[[!_isReplier(item)]]">
                             <div class="user">[[item.username]] · [[item.reputation]] SWR</div>
 
-                            <template is="dom-if" if="[[_isSeeker(item)]]">
+                            <template is="dom-if" if="[[_isSeeker()]]">
                                 <div class="choose" on-up="_replyDetail">
                                     <div class="choose-icon"></div>
                                 </div>
@@ -214,20 +213,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * the hashtag item we've subscribed to
-                    * @type {Object}
-                    */
-                    item: {
-                        type: Object,
-                    },
-                    /**
-                    * PublicKey represents the user's public key
+                    * address represents the user's public key
                     * @type {String}
                     */
                     address: {
                         type: String,
                         statePath: 'publicKey',
                     },
+                    item: Object,
                 };
             }
             /**
@@ -236,7 +229,6 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {string} formatted date string
             */
             _formatDate(timestamp) {
-                let milliseconds = timestamp * 1000;
                 if (webpack.moment().valueOf() - timestamp < 86400000) {
                     return webpack.moment(timestamp).fromNow();
                 } else {
@@ -264,8 +256,8 @@ This code may only be used under the license found at https://github.com/swarmci
             * @param {Object} item the item (request)
             * @return {Boolean} true when user owns this request
             */
-            _isSeeker(item) {
-                return (item.seekerAddress || {}) == this.address;
+            _isSeeker() {
+                return (this.item.seekerAddress || {}) == this.address;
             }
             /**
             * Here we check if there are any replies
@@ -287,8 +279,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * @param {Object} event object clicked containing the specific replier item
             */
             _replyDetail(event) {
-                this.stateChange = 'detail';
-                this.selectedReply = event.model.__data.item;
+                this.dispatchEvent(new CustomEvent('detail', {
+                    detail: event.model.__data.item,
+                }));
             }
             /**
             * return an array of an object's values
