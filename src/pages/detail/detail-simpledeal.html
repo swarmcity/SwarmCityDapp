@@ -19,6 +19,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-main.html">
 <link rel="import" href="./detail-simpledeal-replies.html">
 <link rel="import" href="./detail-simpledeal-input.html">
+<link rel="import" href="./detail-simpledeal-reply-detail.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
 
@@ -34,10 +35,24 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-image: var(--sc-bg);
+                @apply --layout-vertical;
                 min-height: calc(100vh - 159px);
+                height: 100%;
+                width: 100%;
+            }
+
+            .itemcontainer {
+                background-color: var(--sc-white);
                 width: 100%;
                 box-sizing: border-box;
                 padding: 0px 10px 25px 10px;
+                margin: 0px 10px 50px 0px;
+            }
+
+            .container[wide-layout] .itemcontainer {
+                max-width: 68vw;
+                margin: 0px 10vw 150px 10vw;
+
             }
 
             detail-button-reply {
@@ -63,20 +78,28 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
 
             <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
-                <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
+                <div class="itemcontainer">
+                    <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
 
-                <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
-                    <detail-simpledeal-replies item="[[item]]"></detail-simpledeal-replies>
+                    <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
+                        <detail-simpledeal-replies item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
 
-                    <template is="dom-if" if="[[_showReplyButton(item)]]">
-                        <detail-button-reply on-tap="_input"></detail-button-reply>
+                        <template is="dom-if" if="[[_showReplyButton(item)]]">
+                            <detail-button-reply on-tap="_input"></detail-button-reply>
+                        </template>
                     </template>
-                </template>
 
-                <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-                    <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
-                    </detail-simpledeal-input>
-                </template>
+                    <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+                        <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
+                        </detail-simpledeal-input>
+                    </template>
+
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'detail')}}">
+                        <detail-simpledeal-reply-detail selected-reply="[[selectedReply]]" on-status="_handleOnStatus"
+                            on-select="_handleOnSelect"></detail-simpledeal-reply-detail>
+                    </template>
+                </div>
             </template>
         </div>
 
@@ -95,19 +118,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     status: String,
                     item: Object,
                     address: String,
-                    balance: {
-                        type: String,
-                        statePath: 'balance',
-                    },
-                    hashtag: {
-                        type: Object,
-                        statePath: AppStore.selectors.hashtag,
-                    },
-                    username: {
-                        type: String,
-                        statePath: 'username',
-                    },
-
+                    balance: String,
+                    hashtag: Object,
+                    selectedReply: Object,
+                    username: String,
                 }
             }
             _handleOnReply(e) {
@@ -131,7 +145,8 @@ This code may only be used under the license found at https://github.com/swarmci
                             }
                             const reply = {
                                 message: message,
-                                itemhash: this.item.itemHash,
+                                itemHash: this.item.itemHash,
+                                value: this.item.itemValue,
                             }
                             const hashtag = {
                                 address: this.hashtag.address,
@@ -150,6 +165,43 @@ This code may only be used under the license found at https://github.com/swarmci
                             console.error('Error posting reply (catch block): ', e.stack)
                         }
                     });
+            }
+            _handleOnSelect() {
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const replier = {
+                                username: this.selectedReply.username,
+                                address,
+                                privateKey
+                            }
+                            const reply = {
+                                message: message,
+                                itemHash: this.item.itemHash,
+                                value: this.item.itemValue,
+                            }
+                            const hashtag = {
+                                address: this.hashtag.address,
+                                fee: this.hashtag.hashtagFee,
+                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                            }
+                            this.$.simpledeal.createNewReply({ replier, reply, hashtag })
+                                .then(receipt => {
+                                    console.log('Successfully transacted reply, receipt:', receipt)
+                                })
+                                .catch(err => {
+                                    console.log('Error posting reply:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error posting reply (catch block): ', e.stack)
+                        }
+                    });
+
             }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
@@ -179,6 +231,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.dispatchEvent(new CustomEvent('status', {
                     detail: e.detail,
                 }));
+            }
+            _handleOnDetail(e) {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'detail',
+                }));
+                this.selectedReply = e.detail;
             }
             _allowReply() {
                 let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);

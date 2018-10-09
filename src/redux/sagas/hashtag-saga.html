@@ -135,16 +135,14 @@
             }
         }
 
-        function* getHashtag(action) {
-            console.log('GET HASHTAG req', action)
-            const hashtagAddress = action.hashtag
+        function* getHashtag({ hashtag: hashtagAddress }) {
+            console.log('GET HASHTAG req', hashtagAddress)
             try {
                 // Entrypoint, hashtagAddress
                 const hashtagContract = new web3Local.eth.Contract(
                     simpleDeal.abi,
                     hashtagAddress
                 );
-                window.hashtagContract = hashtagContract
 
                 yield fork(hashtagSubscription, hashtagContract)
 
@@ -334,7 +332,7 @@
 
         function* getReplyMetadata(reply, itemHash, hashtagAddress) {
             try {
-                const { replyMetadataHash: hash, providerAddress } = item;
+                const { replyMetadataHash: hash, providerAddress } = reply;
                 const res = yield call(catIpfsMetadata, hash)
                 yield put({
                     type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
@@ -359,7 +357,13 @@
                 providerAddress,
                 replyMetadataHash,
             }
-            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
+            yield put({
+                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                    replies: {
+                        [providerAddress]: reply
+                    }
+                }
+            });
 
             // Step 2. Resolve its metadata
             yield fork(getReplyMetadata, reply, itemHash, hashtagAddress)
@@ -368,7 +372,7 @@
             const timestamp = yield call(getBlockTime, event.blockNumber)
             yield put({
                 type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    items: {
+                    replies: {
                         [providerAddress]: { timestamp }
                     }
                 }

@@ -25,8 +25,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
-        <detail-simpledeal status="[[status]]" item="[[item]]" address="[[address]]" 
-            on-status="_handleOnStatus" on-close="_handleOnClose">
+        <detail-simpledeal status="[[status]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]" username="[[username]]"
+            address="[[address]]" on-status="_handleOnStatus" on-close="_handleOnClose">
         </detail-simpledeal>
     </template>
     <script>
@@ -40,14 +40,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    /**
-                    * Route represents the current route
-                    * @type {Object}
-                    */
-                    route: {
-                        type: Object,
-                        observer: '_routeChanged',
-                    },
+                    route: Object,
                     /**
                     * hashtag is the currently loaded hashtag
                     * @type {Object}
@@ -55,7 +48,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
-                        observer: '_hashtagChanged',
+                    },
+                    /**
+                    * item is the currently loaded item
+                    * @type {Object}
+                    */
+                    item: {
+                        type: Object,
+                        statePath: AppStore.selectors.item,
+                        observer: '_itemChanged',
                     },
                     /**
                      * pageID is an id givven to every page specific
@@ -65,13 +66,17 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'loading',
                     },
-                    item: {
-                        type: Object,
-                        observer: '_itemChanged',
-                    },
                     address: {
                         type: String,
-                    }
+                    },
+                    balance: {
+                        type: String,
+                        statePath: 'balance',
+                    },
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
                 };
             }
 
@@ -97,39 +102,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
                 this.status = 'replies';
             }
-            // hashtag update: set item if it's not set yet, or merge possible updates
-            _hashtagChanged() {
-                if (this.route.path.split('/')[1] == 'detail') {
-                    let urlItemHash = this.route.path.split('/')[3];
-                    if (this.item) {
-                        // if an item is already loaded, update the item
-                        // if (this.hashtag && this.hashtag.items && this.hashtag.items.hasOwnProperty(urlItemHash)) {
-                        //     this.item = { ...this.item, ...this.hashtag.items[urlItemHash] };
-                        // }
-                    } else {
-                        this.item = this._getItem(urlItemHash)
-                    }
-                }
-            }
-            // Whenever item changes, determine status change
             _itemChanged() {
                 if (this.item) {
                     if (this.status != 'input') {
                         this.status = 'replies';
                     }
                 }
-            }
-            // Executed when route changes, set item from hashtag object if found or reset it.
-            _routeChanged() {
-                if (this.route.path.split('/')[1] == 'detail') {
-                    let urlItemHash = this.route.path.split('/')[3];
-                    this.item = this.item && this.item.itemHash == urlItemHash ? this.item : this._getItem(urlItemHash);
-                }
-            }
-            // Executed when route changes, set item from hashtag object if found or reset it.
-            _getItem(urlItemHash) {
-                return this.hashtag && this.hashtag.items && this.hashtag.items.hasOwnProperty(urlItemHash) ?
-                    this.hashtag.items[urlItemHash] : null;
             }
         }
         window.customElements.define(MyDetailRouter.is, MyDetailRouter);

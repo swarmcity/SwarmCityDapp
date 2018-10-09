@@ -4,11 +4,139 @@
         const { web3Local, ipfs, ReduxSaga, contractsData } = window;
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
-        const { call, fork, take, put, takeEvery, all } = effects;
+        const { call, fork, take, put, takeEvery, all, select } = effects;
+
+        // Import contract data:
+        const { swtToken, hashtagList, simpleDeal } = contractsData;
 
 
-        function* getItem(action) {
-            console.log('GET ITEM req', action)
+        /**
+         * Action creators
+         */
+        function updateReply(hashtagAddress, itemHash, replierAddress, data) {
+            return {
+                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                    replies: {
+                        [replierAddress]: data
+                    }
+                }
+            }
+        }
+
+
+        /**
+         * Gets hashtag from the blockchain
+         */
+        async function getItemData(hashtagContract, itemHash) {
+            try {
+                let itemData = {};
+                await Promise.all([
+                    hashtagContract.methods.readItemData(itemHash).call().then(res => {
+                        itemData.status = res.status
+                        itemData.providerAddress = res.providerAddress
+                        itemData.providerRep = res.providerRep
+                        itemData.numberOfReplies = res.numberOfReplies
+                    }).catch(e => {
+                        console.error(`Error calling readItemData(${itemHash}): ${e}`)
+                    }),
+                    hashtagContract.methods.readItemState(itemHash).call().then(res => {
+                        itemData.itemValue = res._itemValue
+                        itemData.seekerRep = res._seekerRep
+                        itemData.seekerAddress = res._seekerAddress
+                        itemData.itemMetadataHash = res._itemMetadataHash
+                        itemData.creationBlock = res._creationBlock
+                    }).catch(e => {
+                        console.error(`Error calling readItemState(${itemHash}): ${e}`)
+                    })
+                ])
+                return itemData
+            } catch (e) {
+                console.log('Error on getItemData from ' + itemHash, e)
+            }
+        }
+
+        function catIpfsMetadata(hash) {
+            return ipfs.cat(hash).then(JSON.parse)
+        }
+
+        function* getItemMetadata(item, hashtagAddress) {
+            try {
+                const { itemMetadataHash: hash, itemHash } = item;
+                const res = yield call(catIpfsMetadata, hash)
+                yield put({
+                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                        seekerAvatarHash: res.avatarHash,
+                        description: res.description,
+                        seekerPublicKey: res.publicKey,
+                        seekerUsername: res.username,
+                    }
+                });
+            } catch (e) {
+                console.log('Error getting IPFS metadata for item: ' + item.itemHash + ' in hashtag: ' + hashtagAddress, e);
+            }
+        }
+
+        function* resolveReply(hashtagAddress, itemHash, replyMetadataHash) {
+            console.log('Resolving reply of ' + replyMetadataHash)
+            const res = yield call(catIpfsMetadata, replyMetadataHash)
+            console.log('Resolved reply: ', res)
+            const replierAddress = res.replierAddress || '0x0000000000000000000000000000000000000000'
+            yield put(updateReply(hashtagAddress, itemHash, replierAddress, res))
+        }
+
+        function* getItemReplies(hashtagAddress, hashtagContract, itemHash) {
+            try {
+                const replies = yield call(hashtagContract.methods.getItemReplies(itemHash).call)
+                console.log('replies', replies)
+                yield all(replies.map(replyMetadataHash => call(resolveReply, hashtagAddress, itemHash, replyMetadataHash)))
+            } catch (e) {
+                console.error(`Error getting item ${itemHash} replies: ${e.stack}`)
+            }
+        }
+
+
+        function* getItem({ item: itemHash }) {
+            console.log('GET ITEM req', itemHash)
+
+            // Get current hashtag
+            const hashtagAddress = yield select(state => state.current.hashtag)
+            const hashtagContract = new web3Local.eth.Contract(
+                simpleDeal.abi,
+                hashtagAddress
+            );
+
+            // Step 1. Call contract state: 
+            //   - hashtagName() -> hashtagName
+            //   - hashtagMetadata() -> hashtagMetadata
+            //   - deployBlock() -> deployBlock
+            const item = yield call(getItemData, hashtagContract, itemHash)
+            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
+
+            // Step 2. Resolve its metadata
+            yield fork(getItemMetadata, item, hashtagAddress)
+
+            yield fork(getItemReplies, hashtagAddress, hashtagContract, itemHash)
+
+            // Step 3. Get the timestamp
+            if (item.creationBlock) yield put({
+                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                    timestamp: yield call(getBlockTime, item.creationBlock)
+                }
+            });
+        }
+
+        async function getBlockTime(blockNumber) {
+            try {
+                const block = await web3Local.eth.getBlock(blockNumber);
+                if (block && block.timestamp) {
+                    return parseInt(block.timestamp);
+                } else {
+                    console.error('Error fetching block ' + blockNumber + ' :', block)
+                    return 'error';
+                }
+            } catch (e) {
+                console.error('Error fetching timestamp for block ' + blockNumber, e)
+            }
         }
 
 

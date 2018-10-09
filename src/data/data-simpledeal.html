@@ -18,18 +18,18 @@
         async function createNewReplyAsync({ replier, reply, hashtag }) {
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
-                replier: {
-                    username: replier.username,
-                    avatarHash: localStorage.getItem('avatarHash'),
-                    address: replier.address,
-                },
-                description: reply.description,
+                username: replier.username,
+                avatarHash: localStorage.getItem('avatarHash'),
+                replierAddress: replier.address,
+                message: reply.message,
+                value: reply.value,
+                timestamp: Date.now(),
             }))
 
             // 1. Encode the raw replyItem
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             const rawReplyItem = simpleDealContract.methods.replyItem(
-                reply.itemhash,
+                reply.itemHash,
                 metadataHash.bytes32
             ).encodeABI();
 

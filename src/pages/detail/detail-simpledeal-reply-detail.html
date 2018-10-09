@@ -3,35 +3,13 @@
 Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../bower_components/iron-image/iron-image.html">
-<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
 
-<!--
-    Displays and shared styles only
--->
-<link rel="import" href="../shared-styles.html">
-<link rel="import" href="../displays/display-complete-select-provider.html">
-<!--
 
-Example:
-```
-<display-simpledeal-reply-detail></display-simpledeal-reply-detail>
-```
-
-### Styling
-
-Style the button with CSS as you would a normal DOM element.
-
-The following custom properties and mixins are available for styling:
-
-| Custom property | Description | Default |
-| --- | --- | --- |
-| `--display-simpledeal-reply-detail` | Mixin applied to the deal button | `{}` |
--->
-<dom-module id="display-simpledeal-reply-detail">
+<dom-module id="detail-simpledeal-reply-detail">
     <template>
         <style include="shared-styles">
             :host {
@@ -113,7 +91,7 @@ The following custom properties and mixins are available for styling:
                 margin: 40px 0;
             }
 
-            .button:active {
+            .button:active{
                 @apply --button-active;
             }
 
@@ -126,21 +104,20 @@ The following custom properties and mixins are available for styling:
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <display-complete-select-provider private-key="{{privateKey}}" selected-reply="{{selectedReply}}"></display-complete-select-provider>
         <div class="container" wide-layout$="{{wide}}">
             <div class="back" on-up="_toReplies">
                 <div class="back-icon"></div>
             </div>
             <div class="descriptionbox">
-                <div class="description">[[selectedReply.description]]</div>
-                <div class="price">for [[_formatValue(hashtagItem.value)]] SWT</div>
+                <div class="description">[[selectedReply.message]]</div>
+                <div class="price">for [[_formatValue(selectedReply.value)]] SWT</div>
             </div>
             <div class="date">
-                [[_formatDate(selectedReply.dateTime)]]
+                [[_formatDate(selectedReply.timestamp)]]
             </div>
-            <div class="providerbox">
+            <div class="providerbox" on-up="_toUserReputation">
                 <div class="avatar">
-                    <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    <iron-image sizing="cover" preload   src="https://dev.swarm.city/img/[[selectedReply.avatarHash]]" placeholder="../images/defaultavatar.png">
                     </iron-image>
                 </div>
                 <div class="username">[[selectedReply.username]] · [[selectedReply.reputation]] SWR</div>
@@ -148,62 +125,22 @@ The following custom properties and mixins are available for styling:
             <div class="buttonbox">
                 <div class="button" on-up="_selectProvider">
                     Select [[selectedReply.username]]
-                </div>
+                </div>            
             </div>
         </div>
     </template>
     <script>
-        class MyDisplaySimpledealReplyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDetailSimpledealReplyDetail extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-simpledeal-reply-detail';
+                return 'detail-simpledeal-reply-detail';
             }
             static get properties() {
                 return {
-                    /**
-                    * State contains the current view
-                    * @type {String}
-                    */
-                    stateChange: {
-                        type: String,
-                        notify: true,
-                    },
-                    /**
-                    * toggles the unlock display
-                    * @type {Boolean}
-                    */
-                    toggleUnlock: {
-                        type: Boolean,
-                        value: false,
-                        notify: true,
-                    },
-                    /**
-                    * selectedReply contains the reply the user wants to see in detail
-                    * @type {Object}
-                    */
-                    selectedReply: {
-                        type: Object,
-                    },
-                    /**
-                    * the hashtag item we've subscribed to
-                    * @type {Object}
-                    */
-                    hashtagItem: {
-                        type: Object,
-                        statePath: 'hashtagItem',
-                    },
-                    /**
-                    * The payload to select a provider from the list of replies
-                    * @type {Object}
-                    */
-                    selectProvider: {
-                        type: Object,
-                        statePath: 'selectProvider',
-                        observer: '_toReplies',
-                    },
+                    selectedReply: Object,
                 };
             }
             /**
@@ -219,27 +156,31 @@ The following custom properties and mixins are available for styling:
             * @param {DateTime} dateTime epoch in javascript milliseconds
             * @return {string} formatted date string
             */
-            _formatDate(dateTime) {
-                let milliseconds = dateTime * 1000;
-                if (webpack.moment().valueOf() - milliseconds < 86400000) {
-                    return webpack.moment(milliseconds).fromNow();
+            _formatDate(timestamp) {
+                if (webpack.moment().valueOf() - timestamp < 86400000) {
+                    return webpack.moment(timestamp).fromNow();
                 } else {
-                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                    return webpack.moment(timestamp).format('DD MMM YYYY - HH:mm');
                 }
             }
-            /**
-            * toggles the password unlock display
-            */
             _selectProvider() {
-                this.toggleUnlock = !this.toggleUnlock;
+                this.dispatchEvent(new CustomEvent('select'));
             }
             /**
             * Changes the current view to show all replies
             */
             _toReplies() {
-                this.stateChange = 'replies';
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'replies',
+                }));
+            }
+            /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                // this.path = `user-reputation/${this.selectedReply.address}/${this.selectedReply.avatarHash}/${this.selectedReply.username}`; // eslint-disable-line
             }
         }
-        window.customElements.define(MyDisplaySimpledealReplyDetail.is, MyDisplaySimpledealReplyDetail);
+        window.customElements.define(MyDetailSimpledealReplyDetail.is, MyDetailSimpledealReplyDetail);
     </script>
 </dom-module>
