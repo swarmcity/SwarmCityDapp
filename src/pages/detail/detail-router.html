@@ -25,15 +25,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
-        <detail-simpledeal 
-            status="[[status]]" 
-            hashtag="[[hashtag]]" 
-            item="[[item]]" 
-            balance="[[balance]]" 
-            username="[[username]]"
-            address="[[address]]" 
-            on-status="_handleOnStatus" 
-            on-close="_handleOnClose">
+        <detail-simpledeal status="[[status]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]" username="[[username]]"
+            address="[[address]]" on-status="_handleOnStatus" on-close="_handleOnClose">
         </detail-simpledeal>
     </template>
     <script>
@@ -55,7 +48,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: {
                         type: Object,
                         statePath: AppStore.selectors.hashtag,
-                        observer: '_hashtagChanged',
                     },
                     /**
                     * item is the currently loaded item
@@ -107,7 +99,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.status = 'replies';
             }
             _itemChanged() {
-                console.log('current item: ', this.item);
+                if (this.item) {
+                    if (this.status != 'input') {
+                        this.status = 'replies';
+                    }
+                }
             }
         }
         window.customElements.define(MyDetailRouter.is, MyDetailRouter);

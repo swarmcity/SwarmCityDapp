@@ -1,6 +1,5 @@
 <script>
     (function () {
-
         const _web3 = window.web3Local
         const selectors = {
             balance: (state) => {
@@ -24,10 +23,15 @@
                 ...state.hashtags[state.current.hashtag],
                 address: state.current.hashtag
             }),
-            item: (state) => ({
-                ...state.hashtags[state.current.hashtag].items[state.current.item],
-                itemHash: state.current.item
-            }),
+            item: (state) => {
+                if (state.hashtags[state.current.hashtag]
+                    && state.hashtags[state.current.hashtag].items) {
+                    return {
+                        ...state.hashtags[state.current.hashtag].items[state.current.item],
+                        itemHash: state.current.item
+                    }
+                }
+            },
         }
 
         // Export

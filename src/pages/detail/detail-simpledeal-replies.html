@@ -160,18 +160,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="box">
                     <div class="top">
                         <div class="description">
-                            [[item.description]]
+                            [[item.message]]
                         </div>
                         <div class="price">
                             <div class="vmarkmini"></div> [[_formatValue(item.value)]] SWT
                         </div>
                     </div>
 
-                    <div class="date">[[_formatDate(item.dateTime)]]</div>
+                    <div class="date">[[_formatDate(item.timestamp)]]</div>
 
                     <div class="bottom">
-                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.avatarHash]]" placeholder="../images/defaultavatar.png"
-                            on-up="_toUserReputation">
+                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.avatarHash]]"
+                            placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                         </iron-image>
 
                         <template is="dom-if" if="[[!_isReplier(item)]]">
@@ -224,7 +224,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     * PublicKey represents the user's public key
                     * @type {String}
                     */
-                    publicKey: {
+                    address: {
                         type: String,
                         statePath: 'publicKey',
                     },
@@ -232,15 +232,15 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             /**
             * formats epoch
-            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @param {DateTime} timestamp epoch in javascript milliseconds
             * @return {string} formatted date string
             */
-            _formatDate(dateTime) {
-                let milliseconds = dateTime * 1000;
-                if (webpack.moment().valueOf() - milliseconds < 86400000) {
-                    return webpack.moment(milliseconds).fromNow();
+            _formatDate(timestamp) {
+                let milliseconds = timestamp * 1000;
+                if (webpack.moment().valueOf() - timestamp < 86400000) {
+                    return webpack.moment(timestamp).fromNow();
                 } else {
-                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                    return webpack.moment(timestamp).format('DD MMM YYYY - HH:mm');
                 }
             }
             /**
@@ -257,15 +257,15 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Boolean} true when user owns this reply
             */
             _isReplier(reply) {
-                return reply.address == this.publicKey;
+                return (reply.replierAddress || {}) == this.address;
             }
             /**
             * Here we check if the request is owned by the current user
-            * @param {Object} hashtagItem the hashtagItem (request)
+            * @param {Object} item the item (request)
             * @return {Boolean} true when user owns this request
             */
-            _isSeeker(hashtagItem) {
-                return hashtagItem.seeker && hashtagItem.seeker.address == this.publicKey;
+            _isSeeker(item) {
+                return (item.seekerAddress || {}) == this.address;
             }
             /**
             * Here we check if there are any replies
@@ -296,7 +296,6 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Array} an array of the object's values
             */
             _toArray(obj) {
-                console.log(obj);
                 if (obj) {
                     return Object.values(obj);
                 }
