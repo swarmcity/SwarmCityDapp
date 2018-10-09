@@ -56,6 +56,36 @@
 
         }
 
+        async function selectReplierAsync({ seeker, replierAddress, itemHash, hashtagAddress }) {
+            // 1. Encode the raw selectReplier
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
+            const rawSelectReplier = simpleDealContract.methods.selectReplier(
+                itemHash,
+                replierAddress
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtagAddress,
+                data: rawSelectReplier,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
         // Define async methods, because 
         // oh hi classes can u support async/await plz tkns
         async function createNewItemAsync({ seeker, item, hashtag }) {
@@ -171,147 +201,10 @@
             }
 
             /**
-             * Create a new hashtag item
-             * @param {String} itemHash - The itemHash in Hex (with prefix)
-             * @param {Number} weiAmount - The item value in wei
-             * @param {String} ipfsHash - The item's metadata ipfs hash
-             * @param {String} contractAddress - The hashtag's address
-             * @param {Object} abi - The hashtag contract's abi
-             * @return {Object} - The Raw new item tx data
+             * Select a replier
              */
-            rawNewItem(itemHash, weiAmount, ipfsHash, contractAddress, abi) {
-                const simpleDealContract = new webpack.Contract(
-                    abi,
-                    contractAddress
-                );
-                let rawNewItem = simpleDealContract.methods.newItem(
-                    itemHash,
-                    weiAmount,
-                    ipfsHash
-                ).encodeABI();
-            }
-
-            /**
-             * Reply to an item
-             * @param {String} itemHash - The itemHash in Hex (with prefix)
-             * @param {String} ipfsHash - The reply data ipfs hash
-             * @param {String} contractAddress - The hashtag's address
-             * @param {Object} abi - The hashtag contract's abi
-             * @return {Object} - The Raw reply tx data
-             */
-            rawReplyItem(itemHash, ipfsHash, contractAddress, abi) {
-                return new Promise((resolve) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawReplyItem = simpleDealContract.methods.replyItem(
-                        itemHash,
-                        ipfsHash
-                    ).encodeABI();
-                    resolve(rawReplyItem);
-                });
-            }
-
-            /**
-             * As seeker, select a replier to your item as potential provider
-             * @param {String} itemHash - The itemHash in Hex (with prefix)
-             * @param {String} replierAddress - The replier's address
-             * @param {String} contractAddress - The hashtag's address
-             * @param {Object} abi - The hashtag contract's abi
-             * @return {Object} - The Raw reply tx data
-             */
-            rawSelectReplier(itemHash, replierAddress, contractAddress, abi) {
-                return new Promise((resolve) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawSelectReplier = simpleDealContract.methods.selectReplier(
-                        itemHash,
-                        replierAddress
-                    ).encodeABI();
-                    resolve(rawSelectReplier);
-                });
-            }
-
-            /**
-             * Fund a hashtag item
-             * @param {String} itemHash - The itemHash of the item
-             * @param {String} contractAddress - The hashtag's address
-             * @param {Object} abi - The hashtag contract's abi
-             * @return {Object} - The Raw new item tx data
-             */
-            rawFundItem(itemHash, contractAddress, abi) {
-                return new Promise((resolve) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawFundItem = simpleDealContract.methods.fundItem(
-                        itemHash
-                    ).encodeABI();
-                    resolve(rawFundItem);
-                });
-            }
-
-            /**
-             * Pay the provider the full sum
-             * @param {String} itemHash - The itemHash in Hex (with prefix)
-             * @param {String} contractAddress - The hashtag's address
-             * @param {Object} abi - The hashtag contract's abi
-             * @return {Object} - The Raw payout item tx data
-             */
-            rawPayoutItem(itemHash, contractAddress, abi) {
-                return new Promise((resolve) => {
-                    const simpleDealContract = new webpack.Contract(abi, contractAddress);
-                    let rawPayoutItem = simpleDealContract.methods.payoutItem(itemHash).encodeABI();
-                    resolve(rawPayoutItem);
-                });
-            }
-
-            /**
-             * Filter the hashtag object to return a formatted list of items the user is involved in
-             * @return {items} The array with items the user is involved in
-             * @argument {object} hashtag the current hashtag
-             * @argument {String} userAddress the user's address
-             * @argument {String} involved if true, return the items the user is involved with
-             */
-            getHashtagItems(hashtag, userAddress, involved) {
-                return new Promise((resolve) => {
-                    let items = Object.values(hashtag.items)
-                        .filter((item) => {
-                            let isInvolved = false;
-                            if (!item.itemHash) return false;
-                            if (item.replies && item.replies[userAddress]) {
-                                isInvolved = true;
-                            }
-                            if (item.seeker.address == userAddress) {
-                                isInvolved = true;
-                            }
-                            // Don't add completed deals to items involved
-                            if (item.status && item.status == 2) isInvolved = false;
-                            if (involved) {
-                                // only return items the user is involved with
-                                return isInvolved;
-                            } else {
-                                // only return items the user is not involved with
-                                return !isInvolved;
-                            }
-                        })
-                        .map((item) => {
-                            // If missing seeker username, use address
-                            item.seeker.username = item.seeker.username || item.seeker.address;
-                            // If missing description, use default
-                            item.description = item.description || 'Missing description';
-                            return item;
-                        })
-                        .sort((a, b) => {
-                            // sort the array by date, newest first
-                            return parseInt(b.dateTime) - parseInt(a.dateTime);
-                        });
-                    resolve(items);
-                });
+             selectReplier(args) {
+                return selectReplierAsync(args)
             }
         }
         window.customElements.define(DataSimpledeal.is, DataSimpledeal);
