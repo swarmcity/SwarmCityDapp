@@ -15,6 +15,61 @@
             simpleDeal
         } = contractsData;
 
+        // Define async methods, because 
+        // oh hi classes can u support async/await plz tkns
+        async function createNewItemAsync({ seeker, item, hashtag }) {
+
+            // 0. Upload to IPFS
+            const metadataHash = await ipfs.add(JSON.stringify({
+                username: seeker.username,
+                avatarHash: localStorage.getItem('avatarHash'),
+                description: item.description,
+                location: item.location,
+                publicKeySeeker: webpack
+                    .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
+                    .toString('hex')
+            }))
+
+            // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
+            const itemBudgetWei = item.budget * 1e18;
+            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
+
+            // 1. Encode the newItem method to be sent through ApproveAndCall
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            const rawNewItem = simpleDealContract.methods.newItem(
+                item.hash,
+                itemBudgetWei,
+                metadataHash.bytes32
+            ).encodeABI();
+            const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
+            const rawApproveAndCall = tokenContract.methods.approveAndCall(
+                hashtag.address, // spender
+                totalSum, // totalSum
+                rawNewItem, // next call data
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address)
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtag.tokenAddress,
+                data: rawApproveAndCall,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
         async function createNewReplyAsync({ replier, reply, hashtag }) {
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
@@ -85,53 +140,37 @@
             return hash
         }
 
-        // Define async methods, because 
-        // oh hi classes can u support async/await plz tkns
-        async function createNewItemAsync({ seeker, item, hashtag }) {
+        async function fundItemAsync({ provider, item, hashtag }) {
 
-            // 0. Upload to IPFS
-            const metadataHash = await ipfs.add(JSON.stringify({
-                username: seeker.username,
-                avatarHash: localStorage.getItem('avatarHash'),
-                description: item.description,
-                location: item.location,
-                publicKeySeeker: webpack
-                    .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
-                    .toString('hex')
-            }))
+            // 0. Calculate the total swt cost
+            const totalSum = parseInt(item.value) + parseInt(hashtag.fee / 2);
 
-            // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
-            const itemBudgetWei = item.budget * 1e18;
-            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
-
-            // 1. Encode the newItem method to be sent through ApproveAndCall
+            // 1. Encode the raw fundItem
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
-            const rawNewItem = simpleDealContract.methods.newItem(
-                item.hash,
-                itemBudgetWei,
-                metadataHash.bytes32
+            const rawFundItem = simpleDealContract.methods.fundItem(
+                item.hash
             ).encodeABI();
             const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
             const rawApproveAndCall = tokenContract.methods.approveAndCall(
                 hashtag.address, // spender
                 totalSum, // totalSum
-                rawNewItem, // next call data
+                rawFundItem, // next call data
             ).encodeABI();
 
             // 2. Get user's nonce
-            const nonce = await _web3.eth.getTransactionCount(seeker.address)
+            const nonce = await _web3.eth.getTransactionCount(provider.address)
 
             // 3. Generate tx object, sign and serialize
             const tx = new Tx({
                 nonce: _web3.utils.toHex(nonce),
-                from: seeker.address,
+                from: provider.address,
                 gasPrice: 1000000000,
                 gasLimit: 3000000,
                 to: hashtag.tokenAddress,
                 data: rawApproveAndCall,
                 chainId: 42,
             });
-            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            tx.sign(new Buffer(provider.privateKey, 'hex'));
             const serializedTx = tx.serialize();
 
             // 4. Send transaction, await receipt. 
@@ -139,7 +178,6 @@
             const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
             return hash
         }
-
 
         /**
          * to hex
@@ -202,8 +240,15 @@
             /**
              * Select a replier
              */
-             selectReplier(args) {
+            selectReplier(args) {
                 return selectReplierAsync(args)
+            }
+
+            /**
+             * fund an item
+             */
+            fundItem(args) {
+                return fundItemAsync(args)
             }
         }
         window.customElements.define(DataSimpledeal.is, DataSimpledeal);
