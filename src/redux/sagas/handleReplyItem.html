@@ -1,0 +1,125 @@
+<script>
+    (function () {
+        // Items initialized in setup.html
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        // ReduxSaga methods
+        const { effects, eventChannel, delay } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all, select } = effects;
+
+        // Import contract data:
+        const { swtToken, hashtagList, simpleDeal } = contractsData;
+
+
+        /**
+         * Action creators
+         */
+        function updateReply(hashtagAddress, itemHash, providerAddress, data) {
+            return {
+                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                    replies: {
+                        [providerAddress]: data
+                    }
+                }
+            }
+        }
+
+
+        function* handleReplyItem(event) {
+            try {
+                // ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
+                // Step 1. Store the reply info
+                console.log('Handling ReplyEvent', event)
+                const { itemHash, replyMetadataHash, provider: providerAddress } = event.returnValues
+                const { address: hashtagAddress } = event
+                const reply = {
+                    blockNumber: event.blockNumber,
+                    providerAddress,
+                    replyMetadataHash,
+                }
+                // Create a shortcut to the action object
+                const updateThisReply = (data) => updateReply(hashtagAddress, itemHash, providerAddress, data)
+
+                yield put(updateThisReply(reply))
+
+                yield all([
+                    call(function* () {
+                        // Step 2A. Resolve its metadata
+                        try {
+                            const replyMetadataObj = yield call(catIpfsMetadata, replyMetadataHash)
+                            yield put(updateThisReply(replyMetadataObj))
+                        } catch (e) {
+                            console.error(`Error fetching replyMetada of itemHash: ${itemHash}`, e)
+                        }
+                    }),
+                    call(function* () {
+                        // Step 2B. Get the timestamp
+                        try {
+                            const timestamp = yield call(getBlockTime, event.blockNumber)
+                            yield put(updateThisReply({ timestamp }))
+                        } catch (e) {
+                            console.error(`Error fetching reply's timestamp of itemHash: ${itemHash}`, e)
+                        }
+                    }),
+                    call(function* () {
+                        // Step 2C. Get the providers reputation
+                        try {
+                            const providerRep = yield call(fetchProviderReputation, hashtagAddress, providerAddress)
+                            yield put(updateThisReply({ providerRep }))
+                        } catch (e) {
+                            console.error(`Error fetching reply's providerRep of itemHash: ${itemHash}`, e)
+                        }
+                    })
+                ])
+            } catch (e) {
+                console.error(`Error handling reply of itemHash: ${itemHash}`, e)
+            }
+        }
+
+        function catIpfsMetadata(hash) {
+            return ipfs.cat(hash).then(JSON.parse)
+        }
+
+        async function getBlockTime(blockNumber) {
+            try {
+                const block = await web3Local.eth.getBlock(blockNumber);
+                if (block && block.timestamp) {
+                    return parseInt(block.timestamp);
+                } else {
+                    console.error('Error fetching block ' + blockNumber + ' :', block)
+                    return 'error';
+                }
+            } catch (e) {
+                console.error('Error fetching timestamp for block ' + blockNumber, e)
+            }
+        }
+
+        async function fetchProviderReputation(hashtagAddress, providerAddress) {
+            // ### The reputation is a token balance that should be fetch from the blockchain
+            // - Follow the procedure (not implemented, use web3Local)
+            // HashtagAddress = smart contract simple deal
+            // => Get the providerRep smart contract address
+            // => Do balanceOf(replier.address)
+            const hashtagContract = new web3Local.eth.Contract(
+                simpleDeal.abi,
+                hashtagAddress
+            );
+
+            if (!hashtagContract.methods.ProviderRep) {
+                throw Error('Incorrect contrat ABI, ProviderRep method not found');
+            }
+            // eslint-disable-next-line new-cap
+            const providerRepContractAddress = await hashtagContract.methods.ProviderRep().call()
+            if (!providerRepContractAddress) {
+                throw Error('Missing providerRepContractAddress: ' + providerRepContractAddress);
+            }
+            const providerRepContract = new web3Local.eth.Contract(
+                swtToken.abi,
+                providerRepContractAddress
+            );
+            return await providerRepContract.methods.balanceOf(providerAddress).call();
+        }
+
+
+        window.handleReplyItem = handleReplyItem;
+    }());
+</script>

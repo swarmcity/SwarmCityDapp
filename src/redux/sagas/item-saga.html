@@ -1,3 +1,5 @@
+<link rel="import" href="./handleReplyItem.html">
+
 <script>
     (function () {
         // Items initialized in setup.html
@@ -9,20 +11,8 @@
         // Import contract data:
         const { swtToken, hashtagList, simpleDeal } = contractsData;
 
-
-        /**
-         * Action creators
-         */
-        function updateReply(hashtagAddress, itemHash, providerAddress, data) {
-            return {
-                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    replies: {
-                        [providerAddress]: data
-                    }
-                }
-            }
-        }
-
+        // Import methods
+        const { handleReplyItem } = window;
 
         /**
          * Gets hashtag from the blockchain
@@ -51,7 +41,7 @@
                 ])
                 return itemData
             } catch (e) {
-                console.log('Error on getItemData from ' + itemHash, e)
+                console.error('Error on getItemData from ' + itemHash, e)
             }
         }
 
@@ -59,44 +49,28 @@
             return ipfs.cat(hash).then(JSON.parse)
         }
 
-        function* getItemMetadata(item, hashtagAddress) {
-            try {
-                const { itemMetadataHash: hash, itemHash } = item;
-                const res = yield call(catIpfsMetadata, hash)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        seekerAvatarHash: res.avatarHash,
-                        description: res.description,
-                        seekerPublicKey: res.publicKey,
-                        seekerUsername: res.username,
-                    }
-                });
-            } catch (e) {
-                console.log('Error getting IPFS metadata for item: ' + item.itemHash + ' in hashtag: ' + hashtagAddress, e);
-            }
+        function getPastReplies(hashtagContract, itemHash, fromBlock) {
+            return hashtagContract.getPastEvents('ReplyItem', {
+                filter: { itemHash },
+                fromBlock,
+                toBlock: 'latest',
+            })
         }
 
-        function* resolveReply(hashtagAddress, itemHash, replyMetadataHash) {
-            console.log('Resolving reply of ' + replyMetadataHash)
-            const res = yield call(catIpfsMetadata, replyMetadataHash)
-            console.log('Resolved reply: ', res)
-            const providerAddress = res.providerAddress || '0x0000000000000000000000000000000000000000'
-            yield put(updateReply(hashtagAddress, itemHash, providerAddress, res))
-        }
-
-        function* getItemReplies(hashtagAddress, hashtagContract, itemHash) {
+        function* getItemReplies(hashtagContract, itemHash, creationBlock) {
             try {
-                const replies = yield call(hashtagContract.methods.getItemReplies(itemHash).call)
-                console.log('replies', replies)
-                yield all(replies.map(replyMetadataHash => call(resolveReply, hashtagAddress, itemHash, replyMetadataHash)))
+                const replyEvents = yield call(getPastReplies, hashtagContract, itemHash, creationBlock)
+                yield all(replyEvents.map(replyEvent => call(handleReplyItem, replyEvent)))
             } catch (e) {
                 console.error(`Error getting item ${itemHash} replies: ${e.stack}`)
             }
         }
 
-
         function* getItem({ item: itemHash }) {
             console.log('GET ITEM req', itemHash)
+            if (!itemHash || !itemHash.startsWith('0x')) {
+                return console.error(`itemHash is not correct, itemHash = ${itemHash}`)
+            }
 
             // Get current hashtag
             const hashtagAddress = yield select(state => state.current.hashtag)
@@ -106,23 +80,46 @@
             );
 
             // Step 1. Call contract state: 
-            //   - hashtagName() -> hashtagName
-            //   - hashtagMetadata() -> hashtagMetadata
-            //   - deployBlock() -> deployBlock
-            const item = yield call(getItemData, hashtagContract, itemHash)
-            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
+            // Revelant props:
+            // item.itemMetadataHash
+            // item.creationBlock
+            const itemData = yield call(getItemData, hashtagContract, itemHash)
 
-            // Step 2. Resolve its metadata
-            yield fork(getItemMetadata, item, hashtagAddress)
+            const { itemMetadataHash, creationBlock } = itemData
 
-            yield fork(getItemReplies, hashtagAddress, hashtagContract, itemHash)
+            const updateThisItem = (data) => ({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data })
+            yield put(updateThisItem(itemData));
 
-            // Step 3. Get the timestamp
-            if (item.creationBlock) yield put({
-                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    timestamp: yield call(getBlockTime, item.creationBlock)
-                }
-            });
+            yield all([
+                call(function* () {
+                    try {
+                        const res = yield call(catIpfsMetadata, itemMetadataHash)
+                        yield put(updateThisItem({
+                            seekerAvatarHash: res.avatarHash,
+                            description: res.description,
+                            seekerPublicKey: res.publicKey,
+                            seekerUsername: res.username,
+                        }))
+                    } catch (e) {
+                        console.error(`Error fetching itemMetadata of item: ${itemHash}`, e)
+                    }
+                }),
+                call(function* () {
+                    try {
+                        yield call(getItemReplies, hashtagContract, itemHash, creationBlock)
+                    } catch (e) {
+                        console.error(`Error fetching replies of item: ${itemHash}`, e)
+                    }
+                }),
+                call(function* () {
+                    try {
+                        const timestamp = yield call(getBlockTime, creationBlock)
+                        yield put(updateThisItem({ timestamp }));
+                    } catch (e) {
+                        console.error(`Error fetching timestamp of item: ${itemHash}`, e)
+                    }
+                })
+            ])
         }
 
         async function getBlockTime(blockNumber) {
