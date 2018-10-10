@@ -96,7 +96,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </template>
 
                     <template is="dom-if" if="{{_isEqualTo(status, 'detail')}}">
-                        <detail-simpledeal-reply-detail selected-reply="[[selectedReply]]" on-status="_handleOnStatus"
+                        <detail-simpledeal-reply-detail item="[[item]]" reply-detail="[[replyDetail]]" on-status="_handleOnStatus"
                             on-select="_handleOnSelect"></detail-simpledeal-reply-detail>
                     </template>
 
@@ -124,7 +124,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     address: String,
                     balance: String,
                     hashtag: Object,
-                    selectedReply: Object,
+                    replyDetail: Object,
                     username: String,
                 }
             }
@@ -150,7 +150,6 @@ This code may only be used under the license found at https://github.com/swarmci
                             const reply = {
                                 message: message,
                                 itemHash: this.item.itemHash,
-                                value: this.item.itemValue,
                             }
                             const hashtag = {
                                 address: this.hashtag.address,
@@ -181,7 +180,7 @@ This code may only be used under the license found at https://github.com/swarmci
                                 address,
                                 privateKey
                             }
-                            const replierAddress = this.selectedReply.replierAddress;
+                            const replierAddress = this.replyDetail.replierAddress;
                             const itemHash = this.item.itemHash;
                             const hashtagAddress = this.hashtag.address;
 
@@ -232,7 +231,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.dispatchEvent(new CustomEvent('status', {
                     detail: 'detail',
                 }));
-                this.selectedReply = e.detail;
+                this.replyDetail = e.detail;
             }
             _handleOnFund() {
                 console.log('funding');
