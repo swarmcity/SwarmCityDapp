@@ -40,7 +40,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    route: Object,
+                    route: {
+                        type: Object,
+                        observer: '_setStatus',
+                    },
                     /**
                     * hashtag is the currently loaded hashtag
                     * @type {Object}
@@ -56,7 +59,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     item: {
                         type: Object,
                         statePath: AppStore.selectors.item,
-                        observer: '_itemChanged',
+                        observer: '_setStatus',
                     },
                     /**
                      * pageID is an id givven to every page specific
@@ -103,7 +106,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
                 this.status = 'replies';
             }
-            _itemChanged() {
+            _setStatus() {
                 if (this.item && this.item.status && this.item.description) {
                     if (this.status != 'input'
                         && this.status != 'detail') {

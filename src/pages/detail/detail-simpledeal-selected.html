@@ -275,14 +275,16 @@ This code may only be used under the license found at https://github.com/swarmci
             * Only allow users to send replies
             */
             _checkBalance() {
-                let totalCost = parseInt(this.reply.value) + parseInt(this.item.hashtagFee) / 2;
-                let userBalance = parseInt(this.balance);
-                if (userBalance - totalCost >= 0) {
-                    this.allowFund = true;
-                    this.error = '';
-                } else {
-                    this.error = 'You have insufficient funds to participate in this deal.';
-                    this.allowFund = false;
+                if (this.reply && this.balance) {
+                    let totalCost = parseInt(this.reply.value) + parseInt(this.item.hashtagFee) / 2;
+                    let userBalance = parseInt(this.balance);
+                    if (userBalance - totalCost >= 0) {
+                        this.allowFund = true;
+                        this.error = '';
+                    } else {
+                        this.error = 'You have insufficient funds to participate in this deal.';
+                        this.allowFund = false;
+                    }
                 }
             }
             /**
