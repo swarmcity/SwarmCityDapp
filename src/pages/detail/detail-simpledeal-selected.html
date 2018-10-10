@@ -160,7 +160,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="date">
                     [[_formatDate(reply.timestamp)]]
                 </div>
-                <div class="providerbox" on-up="_toUserReputation">
+                <div class="providerbox" on-tap="_toUserReputation">
                     <div class="avatar">
                         <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[reply.avatarHash]]"
                             placeholder="../images/defaultavatar.png">
@@ -188,7 +188,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="choice">
                         <display-button-disagree></display-button-disagree>
                         <template is="dom-if" if="{{allowFund}}">
-                            <display-button-confirm on-up="_fund"></display-button-confirm>
+                            <display-button-confirm on-tap="_fund"></display-button-confirm>
                         </template>
                         <template is="dom-if" if="{{!allowFund}}">
                             <display-button-confirm class="disabled"></display-button-confirm>
@@ -217,62 +217,23 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    /**
-                    * the hashtag item we've subscribed to
-                    * @type {Object}
-                    */
                     item: {
                         type: Object,
                         observer: '_checkBalance',
                     },
                     reply: Object,
-                    /**
-                    * address represents the user's public key
-                    * @type {String}
-                    */
-                    address: {
-                        type: String,
-                        statePath: 'publicKey',
-                    },
-                    /**
-                    * Show user error
-                    * @type {Boolean}
-                    */
-                    showError: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * If user balance is sufficient, allow reply
-                    * @type {Boolean}
-                    */
-                    allowFund: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * Balance is the users current balance
-                    * @type {Object}
-                    */
+                    address: String,
+                    showError: Boolean,
+                    allowFund: Boolean,
                     balance: {
                         type: Object,
                         observer: '_checkBalance',
                     },
-                    /**
-                    * Error
-                    * @type {String}
-                    */
                     error: {
                         type: String,
                         observer: '_showError',
                     },
                 };
-            }
-            /**
-            * Changes the current view to show all replies
-            */
-            _toReplies() {
-                
             }
             /**
             * formats the item value
@@ -314,8 +275,8 @@ This code may only be used under the license found at https://github.com/swarmci
             * Only allow users to send replies
             */
             _checkBalance() {
-                let totalCost = parseInt(this.reply.value) + parseInt(this.item.hashtagFee / 2);
-                let userBalance = parseInt(this.balance.swt);
+                let totalCost = parseInt(this.reply.value) + parseInt(this.item.hashtagFee) / 2;
+                let userBalance = parseInt(this.balance);
                 if (userBalance - totalCost >= 0) {
                     this.allowFund = true;
                     this.error = '';
@@ -327,14 +288,9 @@ This code may only be used under the license found at https://github.com/swarmci
             /**
             * Change the route to confirm funding page
             */
-            // _fund() {
-            //     let detail = {
-            //         itemHash: this.hashtagItem.itemHash,
-            //         hashtagAddress: this.hashtag.hashtagAddress,
-            //     };
-            //     sessionStorage.setItem('detail', JSON.stringify(detail));
-            //     this.path = 'confirm-funding';
-            // }
+            _fund() {
+                this.dispatchEvent(new CustomEvent('fund'));
+            }
             /**
             * Verifies user balance and displays error message
             */

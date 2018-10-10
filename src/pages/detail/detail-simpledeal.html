@@ -101,7 +101,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     </template>
 
                     <template is="dom-if" if="{{_isEqualTo(status, 'selected')}}">
-                        <detail-simpledeal-selected item="[[item]]" balance="[[balance]]" reply="[[_getProviderReply(item)]]"></detail-simpledeal-selected>
+                        <detail-simpledeal-selected address="[[address]]" item="[[item]]" balance="[[balance]]" reply="[[_getProviderReply(item)]]" on-status="_handleOnStatus" on-fund="_handleOnFund"></detail-simpledeal-selected>
                     </template>
                 </div>
             </template>
@@ -234,13 +234,19 @@ This code may only be used under the license found at https://github.com/swarmci
                 }));
                 this.selectedReply = e.detail;
             }
+            _handleOnFund() {
+                console.log('funding');
+            }
             _allowReply() {
                 let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
                 let userBalance = parseInt(this.balance);
                 return userBalance - totalCost >= 0 ? true : false;
             }
             _getProviderReply(item) {
-                return item.replies[item.providerAddress];
+                if (item.replies && item.providerAddress) {
+                    return item.replies[item.providerAddress];
+                    console.log(item.replies[item.providerAddress]);
+                }
             }
 
         }
