@@ -20,6 +20,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-replies.html">
 <link rel="import" href="./detail-simpledeal-input.html">
 <link rel="import" href="./detail-simpledeal-reply-detail.html">
+<link rel="import" href="./detail-simpledeal-selected.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
 
@@ -94,10 +95,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         </detail-simpledeal-input>
                     </template>
 
-
                     <template is="dom-if" if="{{_isEqualTo(status, 'detail')}}">
                         <detail-simpledeal-reply-detail selected-reply="[[selectedReply]]" on-status="_handleOnStatus"
                             on-select="_handleOnSelect"></detail-simpledeal-reply-detail>
+                    </template>
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'selected')}}">
+                        <detail-simpledeal-selected item="[[item]]" balance="[[balance]]" reply="[[_getProviderReply(item)]]"></detail-simpledeal-selected>
                     </template>
                 </div>
             </template>
@@ -234,6 +238,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
                 let userBalance = parseInt(this.balance);
                 return userBalance - totalCost >= 0 ? true : false;
+            }
+            _getProviderReply(item) {
+                return item.replies[item.providerAddress];
             }
 
         }

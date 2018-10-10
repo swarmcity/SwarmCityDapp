@@ -68,6 +68,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                     address: {
                         type: String,
+                        statePath: 'publicKey',
                     },
                     balance: {
                         type: String,
@@ -103,11 +104,40 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.status = 'replies';
             }
             _itemChanged() {
-                if (this.item) {
-                    if (this.status != 'input' 
-                    && this.status != 'detail') {
+                if (this.item && this.item.status && this.item.description) {
+                    if (this.status != 'input'
+                        && this.status != 'detail') {
                         this.status = 'replies';
                     }
+                    switch (this.item.status) {
+                        case ('0'):
+                            // Open item
+                            if (this.status != 'input'
+                                && this.status != 'detail') {
+                                this.status = 'replies';
+                            }
+                            if (this.item
+                                && this.item.providerAddress
+                                && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
+                                && (this.item.providerAddress == this.address ||
+                                    this.item.seekerAddress == this.address)
+                            ) {
+                                this.status = 'selected';
+                            } else {
+                                this.status = 'replies';
+                            }
+                            break;
+                        case ('1'):
+                            // Funded item
+                            this.status = 'funded';
+                        case ('2'):
+                            // Item paid out
+                            this.status = 'done';
+                        default:
+                            this.status = 'loading';
+                    }
+                } else {
+                    this.status = 'loading';
                 }
             }
         }
