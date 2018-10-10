@@ -160,14 +160,14 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-if" if="[[_isInvolved(item.seekerAddress, reply.address, address)]]">
+            <template is="dom-if" if="[[_isInvolved(item.seekerAddress, reply.providerAddress, address)]]">
                 <div class="whitebox">
                     <div class="descriptionbox">
                         <div class="description">[[item.description]]</div>
                         <div class="price">for [[_formatValue(item.itemValue)]] SWT</div>
                     </div>
                     <div class="date">
-                        [[_formatDate(item.dateTime)]]
+                        [[_formatDate(item.timestamp)]]
                     </div>
                     <div class="providerbox" on-tap="_toUserReputation">
                         <div class="avatar">
@@ -178,7 +178,7 @@ The following custom properties and mixins are available for styling:
                             <div class="username">[[reply.username]] · [[reply.reputation]] SWR</div>
                         </template>
 
-                        <template is="dom-if" if="[[_isProvider(reply.address, address)]]">
+                        <template is="dom-if" if="[[_isProvider(reply.providerAddress, address)]]">
                             <div class="replier">[[reply.username]] · [[reply.reputation]] SWR</div>
                         </template>
                     </div>
@@ -194,7 +194,7 @@ The following custom properties and mixins are available for styling:
                         </div>
                     </template>
             </template>
-            <template is="dom-if" if="[[!_isInvolved(item.seekerAddress, reply.address, address)]]">
+            <template is="dom-if" if="[[!_isInvolved(item.seekerAddress, reply.providerAddress, address)]]">
                 <div class="whitebox not-involved">
                     <template is="dom-if" if="[[_hasReplied(item.replies, address)]]">
                         <div>[[item.seekerUsername]] selected a provider.</div>
@@ -262,8 +262,6 @@ The following custom properties and mixins are available for styling:
             * @return {Boolean} true when user is provider to this request
             */
             _isProvider(providerAddress, userAddress) {
-                console.log('providerAddress', providerAddress)
-                console.log('userAddress', userAddress)
                 return providerAddress == userAddress;
             }
             /**
@@ -288,7 +286,6 @@ The following custom properties and mixins are available for styling:
             * @return {Boolean} true when user has previously replied to this request
             */
             _hasReplied(replies, userAddress) {
-                console.log(replies);
                 if (replies) {
                     let hasReplied = false;
                     for (let i = 0; i < replies.length; i++) {

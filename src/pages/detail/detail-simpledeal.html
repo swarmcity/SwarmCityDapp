@@ -22,6 +22,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-reply-detail.html">
 <link rel="import" href="./detail-simpledeal-selected.html">
 <link rel="import" href="./detail-simpledeal-funded.html">
+<link rel="import" href="./detail-simpledeal-done.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
 
@@ -84,7 +85,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
 
                     <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
-                        <detail-simpledeal-replies item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
+                        <detail-simpledeal-replies address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
 
                         <template is="dom-if" if="[[_showReplyButton(item)]]">
                             <detail-button-reply on-tap="_input"></detail-button-reply>
@@ -107,7 +108,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     </template>
 
                     <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
-                        <detail-simpledeal-funded address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]" on-payout="_handleOnPayout"></detail-simpledeal-funded>
+                        <detail-simpledeal-funded address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
+                            on-payout="_handleOnPayout"></detail-simpledeal-funded>
+                    </template>
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
+                        <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
                     </template>
                 </div>
             </template>
@@ -276,7 +282,33 @@ This code may only be used under the license found at https://github.com/swarmci
 
             }
             _handleOnPayout() {
-                console.log('payout!');
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const seeker = {
+                                address,
+                                privateKey
+                            }
+                            const itemHash = this.item.itemHash;
+                            const hashtagAddress = this.hashtag.address;
+
+                            this.$.simpledeal.payoutItem({ seeker, itemHash, hashtagAddress })
+                                .then(receipt => {
+                                    console.log('Successfully paid out item, receipt:', receipt)
+                                })
+                                .catch(err => {
+                                    console.log('Error paying out item:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error paying out item (catch block): ', e.stack)
+                        }
+                    });
+
             }
             _allowReply() {
                 let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
