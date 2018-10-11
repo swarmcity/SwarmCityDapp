@@ -170,6 +170,18 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.$.simpledeal.createNewReply({ replier, reply, hashtag })
                                 .then(receipt => {
                                     console.log('Successfully transacted reply, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress: hashtag.address, itemHash: this.item.itemHash, data: {
+                                            replies: {
+                                                [replier.address]: {
+                                                    username: replier.username,
+                                                    avatarHash: localStorage.getItem('avatarHash'),
+                                                    replierAddress: replier.address,
+                                                    message: reply.message,
+                                                }
+                                            }
+                                        }
+                                    })
                                 })
                                 .catch(err => {
                                     console.log('Error posting reply:', err)
@@ -269,6 +281,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
                             this.$.simpledeal.fundItem({ provider, item, hashtag })
                                 .then(receipt => {
+
                                     console.log('Successfully transacted fund item, receipt:', receipt)
                                 })
                                 .catch(err => {

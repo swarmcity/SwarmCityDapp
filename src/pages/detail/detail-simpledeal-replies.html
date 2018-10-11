@@ -155,26 +155,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </template>
             <div class="spacer"></div>
-            <template is="dom-repeat" items="{{_toArray(item.replies)}}">
+            <template is="dom-repeat" items="{{_toArray(item.replies)}}" as="reply">
                 <div class="box">
                     <div class="top">
                         <div class="description">
-                            [[item.message]]
+                            [[reply.message]]
                         </div>
                         <div class="price">
                             <div class="vmarkmini"></div> [[_formatValue(item.itemValue)]] SWT
                         </div>
                     </div>
 
-                    <div class="date">[[_formatDate(item.timestamp)]]</div>
+                    <div class="date">[[_formatDate(reply.timestamp)]]</div>
 
                     <div class="bottom">
-                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.avatarHash]]"
+                        <iron-image sizing="cover" preload fade src="https://dev.swarm.city/img/[[reply.avatarHash]]"
                             placeholder="../images/defaultavatar.png" on-up="_toUserReputation">
                         </iron-image>
 
-                        <template is="dom-if" if="[[!_isReplier(item)]]">
-                            <div class="user">[[item.username]] · [[item.providerRep]] SWR</div>
+                        <template is="dom-if" if="[[!_isReplier(reply)]]">
+                            <div class="user">[[reply.username]] · [[reply.providerRep]] SWR</div>
 
                             <template is="dom-if" if="[[_isSeeker()]]">
                                 <div class="choose" on-up="_replyDetail">
@@ -183,8 +183,8 @@ This code may only be used under the license found at https://github.com/swarmci
                             </template>
                         </template>
 
-                        <template is="dom-if" if="[[_isReplier(item)]]">
-                            <div class="user replier">[[item.username]] · [[item.providerRep]] SWR</div>
+                        <template is="dom-if" if="[[_isReplier(reply)]]">
+                            <div class="user replier">[[reply.username]] · [[reply.providerRep]] SWR</div>
                         </template>
 
                     </div>
@@ -263,6 +263,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {Boolean} true when the replies array doesn't exist or is empty
             */
             _noReplies(item) {
+                console.log(item);
                 return (!item.replies || Object.keys(item.replies).length == 0);
             }
             /**
