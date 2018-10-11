@@ -132,6 +132,8 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
 
+        <display-unlock id="unlock" white></display-unlock>
+
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title">{{localize('Youre about to send')}} <span class="yellow" > [[amountToSend]] SWT </span> {{localize('to')}} <span class="wordbreak">[[toUserName]]</span>.</div>
@@ -161,15 +163,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
         </div>
-        <dom-if if="{{toggleUnlock}}">
-            <template>
-                <display-unlock 
-                    white
-                    toggle-unlock="{{toggleUnlock}}" 
-                    private-key="{{privateKey}}">
-                </display-unlock>
-            </template>
-        </dom-if>
     </template>
 
     <script>
@@ -194,15 +187,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
-                    },
-                    /**
-                    * toggles the unlock display
-                    * @type {Boolean}
-                    */
-                    toggleUnlock: {
-                        type: Boolean,
-                        value: false,
-                        observer: '_blur',
                     },
                     /**
                     * contains the private key
@@ -285,11 +269,12 @@ This code may only be used under the license found at https://github.com/swarmci
             /**
             * toggles the password unlock display
             */
-            _unlock() {
-                this.toggleUnlock = !this.toggleUnlock;
+            _unlock() {                
+                this.$.unlock._getPrivateKey()
+                .then((res) => {this.privateKey = res.privateKey})
             }
             /**
-            * blurs the current page
+            * blurs the current page    
             */
             _blur() {
                 if (this.toggleUnlock) {
