@@ -15,14 +15,22 @@
                 }
 
             },
+            // when returning object literal, wrap it in parentheses 
+            // parser will then treat it as expression, not block statement
+            // effectively returning the wrapped object
             hashtag: (state) => ({
                 ...state.hashtags[state.current.hashtag],
                 address: state.current.hashtag
             }),
-            item: (state) => ({
-                ...state.hashtags[state.current.hashtag.item],
-                itemhash: state.current.item
-            })
+            item: (state) => {
+                if (state.hashtags[state.current.hashtag]
+                    && state.hashtags[state.current.hashtag].items) {
+                    return {
+                        ...state.hashtags[state.current.hashtag].items[state.current.item],
+                        itemHash: state.current.item
+                    }
+                }
+            },
         }
 
         // Export
