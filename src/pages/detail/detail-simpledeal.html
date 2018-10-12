@@ -288,8 +288,12 @@ This code may only be used under the license found at https://github.com/swarmci
 
                             this.$.simpledeal.fundItem({ provider, item, hashtag })
                                 .then(receipt => {
-
                                     console.log('Successfully transacted fund item, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress: hashtag.address, itemHash: item.hash, data: {
+                                            status: '1-pending',
+                                        }
+                                    })
                                 })
                                 .catch(err => {
                                     console.log('Error funding item:', err)
@@ -319,6 +323,11 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.$.simpledeal.payoutItem({ seeker, itemHash, hashtagAddress })
                                 .then(receipt => {
                                     console.log('Successfully paid out item, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                                            status: '2-pending',
+                                        }
+                                    })
                                 })
                                 .catch(err => {
                                     console.log('Error paying out item:', err)

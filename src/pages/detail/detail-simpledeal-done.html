@@ -41,9 +41,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --body-bold;
                 color: var(--sc-grey4);
             }
+
+            .pending {
+                opacity: 0.5;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div class$="{{_checkPending(item.status)}}" wide-layout$="{{wide}}">
             <div class="time">[[_formatDate(item.timestamp)]]</div>
             <div class="text">This deal has been completed.</div>
         </div>
@@ -74,6 +78,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 } else {
                     return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
                 }
+            }
+
+            _checkPending(status) {
+                return status == '2' ? "container" : "container pending";
             }
         }
         window.customElements.define(

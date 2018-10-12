@@ -157,6 +157,10 @@ The following custom properties and mixins are available for styling:
             .bold {
                 @apply --body-bold;
             }
+
+            .pending {
+                opacity: 0.5;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -171,7 +175,8 @@ The following custom properties and mixins are available for styling:
                     </div>
                     <div class="providerbox" on-tap="_toUserReputation">
                         <div class="avatar">
-                            <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[reply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                            <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[reply.avatarHash]]"
+                                placeholder="../images/defaultavatar.png">
                             </iron-image>
                         </div>
                         <template is="dom-if" if="[[_isSeeker(item.seekerAddress, address)]]">
@@ -183,10 +188,10 @@ The following custom properties and mixins are available for styling:
                         </template>
                     </div>
                 </div>
-                <div class="greenbox">
-                    <div class="chat-button" on-tap="_toChat">
+                <div class$="{{_checkPending(item.status)}}">
+                    <!-- <div class="chat-button" on-tap="_toChat">
                         <div class="chat-icon"></div>
-                    </div>
+                    </div> -->
                     <div class="white-text">You're in a deal!</div>
                     <template is="dom-if" if="[[_isSeeker(item.seekerAddress, address)]]">
                         <div class="button" on-tap="_payout">
@@ -205,7 +210,7 @@ The following custom properties and mixins are available for styling:
                     </template>
                 </div>
             </template>
-            </div>
+        </div>
         </div>
     </template>
     <script>
@@ -307,6 +312,10 @@ The following custom properties and mixins are available for styling:
             */
             _toChat() {
                 // this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
+            }
+
+            _checkPending(status) {
+                return status == '1'? "greenbox" : "greenbox pending";
             }
         }
         window.customElements.define(
