@@ -93,27 +93,22 @@ This code may only be used under the license found at https://github.com/swarmci
             _sign() {
                 if (this.privateKey) {
                     let weiAmount = parseFloat(this.amountToSend) * 1e18;
-                    this.$.transaction.rawTokenTx(
-                        this.toAddress,
+                    let sender = {
+                        address: this.address,
+                        privateKey: this.privateKey,
+                    }
+                    let receiverAddress = this.toAddress;
+                    this.$.transaction.tokenTx({
+                        sender,
+                        receiverAddress,
                         weiAmount,
-                        '0x0ADBc89464Cb7fa752ADCf3533514949A2547589',
-                        abi.miniMeToken.abi
-                    ).then((rawTokenTx) => {
-                        this.$.transaction.signRawTx(
-                            this.address,
-                            '0x0ADBc89464Cb7fa752ADCf3533514949A2547589',
-                            this.nonce,
-                            rawTokenTx,
-                            this.privateKey
-                        ).then((serializedTx) => {
-                            this.dispatch({
-                                type: 'BROADCAST',
-                                broadcast: '0x' + serializedTx.toString('hex'),
-                            });
-                            this.path = 'transaction-processing/';
-                        }).catch((err) => {
-                            this.error = err;
+                        tokenAddress: '0x0ADBc89464Cb7fa752ADCf3533514949A2547589',
+                    }).then((serializedTx) => {
+                        this.dispatch({
+                            type: 'BROADCAST',
+                            broadcast: '0x' + serializedTx.toString('hex'),
                         });
+                        this.path = 'transaction-processing/';
                     }).catch((err) => {
                         this.error = err;
                     });

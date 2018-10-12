@@ -20,6 +20,9 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-replies.html">
 <link rel="import" href="./detail-simpledeal-input.html">
 <link rel="import" href="./detail-simpledeal-reply-detail.html">
+<link rel="import" href="./detail-simpledeal-selected.html">
+<link rel="import" href="./detail-simpledeal-funded.html">
+<link rel="import" href="./detail-simpledeal-done.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
 
@@ -82,7 +85,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
 
                     <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
-                        <detail-simpledeal-replies item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
+                        <detail-simpledeal-replies address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
 
                         <template is="dom-if" if="[[_showReplyButton(item)]]">
                             <detail-button-reply on-tap="_input"></detail-button-reply>
@@ -94,10 +97,23 @@ This code may only be used under the license found at https://github.com/swarmci
                         </detail-simpledeal-input>
                     </template>
 
-
                     <template is="dom-if" if="{{_isEqualTo(status, 'detail')}}">
-                        <detail-simpledeal-reply-detail selected-reply="[[selectedReply]]" on-status="_handleOnStatus"
+                        <detail-simpledeal-reply-detail item="[[item]]" reply-detail="[[replyDetail]]" on-status="_handleOnStatus"
                             on-select="_handleOnSelect"></detail-simpledeal-reply-detail>
+                    </template>
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'selected')}}">
+                        <detail-simpledeal-selected address="[[address]]" item="[[item]]" balance="[[balance]]" reply="[[_getProviderReply(item)]]"
+                            on-status="_handleOnStatus" on-fund="_handleOnFund"></detail-simpledeal-selected>
+                    </template>
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
+                        <detail-simpledeal-funded address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
+                            on-payout="_handleOnPayout"></detail-simpledeal-funded>
+                    </template>
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
+                        <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
                     </template>
                 </div>
             </template>
@@ -120,7 +136,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     address: String,
                     balance: String,
                     hashtag: Object,
-                    selectedReply: Object,
+                    replyDetail: Object,
                     username: String,
                 }
             }
@@ -146,16 +162,26 @@ This code may only be used under the license found at https://github.com/swarmci
                             const reply = {
                                 message: message,
                                 itemHash: this.item.itemHash,
-                                value: this.item.itemValue,
                             }
                             const hashtag = {
                                 address: this.hashtag.address,
                                 fee: this.hashtag.hashtagFee,
-                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
                             }
                             this.$.simpledeal.createNewReply({ replier, reply, hashtag })
                                 .then(receipt => {
                                     console.log('Successfully transacted reply, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress: hashtag.address, itemHash: this.item.itemHash, data: {
+                                            replies: {
+                                                [replier.address]: {
+                                                    username: replier.username,
+                                                    avatarHash: localStorage.getItem('avatarHash'),
+                                                    replierAddress: replier.address,
+                                                    message: reply.message,
+                                                }
+                                            }
+                                        }
+                                    })
                                 })
                                 .catch(err => {
                                     console.log('Error posting reply:', err)
@@ -174,31 +200,31 @@ This code may only be used under the license found at https://github.com/swarmci
                             if (!privateKey) {
                                 throw Error('Missing address')
                             }
-                            const replier = {
-                                username: this.selectedReply.username,
+                            const seeker = {
                                 address,
                                 privateKey
                             }
-                            const reply = {
-                                message: message,
-                                itemHash: this.item.itemHash,
-                                value: this.item.itemValue,
-                            }
-                            const hashtag = {
-                                address: this.hashtag.address,
-                                fee: this.hashtag.hashtagFee,
-                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
-                            }
-                            this.$.simpledeal.createNewReply({ replier, reply, hashtag })
+                            const replierAddress = this.replyDetail.replierAddress;
+                            const itemHash = this.item.itemHash;
+                            const hashtagAddress = this.hashtag.address;
+
+                            this.$.simpledeal.selectReplier({ seeker, replierAddress, itemHash, hashtagAddress })
                                 .then(receipt => {
-                                    console.log('Successfully transacted reply, receipt:', receipt)
+                                    console.log('Successfully transacted select replier, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                                            providerAddress: replierAddress,
+                                            status: 'selected-pending',
+                                        }
+                                    })
+
                                 })
                                 .catch(err => {
-                                    console.log('Error posting reply:', err)
+                                    console.log('Error selecting replier:', err)
                                 });
                         }
                         catch (e) {
-                            console.error('Error posting reply (catch block): ', e.stack)
+                            console.error('Error selecting replier (catch block): ', e.stack)
                         }
                     });
 
@@ -236,12 +262,90 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.dispatchEvent(new CustomEvent('status', {
                     detail: 'detail',
                 }));
-                this.selectedReply = e.detail;
+                this.replyDetail = e.detail;
+            }
+            _handleOnFund() {
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const provider = {
+                                address,
+                                privateKey
+                            }
+                            const item = {
+                                hash: this.item.itemHash,
+                                value: this.item.itemValue,
+                            }
+                            const hashtag = {
+                                address: this.hashtag.address,
+                                fee: this.hashtag.hashtagFee,
+                                tokenContractAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                            }
+                            this.$.simpledeal.fundItem({ provider, item, hashtag })
+                                .then(receipt => {
+                                    console.log('Successfully transacted fund item, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress: hashtag.address, itemHash: item.hash, data: {
+                                            status: '1-pending',
+                                        }
+                                    })
+                                })
+                                .catch(err => {
+                                    console.log('Error funding item:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error funding item (catch block): ', e.stack)
+                        }
+                    });
+
+            }
+            _handleOnPayout() {
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const seeker = {
+                                address,
+                                privateKey
+                            }
+                            const itemHash = this.item.itemHash;
+                            const hashtagAddress = this.hashtag.address;
+                            this.$.simpledeal.payoutItem({ seeker, itemHash, hashtagAddress })
+                                .then(receipt => {
+                                    console.log('Successfully paid out item, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                                            status: '2-pending',
+                                        }
+                                    })
+                                })
+                                .catch(err => {
+                                    console.log('Error paying out item:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error paying out item (catch block): ', e.stack)
+                        }
+                    });
+
             }
             _allowReply() {
                 let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
                 let userBalance = parseInt(this.balance);
                 return userBalance - totalCost >= 0 ? true : false;
+            }
+            _getProviderReply(item) {
+                if (item.replies && item.providerAddress && item.replies[item.providerAddress]) {
+                    return item.replies[item.providerAddress];
+                }
             }
 
         }
