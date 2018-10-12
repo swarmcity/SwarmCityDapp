@@ -1,0 +1,317 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../displays/display-button-disagree.html">
+<link rel="import" href="../../displays/display-button-confirm.html">
+<!--
+
+Example:
+```
+<detail-simpledeal-funded></detail-simpledeal-funded>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--detail-simpledeal-funded` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="detail-simpledeal-funded">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            iron-image {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                min-height: 24px;
+                min-width: 24px;
+                margin-right: 10px;
+            }
+
+            .descriptionbox {
+                @apply --layout-horizontal;
+                margin-top: 25px;
+            }
+
+            .description {
+                @apply --layout-flex;
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+            .price {
+                @apply --body-bold;
+                text-align: right;
+                color: var(--sc-grey4);
+                white-space: nowrap;
+                margin: 0px 0px 0px 20px;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey2);
+                margin: 4px 0px 0px 0px;
+            }
+
+            .providerbox {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                margin-top: 10px;
+            }
+
+            .username {
+                @apply --small-bold;
+                @apply --layout-flex;
+                color: var(--sc-blue);
+            }
+
+            .vertical {
+                @apply --layout-vertical;
+            }
+
+            .replier {
+                @apply --small-bold;
+                @apply --layout-flex;
+                color: var(--sc-grey4);
+            }
+
+            .whitebox {
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
+            }
+
+            .greenbox {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 40px 25px 40px 25px;
+                background-color: var(--sc-green);
+                position: relative;
+            }
+
+            .chat-button {
+                @apply --icon-button-big;
+                position: absolute;
+                top: -36px;
+                right: 50px;
+            }
+
+            .chat-button:active {
+                @apply --button-active;
+            }
+
+            .chat-icon {
+                @apply --chat-blue-normal;
+            }
+
+            .white-text {
+                @apply --body-bold;
+                font-size: 14px;
+                color: var(--sc-white);
+                text-align: center;
+            }
+
+            .button {
+                @apply --text-button-big;
+                @apply --body-bold;
+                margin: 20px 0 0 0;
+                color: var(--sc-white);
+                width: 250px;
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+
+            .not-involved {
+                @apply --body-default;
+                box-sizing: border-box;
+                padding: 40px 15px;
+                color: var(--sc-grey4);
+                text-align: center;
+            }
+
+            .bold {
+                @apply --body-bold;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="[[_isInvolved(item.seekerAddress, reply.providerAddress, address)]]">
+                <div class="whitebox">
+                    <div class="descriptionbox">
+                        <div class="description">[[item.description]]</div>
+                        <div class="price">for [[_formatValue(item.itemValue)]] SWT</div>
+                    </div>
+                    <div class="date">
+                        [[_formatDate(item.timestamp)]]
+                    </div>
+                    <div class="providerbox" on-tap="_toUserReputation">
+                        <div class="avatar">
+                            <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[reply.avatarHash]]" placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </div>
+                        <template is="dom-if" if="[[_isSeeker(item.seekerAddress, address)]]">
+                            <div class="username">[[reply.username]] · [[reply.providerRep]] SWR</div>
+                        </template>
+
+                        <template is="dom-if" if="[[_isProvider(reply.providerAddress, address)]]">
+                            <div class="replier">[[reply.username]] · [[reply.providerRep]] SWR</div>
+                        </template>
+                    </div>
+                </div>
+                <div class="greenbox">
+                    <div class="chat-button" on-tap="_toChat">
+                        <div class="chat-icon"></div>
+                    </div>
+                    <div class="white-text">You're in a deal!</div>
+                    <template is="dom-if" if="[[_isSeeker(item.seekerAddress, address)]]">
+                        <div class="button" on-tap="_payout">
+                            payout
+                        </div>
+                    </template>
+            </template>
+            <template is="dom-if" if="[[!_isInvolved(item.seekerAddress, reply.providerAddress, address)]]">
+                <div class="whitebox not-involved">
+                    <template is="dom-if" if="[[_hasReplied(item.replies, address)]]">
+                        <div>[[item.seekerUsername]] selected a provider.</div>
+                        <div class="bold">It's not you.</div>
+                    </template>
+                    <template is="dom-if" if="[[!_hasReplied(item.replies, address)]]">
+                        <div>[[item.seekerUsername]] already selected a provider for this request.</div>
+                    </template>
+                </div>
+            </template>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDetailSimpledealFunded extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-funded';
+            }
+            static get properties() {
+                return {
+                    item: Object,
+                    reply: Object,
+                    address: String,
+                };
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} timestamp epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(timestamp) {
+                let milliseconds = timestamp * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * Here we check if the current user is involved either as seeker or provider
+            * @param {String} seekerAddress the seeker's address
+            * @param {String} providerAddress the provider's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is either seeker or provider
+            */
+            _isInvolved(seekerAddress, providerAddress, userAddress) {
+                return (seekerAddress == userAddress || providerAddress == userAddress);
+            }
+            /**
+            * Here we check if the current user is provider to this request
+            * @param {String} providerAddress the provider's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is provider to this request
+            */
+            _isProvider(providerAddress, userAddress) {
+                return providerAddress == userAddress;
+            }
+            /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                // this.path = `user-reputation/${this.hashtagItem.selectee.address}/${this.hashtagItem.selectee.avatarHash}/${this.hashtagItem.selectee.username}`; // eslint-disable-line
+            }
+            /**
+            * Here we check if the current user is seeker of this request
+            * @param {String} seekerAddress the seeker's address
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user is provider to this request
+            */
+            _isSeeker(seekerAddress, userAddress) {
+                return seekerAddress == userAddress;
+            }
+            /**
+            * Here we check if the current user has replied of this request
+            * @param {Array} replies the request's replies
+            * @param {String} userAddress the user's address
+            * @return {Boolean} true when user has previously replied to this request
+            */
+            _hasReplied(replies, userAddress) {
+                if (replies) {
+                    let hasReplied = false;
+                    for (let i = 0; i < replies.length; i++) {
+                        if (replies[i].address == userAddress) {
+                            hasReplied = true;
+                        }
+                    }
+                    return hasReplied;
+                }
+            }
+            /**
+            * Change the route to confirm payout page
+            */
+            _payout() {
+                this.dispatchEvent(new CustomEvent('payout'));
+            }
+            /**
+            * Change the route to the chat view
+            */
+            _toChat() {
+                // this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
+            }
+        }
+        window.customElements.define(
+            MyDetailSimpledealFunded.is,
+            MyDetailSimpledealFunded
+        );
+    </script>
+</dom-module>

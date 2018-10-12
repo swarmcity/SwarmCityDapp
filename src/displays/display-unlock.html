@@ -46,9 +46,7 @@ The following custom properties and mixins are available for styling:
                 position: absolute;
                 min-width: 100vw;
                 min-height: 100vh;
-                height: 100%;
                 z-index: 2;
-                overflow: hidden;
             }
 
             .blue {
@@ -315,7 +313,7 @@ The following custom properties and mixins are available for styling:
                     },
                     getPrivateKeyresolve: {
                         type: Object,
-                    }
+                    },
                 };
             }
             /**
@@ -333,16 +331,6 @@ The following custom properties and mixins are available for styling:
             }
 
             /**
-            * Scrolls to show display in full screen
-            */
-            _openDisplay() {
-                window.scrollTo(0, 0);
-                this.error = '';
-                setTimeout(() => {
-                    this.$$('#input').focus();
-                }, 1);
-            }
-            /**
             * Toggles the visibility of this display
             * @param {Object} event element clicked.
             */
@@ -357,6 +345,12 @@ The following custom properties and mixins are available for styling:
                 this.error = '';
             }
             _getPrivateKey() {
+                this.disableScroll();
+                window.scrollTo(0, 0);
+                this.error = '';
+                setTimeout(() => {
+                    this.$$('#input').focus();
+                }, 1);
                 this.$.container.classList.remove('hidden');
                 if (this.blue) {
                     this.$.container.classList.add('blue');
@@ -394,6 +388,7 @@ The following custom properties and mixins are available for styling:
                                 });
                             const address = this.publicKey;
                             this.confirmed = false;
+                            this.enableScroll() 
                             this.getPrivateKeyresolve({ privateKey, address });
                         })
                         .catch(() => {
@@ -404,6 +399,41 @@ The following custom properties and mixins are available for styling:
 
                 }
             }
+            preventDefault(e) {
+                e = e || window.event;
+                if (e.preventDefault)
+                    e.preventDefault();
+                e.returnValue = false;
+            }
+
+            preventDefaultForScrollKeys(e) {
+                // left: 37, up: 38, right: 39, down: 40,
+                // spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
+                const keys = { 37: 1, 38: 1, 39: 1, 40: 1 };
+                if (keys[e.keyCode]) {
+                    this.preventDefault(e);
+                    return false;
+                }
+            }
+
+            disableScroll() {
+                if (window.addEventListener) // older FF
+                    window.addEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onwheel = this.preventDefault; // modern standard
+                window.onmousewheel = document.onmousewheel = this.preventDefault; // older browsers, IE
+                window.ontouchmove = this.preventDefault; // mobile
+                document.onkeydown = this.preventDefaultForScrollKeys;
+            }
+
+            enableScroll() {
+                if (window.removeEventListener)
+                    window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onmousewheel = document.onmousewheel = null;
+                window.onwheel = null;
+                window.ontouchmove = null;
+                document.onkeydown = null;
+            }
+
         }
         window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
     </script>
