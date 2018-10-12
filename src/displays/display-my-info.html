@@ -159,7 +159,7 @@ The following custom properties and mixins are available for styling:
                                 <div class="balanceloadshape"></div> SWT
                             </template>
                             <template is="dom-if" if="{{!loadingBalance}}">
-                                {{balance.swt}} SWT
+                                [[_formatNumber(balance.swt)]] SWT
                             </template>
                         </div>
                     </div>
@@ -354,6 +354,17 @@ The following custom properties and mixins are available for styling:
                             endDelay: 0,
                         }
                     );
+                }
+            }
+
+            /**
+            * formats epoch
+            * @param {DateTime} timestamp epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatNumber(number) {
+                if (number) {
+                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
                 }
             }
             /**
