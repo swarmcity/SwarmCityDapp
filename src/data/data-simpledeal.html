@@ -3,7 +3,6 @@
 <dom-module id="data-simpledeal">
     <script>
 
-        (function () {
             // Import libraries
             const Tx = webpack.EthereumTx
             const Buffer = webpack.Buffer.Buffer
@@ -17,8 +16,6 @@
                 simpleDeal
             } = contractsData;
 
-            // Define async methods, because 
-            // oh hi classes can u support async/await plz tkns
             async function createNewItemAsync({ seeker, item, hashtag }) {
 
                 // 0. Upload to IPFS
@@ -66,14 +63,12 @@
                 tx.sign(new Buffer(seeker.privateKey, 'hex'));
                 const serializedTx = tx.serialize();
 
-        async function createNewReplyAsync({ replier, reply, hashtag }) {
-            // 0. Upload to IPFS
-            const metadataHash = await ipfs.add(JSON.stringify({
-                username: replier.username,
-                avatarHash: localStorage.getItem('avatarHash'),
-                replierAddress: replier.address,
-                message: reply.message,
-            }))
+
+                // 4. Send transaction, await receipt. 
+                // Extra line for clarity
+                const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+                return hash
+            }
 
             async function createNewReplyAsync({ replier, reply, hashtag }) {
                 // 0. Upload to IPFS
@@ -82,7 +77,6 @@
                     avatarHash: localStorage.getItem('avatarHash'),
                     replierAddress: replier.address,
                     message: reply.message,
-                    timestamp: Date.now(),
                 }))
 
                 // 1. Encode the raw replyItem
@@ -139,10 +133,15 @@
                 tx.sign(new Buffer(seeker.privateKey, 'hex'));
                 const serializedTx = tx.serialize();
 
-        async function fundItemAsync({ provider, item, hashtag }) {
-            // 0. Calculate the total swt cost
-            const totalSum = parseInt(item.value) + parseInt(hashtag.fee / 2);
 
+                // 4. Send transaction, await receipt. 
+                // Extra line for clarity
+                const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+                return hash
+
+            }
+
+            async function fundItemAsync({ provider, item, hashtag }) {
                 // 0. Calculate the total swt cost
                 const totalSum = parseInt(item.value) + parseInt(hashtag.fee / 2);
 
@@ -158,18 +157,8 @@
                     rawFundItem, // next call data
                 ).encodeABI();
 
-            // 3. Generate tx object, sign and serialize
-            const tx = new Tx({
-                nonce: _web3.utils.toHex(nonce),
-                from: provider.address,
-                gasPrice: 1000000000,
-                gasLimit: 3000000,
-                to: hashtag.tokenContractAddress,
-                data: rawApproveAndCall,
-                chainId: 42,
-            });
-            tx.sign(new Buffer(provider.privateKey, 'hex'));
-            const serializedTx = tx.serialize();
+                // 2. Get user's nonce
+                const nonce = await _web3.eth.getTransactionCount(provider.address);
 
                 // 3. Generate tx object, sign and serialize
                 const tx = new Tx({
@@ -177,7 +166,7 @@
                     from: provider.address,
                     gasPrice: 1000000000,
                     gasLimit: 3000000,
-                    to: hashtag.tokenAddress,
+                    to: hashtag.tokenContractAddress,
                     data: rawApproveAndCall,
                     chainId: 42,
                 });
@@ -219,11 +208,6 @@
                 return hash
             }
 
-            /**
-             * to hex
-             * @param {String} dec - The data to convert
-             * @return {Object} - the input data in hex format
-             */
             function _toHex(dec) {
                 let hex = Number(dec).toString(16);
                 let result = '000000'.substr(0, 6 - hex.length) + hex;
@@ -300,6 +284,5 @@
             }
             window.customElements.define(DataSimpledeal.is, DataSimpledeal);
 
-        })();
     </script>
 </dom-module>
