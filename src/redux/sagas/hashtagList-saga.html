@@ -4,70 +4,116 @@
         const { web3Local, ipfs, ReduxSaga, contractsData } = window;
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
-        const { call, fork, take, put, takeEvery, all } = effects;
-        // Contents of the ReduxSaga object:
-        // CANCEL: "@@redux-saga/CANCEL_PROMISE"
-        // END: { type: "@@redux-saga/CHANNEL_END" }
-        // buffers: { none: ƒ, fixed: ƒ, dropping: ƒ, sliding: ƒ, expanding: ƒ }
-        // channel: ƒ channel()
-        // default: ƒ sagaMiddlewareFactory()
-        // delay: ƒ delay(ms)
-        // detach: ƒ detach(eff)
-        // effects: { take: ƒ, takem: ƒ, put: ƒ, all: ƒ, race: ƒ, … }
-        // eventChannel: ƒ eventChannel(subscribe)
-        // runSaga: ƒ runSaga(storeInterface, saga)
-        // takeEvery: ƒ()
-        // takeLatest: ƒ()
-        // throttle: ƒ()
-        // utils: {...}
-
-        /*
-         * redux-saga worker functions
-         */
+        const { call, fork, take, put, select, takeEvery, all } = effects;
+        // Load selectors
+        const selectors = window.AppStore.selectors
+        // Import contract data:
+        const hashtagDir = contractsData.hashtagDir
+        const { swtToken, simpleDeal } = contractsData;
 
 
         /**
-         * Gets hashtags from the blockchain
+         * Gets hashtag list from the blockchain
          */
-        async function getHashtagsFromHashtagList() {
-            const hashtagListContract = new web3Local.eth.Contract(
-                contractsData.hashtagList.abi,
-                contractsData.hashtagList.address
-            );
-            const numberOfHashtags = parseInt(
-                await hashtagListContract.methods.numberOfHashtags().call()
-            );
-            const hashtagList = [];
-            for (let i = 0; i < numberOfHashtags; i++) {
-                const hashtag = await hashtagListContract.methods.readHashtag(i).call();
-                hashtagList.push({
+        async function getHashtagListFromHashtagList() {
+            const hashtagDirContract = new web3Local.eth.Contract(hashtagDir.abi, hashtagDir.address);
+            const numberOfHashtags = await hashtagDirContract.methods.numberOfHashtags().call()
+                .then(res => parseInt(res))
+            // Note that: [...Array(5).keys()] = [1,2,3,4,5]
+            return await Promise.all([...Array(numberOfHashtags).keys()].map(async (i) => {
+                const hashtag = await hashtagDirContract.methods.readHashtag(i).call();
+                return {
                     hashtagName: decodeURI(hashtag.hashtagName), // string :  Settler
                     hashtagMetaIPFS: hashtag.hashtagMetaIPFS, // string :  zb2rhbixVsHPSfBCUowDPDpkQ4QZR84rRpBSDym44i57NWmtE
                     hashtagAddress: hashtag.hashtagAddress, // address :  0x3a1a67501b75fbc2d0784e91ea6cafef6455a066
                     hashtagShown: hashtag.hashtagShown, // bool :  false
-                });
-            }
-            return hashtagList
+                }
+            }))
         }
 
-        function* getHashtags(action) {
+        function* getHashtagList(action) {
             try {
                 yield put({ type: 'UPDATE_FETCHING', topic: 'hashtagList', fetching: true });
-                const hashtagList = yield call(getHashtagsFromHashtagList)
+                const hashtagList = yield call(getHashtagListFromHashtagList)
                 yield put({ type: 'UPDATE_FETCHING', topic: 'hashtagList', fetching: false });
                 yield put({ type: 'UPDATE_HASHTAG_LIST', hashtagList });
+                return hashtagList
             } catch (e) {
                 console.error(e);
             }
         }
 
+        /**
+         * @param {Object} action that should contain = {
+             type: "GET_REPUTATION",
+             address: <some user address>
+         }
+         * Get user reputation from all hashtags in hashtag list
+         */
+        function* getReputation({ address }) {
+            try {
+                // Check if the hashtagList exists, otherwise fetch it
+                let hashtagList = yield select(selectors.hashtagList)
+                if (!hashtagList.length) {
+                    hashtagList = yield call(getHashtagList)
+                }
+                const reputationsObj = yield call(getReputationFromHashtags, hashtagList, address)
+                yield put({ type: 'UPDATE_REPUTATION', address, reputationsObj });
+            } catch (e) {
+                console.error(`Error fetching user's reputation`, e)
+            }
+        }
+
+        /**
+         * @param {Array} hashtagList list of hashtags to get reputation from
+         * @param {String} address of the user to get reputation from
+         * @returns {Object} reputationsObj = {
+             0x3a1A6750...: {
+                 providerRep: 20
+                 seekerRep: 5
+                 hashtagName: "Settler"
+             },
+             ...
+         }
+         */
+        async function getReputationFromHashtags(hashtagList, address) {
+            // role = 'Provider', 'Seeker'
+            const getBalance = async (hashtagContract, address, method) => {
+                try {
+                    const repAddress = await hashtagContract.methods[method]().call();
+                    const repContract = new web3Local.eth.Contract(swtToken.abi, repAddress);
+                    return await repContract.methods.balanceOf(address).call();
+                } catch (e) {
+                    console.error(`Error fetching reputation from hashtag`, e)
+                }
+            };
+
+            const reputationsObj = {}
+            await Promise.all(hashtagList.map(async (hashtag) => {
+                const { hashtagAddress, hashtagName } = hashtag;
+                // Get the address of the reputation contract
+                const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
+                // Get the reputation balance of the user
+                const [providerRep, seekerRep] = await Promise.all([
+                    getBalance(hashtagContract, address, 'ProviderRep'),
+                    getBalance(hashtagContract, address, 'SeekerRep'),
+                ])
+                reputationsObj[hashtagAddress] = {
+                    providerRep,
+                    seekerRep,
+                    hashtagName,
+                }
+            }));
+            return reputationsObj
+        }
 
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
         function* rootSaga() {
             yield all([
-                yield takeEvery('GET_HASHTAGS', getHashtags),
+                yield takeEvery('GET_HASHTAG_LIST', getHashtagList),
+                yield takeEvery('GET_REPUTATION', getReputation)
             ]);
         }
 
