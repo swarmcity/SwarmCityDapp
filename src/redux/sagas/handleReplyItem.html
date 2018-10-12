@@ -24,7 +24,7 @@
         }
 
 
-        function* handleReplyItem(event) {
+        function* handleReplyItem(event, newEvent = false) {
             try {
                 // ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
                 // Step 1. Store the reply info
@@ -54,7 +54,10 @@
                     call(function* () {
                         // Step 2B. Get the timestamp
                         try {
-                            const timestamp = yield call(getBlockTime, event.blockNumber)
+                            // Step 3. Get the timestamp
+                            const timestamp = newEvent
+                                ? Math.floor(Date.now() / 1000)
+                                : yield call(getBlockTime, event.blockNumber)
                             yield put(updateThisReply({ timestamp }))
                         } catch (e) {
                             console.error(`Error fetching reply's timestamp of itemHash: ${itemHash}`, e)
