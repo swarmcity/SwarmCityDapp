@@ -1,67 +1,62 @@
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<script src="webpack.min.js"></script>
 
 <dom-module id="data-transaction">
     <script>
+        // Import libraries
+        const Tx = webpack.EthereumTx
+        const Buffer = webpack.Buffer.Buffer
+        const _web3 = window.web3Local
+        const sha3 = webpack.sha3
+        const ipfs = window.ipfs
+
+        const {
+            swtToken,
+            hashtagList,
+            simpleDeal
+        } = contractsData;
+
+        async function tokenTxAsync({
+            sender,
+            receiverAddress,
+            weiAmount,
+            tokenContractAddress }) {
+            const tokenContract = new webpack.Contract(
+                swtToken.abi,
+                tokenContractAddress);
+            let rawTokenTx = tokenContract.methods.transfer(
+                receiverAddress,
+                weiAmount
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(sender.address)
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: sender.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: tokenContractAddress,
+                data: rawTokenTx,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(sender.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+            return serializedTx
+        }
+
+
         class DataTransaction extends Polymer.Element {
             static get is() {
                 return 'data-transaction';
             }
 
-            /**
-             * Sign the txData
-             * @param {String} senderAddress - The sender's address
-             * @param {String} contractAddress - The contract containg the function's address
-             * @param {String} nonce - The current user's nonce
-             * @param {String} txData - The txData to sign
-             * @param {String} privateKey - The user's private key
-             * @return {Object} - The signed transaction
+            /**m
+             * Create a token transaction
              */
-            signRawTx(senderAddress, contractAddress, nonce, txData, privateKey) {
-                const txParams = {
-                    nonce: this._toHex(nonce),
-                    gasPrice: 1000000000,
-                    gasLimit: 3000000,
-                    to: contractAddress,
-                    from: senderAddress,
-                    data: txData,
-                    chainId: 42,
-                };
-                const privateKeyBuffer = new webpack.Buffer.Buffer(privateKey, 'hex'); // eslint-disable-line
-                let tx = new webpack.EthereumTx(txParams); // eslint-disable-line
-                tx.sign(privateKeyBuffer);
-            }
-
-            /**
-             * Call the token transfer method
-             * @param {String} receiverAddress - The receiver's address
-             * @param {Number} weiAmount - The amount to be transferred, in wei
-             * @param {String} tokenContractAddress - The contract address containg the function's address
-             * @param {Object} abi - The contract's abi
-             * @return {Object} - The signed transaction
-             */
-            rawTokenTx(receiverAddress, weiAmount, tokenContractAddress, abi) {
-                return new Promise((resolve) => {
-                    const tokenContract = new webpack.Contract(
-                        abi,
-                        tokenContractAddress);
-                    let rawTokenTx = tokenContract.methods.transfer(
-                        receiverAddress,
-                        weiAmount
-                    ).encodeABI();
-                    resolve(rawTokenTx);
-                });
-            }
-
-            /**
-             * to hex
-             * @param {String} dec - The data to convert
-             * @return {Object} - the input data in hex format
-             */
-            _toHex(dec) {
-                let hex = Number(dec).toString(16);
-                let result = '000000'.substr(0, 6 - hex.length) + hex;
-                return '0x' + result;
+            tokenTx(args) {
+                return tokenTxAsync(args)
             }
         }
         window.customElements.define(DataTransaction.is, DataTransaction);
