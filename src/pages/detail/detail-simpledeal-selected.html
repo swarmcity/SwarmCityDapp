@@ -90,7 +90,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-center;
                 box-sizing: border-box;
-                padding: 40px 25px 15px 25px;
+                padding: 40px 25px;
                 background-color: var(--sc-blue);
             }
 
@@ -145,6 +145,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin: 30px 0px 0px 0px;
             }
 
+            .pending {
+                opacity: 0.5;
+            }
+
             .container[wide-layout] #error {
                 @apply --error-msg-wide;
                 margin: 30px 0px 0px 0px;
@@ -177,7 +181,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     </template>
                 </div>
             </div>
-            <div class="bluebox">
+            <div class$="{{_checkPending(item.status)}}">
+            <!-- <div class="bluebox pending"> -->
                 <template is="dom-if" if="[[_isReplier(reply.replierAddress, address)]]">
                     <div class="white-text">[[item.seekerUsername]] selected you to make a deal. Do you accept?</div>
                     <template is="dom-if" if="{{showError}}">
@@ -198,9 +203,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 <template is="dom-if" if="[[!_isReplier(reply.replierAddress, address)]]">
                     <div class="white-text">You selected [[reply.username]] to make a deal.</div>
                     <div class="white-subtext">Waiting for [[reply.username]] to respond</div>
-                    <div class="button">
+                    <!-- <div class="button">
                         unselect [[reply.username]]
-                    </div>
+                    </div> -->
                 </template>
 
             </div>
@@ -303,6 +308,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 } else {
                     this.showError = false;
                 }
+            }
+            _checkPending(status) {
+                return status == '0'? "bluebox" : "bluebox pending";
             }
         }
         window.customElements.define(

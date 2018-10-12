@@ -211,6 +211,13 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.$.simpledeal.selectReplier({ seeker, replierAddress, itemHash, hashtagAddress })
                                 .then(receipt => {
                                     console.log('Successfully transacted select replier, receipt:', receipt)
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                                            providerAddress: replierAddress,
+                                            status: 'selected-pending',
+                                        }
+                                    })
+
                                 })
                                 .catch(err => {
                                     console.log('Error selecting replier:', err)
