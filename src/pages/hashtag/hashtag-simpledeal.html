@@ -5,12 +5,13 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="./hashtag-simpledeal-loading.html">
 
 <!--
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./hashtag-simpledeal-loading.html">
+<link rel="import" href="./hashtag-simpledeal-item.html">
 
 
 <dom-module id="hashtag-simpledeal">
@@ -27,18 +28,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 min-height: calc(100vh - 159px);
                 width: 100%;
-                box-sizing: border-box;
-                padding: 0px 10px 25px 10px;
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
-
-            <hashtag-simpledeal-items items="[[items]]"></hashtag-simpledeal-items>
-            
-        </div>
-
+            <template is="dom-if" if="[[!_hasHashtag(hashtag)]]">
+                <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
+            </template>
+            <template is="dom-if" if="[[_hasHashtag(hashtag)]]">
+                <template is="dom-repeat" items="[[items]]">
+                    <hashtag-simpledeal-item address="[[address]]" item="[[item]]"></hashtag-simpledeal-item>
+                </template>
+            </template>
     </template>
     <script>
         class MyHashtagSimpledeal extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -49,16 +50,25 @@ This code may only be used under the license found at https://github.com/swarmci
             static get is() {
                 return 'hashtag-simpledeal';
             }
-            // static get properties() {
-            //     return {
-            //         address: String,
-            //         hashtag: {
-            //             type: Object,
-            //             statePath: AppStore.selectors.hashtag,
-            //         },
+            static get properties() {
+                return {
+                    address: String,
+                    items: Array,
+                    hashtag: {
+                        type: Object,
+                        observer: '_getItems',
+                    },
 
-            //     }
-            // }
+                }
+            }
+            _hasHashtag(hashtag) {
+                return hashtag && ('items' in hashtag) ? true : false;
+            }
+
+            _getItems() {
+                this.set('items', Object.values(this.hashtag.items || {})
+                    .sort((a, b) => b.blockNumber - a.blockNumber));
+            }
 
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
