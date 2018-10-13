@@ -29,6 +29,59 @@ This code may only be used under the license found at https://github.com/swarmci
                 min-height: calc(100vh - 159px);
                 width: 100%;
             }
+
+            .middle {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                background-image: var(--sc-bg);
+                /* z-index: 99;
+                position: sticky;
+                position: -webkit-sticky;
+                top: 158px; */
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 36px 15px 36px;
+            }
+
+            .container[wide-layout] .middle {
+                padding: 0px 0 10px 10vw;
+                max-width: 78vw;
+            }
+
+            .filterbox {
+                @apply --small-bold;
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                height: 25px;
+                color: var(--sc-grey3);
+                cursor: pointer;
+                background-color: rgba(0, 0, 0, 0.035);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .counterbox {
+                @apply --small-bold;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                height: 25px;
+                color: var(--sc-blue);
+                cursor: pointer;
+                background-color: var(--sc-white);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
+
+            .icon-scroll {
+                @apply --arrowup-blue-small;
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -36,9 +89,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
             </template>
             <template is="dom-if" if="[[_hasHashtag(hashtag)]]">
-                <template is="dom-repeat" items="[[items]]">
-                    <hashtag-simpledeal-item address="[[address]]" item="[[item]]"></hashtag-simpledeal-item>
+
+                <template is="dom-repeat" items="[[items]]" filter="_isInvolved" observe="status">
+                    <hashtag-simpledeal-item address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></hashtag-simpledeal-item>
                 </template>
+
+                <div class="middle">
+                    <div class="filterbox">filter deals</div>
+                    <div class="flex"></div>
+                </div>
+
+                <template is="dom-repeat" items="[[items]]" filter="_isNotInvolved">
+                    <hashtag-simpledeal-item address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></hashtag-simpledeal-item>
+                </template>
+
             </template>
     </template>
     <script>
@@ -54,6 +118,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 return {
                     address: String,
                     items: Array,
+                    count: Number,
                     hashtag: {
                         type: Object,
                         observer: '_getItems',
@@ -66,8 +131,30 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _getItems() {
+                this.count = 0;
                 this.set('items', Object.values(this.hashtag.items || {})
                     .sort((a, b) => b.blockNumber - a.blockNumber));
+                this.items.forEach(item => { if (this._isInvolved(item)) this.count += 1 })
+
+            }
+            _isInvolved(item) {
+                return (
+                    this.address
+                    && item
+                    && item.status
+                    && item.status != '2'
+                    && (item.seekerAddress == this.address || item.providerAddress == this.address)
+                )
+            }
+
+            _isNotInvolved(item) {
+                return !this._isInvolved(item);
+            }
+            
+            _handleOnDetail(e) {
+                this.dispatchEvent(new CustomEvent('route', {
+                    detail: `/detail/${this.hashtag.address}/${e.detail}`,
+                }));
             }
 
         }
