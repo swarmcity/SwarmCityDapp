@@ -1,0 +1,65 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-icon-close.html">
+<link rel="import" href="../../displays/display-divider.html">
+<link rel="import" href="./my-wallet-balance.html">
+<link rel="import" href="./my-wallet-transfer.html">
+<link rel="import" href="./my-wallet-history.html">
+
+<dom-module id="page-my-wallet">
+    <template>
+        <app-location route="{{route}}"></app-location>
+        <display-icon-close></display-icon-close>
+        <my-wallet-balance balance="[[balance]]"></my-wallet-balance>
+        <my-wallet-transfer></my-wallet-transfer>
+        <display-divider></display-divider>
+        <!-- <my-wallet-vault></my-wallet-vault> -->
+        <my-wallet-history></my-wallet-history>
+    </template>
+    <script>
+        class MyWalletRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-my-wallet';
+            }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * fx rates
+                    * @type {String}
+                    */
+                    fx: {
+                        type: Number,
+                        statePath: 'fx',
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Object}
+                    */
+                    balance: {
+                        type: Object,
+                        statePath: AppStore.selectors.balance, // eslint-disable-line
+                    },
+                };
+            }
+        }
+        window.customElements.define(MyWalletRouter.is, MyWalletRouter);
+    </script>
+</dom-module>

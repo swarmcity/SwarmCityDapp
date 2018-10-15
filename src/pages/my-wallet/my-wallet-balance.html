@@ -1,0 +1,61 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+
+<dom-module id="my-wallet-balance">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 100px 10vw 0 10vw;
+                width: 100%;
+                max-width: 100%;
+                overflow: auto;
+            }
+
+            .swt {
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                @apply --main-title1;
+                color: var(--sc-yellow);
+            }
+
+            .fiat {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --body-default;
+                color: var(--sc-grey3);
+                margin: 0 0 30px 0;
+            }
+        </style>
+        <div class="container">
+            <div class="swt">{{balance.swt}} SWT</div>
+            <div class="fiat">≈ {{balance.usd}} USD</div>
+        </div>
+
+    </template>
+    <script>
+        class MyWalletBalance extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-balance';
+            }
+        }
+        window.customElements.define(MyWalletBalance.is, MyWalletBalance);
+    </script>
+</dom-module>

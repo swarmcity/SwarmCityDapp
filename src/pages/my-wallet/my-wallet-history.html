@@ -3,11 +3,10 @@
 Copyright (c) 2018 Swarm City
 This code may  be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../redux-state.html">
-<script src="../../data/webpack.min.js"></script>
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../redux-state.html">
 <!--
     Displays and shared styles 
 -->
@@ -15,11 +14,11 @@ This code may  be used under the license found at https://github.com/swarmcity/l
 
 Example:
 ```
-<display-transaction-history></display-transaction-history>
+<my-wallet-history></my-wallet-history>
 ```
 
 -->
-<dom-module id="display-transaction-history">
+<dom-module id="my-wallet-history">
     <template>
         <style include="shared-styles">
             :host {
@@ -30,8 +29,12 @@ Example:
                 @apply --layout-vertical;
                 @apply --start-justified;
                 @apply --small-light;
-                padding: 5vh 0 8vh 0;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 25px 10vw 50px 10vw;
                 width: 100%;
+                max-width: 99%;
+                min-height: calc(100vh - 283px);
             }
 
             .item {
@@ -81,6 +84,17 @@ Example:
 
             .linkbox {
                 margin-top: 5px;
+            }
+
+            .linkbox-top {
+                margin-bottom: 40px;
+            }
+
+            .link {
+                @apply --small-bold;
+                cursor: pointer;
+                border-bottom: 2px dotted var(--sc-grey3);
+                color: var(--sc-grey3);
             }
 
             .greylink {
@@ -152,8 +166,11 @@ Example:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
+            <div class="linkbox-top">
+                <span class="link" on-click="_toEtherscan">{{localize('show address on etherscan')}}</span>
+            </div>
 
-            <template is="dom-repeat" items="[[shownTx]]">
+            <template is="dom-repeat" items="{{shownTx}}" sort="sort">
                 <div class="item">
                     <div class$="[[_checkState(item.status)]]">
                         <div class="date">[[_formatDate(item.timestamp)]]</div>
@@ -209,13 +226,13 @@ Example:
 
     </template>
     <script>
-        class MyDisplayTransactionHistory extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyWalletHistory extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'display-transaction-history';
+                return 'my-wallet-history';
             }
             static get properties() {
                 return {
@@ -346,11 +363,7 @@ Example:
             _isOutgoing(direction) {
                 return direction == 'out' ? true : false;
             }
-            sort(a,b) {
-                console.log('sorting');
-                console.log('a', a)
-                console.log('b', b)
-            }
+
             /**
             * returns true if transaction is incoming
             * @param {string} direction direction of transaction
@@ -367,6 +380,11 @@ Example:
             */
             _isPending(status) {
                 return status == 2 ? true : false;
+            }
+
+
+            sort(a, b) {
+                return b.blockNumber - a.blockNumber
             }
 
             /**
@@ -489,6 +507,6 @@ Example:
         }
 
         window.customElements
-            .define(MyDisplayTransactionHistory.is, MyDisplayTransactionHistory);
+            .define(MyWalletHistory.is, MyWalletHistory);
     </script>
 </dom-module>
