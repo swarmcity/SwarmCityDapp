@@ -18,10 +18,26 @@
             // when returning object literal, wrap it in parentheses 
             // parser will then treat it as expression, not block statement
             // effectively returning the wrapped object
-            hashtag: (state) => ({
-                ...state.hashtags[state.current.hashtag],
-                address: state.current.hashtag
-            }),
+            hashtag: (state) => {
+                let hashtag = {
+                    ...state.hashtags[state.current.hashtag],
+                    address: state.current.hashtag
+                }
+                if (hashtag.items) {
+                    let item;
+                    for (item in hashtag.items) {
+                        if (hashtag.hasOwnProperty(item)
+                            && hashtag[item].providerAddress
+                            && hashtag[item].replies
+                            && hashtag[item].providerAddress != '0x0000000000000000000000000000000000000000') {
+                            hashtag[item].providerUsername = hashtag[item].replies[hashtag[item].providerAddress].username || 'No provider username';
+                            hashtag[item].providerAvatarHash = hashtag[item].replies[hashtag[item].providerAddress].avatarHash;
+                        }
+
+                    }
+                }
+                return hashtag;
+            },
             hashtagList: (state) => state.hashtagList,
             item: (state) => {
                 if (state.hashtags[state.current.hashtag]
@@ -29,7 +45,7 @@
                     return {
                         ...state.hashtags[state.current.hashtag].items[state.current.item],
                         itemHash: state.current.item
-                    }
+                    };
                 }
             },
         }

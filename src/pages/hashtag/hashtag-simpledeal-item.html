@@ -1,0 +1,307 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+
+<dom-module id="hashtag-simpledeal-item">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                background-color: var(--sc-white);
+                cursor: pointer;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                box-sizing: border-box;
+                padding: 30px 30px 20px 30px;
+                margin: 0px 10px 4px 10px;
+            }
+
+            .container[wide-layout] {
+                margin: 0px 0px 4px 0px;
+                max-width: 68vw;
+                padding: 0px 10vw;
+            }
+
+
+            .container:active {
+                @apply --button-active;
+            }
+
+            .empty {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 30px 10vw;
+                word-wrap: break-word;
+                @apply --body-default;
+                color: var(--sc-grey3);
+            }
+
+            .container[wide-layout] .empty {
+                padding: 0;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+            }
+
+            .avatarandmeta {
+                @apply --layout-flex;
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .meta {
+                @apply --layout-center-justified;
+                @apply --layout-vertical;
+            }
+
+            .bottom {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .avatar {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 24px;
+            }
+
+            .container[wide-layout] .avatar {
+                width: 20px;
+                height: 20px;
+                margin-right: 10px;
+                background-size: 20px;
+            }
+
+
+            .item-avatar-seeker {
+                border-radius: 50%;
+                width: 100%;
+                height: 100%;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey3b);
+                margin-top: 4px;
+            }
+
+            .replycount {
+                @apply --small-bold;
+                margin-top: 2px;
+                color: var(--sc-grey4);
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .truncate {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .seeker {
+                color: var(--sc-grey4);
+            }
+
+            .replyicon {
+                @apply --reply-grey4-mini;
+            }
+
+            .datedescript {
+                @apply --layout-flex;
+
+            }
+
+            .description {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                padding-right: 10px;
+            }
+
+            img {
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                border-radius: 50%;
+                background-size: 30px;
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-end-justified;
+                text-align: right;
+            }
+
+            .price {
+                @apply --main-title4;
+                color: var(--sc-yellow);
+                line-height: 24px;
+            }
+
+            .for {
+                @apply --smallest-bold;
+                color: var(--sc-yellow);
+            }
+
+
+            .container[wide-layout] .for {
+                @apply --body-bold;
+                font-size: 10px;
+                line-height: 10px;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+            }
+
+            .item-avatar-topright {
+                border-radius: 50%;
+                height: 24px;
+                width: 24px;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .replyicon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+
+
+        <div class="container" wide-layout$="{{wide}}" on-tap="_toItem">
+            <div class="top">
+                <div class="datedescript">
+                    <div class="description">[[item.description]]</div>
+                    <div class="date">
+                        [[_formatDate(item)]]
+                    </div>
+                </div>
+                <div class="replycount">[[_replycount(item)]]</div>
+                <div class="replyicon"></div>
+                <template is="dom-if" if="[[_hasProvider(item)]]">
+                    <iron-image class="item-avatar-topright" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.providerAvatarHash]]"
+                        placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                </template>
+            </div>
+            <div class="bottom">
+                <div class="avatarandmeta">
+                    <div class="avatar">
+                        <iron-image class="item-avatar-seeker" sizing="cover" preload fade src="https://dev.swarm.city/img/[[item.seekerAvatarHash]]"
+                            placeholder="../images/defaultavatar.png">
+                        </iron-image>
+                    </div>
+                    <div class="meta">
+
+                        <template is="dom-if" if="[[!_isSeeker(item)]]">
+                            <div class="user horizontal">
+                                <div class="truncate">[[item.seekerUsername]]</div>&nbsp;· [[item.seekerRep]]
+                                SWR
+                            </div>
+                        </template>
+
+                        <template is="dom-if" if="[[_isSeeker(item)]]">
+                            <div class="user seeker horizontal">
+                                <div class="truncate">[[item.seekerUsername]]</div>&nbsp;· [[item.seekerRep]]
+                                SWR
+                            </div>
+                        </template>
+
+                    </div>
+                </div>
+
+                <div class="pricebox">
+                    <div class="for">SWT</div>
+                    <div class="price">[[_formatValue(item)]]</div>
+                </div>
+
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyHashtagSimpledealItem extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'hashtag-simpledeal-item';
+            }
+            static get properties() {
+                return {
+                    item: Object,
+                    address: String,
+
+                };
+            }
+            /**
+             * formats epoch
+             * @return {string} formatted date string
+             */
+            _formatDate(item) {
+                let milliseconds = item.timestamp * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            _replycount(item) {
+                return item && item.numberOfReplies ? item.numberOfReplies : 0;
+            }
+            /**
+             * routes to the corresponding item detail page
+             * @param {event} event item object that has been tapped
+             */
+            _toItem() {
+                this.dispatchEvent(new CustomEvent('detail', {
+                    detail: this.item.itemHash,
+                }));
+            }
+            /**
+             * Here we check if an item has been posted by the current user
+             * @param {Object} item a hashtagItem reply
+             * @return {Boolean} true when user owns this item
+             */
+            _isSeeker(item) {
+                return item.seekerAddress == this.address;
+            }
+            /**
+             * formats the item value
+             * @param {String} value item value in wei
+             * @return {string} value in human readable format
+             */
+            _formatValue(item) {
+                return item.itemValue / 1e18;
+            }
+            _hasProvider(item) {
+                return this.item &&  this.item.providerAddress && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
+            }
+        }
+
+        window.customElements.define(MyHashtagSimpledealItem.is, MyHashtagSimpledealItem);
+    </script>
+</dom-module>
