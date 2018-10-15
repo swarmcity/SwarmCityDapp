@@ -294,7 +294,7 @@
             })
         }
 
-        function* handleNewItem(event, hashtagAddress) {
+        function* handleNewItem(event, hashtagAddress, newEvent = false) {
             // NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
             // Step 1. Store the item info
             console.log('Handling NewItem', event)
@@ -315,11 +315,10 @@
             yield fork(getItemMetadata, item, hashtagAddress)
 
             // Step 3. Get the timestamp
-            if (item.blockNumber) yield put({
-                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    timestamp: yield call(getBlockTime, item.blockNumber)
-                }
-            });
+            const timestamp = newEvent
+                ? Math.floor(Date.now() / 1000)
+                : yield call(getBlockTime, event.blockNumber)
+            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: { timestamp } });
         }
 
         function* handleItemChange(event) {
@@ -350,13 +349,13 @@
                     //  - ReplyItem(indexed itemHash, replyMetadataHash, provider)
                     switch (event.event) {
                         case 'NewItem':
-                            yield fork(handleNewItem, event, hashtagAddress)
+                            yield fork(handleNewItem, event, hashtagAddress, true)
                             break;
                         case 'ItemChange':
                             yield fork(handleItemChange, event)
                             break;
                         case 'ReplyItem':
-                            yield fork(handleReplyItem, event)
+                            yield fork(handleReplyItem, event, true)
                             break;
                         default:
                             console.error('Received unknown event ' + event.event, event)

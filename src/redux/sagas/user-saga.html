@@ -5,21 +5,6 @@
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
         const { call, fork, take, put, takeEvery, all } = effects;
-        // Contents of the ReduxSaga object:
-        // CANCEL: "@@redux-saga/CANCEL_PROMISE"
-        // END: { type: "@@redux-saga/CHANNEL_END" }
-        // buffers: { none: ƒ, fixed: ƒ, dropping: ƒ, sliding: ƒ, expanding: ƒ }
-        // channel: ƒ channel()
-        // default: ƒ sagaMiddlewareFactory()
-        // delay: ƒ delay(ms)
-        // detach: ƒ detach(eff)
-        // effects: { take: ƒ, takem: ƒ, put: ƒ, all: ƒ, race: ƒ, … }
-        // eventChannel: ƒ eventChannel(subscribe)
-        // runSaga: ƒ runSaga(storeInterface, saga)
-        // takeEvery: ƒ()
-        // takeLatest: ƒ()
-        // throttle: ƒ()
-        // utils: {...}
 
         // Import contract data:
         const { swtToken, hashtagList, simpleDeal } = contractsData;
@@ -68,7 +53,7 @@
                 while (true) {
                     // take(END) will cause the saga to terminate by jumping to the finally block
                     let event = yield take(txsChannel)
-                    console.log('Receibed event', event)
+                    console.log('Received event', event)
                 }
             } finally {
                 console.log('countdown terminated')
@@ -106,7 +91,7 @@
             await Promise.all(txs.map(tx =>
                 web3Local.eth.getBlock(tx.blockNumber)
                     .then(block => tx.timestamp = block.timestamp)
-                    .catch(e => console.log('Error fetching datetime of block ' + tx.blockNumber))
+                    .catch(e => console.error('Error fetching datetime of block ' + tx.blockNumber))
             ))
             // Return the result
             return txs
@@ -117,7 +102,7 @@
                 yield put(AppStore.actions.updateTxs(txs));
                 console.log('Received txs', txs)
 
-                // The code below is left as example / reference for future functions
+                // The code below is left as example / reference to add loaders during fetch
 
                 // let result = [1, 2, 3, 4, 5];
                 // // Artificial to delay to simulate a REST call like behavior
@@ -144,9 +129,7 @@
 
         function* getBalance(action) {
             try {
-                console.log('fetching', action)
                 const balance = yield call(getTokenBalance, action.address)
-                console.log('Got balance', balance)
                 yield put({ type: 'UPDATE_BALANCE', balance });
             } catch (e) {
                 console.error(e);
