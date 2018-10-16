@@ -23,7 +23,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <data-simpledeal id="simpledeal"></data-simpledeal>
         <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
-        <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
+        <display-my-info avatarSmall on-wallet="_handleOnWallet"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
         <detail-simpledeal status="[[status]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]" username="[[username]]"
             address="[[address]]" on-status="_handleOnStatus" on-close="_handleOnClose">
@@ -105,6 +105,10 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnClose() {
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
                 this.status = 'replies';
+            }
+            _handleOnWallet() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-wallet/');
             }
             _setStatus() {
                 if (this.item

@@ -25,7 +25,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <my-wallet-transfer></my-wallet-transfer>
         <display-divider></display-divider>
         <!-- <my-wallet-vault></my-wallet-vault> -->
-        <my-wallet-history confirmedTx="confirmedTx"></my-wallet-history>
+        <my-wallet-history confirmed-tx="[[confirmedTx]]"></my-wallet-history>
     </template>
     <script>
         class MyWalletRouter extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -58,14 +58,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: AppStore.selectors.balance, // eslint-disable-line
                     },
                     confirmedTx: {
-                        type: Object,
+                        type: Array,
                         statePath: AppStore.selectors.confirmedTx, // eslint-disable-line
                     },
                 };
             }
             _handleOnClose() {
                 if (sessionStorage.getItem('origin')) {
-                    this.path = sessionStorage.getItem('origin');
+                    this.set('route.path', sessionStorage.getItem('origin'));
                     sessionStorage.removeItem('origin');
                 }
                 else {
