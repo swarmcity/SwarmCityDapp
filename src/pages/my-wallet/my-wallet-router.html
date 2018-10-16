@@ -20,12 +20,12 @@ This code may only be used under the license found at https://github.com/swarmci
 <dom-module id="page-my-wallet">
     <template>
         <app-location route="{{route}}"></app-location>
-        <display-icon-close></display-icon-close>
+        <display-icon-close on-close="_handleOnClose"></display-icon-close>
         <my-wallet-balance balance="[[balance]]"></my-wallet-balance>
         <my-wallet-transfer></my-wallet-transfer>
         <display-divider></display-divider>
         <!-- <my-wallet-vault></my-wallet-vault> -->
-        <my-wallet-history></my-wallet-history>
+        <my-wallet-history confirmedTx="confirmedTx"></my-wallet-history>
     </template>
     <script>
         class MyWalletRouter extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -57,7 +57,20 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         statePath: AppStore.selectors.balance, // eslint-disable-line
                     },
+                    confirmedTx: {
+                        type: Object,
+                        statePath: AppStore.selectors.confirmedTx, // eslint-disable-line
+                    },
                 };
+            }
+            _handleOnClose() {
+                if (sessionStorage.getItem('origin')) {
+                    this.path = sessionStorage.getItem('origin');
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
             }
         }
         window.customElements.define(MyWalletRouter.is, MyWalletRouter);
