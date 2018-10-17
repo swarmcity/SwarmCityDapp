@@ -22,10 +22,10 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-icon-close on-close="_handleOnClose"></display-icon-close>
         <my-wallet-balance balance="[[balance]]"></my-wallet-balance>
-        <my-wallet-transfer></my-wallet-transfer>
+        <my-wallet-transfer language="[[language]]"></my-wallet-transfer>
         <display-divider></display-divider>
         <!-- <my-wallet-vault></my-wallet-vault> -->
-        <my-wallet-history confirmed-tx="[[confirmedTx]]"></my-wallet-history>
+        <my-wallet-history confirmed-tx="[[confirmedTx]]" language="[[language]]" address="[[address]]"></my-wallet-history>
     </template>
     <script>
         class MyWalletRouter extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -41,25 +41,21 @@ This code may only be used under the license found at https://github.com/swarmci
                     route: {
                         type: Object,
                     },
-                    /**
-                    * fx rates
-                    * @type {String}
-                    */
-                    fx: {
-                        type: Number,
-                        statePath: 'fx',
-                    },
-                    /**
-                    * Balance is the users current balance
-                    * @type {Object}
-                    */
                     balance: {
                         type: Object,
-                        statePath: AppStore.selectors.balance, // eslint-disable-line
+                        statePath: AppStore.selectors.balance,
                     },
                     confirmedTx: {
                         type: Array,
-                        statePath: AppStore.selectors.confirmedTx, // eslint-disable-line
+                        statePath: AppStore.selectors.confirmedTx,
+                    },
+                    language: {
+                        type: Array,
+                        statePath: AppStore.selectors.language,
+                    },
+                    address: {
+                        type: Array,
+                        statePath: AppStore.selectors.address,
                     },
                 };
             }

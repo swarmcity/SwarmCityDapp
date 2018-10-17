@@ -167,7 +167,7 @@ Example:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="linkbox-top">
-                <span class="link" on-click="_toEtherscan">{{localize('show address on etherscan')}}</span>
+                <span class="link" on-click="_toEtherscanAddress">{{localize('show address on etherscan')}}</span>
             </div>
             <template is="dom-repeat" items="{{shownTx}}" sort="sort">
                 <div class="item">
@@ -216,7 +216,7 @@ Example:
 
                     </div>
                     <div class="linkbox">
-                        <span class$="[[_checkLinkStyle(item.status)]]" on-click="_toEtherscan">show on etherscan</span>
+                        <span class$="[[_checkLinkStyle(item.status)]]" on-click="_toEtherscanTx">show on etherscan</span>
                     </div>
                 </div>
             </template>
@@ -235,14 +235,8 @@ Example:
             }
             static get properties() {
                 return {
-                    /**
-                    * The language as chosen by user
-                    * @type {String}
-                    */
-                    language: {
-                        type: String,
-                        statePath: 'language',
-                    },
+                    language: String,
+                    address: String,
                     /**
                     * An array containing the confirmed transaction history for this public key
                     * @type {Array}
@@ -267,47 +261,6 @@ Example:
                         type: Object,
                         statePath: 'shownTx',
                     },
-                    /**
-                    * txHash of broadcasted transaction
-                    * @type {Object}
-                    */
-                    txHash: {
-                        type: Object,
-                        statePath: 'txHash',
-                        observer: '_newTxHash',
-                    },
-                    /**
-                    * The amount to send
-                    * @type {Number}
-                    */
-                    amountToSend: {
-                        type: Number,
-                        statePath: 'amountToSend',
-                    },
-                    /**
-                    * The address of the receiver
-                    * @type {String}
-                    */
-                    toAddress: {
-                        type: String,
-                        statePath: 'toAddress',
-                    },
-                    /**
-                    * Address is the ethereum address the transaction is to be sent from
-                    * @type {String}
-                    */
-                    address: {
-                        type: String,
-                        statePath: 'publicKey',
-                    },
-                    /**
-                    * nonce is the current nonce of the used public key
-                    * @type {Object}
-                    */
-                    nonce: {
-                        type: Object,
-                        statePath: 'nonce',
-                    },
                 };
             }
 
@@ -324,12 +277,6 @@ Example:
                         return {
                             type: 'SHOWNTX',
                             shownTx: shownTx,
-                        };
-                    },
-                    NONCE: function (nonce) {
-                        return {
-                            type: 'NONCE',
-                            nonce: nonce,
                         };
                     },
                 });
@@ -439,10 +386,14 @@ Example:
             * takes the user to txHash page on etherscan
             * @param {Object} event element clicked
             */
-            _toEtherscan(event) {
-                // window.open('https://kovan.etherscan.io/tx/'
-                //     + event.model.__data.item.transactionHash, '_blank');
+            _toEtherscanTx(event) {
+                window.open('https://kovan.etherscan.io/tx/'
+                    + event.model.__data.item.transactionHash, '_blank');
             }
+
+            _toEtherscanAddress() {
+                window.open('https://kovan.etherscan.io/address/'
+                    + this.address, '_blank');}
 
             /**
             * Updates the visible transactions with confirmed tx's
