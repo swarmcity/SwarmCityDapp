@@ -12,7 +12,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./hashtag-simpledeal-loading.html">
 <link rel="import" href="./hashtag-simpledeal-item.html">
-
+<link rel="import" href="./hashtag-simpledeal-create.html">
 
 <dom-module id="hashtag-simpledeal">
     <template>
@@ -44,7 +44,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 padding: 0px 36px 15px 36px;
             }
 
-            .container[wide-layout] .middle {
+            .container[wide-layout] {
                 padding: 0px 0 10px 10vw;
                 max-width: 78vw;
             }
@@ -89,6 +89,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
             </template>
             <template is="dom-if" if="[[_hasHashtag(hashtag)]]">
+                <hashtag-simpledeal-create on-create="_handleOnCreate"></hashtag-simpledeal-create>
 
                 <template is="dom-repeat" items="[[items]]" filter="_isInvolved" observe="status">
                     <hashtag-simpledeal-item address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></hashtag-simpledeal-item>
@@ -150,10 +151,15 @@ This code may only be used under the license found at https://github.com/swarmci
             _isNotInvolved(item) {
                 return !this._isInvolved(item);
             }
-            
+
             _handleOnDetail(e) {
                 this.dispatchEvent(new CustomEvent('route', {
                     detail: `/detail/${this.hashtag.address}/${e.detail}`,
+                }));
+            }
+            _handleOnCreate() {
+                this.dispatchEvent(new CustomEvent('route', {
+                    detail: `/new-request/${this.hashtag.address}`,
                 }));
             }
 

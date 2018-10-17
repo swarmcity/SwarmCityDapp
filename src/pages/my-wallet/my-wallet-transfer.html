@@ -1,0 +1,54 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="./my-wallet-transfer-shortcode.html">
+<link rel="import" href="./my-wallet-transfer-choice.html">
+
+<dom-module id="my-wallet-transfer">
+    <template>
+        <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
+            <my-wallet-transfer-choice on-choice="_handleOnChoice"></my-wallet-transfer-choice>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'shortcode')}}">
+            <my-wallet-transfer-shortcode></my-wallet-transfer-shortcode>
+        </template>
+
+    </template>
+    <script>
+        class MyWalletTransfer extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-transfer';
+            }
+
+            static get properties() {
+                return {
+                    status: {
+                        type: String,
+                        value: 'choice',
+                    }
+                }
+            }
+
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnChoice(e) {
+                console.log(e.detail);
+                this.status = e.detail;
+            }
+        }
+        window.customElements.define(MyWalletTransfer.is, MyWalletTransfer);
+    </script>
+</dom-module>

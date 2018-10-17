@@ -16,15 +16,16 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../displays/display-hashtag-about.html">
 <link rel="import" href="../../displays/display-simpledeal-title.html">
 <link rel="import" href="../../displays/display-simpledeal-title.html">
-<link rel="import" href="../../displays/display-deal-btn.html">
+<link rel="import" href="../../displays/display-icon-back.html">
 <link rel="import" href="./hashtag-simpledeal.html">
 
 <dom-module id="page-hashtag">
     <template>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <display-my-info avatarSmall path="{{path}}" route="[[route]]"></display-my-info>
+        <display-my-info avatarSmall on-wallet="_handleOnWallet"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
+        <display-icon-back on-back="_handleOnBack"></display-icon-back>
         <hashtag-simpledeal address="[[address]]" hashtag="[[hashtag]]" on-route="_handleOnRoute"></hashtag-simpledeal>
     </template>
 
@@ -56,6 +57,13 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _handleOnRoute(e) {
                 this.set('route.path', e.detail);
+            }
+            _handleOnBack() {                
+                this.set('route.path', 'hashtag-list/');
+            }
+            _handleOnWallet() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-wallet/');
             }
         }
         window.customElements.define(MyHashtagRouter.is, MyHashtagRouter);

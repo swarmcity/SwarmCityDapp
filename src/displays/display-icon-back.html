@@ -1,0 +1,55 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+
+<dom-module id="display-icon-back">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .icon {
+                @apply --arrowleft-grey3-small;
+                position: fixed;
+                top: 40px;
+                right: 40px;
+                cursor: pointer;
+            }
+
+            .icon:active {
+                @apply --button-active;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <div class="icon" on-tap="_back"></div>
+
+    </template>
+    <script>
+        class MyDisplayIconBack extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-icon-back';
+            }
+            _back() {
+                this.dispatchEvent(new CustomEvent('back'));
+            }
+        }
+
+        window.customElements.define(MyDisplayIconBack.is, MyDisplayIconBack);
+    </script>
+</dom-module>
