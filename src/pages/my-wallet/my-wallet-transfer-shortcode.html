@@ -18,6 +18,8 @@ This code may only be used under the license found at https://github.com/swarmci
             .container {
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
+                box-sizing: border-box;
+                padding: 10px 0 30px 0;
                 height: 100%;
                 width: 100%;
             }
@@ -27,21 +29,21 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
 
-            .container .shortCode-greytext {
+            .container .greytext {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 margin-top: 8px;
                 text-align: center;
             }
 
-            .container[wide-layout] .shortCode-greytext {
+            .container[wide-layout] .greytext {
                 @apply --body-default;
                 color: var(--sc-grey4);
                 margin-top: 8px;
                 text-align: left;
             }
 
-            .shortCode-code {
+            .shortcode {
                 @apply --main-title3;
                 color: var(--sc-grey4);
                 -webkit-user-select: text;
@@ -50,45 +52,104 @@ This code may only be used under the license found at https://github.com/swarmci
                 user-select: text;
             }
 
-            .shortCode-code-close {
+            .close {
                 @apply --xmark-blue-small;
                 cursor: pointer;
             }
 
-            .shortCode-code-close:active {
+            .close:active {
                 @apply --button-active;
             }
 
-            .shortCode-codebox {
+            .codebox {
                 @apply --layout-horizontal;
                 @apply --layout-center-center;
                 margin-top: 3px;
             }
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
+            }
+
+            .loading {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="shortCode-greytext">{{localize('Your temporary shortcode')}}</div>
-            <div class="shortCode-codebox">
+            <div class="greytext">{{localize('Your temporary shortcode')}}</div>
+            <div class="codebox">
 
                 <template is="dom-if" if="{{shortCode.data.shortCode}}">
-                    <div class="shortCode-code">{{shortCode.data.shortCode}}</div>
+                    <div class="shortcode">{{shortCode.data.shortCode}}</div>
                 </template>
-                <template is="dom-if" if="{{!shortCode.data.shortCode}}">
-                    <div class="loading">
-                        <div class="smallpoint" id="point1"></div>
-                        <div class="smallpoint" id="point2"></div>
-                        <div class="smallpoint" id="point3"></div>
-                    </div>
-                </template>
-                <div tabindex="10" class="shortCode-code-close" on-tap="_start" on-keyPress="_start"></div>
+                <!-- <template is="dom-if" if="{{!shortCode.data.shortCode}}"> -->
+                <div class="loading">
+                    <div class="smallpoint" id="point1"></div>
+                    <div class="smallpoint" id="point2"></div>
+                    <div class="smallpoint" id="point3"></div>
+                </div>
+                <!-- </template> -->
+                <div class="close" on-tap="_close"></div>
             </div>
             <template is="dom-if" if="{{showCountDown}}">
-                <div class="timer-box">
-                    <div class="timer-text">
-                        {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
-                    </div>
-                    <paper-progress value="[[timeLeft]]" max="30"></paper-progress>
+            <div class="timer-box">
+                <div class="timer-text">
+                    {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
                 </div>
+                <paper-progress value="[[timeLeft]]" max="30"></paper-progress>
+            </div>
             </template>
         </div>
 
@@ -112,13 +173,18 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: {
                         type: String,
                         statePath: 'language',
-                    }
+                    },
                 }
             }
 
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+            _close() {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'choice',
+                }));
             }
         }
         window.customElements.define(MyWalletTransferShortcode.is, MyWalletTransferShortcode);
