@@ -4,26 +4,28 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../data/socket-redux.html">
 
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="./my-wallet-transfer-shortcode.html">
+<link rel="import" href="./my-wallet-transfer-receive.html">
 <link rel="import" href="./my-wallet-transfer-choice.html">
 <link rel="import" href="./my-wallet-transfer-input.html">
 
 <dom-module id="my-wallet-transfer">
     <template>
+        <socket-redux id="socket"></socket-redux>
         <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
-            <my-wallet-transfer-choice on-status="_handleOnStatus"></my-wallet-transfer-choice>
+            <my-wallet-transfer-choice on-status="_handleOnStatus" language="[[language]]"></my-wallet-transfer-choice>
         </template>
 
-        <template is="dom-if" if="{{_isEqualTo(status, 'shortcode')}}">
-            <my-wallet-transfer-shortcode on-status="_handleOnStatus"></my-wallet-transfer-shortcode>
+        <template is="dom-if" if="{{_isEqualTo(status, 'receive')}}">
+            <my-wallet-transfer-receive on-status="_handleOnStatus" short-code="[[shortCode]]" language="[[language]]"></my-wallet-transfer-receive>
         </template>
 
         <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-            <my-wallet-transfer-input on-status="_handleOnStatus"></my-wallet-transfer-input>
+            <my-wallet-transfer-input on-status="_handleOnStatus" language="[[language]]"></my-wallet-transfer-input>
         </template>
 
     </template>
@@ -42,7 +44,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     status: {
                         type: String,
                         value: 'choice',
-                    }
+                    },
+                    shortCode: String,
+                    language: String,
                 }
             }
 
@@ -51,6 +55,12 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnStatus(e) {
                 this.status = e.detail;
+                if (e.detail == 'receive') {
+                    this.shortCode = null;
+                    this.$.socket._getShortCode()
+                        .then(res => this.shortCode = res);
+                }
+
             }
         }
         window.customElements.define(MyWalletTransfer.is, MyWalletTransfer);

@@ -9,7 +9,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/paper-progress/paper-progress.html">
 
-<dom-module id="my-wallet-transfer-shortcode">
+
+<dom-module id="my-wallet-transfer-receive">
     <template>
         <style include="shared-styles">
             :host {
@@ -132,19 +133,19 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="greytext">{{localize('Your temporary shortcode')}}</div>
             <div class="codebox">
 
-                <template is="dom-if" if="{{shortCode.data.shortCode}}">
-                    <div class="shortcode">{{shortCode.data.shortCode}}</div>
+                <template is="dom-if" if="[[shortCode]]">
+                    <div class="shortcode">{{shortCode}}</div>
                 </template>
-                <!-- <template is="dom-if" if="{{!shortCode.data.shortCode}}"> -->
-                <div class="loading">
-                    <div class="smallpoint" id="point1"></div>
-                    <div class="smallpoint" id="point2"></div>
-                    <div class="smallpoint" id="point3"></div>
-                </div>
-                <!-- </template> -->
+                <template is="dom-if" if="{{!shortCode}}">
+                    <div class="loading">
+                        <div class="smallpoint" id="point1"></div>
+                        <div class="smallpoint" id="point2"></div>
+                        <div class="smallpoint" id="point3"></div>
+                    </div>
+                </template>
                 <div class="close" on-tap="_close"></div>
             </div>
-            <template is="dom-if" if="{{showCountDown}}">
+            <template is="dom-if" if="{{_showCountDown(timeLeft)}}">
                 <div class="timer-box">
                     <div class="timer-text">
                         {{localize('This shortcode expires in')}}&nbsp;[[timeLeft]]&nbsp;{{localize('sec')}}.
@@ -156,24 +157,26 @@ This code may only be used under the license found at https://github.com/swarmci
 
     </template>
     <script>
-        class MyWalletTransferShortcode extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyWalletTransferReceive extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'my-wallet-transfer-shortcode';
+                return 'my-wallet-transfer-receive';
             }
 
             static get properties() {
                 return {
-                    /**
-                    * The language as chosen by user
-                    * @type {String}
-                    */
-                    language: {
+                    language: String,
+                    shortCode: {
                         type: String,
-                        statePath: 'language',
+                        observer: '_shortCode',
+                    },
+                    interval: Object,
+                    timeLeft: {
+                        type: Number,
+                        observer: '_timeLeft',
                     },
                 }
             }
@@ -187,7 +190,25 @@ This code may only be used under the license found at https://github.com/swarmci
                     detail: 'choice',
                 }));
             }
+            _shortCode() {
+                if (this.shortCode) {
+                this.timeLeft = 15;
+                    this.interval = setInterval(() => {
+                        if (this.timeLeft > 0) {
+                            this.timeLeft -= 1;
+                        }
+                    }, 1000);
+                }
+            }
+            _timeLeft() {
+                if (this.timeLeft == 0) {
+                    this._close();
+                }
+            }
+            _showCountDown(timeLeft) {
+                return timeLeft <= 30;
+            }
         }
-        window.customElements.define(MyWalletTransferShortcode.is, MyWalletTransferShortcode);
+        window.customElements.define(MyWalletTransferReceive.is, MyWalletTransferReceive);
     </script>
 </dom-module>
