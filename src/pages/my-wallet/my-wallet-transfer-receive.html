@@ -69,6 +69,28 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 3px;
             }
 
+            .timer-box {
+                width: 100%;
+                @apply --layout-vertical;
+                @apply --layout-center;
+            }
+
+            .container[wide-layout] .timer-box {
+                @apply --layout-start;
+            }
+
+            .timer-text {
+                margin-top: 20px;
+                @apply --small-light;
+            }
+
+            paper-progress {
+                width: 100%;
+                max-width: 300px;
+                margin-top: 10px;
+                --paper-progress-active-color: var(--sc-blue);
+            }
+
             @keyframes loadanimation {
                 0% {
                     transform: scale(1);
@@ -186,13 +208,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../../text-translations.json'));
             }
             _close() {
+                clearInterval(this.interval);
                 this.dispatchEvent(new CustomEvent('status', {
                     detail: 'choice',
                 }));
             }
             _shortCode() {
                 if (this.shortCode) {
-                this.timeLeft = 15;
+                    this.timeLeft = 15;
                     this.interval = setInterval(() => {
                         if (this.timeLeft > 0) {
                             this.timeLeft -= 1;
