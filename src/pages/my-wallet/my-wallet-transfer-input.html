@@ -120,7 +120,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="totalamountinput">
-                <paper-input tabindex="1" type="Number" id="sendInput" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"
+                <paper-input tabindex="1" type="Number" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"
                     value="{{amount}}" on-keyup="_checkBalance"></paper-input>
                 <div class="SWT">SWT</div>
             </div>
@@ -131,7 +131,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="buttonbox">
                 <div tabindex="3" class="disagree" on-tap="_close"></div>
-                <div tabindex="4" id="send" class="round-button" on-tap="_checkPublicKey">
+                <div tabindex="4" id="send" class="round-button" on-tap="_resolveDestination">
                     <div class="agree"></div>
                 </div>
             </div>
@@ -153,6 +153,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: String,
                     amount: Number,
                     destination: Number,
+                    balance: Object,
                 }
             }
 
@@ -162,38 +163,37 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _close() {
                 this.dispatchEvent(new CustomEvent('close'));
+                this.amount = this.destination = '';
+                this.$.send.classList.remove('enabled');
             }
-            // _checkPublicKey() {
-            //     if (this._checkBalance() && this._checkShortCode()) {
-            //         if (this.sendDestination && parseFloat(this.amountToSend) <= parseFloat(this.balance.swt)) {
-            //             const length = this.sendDestination.length;
-            //             if (length == 5) {
-            //                 this.sendToShortcode = this.sendDestination;
-            //                 this.dispatch({ type: 'GET_SHORTCODE_DATA', shortCode: this.sendToShortcode });
-            //                 this._gettingPublicKey();
-            //             } else {
-            //                 this.error = this.localize('shortcode is the wrong length');
-            //             }
-            //         }
-            //     }
-            // }
-            
+            _resolveDestination() {
+                if (this._checkBalance() && this._checkShortCode()) {
+                    this.dispatchEvent(new CustomEvent('resolve', {
+                        detail: {
+                            destination: this.destination,
+                            amount: parseFloat(this.amount) * 1e18,
+                        }
+                    }));
+                }
+            }
+
             _checkBalance() {
                 if (!this.destination) {
-                    this.$$('#send').classList.remove('enabled');
+                    this.$.send.classList.remove('enabled');
                 }
-                if (parseFloat(this.amountToSend) > parseFloat(this.balance.swt)) {
+                let weiAmount = parseFloat(this.amount) * 1e18;
+                if (parseFloat(weiAmount) > this.balance.wei) {
                     this.error = this.localize('Your balance is too low.');
-                    this.$$('#send').classList.remove('enabled');
+                    this.$.send.classList.remove('enabled');
                     return false;
                 } else {
-                    if (!this.sendDestination || this.sendDestination.length < 5) {
+                    if (!this.destination || this.destination.length < 5) {
                         this.error = null;
-                    } else if (this.error && this.sendDestination && this.sendDestination.length != 5) {
+                    } else if (this.error && this.destination && this.destination.length != 5) {
                         this.error = 'Shortcode is too long';
                     } else {
                         this.error = null;
-                        this.$$('#send').classList.add('enabled');
+                        this.$.send.classList.add('enabled');
                     }
                     return true;
                 }
@@ -203,23 +203,23 @@ This code may only be used under the license found at https://github.com/swarmci
             * @return {boolean} if input is valid or not
             */
             _checkShortCode() {
-                if (!this.amountToSend) {
-                    this.$$('#send').classList.remove('enabled');
+                if (!this.amount) {
+                    this.$.send.classList.remove('enabled');
                 }
-                if (isNaN(this.sendDestination)) {
+                if (isNaN(this.destination)) {
                     this.error = this.localize('You didnt enter a number.');
                 } else {
-                    if (this.sendDestination && this.sendDestination.length === 5) {
+                    if (this.destination && this.destination.length === 5) {
                         if (this._checkBalance()) {
-                            this.$$('#send').classList.add('enabled');
+                            this.$.send.classList.add('enabled');
                             this.error = null;
                         }
                         return true;
                     } else {
-                        if (this.sendDestination && this.sendDestination.length > 5) {
+                        if (this.destination && this.destination.length > 5) {
                             this.error = 'Shortcode is too long';
                         }
-                        this.$$('#send').classList.remove('enabled');
+                        this.$.send.classList.remove('enabled');
                         return false;
                     }
                 }
