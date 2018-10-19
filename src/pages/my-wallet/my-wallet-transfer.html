@@ -4,7 +4,7 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../data/data-external.html">
+<link rel="import" href="../../data/socket-redux.html">
 
 <!--
     Displays and shared styles only
@@ -12,21 +12,27 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./my-wallet-transfer-receive.html">
 <link rel="import" href="./my-wallet-transfer-choice.html">
 <link rel="import" href="./my-wallet-transfer-input.html">
+<link rel="import" href="./my-wallet-transfer-looking.html">
 
 <dom-module id="my-wallet-transfer">
     <template>
-        <data-external id="external"></data-external>
-        <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
-            <my-wallet-transfer-choice on-status="_handleOnStatus" language="[[language]]"></my-wallet-transfer-choice>
-        </template>
+        <socket-redux id="socket">
+            </data-external>
+            <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
+                <my-wallet-transfer-choice language="[[language]]" on-send="_handleOnSend" on-receive="_handleOnReceive"></my-wallet-transfer-choice>
+            </template>
 
-        <template is="dom-if" if="{{_isEqualTo(status, 'receive')}}">
-            <my-wallet-transfer-receive on-status="_handleOnStatus" short-code="[[shortCode]]" language="[[language]]"></my-wallet-transfer-receive>
-        </template>
+            <template is="dom-if" if="{{_isEqualTo(status, 'receive')}}">
+                <my-wallet-transfer-receive language="[[language]]" on-close="_handleOnClose" short-code="[[shortCode]]"></my-wallet-transfer-receive>
+            </template>
 
-        <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-            <my-wallet-transfer-input on-status="_handleOnStatus" language="[[language]]"></my-wallet-transfer-input>
-        </template>
+            <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+                <my-wallet-transfer-input language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-input>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'looking')}}">
+                <my-wallet-transfer-looking language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-looking>
+            </template>
 
     </template>
     <script>
@@ -56,18 +62,22 @@ This code may only be used under the license found at https://github.com/swarmci
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
-            _handleOnStatus(e) {
-                this.status = e.detail;
-                if (e.detail == 'receive') {
-                    this.shortCode = null;
-                    this.$.external._getShortCode(this.address, this.username, this.avatar)
-                        .then(res => this.shortCode = res)
-                        .catch(error => {
-                            this.status = 'choice';
-                            console.error(error)
-                        })
-                }
+            _handleOnSend() {
+                this.status = 'input';
+            }
+            _handleOnReceive() {
+                this.shortCode = null;
+                this.status = 'receive';
+                this.$.socket._getShortCode(this.address, this.username, this.avatar)
+                    .then(res => this.shortCode = res)
+                    .catch(error => {
+                        this.status = 'choice';
+                        console.error(error)
+                    })
 
+            }
+            _handleOnClose() {
+                this.status = 'choice';
             }
         }
         window.customElements.define(MyWalletTransfer.is, MyWalletTransfer);

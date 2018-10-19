@@ -1,0 +1,122 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+
+
+<dom-module id="my-wallet-transfer-looking">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 18px 0 0px 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-start;
+            }
+
+            .textbox {
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                margin-bottom: 5px;
+            }
+
+            .greytext {
+                @apply --body-default;
+                color: var(--sc-grey4);
+                margin-bottom: 2px;
+            }
+
+            .close,
+            .notfound-close {
+                @apply --xmark-blue-small;
+                cursor: pointer;
+            }
+
+            .loading {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 2px;
+                height: 2px;
+                border-radius: 50%;
+                background-color: var(--sc-grey4);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="textbox">
+                <div class="greytext" on-tap="_goToConfirm">{{localize('Looking for receiver')}}</div>
+                <div class="loading">
+                    <div class="smallpoint" id="point1"></div>
+                    <div class="smallpoint" id="point2"></div>
+                    <div class="smallpoint" id="point3"></div>
+                </div>
+            </div>
+            <div class="close" on-tap="_close"></div>
+        </div>
+
+    </template>
+    <script>
+        class MyWalletTransferLooking extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-transfer-looking';
+            }
+
+            static get properties() {
+                return {
+                    language: String,
+                }
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+
+            _close() {
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+        }
+        window.customElements.define(MyWalletTransferLooking.is, MyWalletTransferLooking);
+    </script>
+</dom-module>

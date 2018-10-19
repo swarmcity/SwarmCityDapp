@@ -121,11 +121,11 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="totalamountinput">
                 <paper-input tabindex="1" type="Number" id="sendInput" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"
-                    value="{{amount}}" on-tap="_checkBalance"></paper-input>
+                    value="{{amount}}" on-keyup="_checkBalance"></paper-input>
                 <div class="SWT">SWT</div>
             </div>
             <paper-input tabindex="2" pattern="[0-9]*" data-numeric-input pattern="[0-9]{10}" label="{{localize('Receivers shortcode')}}"
-                type="txt" value="{{destination}}" on-tap="_checkShortCode"></paper-input>
+                type="txt" value="{{destination}}" on-keyup="_checkShortCode"></paper-input>
             <div>
                 <span id="error">{{error}}</span>
             </div>
@@ -151,6 +151,8 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     language: String,
+                    amount: Number,
+                    destination: Number,
                 }
             }
 
@@ -159,9 +161,68 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../../text-translations.json'));
             }
             _close() {
-                this.dispatchEvent(new CustomEvent('status', {
-                    detail: 'choice',
-                }));
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+            // _checkPublicKey() {
+            //     if (this._checkBalance() && this._checkShortCode()) {
+            //         if (this.sendDestination && parseFloat(this.amountToSend) <= parseFloat(this.balance.swt)) {
+            //             const length = this.sendDestination.length;
+            //             if (length == 5) {
+            //                 this.sendToShortcode = this.sendDestination;
+            //                 this.dispatch({ type: 'GET_SHORTCODE_DATA', shortCode: this.sendToShortcode });
+            //                 this._gettingPublicKey();
+            //             } else {
+            //                 this.error = this.localize('shortcode is the wrong length');
+            //             }
+            //         }
+            //     }
+            // }
+            
+            _checkBalance() {
+                if (!this.destination) {
+                    this.$$('#send').classList.remove('enabled');
+                }
+                if (parseFloat(this.amountToSend) > parseFloat(this.balance.swt)) {
+                    this.error = this.localize('Your balance is too low.');
+                    this.$$('#send').classList.remove('enabled');
+                    return false;
+                } else {
+                    if (!this.sendDestination || this.sendDestination.length < 5) {
+                        this.error = null;
+                    } else if (this.error && this.sendDestination && this.sendDestination.length != 5) {
+                        this.error = 'Shortcode is too long';
+                    } else {
+                        this.error = null;
+                        this.$$('#send').classList.add('enabled');
+                    }
+                    return true;
+                }
+            }
+            /**
+            * Fires when the user enters each number into shortcode
+            * @return {boolean} if input is valid or not
+            */
+            _checkShortCode() {
+                if (!this.amountToSend) {
+                    this.$$('#send').classList.remove('enabled');
+                }
+                if (isNaN(this.sendDestination)) {
+                    this.error = this.localize('You didnt enter a number.');
+                } else {
+                    if (this.sendDestination && this.sendDestination.length === 5) {
+                        if (this._checkBalance()) {
+                            this.$$('#send').classList.add('enabled');
+                            this.error = null;
+                        }
+                        return true;
+                    } else {
+                        if (this.sendDestination && this.sendDestination.length > 5) {
+                            this.error = 'Shortcode is too long';
+                        }
+                        this.$$('#send').classList.remove('enabled');
+                        return false;
+                    }
+                }
             }
         }
         window.customElements.define(MyWalletTransferInput.is, MyWalletTransferInput);
