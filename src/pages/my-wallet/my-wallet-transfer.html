@@ -13,6 +13,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./my-wallet-transfer-choice.html">
 <link rel="import" href="./my-wallet-transfer-input.html">
 <link rel="import" href="./my-wallet-transfer-looking.html">
+<link rel="import" href="./my-wallet-transfer-found.html">
+<link rel="import" href="./my-wallet-transfer-not-found.html">
 
 <dom-module id="my-wallet-transfer">
     <template>
@@ -27,13 +29,21 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-                <my-wallet-transfer-input language="[[language]]" balance="[[balance]]" on-close="_handleOnClose" on-resolve="_handleOnResolve"></my-wallet-transfer-input>
+                <my-wallet-transfer-input language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
+                    on-resolve="_handleOnResolve"></my-wallet-transfer-input>
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'looking')}}">
                 <my-wallet-transfer-looking language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-looking>
             </template>
 
+            <template is="dom-if" if="{{_isEqualTo(status, 'found')}}">
+                <my-wallet-transfer-found language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-found>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'not found')}}">
+                <my-wallet-transfer-not-found language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-not-found>
+            </template>
     </template>
     <script>
         class MyWalletTransfer extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -71,14 +81,25 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.status = 'receive';
                 this.$.socket._getShortCode(this.address, this.username, this.avatar)
                     .then(res => this.shortCode = res)
-                    .catch(error => {
+                    .catch(e => {
                         this.status = 'choice';
-                        console.error(error)
+                        console.error('Error gettin shortcode (catch block): ', e.stack)
                     })
 
             }
             _handleOnResolve(e) {
                 console.log('resolving: ', e.detail);
+                const { destination, amount } = e.detail;
+                this.status = 'looking';
+                this.$.socket._resolveShortCode(destination)
+                    .then(res => {
+                        console.log('destination resolved! --> ', res)
+                    })
+                    .catch(e => {
+                        console.error('Error resolving shortcode (catch block): ', e.stack)
+                        this.status = 'not found';
+                    })
+
             }
             _handleOnClose() {
                 this.status = 'choice';

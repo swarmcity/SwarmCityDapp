@@ -532,6 +532,20 @@ This code may only be used under the license found at https://github.com/swarmci
                     });
                 });
             }
+
+            _resolveShortCode(shortcode) {
+                return new Promise((resolve, reject) => {
+                    const sec = 10;
+                    setTimeout(() => {
+                        reject(new Error('Shortcode error: ' + sec + ' seconds passed without response'));
+                    }, sec * 1000);
+                    this.socket.emit('readShortCode', {
+                        shortCode: shortcode,
+                    }, (reply) => {
+                        resolve(reply);
+                    });
+                });
+            }
         }
         window.customElements.define(SocketRedux.is, SocketRedux);
     </script>

@@ -163,8 +163,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _close() {
                 this.dispatchEvent(new CustomEvent('close'));
-                this.amount = this.destination = '';
-                this.$.send.classList.remove('enabled');
+                this._reset();
             }
             _resolveDestination() {
                 if (this._checkBalance() && this._checkShortCode()) {
@@ -174,9 +173,13 @@ This code may only be used under the license found at https://github.com/swarmci
                             amount: parseFloat(this.amount) * 1e18,
                         }
                     }));
+                    this._reset();
                 }
             }
-
+            _reset() {
+                this.amount = this.destination = '';
+                this.$.send.classList.remove('enabled');
+            }
             _checkBalance() {
                 if (!this.destination) {
                     this.$.send.classList.remove('enabled');
