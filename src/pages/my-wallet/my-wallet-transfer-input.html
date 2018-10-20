@@ -1,0 +1,233 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+
+<dom-module id="my-wallet-transfer-input">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 6vh 16vw;
+
+            }
+
+            .container[wide-layout] {
+                @apply --layout-start;
+                width: 100%;
+            }
+
+            paper-input {
+                width: 100%;
+                max-width: 400px;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .totalamountinput {
+                width: 100%;
+                max-width: 400px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+                @apply --layout-start-justified;
+            }
+
+            .totalamountinput paper-input {
+                @apply --layout-flex;
+            }
+
+            .totalamountinput .SWT {
+                @apply --small-bold;
+                box-sizing: border-box;
+                padding: 5px 0px 5px 5px;
+            }
+
+            .buttonbox {
+                margin-top: 20px;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .container[wide-layout] .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+                opacity: 0.5;
+            }
+
+            .enabled {
+                cursor: pointer;
+                opacity: 1;
+            }
+
+            .enabled:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .agree,
+                .disagree {
+                    @apply --retina;
+                }
+            }
+
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="totalamountinput">
+                <paper-input tabindex="1" type="Number" label="{{localize('Amount')}}" allowed-pattern="[0-9\.\,]"
+                    value="{{amount}}" on-keyup="_checkBalance"></paper-input>
+                <div class="SWT">SWT</div>
+            </div>
+            <paper-input tabindex="2" pattern="[0-9]*" data-numeric-input pattern="[0-9]{10}" label="{{localize('Receivers shortcode')}}"
+                type="txt" value="{{destination}}" on-keyup="_checkShortCode"></paper-input>
+            <div>
+                <span id="error">{{error}}</span>
+            </div>
+            <div class="buttonbox">
+                <div tabindex="3" class="disagree" on-tap="_close"></div>
+                <div tabindex="4" id="send" class="round-button" on-tap="_resolveDestination">
+                    <div class="agree"></div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyWalletTransferInput extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-transfer-input';
+            }
+
+            static get properties() {
+                return {
+                    language: String,
+                    amount: Number,
+                    destination: Number,
+                    balance: Object,
+                }
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+            _close() {
+                this.dispatchEvent(new CustomEvent('close'));
+                this._reset();
+            }
+            _resolveDestination() {
+                if (this._checkBalance() && this._checkShortCode()) {
+                    this.dispatchEvent(new CustomEvent('resolve', {
+                        detail: {
+                            destination: this.destination,
+                            amount: parseFloat(this.amount) * 1e18,
+                        }
+                    }));
+                    this._reset();
+                }
+            }
+            _reset() {
+                this.amount = this.destination = '';
+                this.$.send.classList.remove('enabled');
+            }
+            _checkBalance() {
+                if (!this.destination) {
+                    this.$.send.classList.remove('enabled');
+                }
+                let weiAmount = parseFloat(this.amount) * 1e18;
+                if (parseFloat(weiAmount) > this.balance.wei) {
+                    this.error = this.localize('Your balance is too low.');
+                    this.$.send.classList.remove('enabled');
+                    return false;
+                } else {
+                    if (!this.destination || this.destination.length < 5) {
+                        this.error = null;
+                    } else if (this.error && this.destination && this.destination.length != 5) {
+                        this.error = 'Shortcode is too long';
+                    } else {
+                        this.error = null;
+                        this.$.send.classList.add('enabled');
+                    }
+                    return true;
+                }
+            }
+            /**
+            * Fires when the user enters each number into shortcode
+            * @return {boolean} if input is valid or not
+            */
+            _checkShortCode() {
+                if (!this.amount) {
+                    this.$.send.classList.remove('enabled');
+                }
+                if (isNaN(this.destination)) {
+                    this.error = this.localize('You didnt enter a number.');
+                } else {
+                    if (this.destination && this.destination.length === 5) {
+                        if (this._checkBalance()) {
+                            this.$.send.classList.add('enabled');
+                            this.error = null;
+                        }
+                        return true;
+                    } else {
+                        if (this.destination && this.destination.length > 5) {
+                            this.error = 'Shortcode is too long';
+                        }
+                        this.$.send.classList.remove('enabled');
+                        return false;
+                    }
+                }
+            }
+        }
+        window.customElements.define(MyWalletTransferInput.is, MyWalletTransferInput);
+    </script>
+</dom-module>
