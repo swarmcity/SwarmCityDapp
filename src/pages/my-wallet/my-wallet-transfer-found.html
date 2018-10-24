@@ -20,7 +20,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-center;
                 box-sizing: border-box;
-                padding: 10px 0 30px 0;
+                padding: 10px 10vw 30px 10vw;
                 width: 100%;
                 height: 100%;
             }
@@ -35,10 +35,89 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-grey4);
             }
 
+            .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .avatarbox {
+                @apply --layout-horizontal;
+                margin: 15px 0 24px 0;
+            }
+
+            .container[wide-layout] .avatarbox {
+                margin: 30px 0 24px 0;
+
+            }
+
+            .infobox {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+            }
+
+            .name {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+                margin-bottom: 3px;
+            }
+
+            .address {
+                @apply --small-light;
+                color: var(--sc-grey4);
+                cursor: pointer;
+                max-width: 60%;
+                overflow: scroll;
+                overflow-wrap: break-all;
+            }
+
+            .container[wide-layout] .truncate {
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .truncate {
+                width: 90px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            img {
+                width: 50px;
+                height: 50px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 50px;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close {
+
+                .close,
+                .agree,
+                .disagree {
                     @apply --retina;
                 }
             }
@@ -48,20 +127,20 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="found-greytext">
                 {{localize('Receiver found!')}}
             </div>
-            <div class="found-avatarbox">
-                <img src="{{tokey.data.avatar}}">
-                <div class="found-infobox">
-                    <div class="found-name">
-                        {{tokey.data.userName}}
+            <div class="avatarbox">
+                <img src="{{receiver.avatar}}">
+                <div class="infobox">
+                    <div class="name">
+                        {{receiver.username}}
                     </div>
-                    <div class="found-address truncate">
-                        {{tokey.data.address}}</div>
+                    <div class="address truncate">
+                        {{receiver.address}}</div>
                 </div>
             </div>
-            <div class="found-buttonbox">
-                <div class="disagree" on-tap="_sendSwt"></div>
+            <div class="buttonbox">
+                <div class="disagree" on-tap="_close"></div>
                 <div class="round-button enabled">
-                    <div class="agree" on-up="_goToConfirm"></div>
+                    <div class="agree" on-tap="_confirm"></div>
                 </div>
             </div>
         </div>
@@ -79,7 +158,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             static get properties() {
                 return {
-                    language: String,
+                    receiver: Object,
                 }
             }
 
@@ -90,6 +169,10 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _close() {
                 this.dispatchEvent(new CustomEvent('close'));
+            }
+
+            _confirm() {
+                this.dispatchEvent(new CustomEvent('confirm'));
             }
         }
         window.customElements.define(MyWalletTransferFound.is, MyWalletTransferFound);

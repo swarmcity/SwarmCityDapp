@@ -15,17 +15,27 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./my-wallet-transfer-looking.html">
 <link rel="import" href="./my-wallet-transfer-found.html">
 <link rel="import" href="./my-wallet-transfer-not-found.html">
+<link rel="import" href="../../displays/display-confirm.html">
 
 <dom-module id="my-wallet-transfer">
     <template>
-        <socket-redux id="socket">
-            </data-external>
+        <style include="shared-styles">
+            .container {
+                background-image: var(--sc-bg);
+            }
+
+            .noscroll {
+                overflow: hidden;
+            }
+        </style>
+        <socket-redux id="socket"></socket-redux>
+        <div id="container" class="container">
             <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
                 <my-wallet-transfer-choice language="[[language]]" on-send="_handleOnSend" on-receive="_handleOnReceive"></my-wallet-transfer-choice>
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'receive')}}">
-                <my-wallet-transfer-receive language="[[language]]" on-close="_handleOnClose" short-code="[[shortCode]]"></my-wallet-transfer-receive>
+                <my-wallet-transfer-receive language="[[language]]" on-close="_handleOnClose" shortcode="[[shortcode]]"></my-wallet-transfer-receive>
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
@@ -38,12 +48,17 @@ This code may only be used under the license found at https://github.com/swarmci
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'found')}}">
-                <my-wallet-transfer-found language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-found>
+                <my-wallet-transfer-found language="[[language]]" receiver="[[receiver]]" on-close="_handleOnClose" on-confirm="_handleOnConfirm"></my-wallet-transfer-found>
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'not found')}}">
                 <my-wallet-transfer-not-found language="[[language]]" on-close="_handleOnClose"></my-wallet-transfer-not-found>
             </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+                <display-confirm></display-confirm>
+            </template>
+        </div>
     </template>
     <script>
         class MyWalletTransfer extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -61,12 +76,13 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'choice',
                     },
-                    shortCode: String,
+                    shortcode: String,
                     language: String,
                     username: String,
                     address: String,
                     avatar: String,
                     balance: Object,
+                    receiver: Object,
                 }
             }
 
@@ -77,32 +93,37 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.status = 'input';
             }
             _handleOnReceive() {
-                this.shortCode = null;
+                this.shortcode = null;
                 this.status = 'receive';
-                this.$.socket._getShortCode(this.address, this.username, this.avatar)
-                    .then(res => this.shortCode = res)
+                this.$.socket._getShortcode(this.address, this.username, this.avatar)
+                    .then(res => this.shortcode = res)
                     .catch(e => {
                         this.status = 'choice';
-                        console.error('Error gettin shortcode (catch block): ', e.stack)
+                        console.error('Error getting shortcode (catch block): ', e.stack)
                     })
 
             }
             _handleOnResolve(e) {
-                console.log('resolving: ', e.detail);
                 const { destination, amount } = e.detail;
                 this.status = 'looking';
-                this.$.socket._resolveShortCode(destination)
+                this.$.socket._resolveShortcode(destination)
                     .then(res => {
-                        console.log('destination resolved! --> ', res)
+                        console.log('destination resolved! --> ', res);
+                        this.receiver = res;
+                        this.status = 'found';
                     })
                     .catch(e => {
-                        console.error('Error resolving shortcode (catch block): ', e.stack)
+                        console.error('Error resolving shortcode (catch block): ', e.stack);
                         this.status = 'not found';
                     })
 
             }
             _handleOnClose() {
                 this.status = 'choice';
+            }
+            _handleOnConfirm() {
+                this.$.container.classList.add('noscroll');
+                this.status = 'confirm';
             }
         }
         window.customElements.define(MyWalletTransfer.is, MyWalletTransfer);
