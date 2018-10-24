@@ -1,0 +1,126 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../displays/display-divider.html">
+
+<dom-module id="my-wallet-overview">
+    <template>
+        <style include="shared-styles">
+            .container {
+                background-image: var(--sc-bg);
+                min-height: 100vh;
+                box-sizing: border-box;
+                padding: 20vh 0;
+            }
+
+            .box {
+                box-sizing: border-box;
+                padding: 20px 10vw 20px 10vw;
+
+            }
+
+            .box:hover {
+                background-color: var(--sc-white);
+            }
+
+            .title {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .yellow {
+                color: var(--sc-yellow);
+            }
+
+            .blue {
+                color: var(--sc-blue);
+            }
+
+            .balancebox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                margin-top: 10px;
+            }
+
+            .balance {
+                @apply --main-title1;
+                @apply --layout-flex;
+            }
+
+            .icon {
+                @apply --next-grey4-small;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <display-icon-close on-close="_handleOnClose"></display-icon-close>
+        <div class="container">
+            <div class="box">
+                <div class="title">
+                    Cash</div>
+                <div class="balancebox" on-tap="_cash">
+                    <div class="balance yellow">
+                        {{balance.cash}} SWT
+                    </div>
+                    <div class="icon"></div>
+                </div>
+            </div>
+            <display-divider></display-divider>
+            <div class="box">
+                <div class="title">
+                    Reserves</div>
+                <div class="balancebox" on-tap="_reserves">
+                    <div class="balance blue">
+                        {{balance.reserves}} SWT
+                    </div>
+                    <div class="icon"></div>
+                </div>
+            </div>
+            <display-divider></display-divider>
+        </div>
+    </template>
+    <script>
+        class MyWalletOverview extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-overview';
+            }
+
+            static get properties() {
+                return {
+                    language: String,
+                    balance: Object,
+                }
+            }
+
+            _cash() {
+                this.dispatchEvent(new CustomEvent('cash'));
+            }
+
+            _reserves() {
+                this.dispatchEvent(new CustomEvent('reserves'));
+            }
+            _handleOnClose() {
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+        }
+        window.customElements.define(MyWalletOverview.is, MyWalletOverview);
+    </script>
+</dom-module>
