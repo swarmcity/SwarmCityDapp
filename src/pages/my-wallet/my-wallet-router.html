@@ -14,6 +14,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../displays/display-icon-close.html">
 <link rel="import" href="./my-wallet-overview.html">
 <link rel="import" href="./my-wallet-cash.html">
+<link rel="import" href="./my-wallet-reserves.html">
 
 <dom-module id="page-my-wallet">
     <template>
@@ -26,11 +27,12 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <template is="dom-if" if="{{_isEqualTo(status, 'cash')}}">
             <my-wallet-cash language="[[language]]" balance="[[balance]]" address="[[address]]" username="[[username]]"
-                avatar="[[avatar]]" confirmed-tx="[[confirmedTx]]" on-close="_handleOnClose"></my-wallet-cash>
+                avatar="[[avatar]]" confirmed-tx="[[txCash]]" on-close="_handleOnClose"></my-wallet-cash>
         </template>
 
         <template is="dom-if" if="{{_isEqualTo(status, 'reserves')}}">
-            <my-wallet-reserves language="[[language]]" on-close="_handleOnClose"></my-wallet-reserves>
+            <my-wallet-reserves language="[[language]]" balance="[[balance]]" address="[[address]]" username="[[username]]"
+                avatar="[[avatar]]" confirmed-tx="[[txReserves]]" on-close="_handleOnClose"></my-wallet-reserves>
         </template>
 
     </template>
@@ -56,7 +58,11 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                         statePath: AppStore.selectors.balance,
                     },
-                    confirmedTx: {
+                    txCash: {
+                        type: Array,
+                        statePath: AppStore.selectors.confirmedTx,
+                    },
+                    txReserves: {
                         type: Array,
                         statePath: AppStore.selectors.confirmedTx,
                     },

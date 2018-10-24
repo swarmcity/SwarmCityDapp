@@ -169,7 +169,7 @@ Example:
             <div class="linkbox-top">
                 <span class="link" on-click="_toEtherscanAddress">{{localize('show address on etherscan')}}</span>
             </div>
-            <template is="dom-repeat" items="{{shownTx}}" sort="sort">
+            <template is="dom-repeat" items="{{confirmedTx}}" sort="sort">
                 <div class="item">
                     <div class$="[[_checkState(item.status)]]">
                         <div class="date">[[_formatDate(item.timestamp)]]</div>
@@ -243,7 +243,6 @@ Example:
                     */
                     confirmedTx: {
                         type: Array,
-                        observer: '_confirmedTx',
                     },
                     /**
                     * An array containing the pending transaction history for this public key
@@ -267,19 +266,6 @@ Example:
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../../text-translations.json'));
-            }
-            /**
-            * Redux action for setting redux properties
-            */
-            static get actions() {
-                return Object.assign({
-                    SHOWNTX: function (shownTx) {
-                        return {
-                            type: 'SHOWNTX',
-                            shownTx: shownTx,
-                        };
-                    },
-                });
             }
 
             /**
@@ -393,66 +379,9 @@ Example:
 
             _toEtherscanAddress() {
                 window.open('https://kovan.etherscan.io/address/'
-                    + this.address, '_blank');}
-
-            /**
-            * Updates the visible transactions with confirmed tx's
-            */
-            _confirmedTx() {
-                let shownTxCopy = this.shownTx;
-                let newConfirmedTxArray = [];
-                // for every confirmed tx, we compared to shown tx
-                for (let tx of this.confirmedTx) {
-                    let found = false;
-                    for (let i = 0; i < shownTxCopy.length; i++) {
-                        // if a tx with the same txHash is found, overwrite it
-                        if (tx.transactionHash === shownTxCopy[i].transactionHash) {
-                            shownTxCopy[i] = tx;
-                            found = true;
-                        }
-                    }
-                    // if the confirmedTx is not found in shownTx, add it to newConfirmed
-                    // this way we can push it to shownTx later
-                    if (!found) {
-                        newConfirmedTxArray.push(tx);
-                    }
-                }
-                // Now add the new confirmed tx to the shownTx Array;
-                for (let i = newConfirmedTxArray.length - 1; i >= 0; i--) {
-                    shownTxCopy.unshift(newConfirmedTxArray[i]);
-                }
-                this.dispatch({ type: 'SHOWNTX', shownTx: [] });
-                this.dispatch({ type: 'SHOWNTX', shownTx: shownTxCopy });
+                    + this.address, '_blank');
             }
 
-            /**
-            * Adds the new tx to the pending tx array
-            */
-            _newTxHash() {
-                if (this.txHash.response === 200) {
-                    let confirmed = false;
-                    for (let shownTx of this.shownTx) {
-                        if (this.txHash.data.transactionHash === shownTx.transactionHash) {
-                            confirmed = true;
-                        }
-                    }
-                    if (!confirmed) {
-                        let newShownTx = this.shownTx;
-                        newShownTx.unshift({
-                            amount: this.amountToSend * 1e18,
-                            direction: 'out',
-                            status: 2,
-                            dateTime: (new Date).getTime() / 1000,
-                            from: this.address,
-                            symbol: 'SWT',
-                            to: this.toAddress,
-                            transactionHash: this.txHash.data.transactionHash,
-                        });
-                        this.dispatch({ type: 'SHOWNTX', shownTx: [] });
-                        this.dispatch({ type: 'SHOWNTX', shownTx: newShownTx });
-                    }
-                }
-            }
         }
 
         window.customElements

@@ -29,7 +29,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 @apply --layout-start-justified;
                 @apply --main-title1;
+            }
+
+            .yellow {
                 color: var(--sc-yellow);
+            }
+
+            .blue {
+                color: var(--sc-blue);
             }
 
             .fiat {
@@ -41,8 +48,8 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <div class="container">
-            <div class="swt">{{balance.swt}} SWT</div>
-            <div class="fiat">≈ {{balance.usd}} USD</div>
+            <div class$="{{_checkColor()}}">[[_getBalanceSwt(balance)]]</div>
+            <div class="fiat">[[_getBalanceUsd(balance)]]</div>
         </div>
 
     </template>
@@ -54,6 +61,24 @@ This code may only be used under the license found at https://github.com/swarmci
         )) {
             static get is() {
                 return 'my-wallet-balance';
+            }
+
+            static get properties() {
+                return {
+                    reserves: Boolean,
+                    balance: Object,
+                }
+            }
+            _getBalanceSwt(balance) {
+                return this.reserves ? (`${balance.reserves || '0.00'} SWT`) : (`${balance.reserves || '0.00'} SWT`);
+            }
+
+            _getBalanceUsd(balance) {
+                return this.reserves ? (`≈ ${balance.reservesUSD || '0.00'} USD`) : (`≈ ${balance.cashUSD || '0.00'} USD`);
+            }
+
+            _checkColor() {
+                return this.reserves ? 'swt blue' : 'swt yellow'
             }
         }
         window.customElements.define(MyWalletBalance.is, MyWalletBalance);
