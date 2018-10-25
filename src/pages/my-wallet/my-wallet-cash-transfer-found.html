@@ -1,0 +1,180 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+
+
+<dom-module id="my-wallet-cash-transfer-found">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 10px 10vw 30px 10vw;
+                width: 100%;
+                height: 100%;
+            }
+
+            .container[wide-layout] {
+                @apply --layout-start;
+            }
+
+            .greytext {
+                margin-top: 8px;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .avatarbox {
+                @apply --layout-horizontal;
+                margin: 15px 0 24px 0;
+            }
+
+            .container[wide-layout] .avatarbox {
+                margin: 30px 0 24px 0;
+
+            }
+
+            .infobox {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+            }
+
+            .name {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+                margin-bottom: 3px;
+            }
+
+            .address {
+                @apply --small-light;
+                color: var(--sc-grey4);
+                cursor: pointer;
+                max-width: 60%;
+                overflow: scroll;
+                overflow-wrap: break-all;
+            }
+
+            .container[wide-layout] .truncate {
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .truncate {
+                width: 90px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            img {
+                width: 50px;
+                height: 50px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 50px;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+
+                .close,
+                .agree,
+                .disagree {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="found-greytext">
+                {{localize('Receiver found!')}}
+            </div>
+            <div class="avatarbox">
+                <img src="{{receiver.avatar}}">
+                <div class="infobox">
+                    <div class="name">
+                        {{receiver.username}}
+                    </div>
+                    <div class="address truncate">
+                        {{receiver.address}}</div>
+                </div>
+            </div>
+            <div class="buttonbox">
+                <div class="disagree" on-tap="_close"></div>
+                <div class="round-button enabled">
+                    <div class="agree" on-tap="_confirm"></div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyWalletCashTransferFound extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-cash-transfer-found';
+            }
+
+            static get properties() {
+                return {
+                    receiver: Object,
+                }
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+
+            _close() {
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+
+            _confirm() {
+                this.dispatchEvent(new CustomEvent('confirm'));
+            }
+        }
+        window.customElements.define(MyWalletCashTransferFound.is, MyWalletCashTransferFound);
+    </script>
+</dom-module>

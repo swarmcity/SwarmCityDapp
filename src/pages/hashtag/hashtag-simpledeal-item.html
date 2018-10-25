@@ -24,6 +24,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 min-height: 121px;
             }
 
+            .pending {
+                opacity: 0.5;
+            }
+
             .container[wide-layout] {
                 margin: 0px 0px 4px 0px;
                 max-width: 68vw;
@@ -190,7 +194,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
 
-        <div class="container" wide-layout$="{{wide}}" on-tap="_toItem">
+        <div class$="{{_checkPending(item)}}" wide-layout$="{{wide}}" on-tap="_toItem">
             <div class="top">
                 <div class="datedescript">
                     <div class="description">[[item.description]]</div>
@@ -298,7 +302,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 return item.itemValue / 1e18;
             }
             _hasProvider(item) {
-                return this.item &&  this.item.providerAddress && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
+                return this.item && this.item.providerAddress && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
+            }
+            _checkPending(item) {
+                return item.timestamp && item.timestamp == 'pending' ? "container pending" : "container";
             }
         }
 

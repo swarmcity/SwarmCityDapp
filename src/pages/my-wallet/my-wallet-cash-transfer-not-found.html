@@ -9,7 +9,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 
 
-<dom-module id="my-wallet-transfer-found">
+<dom-module id="my-wallet-cash-transfer-not-found">
     <template>
         <style include="shared-styles">
             :host {
@@ -18,6 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 @apply --layout-vertical;
+                @apply --layout-center-justified;
                 @apply --layout-center;
                 box-sizing: border-box;
                 padding: 10px 0 30px 0;
@@ -25,14 +26,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 height: 100%;
             }
 
-            .container[wide-layout] {
-                @apply --layout-start;
-            }
-
             .greytext {
                 margin-top: 8px;
                 @apply --body-bold;
                 color: var(--sc-grey4);
+            }
+
+            .close {
+                @apply --xmark-blue-small;
+                cursor: pointer;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -45,36 +47,21 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="found-greytext">
-                {{localize('Receiver found!')}}
+            <div class="greytext">
+                {{localize('No receiver found.')}}
             </div>
-            <div class="found-avatarbox">
-                <img src="{{tokey.data.avatar}}">
-                <div class="found-infobox">
-                    <div class="found-name">
-                        {{tokey.data.userName}}
-                    </div>
-                    <div class="found-address truncate">
-                        {{tokey.data.address}}</div>
-                </div>
-            </div>
-            <div class="found-buttonbox">
-                <div class="disagree" on-tap="_sendSwt"></div>
-                <div class="round-button enabled">
-                    <div class="agree" on-up="_goToConfirm"></div>
-                </div>
-            </div>
+            <div class="close" on-tap="_close"></div>
         </div>
 
     </template>
     <script>
-        class MyWalletTransferFound extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyWalletCashTransferNotFound extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'my-wallet-transfer-found';
+                return 'my-wallet-cash-transfer-not-found';
             }
 
             static get properties() {
@@ -92,6 +79,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.dispatchEvent(new CustomEvent('close'));
             }
         }
-        window.customElements.define(MyWalletTransferFound.is, MyWalletTransferFound);
+        window.customElements.define(MyWalletCashTransferNotFound.is, MyWalletCashTransferNotFound);
     </script>
 </dom-module>

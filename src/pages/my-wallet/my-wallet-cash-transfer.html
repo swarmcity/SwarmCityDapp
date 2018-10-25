@@ -1,0 +1,131 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../data/socket-redux.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="./my-wallet-cash-transfer-receive.html">
+<link rel="import" href="./my-wallet-cash-transfer-choice.html">
+<link rel="import" href="./my-wallet-cash-transfer-input.html">
+<link rel="import" href="./my-wallet-cash-transfer-looking.html">
+<link rel="import" href="./my-wallet-cash-transfer-found.html">
+<link rel="import" href="./my-wallet-cash-transfer-not-found.html">
+<link rel="import" href="../../displays/display-confirm.html">
+
+<dom-module id="my-wallet-cash-transfer">
+    <template>
+        <style include="shared-styles">
+            .container {
+                background-image: var(--sc-bg);
+            }
+
+            .noscroll {
+                overflow: hidden;
+            }
+        </style>
+        <socket-redux id="socket"></socket-redux>
+        <div id="container" class="container">
+            <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
+                <my-wallet-cash-transfer-choice language="[[language]]" on-send="_handleOnSend" on-receive="_handleOnReceive"></my-wallet-cash-transfer-choice>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'receive')}}">
+                <my-wallet-cash-transfer-receive language="[[language]]" on-close="_handleOnClose" shortcode="[[shortcode]]"></my-wallet-cash-transfer-receive>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+                <my-wallet-cash-transfer-input language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
+                    on-resolve="_handleOnResolve"></my-wallet-cash-transfer-input>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'looking')}}">
+                <my-wallet-cash-transfer-looking language="[[language]]" on-close="_handleOnClose"></my-wallet-cash-transfer-looking>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'found')}}">
+                <my-wallet-cash-transfer-found language="[[language]]" receiver="[[receiver]]" on-close="_handleOnClose" on-confirm="_handleOnConfirm"></my-wallet-cash-transfer-found>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'not found')}}">
+                <my-wallet-cash-transfer-not-found language="[[language]]" on-close="_handleOnClose"></my-wallet-cash-transfer-not-found>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+                <display-confirm></display-confirm>
+            </template>
+        </div>
+    </template>
+    <script>
+        class MyWalletCashTransfer extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-cash-transfer';
+            }
+
+            static get properties() {
+                return {
+                    status: {
+                        type: String,
+                        value: 'choice',
+                    },
+                    shortcode: String,
+                    language: String,
+                    username: String,
+                    address: String,
+                    avatar: String,
+                    balance: Object,
+                    receiver: Object,
+                }
+            }
+
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnSend() {
+                this.status = 'input';
+            }
+            _handleOnReceive() {
+                this.shortcode = null;
+                this.status = 'receive';
+                this.$.socket._getShortcode(this.address, this.username, this.avatar)
+                    .then(res => this.shortcode = res)
+                    .catch(e => {
+                        this.status = 'choice';
+                        console.error('Error getting shortcode (catch block): ', e.stack)
+                    })
+
+            }
+            _handleOnResolve(e) {
+                const { destination, amount } = e.detail;
+                this.status = 'looking';
+                this.$.socket._resolveShortcode(destination)
+                    .then(res => {
+                        console.log('destination resolved! --> ', res);
+                        this.receiver = res;
+                        this.status = 'found';
+                    })
+                    .catch(e => {
+                        console.error('Error resolving shortcode (catch block): ', e.stack);
+                        this.status = 'not found';
+                    })
+
+            }
+            _handleOnClose() {
+                this.status = 'choice';
+            }
+            _handleOnConfirm() {
+                this.$.container.classList.add('noscroll');
+                this.status = 'confirm';
+            }
+        }
+        window.customElements.define(MyWalletCashTransfer.is, MyWalletCashTransfer);
+    </script>
+</dom-module>
