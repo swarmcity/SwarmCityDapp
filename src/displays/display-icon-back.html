@@ -14,11 +14,20 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .icon {
-                @apply --arrowleft-grey3-small;
                 position: fixed;
                 top: 40px;
                 right: 40px;
                 cursor: pointer;
+
+            }
+
+            .arrowleft {
+                @apply --arrowleft-grey3-small;
+            }
+
+            .logout {
+                @apply --logout-grey3-small;
+
             }
 
             .icon:active {
@@ -33,7 +42,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
         </style>
-        <div class="icon" on-tap="_back"></div>
+        <div class$="{{_getIcon()}}" on-tap="_back"></div>
 
     </template>
     <script>
@@ -45,8 +54,18 @@ This code may only be used under the license found at https://github.com/swarmci
             static get is() {
                 return 'display-icon-back';
             }
+
+            static get properties() {
+                return {
+                    logout: Boolean,
+                }
+            }
             _back() {
                 this.dispatchEvent(new CustomEvent('back'));
+            }
+
+            _getIcon() {
+                return this.logout ? 'icon logout' : 'icon arrowleft';
             }
         }
 
