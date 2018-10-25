@@ -4,6 +4,8 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../redux-state.html">
 
@@ -11,21 +13,47 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
-<link rel="import" href="../../displays/display-icon-close.html">
-<link rel="import" href="../../displays/display-divider.html">
-<link rel="import" href="./my-wallet-balance.html">
-<link rel="import" href="./my-wallet-transfer.html">
-<link rel="import" href="./my-wallet-history.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-icon-back.html">
+<link rel="import" href="../../displays/display-hashtagadd-btn.html">
+<link rel="import" href="./hashtag-list-item.html">
 
 <dom-module id="page-hashtag-list">
     <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                background-image: var(--sc-bg);
+                min-height: 100vh;
+                width: 100%;
+            }
+
+            display-hashtagadd-btn {
+                position: fixed;
+                bottom: 50px;
+                right: 30px;
+                z-index: 55;
+            }
+
+            .container[wide-layout] display-hashtagadd-btn {
+                bottom: auto;
+                right: 10vw;
+                bottom: 16vh;
+            }
+        </style>
         <app-location route="{{route}}"></app-location>
-        <display-icon-close on-close="_handleOnClose"></display-icon-close>
-        <my-wallet-balance balance="[[balance]]"></my-wallet-balance>
-        <my-wallet-transfer language="[[language]]"></my-wallet-transfer>
-        <display-divider></display-divider>
-        <!-- <my-wallet-vault></my-wallet-vault> -->
-        <my-wallet-history confirmed-tx="[[confirmedTx]]" language="[[language]]" address="[[address]]"></my-wallet-history>
+        <display-icon-back logout on-back="_handleOnBack"></display-icon-back>
+        <div class="container" wide-layout$="{{wide}}">
+            <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
+            <template is="dom-repeat" items="[[hashtagList]]" filter="_showHashtag">
+                <hashtag-list-item item="[[item]]" on-hashtag="_handleOnHashtag"></hashtag-list-item>
+            </template>
+            <display-hashtagadd-btn on-tap="_newHashtag">
+            </display-hashtagadd-btn>
+        </div>
     </template>
     <script>
         class MyHashtagListrouter extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -41,32 +69,31 @@ This code may only be used under the license found at https://github.com/swarmci
                     route: {
                         type: Object,
                     },
-                    balance: {
+                    hashtagList: {
                         type: Object,
-                        statePath: AppStore.selectors.balance,
-                    },
-                    confirmedTx: {
-                        type: Array,
-                        statePath: AppStore.selectors.confirmedTx,
-                    },
-                    language: {
-                        type: Array,
-                        statePath: AppStore.selectors.language,
-                    },
-                    address: {
-                        type: Array,
-                        statePath: AppStore.selectors.address,
-                    },
+                        statePath: AppStore.selectors.hashtagList,
+                    }
                 };
             }
-            _handleOnClose() {
-                if (sessionStorage.getItem('origin')) {
-                    this.set('route.path', sessionStorage.getItem('origin'));
-                    sessionStorage.removeItem('origin');
-                }
-                else {
-                    this.set('route.path', 'hashtag-list');
-                }
+            _handleOnBack() {
+                this.set('route.path', 'welcome');
+            }
+            _newHashtag() {
+                this.set('route.path', 'new-hashtag');
+            }
+            _showHashtag(hashtag) {
+                return !hashtag.hashtagShown;
+            }
+            _handleOnWallet() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-wallet');
+            }
+            _handleOnProfile() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-profile');
+            }
+            _handleOnHashtag(e) {
+                this.set('route.path', `hashtag/${e.detail}`);
             }
         }
         window.customElements.define(MyHashtagListrouter.is, MyHashtagListrouter);

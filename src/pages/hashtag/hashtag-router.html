@@ -23,9 +23,9 @@ This code may only be used under the license found at https://github.com/swarmci
     <template>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <display-my-info avatarSmall on-wallet="_handleOnWallet"></display-my-info>
-        <display-simpledeal-title></display-simpledeal-title>
         <display-icon-back on-back="_handleOnBack"></display-icon-back>
+        <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
         <hashtag-simpledeal address="[[address]]" hashtag="[[hashtag]]" on-route="_handleOnRoute"></hashtag-simpledeal>
     </template>
 
@@ -53,17 +53,19 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 };
             }
-
-
             _handleOnRoute(e) {
                 this.set('route.path', e.detail);
             }
-            _handleOnBack() {                
+            _handleOnBack() {
                 this.set('route.path', 'hashtag-list/');
             }
             _handleOnWallet() {
                 sessionStorage.setItem('origin', this.route.path);
-                this.set('route.path', 'my-wallet/');
+                this.set('route.path', 'my-wallet');
+            }
+            _handleOnProfile() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-profile');
             }
         }
         window.customElements.define(MyHashtagRouter.is, MyHashtagRouter);
