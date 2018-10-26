@@ -10,6 +10,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="./my-wallet-reserves-transfer-choice.html">
 <link rel="import" href="./my-wallet-reserves-transfer-send.html">
+<link rel="import" href="../../displays/display-unlock.html">
 
 <dom-module id="my-wallet-reserves-transfer">
     <template>
@@ -22,14 +23,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 overflow: hidden;
             }
         </style>
+        <display-unlock id="unlock" blue></display-unlock>
+        <data-token-kovan id="token-kovan"></data-token-kovan>
+
         <div id="container" class="container">
+
             <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
                 <my-wallet-reserves-transfer-choice language="[[language]]" on-withdraw="_handleOnWithdraw" on-receive="_handleOnReceive"></my-wallet-reserves-transfer-choice>
             </template>
 
             <template is="dom-if" if="{{_isEqualTo(status, 'send')}}">
-                <my-wallet-reserves-transfer-send language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"  on-send="_handleOnSend"></my-wallet-reserves-transfer-send>
+                <my-wallet-reserves-transfer-send language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
+                    on-send="_handleOnSend"></my-wallet-reserves-transfer-send>
             </template>
+
         </div>
     </template>
     <script>
@@ -64,6 +71,40 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnSend(e) {
                 console.log('send: ', e.detail);
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        // try {
+                        //     const { privateKey, address } = res;
+                        //     if (!privateKey) {
+                        //         throw Error('Missing address')
+                        //     }
+                        //     const seeker = {
+                        //         address,
+                        //         privateKey
+                        //     }
+                        //     const replierAddress = this.replyDetail.replierAddress;
+                        //     const itemHash = this.item.itemHash;
+                        //     const hashtagAddress = this.hashtag.address;
+
+                        //     this.$.simpledeal.selectReplier({ seeker, replierAddress, itemHash, hashtagAddress })
+                        //         .then(receipt => {
+                        //             console.log('Successfully transacted select replier, receipt:', receipt)
+                        //             this.dispatch({
+                        //                 type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                        //                     providerAddress: replierAddress,
+                        //                     status: 'selected-pending',
+                        //                 }
+                        //             })
+
+                        //         })
+                        //         .catch(err => {
+                        //             console.log('Error selecting replier:', err)
+                        //         });
+                        // }
+                        // catch (e) {
+                        //     console.error('Error selecting replier (catch block): ', e.stack)
+                        // }
+                    });
             }
             _handleOnClose() {
                 this.status = 'choice';
