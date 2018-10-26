@@ -288,17 +288,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         fx: reply
                     });
                 });
-
-                // Get the list of hashtags
-                // ##### Task done natively in sagas
-                // this.socket.emit('subscribeToHashtags');
-                // this.socket.on('hashtagsChanged', (reply) => {
-                //     if (reply.response == 200) {
-                //         this.dispatch({type: 'UPDATE_HASHTAGS', hashtags: reply.data});
-                //         this.dispatch({type: 'UPDATE_HASHTAGS', hashtags: reply.data});
-                //     }
-                // });
-
                 // All handlers attached - please connect..
                 this.socket.connect();
             }
@@ -324,25 +313,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
 
-            _sendSignedTx() {
-                // Send a signed tx and get the txHash back
-                // Insert example of how it is called. 
-                // Assumming:
-                // this.dispatch({
-                //     type: 'SENDSIGNEDTx',
-                //     signedTx: '0x' + serializedTx.toString('hex'),
-                // });
-                this.sendSignedTransaction(this.signedTx)
-                    .then(txHash => {
-                        this.dispatch({
-                            type: 'UPDATE_NONCE',
-                            nonce: Number(this.nonce) + 1
-                        });
-                        setTimeout(() => {
-                            this.dispatch({ type: 'TXHASH', txHash });
-                        }, 2000);
-                    })
-            }
 
             _avatarChanged() {
                 // Send the user's base64 image and get the ipfsHash back

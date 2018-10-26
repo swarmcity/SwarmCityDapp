@@ -7,7 +7,7 @@
         const { call, fork, take, put, takeEvery, all } = effects;
 
         // Import contract data:
-        const { swtToken, hashtagList, simpleDeal } = contractsData;
+        const { mainSwtToken, kovSwtToken, hashtagList, simpleDeal } = contractsData;
 
         /*
          * Selector functions
@@ -25,8 +25,8 @@
         function createTxsChannel(address) {
             return eventChannel(emitter => {
                 const swtContractInstance = new web3Local.eth.Contract(
-                    swtToken.abi,
-                    swtToken.address
+                    kovSwtToken.abi,
+                    kovSwtToken.address
                 );
                 swtContractInstance.events.Transfer({
                     filter: { _to: address },
@@ -63,17 +63,17 @@
 
         async function createLogsForDirection(address) {
             const swtContractInstance = new web3Local.eth.Contract(
-                swtToken.abi,
-                swtToken.address
+                kovSwtToken.abi,
+                kovSwtToken.address
             );
             // Fetch transactions
             const [incoming, outgoing] = await Promise.all([
                 swtContractInstance.getPastEvents('Transfer', {
-                    'fromBlock': swtToken.creationBlock,
+                    'fromBlock': kovSwtToken.creationBlock,
                     'filter': { _to: address },
                 }),
                 swtContractInstance.getPastEvents('Transfer', {
-                    'fromBlock': swtToken.creationBlock,
+                    'fromBlock': kovSwtToken.creationBlock,
                     'filter': { _from: address },
                 })
             ])
@@ -118,18 +118,26 @@
             }
         }
 
-        async function getTokenBalance(address) {
-            const swtContractInstance = new web3Local.eth.Contract(
-                swtToken.abi,
-                swtToken.address
+        async function getTokenBalances(address) {
+            const kovanSwtContractInstance = new web3Local.eth.Contract(
+                kovSwtToken.abi,
+                kovSwtToken.address
             );
-            const balance = await swtContractInstance.methods.balanceOf(address).call()
-            return balance
+
+            const mainSwtContractInstance = new web3Mainnet.eth.Contract(
+                mainSwtToken.abi,
+                mainSwtToken.address
+            );
+
+            const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
+            const main = await mainSwtContractInstance.methods.balanceOf(address).call()
+
+            return {main, kovan};
         }
 
         function* getBalance(action) {
             try {
-                const balance = yield call(getTokenBalance, action.address)
+                const balance = yield call(getTokenBalances, action.address)
                 yield put({ type: 'UPDATE_BALANCE', balance });
             } catch (e) {
                 console.error(e);
