@@ -11,6 +11,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./my-wallet-reserves-transfer-choice.html">
 <link rel="import" href="./my-wallet-reserves-transfer-send.html">
 <link rel="import" href="../../displays/display-unlock.html">
+<link rel="import" href="../../data/data-transaction.html">
 
 <dom-module id="my-wallet-reserves-transfer">
     <template>
@@ -24,7 +25,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <display-unlock id="unlock" blue></display-unlock>
-        <data-token-kovan id="token-kovan"></data-token-kovan>
+        <data-transaction id="transaction"></data-transaction>
 
         <div id="container" class="container">
 
@@ -71,39 +72,37 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnSend(e) {
                 console.log('send: ', e.detail);
+                
+                const weiAmount = parseFloat(e.detail.amount) * 1e18;
+
                 this.$.unlock._getPrivateKey()
                     .then((res) => {
-                        // try {
-                        //     const { privateKey, address } = res;
-                        //     if (!privateKey) {
-                        //         throw Error('Missing address')
-                        //     }
-                        //     const seeker = {
-                        //         address,
-                        //         privateKey
-                        //     }
-                        //     const replierAddress = this.replyDetail.replierAddress;
-                        //     const itemHash = this.item.itemHash;
-                        //     const hashtagAddress = this.hashtag.address;
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const sender = {
+                                address,
+                                privateKey
+                            }
 
-                        //     this.$.simpledeal.selectReplier({ seeker, replierAddress, itemHash, hashtagAddress })
-                        //         .then(receipt => {
-                        //             console.log('Successfully transacted select replier, receipt:', receipt)
-                        //             this.dispatch({
-                        //                 type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        //                     providerAddress: replierAddress,
-                        //                     status: 'selected-pending',
-                        //                 }
-                        //             })
+                            const receiverAddress = '0x3410349f1e02e3beab54b1513fc2c9d2bab6d7ac';
 
-                        //         })
-                        //         .catch(err => {
-                        //             console.log('Error selecting replier:', err)
-                        //         });
-                        // }
-                        // catch (e) {
-                        //     console.error('Error selecting replier (catch block): ', e.stack)
-                        // }
+                            const tokenContractAddress = '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607';
+
+
+                            this.$.transaction.tokenMainTx({ sender, receiverAddress, weiAmount, tokenContractAddress })
+                                .then(receipt => {
+                                    console.log('Successfully sent tokens, receipt:', receipt);
+                                })
+                                .catch(err => {
+                                    console.log('Error sending tokens:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error sending tokens (catch block): ', e.stack)
+                        }
                     });
             }
             _handleOnClose() {
