@@ -55,7 +55,8 @@
             fetching: {},
             hashtags: {},
             current: {},
-            reputation: {}
+            reputation: {},
+            txs: {}
         };
 
         /**
@@ -126,10 +127,13 @@
                     }
                 }
                 // User balance, fetched from the blockchain
+                // Don't use deepmerge in case the balance is null
                 case 'UPDATE_BALANCE': {
                     return {
                         ...state,
-                        balance: action.balance
+                        balance: {
+                            [action.chain]: action.balance
+                        }
                     }
                 }
                 // SWT prices, fetched from some API
@@ -211,11 +215,16 @@
                 // Transaction history fetched from the API.
                 // ##### Trigers _confirmedTx() in display-transaction-history.html
                 case 'UPDATE_TXS': {
-                    const confirmedTx = action.confirmedTx || action.txs
-                    return {
-                        ...state,
-                        confirmedTx
-                    }
+                    return deepmerge(state, {
+                        txs: {
+                            [action.chain]: action.txs
+                        }
+                    })
+                    // const confirmedTx = action.confirmedTx || action.txs
+                    // return {
+                    //     ...state,
+                    //     confirmedTx
+                    // }
                 }
                 // Shown transaction merges the pending txs and the past (confirmed) txs
                 // Set internally in the display-transaction-history.html
