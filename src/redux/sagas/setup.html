@@ -2,7 +2,6 @@
 <script src="../../../node_modules/ethjs/dist/ethjs.min.js"></script>
 <script src="../../../node_modules/ipfs-api/dist/index.min.js"></script>
 <script src="./Buffer.js"></script>
-<script src="./bs58.js"></script>
 <script src="./cids.min.js"></script>
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
@@ -39,9 +38,8 @@
         })
 
         // Dependencies:
-        const bs58 = window.bs58
-        const multibase = window.Multibase
         const Buffer = window.buffer.Buffer
+        const CID = window.CID
 
         // Return bytes32 hex string from base58 encoded ipfs hash,
         // Enforces that the encoding is SHA-256 32 bytes
@@ -57,25 +55,14 @@
         // 
         // Will return the hash of the data only in hex prepended by 0x
         function hashToBytes32(hash) {
-            if (!hash) return
-            let ifpsHashBytes;
-            if (multibase.isEncoded(hash)) {
-                if (multibase.isEncoded(hash) !== "base58btc") {
-                    console.error(`IPFS Hash CIDv1 encoding: ${multibase.isEncoded(hash)} !== "base58btc"`)
-                    return
-                }
-                const decodedBuf = multibase.decode(hash)
-                ifpsHashBytes = decodedBuf.slice(2, decodedBuf.length)
+            const cid = new CID(hash)
+            const hashId = cid.multihash.slice(0, 2).toString('hex')
+            const bytes32 = cid.multihash.slice(2).toString('hex')
+            if (hashId !== '1220' || bytes32.length / 2 !== 32) {
+                console.error(`IPFS hash is not SHA-256 32 bytes: ${hashId} !== "1220"`)
             } else {
-                ifpsHashBytes = bs58.decode(hash)
+                return "0x" + bytes32
             }
-            const ipfsHashVersion = ifpsHashBytes.slice(0, 2).toString('hex')
-            const hashBytes = ifpsHashBytes.slice(2, ifpsHashBytes.length)
-            if (ipfsHashVersion !== '1220' || hashBytes.length !== 32) {
-                console.error(`IPFS Hash is not hashed with SHA-256 32 bytes: ${ipfsHashVersion} !== "1220"`)
-                return
-            }
-            return "0x" + hashBytes.toString('hex')
         }
 
         // Return base58 encoded ipfs hash from bytes32 hex string,
@@ -89,10 +76,11 @@
                 throw Error('In ipfs.bytes32ToHash, hash or bytes32 is not defined')
             }
             if (bytes32.startsWith('0x')) bytes32 = bytes32.slice(2)
-            const hashHex = "1220" + bytes32
-            const hashBytes = Buffer.from(hashHex, 'hex');
-            const hashStr = bs58.encode(hashBytes)
-            return hashStr
+            // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
+            const cid = new CID(1, 'raw', buffer.Buffer('1220' + bytes32, 'hex'))
+            // Returns a base encodec string of the CID. Defaults to base58btc.
+            // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
+            return cid.toBaseEncodedString()
         }
 
         function ipfsAdd(data) {
