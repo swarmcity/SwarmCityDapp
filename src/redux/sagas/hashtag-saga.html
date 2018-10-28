@@ -186,7 +186,8 @@
                 //   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
                 yield all(Object.values(items).map(item => all([
                     call(getItemState, item, hashtagContract),
-                    call(getItemMetadata, item, hashtagAddress)
+                    call(getItemMetadata, item, hashtagAddress),
+                    call(getItemRepliers, item, hashtagContract)
                 ])))
 
                 console.log('Finished fetching items!!')
@@ -236,6 +237,25 @@
                 });
             } catch (e) {
                 console.log('Error getting IPFS metadata for item: ' + item.itemHash + ' in hashtag: ' + hashtagAddress, e);
+            }
+        }
+
+        function callGetItemRepliers(itemHash, hashtagContract) {
+            return hashtagContract.methods.getItemRepliers(itemHash).call();
+        }
+
+        function* getItemRepliers(item, hashtagContract) {
+            const { itemHash } = item;
+            const hashtagAddress = hashtagContract._address;
+            try {
+                const res = yield call(callGetItemRepliers, itemHash, hashtagContract)
+                yield put({
+                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                        repliers: res,
+                    }
+                });
+            } catch (e) {
+                console.log('Error calling getItemRepliers() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
             }
         }
 
