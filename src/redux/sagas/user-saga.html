@@ -30,19 +30,31 @@
         // worker Saga: will be fired on LOAD_LIST actions
 
         const createTxsChannel = (address, chain) => eventChannel(emitter => {
+            let tokenData
             try {
+                if (!web3s[chain]) throw Error(`Requested tx sub of unsupported chain: ${chain}`)
+                if (!chain) throw Error('chain is not defined')
+                if (!contracts.token[chain]) throw Error('Unknown chain: ' + chain)
+
+                tokenData = ((contracts || {}).token || {})[chain] || {}
+                if (tokenData.abi.length === 0) throw Error(`Empty ABI for token address ${address} chain ${chain}`)
                 const token = new web3s[chain].eth.Contract(
-                    contracts.token[chain].abi,
-                    contracts.token[chain].address
+                    tokenData.abi,
+                    tokenData.address
                 );
-                ['_to', '_from'].forEach(direction => {
-                    token.events.Transfer({ filter: { [direction]: address } }, (err, event) => {
-                        if (err) console.error(`Error receiving ${chain} token Transfer event`, err)
-                        else emitter(event)
-                    })
-                })
+                const handler = (err, event) => {
+                    if (err) console.error(`Error receiving ${chain} token Transfer event`, err)
+                    else emitter(event)
+                }
+                if (token && token.events && token.events.Transfer) {
+                    token.events.Transfer({ filter: { _to: address } }, handler)
+                    token.events.Transfer({ filter: { _from: address } }, handler)
+                } else {
+                    console.log({ token, events: token.events })
+                    throw Error('Transfer event not supported: ', { token, events: token.events })
+                }
             } catch (e) {
-                console.error(`Error creating subscription to ${chain} token contract ${swtContractInstance._address}`, e)
+                console.error(`Error creating subscription to ${chain} token contract ${(tokenData || {}).address}`, e)
             }
 
             // The subscriber must return an unsubscribe function
@@ -70,9 +82,11 @@
         }
 
         async function createLogsForDirection(address, chain) {
+            if (!web3s[chain]) console.error(`Requested tx logs of unsupported chain: ${chain}`)
+            const tokenData = ((contracts || {}).token || {})[chain] || {}
             const token = new web3s[chain].eth.Contract(
-                contracts.token[chain].abi,
-                contracts.token[chain].address
+                tokenData.abi,
+                tokenData.address
             );
             // Fetch transactions
             const [incoming, outgoing] = await Promise.all(['_to', '_from'].map(direction =>
@@ -87,7 +101,7 @@
         }
 
         async function handleTransferEvents(events, address, chain) {
-            const getTimestamps = (blockNumber) => web3s[chain].getBlock(blockNumber)
+            const getTimestamps = (blockNumber) => web3s[chain].eth.getBlock(blockNumber)
                 .then(block => block.timestamp)
                 .catch(e => console.error('Error fetching datetime of block ' + blockNumber))
 
@@ -112,11 +126,12 @@
 
         function* getTxs({ address, chain }) {
             try {
+                if (!chain) throw Error('chain is not defined')
+
                 yield fork(txsSubscription, address, chain)
 
                 const txs = yield call(createLogsForDirection, address, chain)
                 yield put({ type: 'UPDATE_TXS', chain, txs });
-                console.log('Received txs', chain, txs)
 
                 // The code below is left as example / reference to add loaders during fetch
 
@@ -133,15 +148,13 @@
         }
 
         async function getTokenBalance(address, chain) {
-            let _web3;
-            if (chain === 'mainnet') _web3 = web3Mainnet;
-            else if (chain === 'kovan') _web3 = web3Kovan;
-            else console.error(`Requested balance of unsupported chain: ${chain}`)
-            const swtContractInstance = new _web3.eth.Contract(
-                erc20TokenAbiBalance,
-                swtToken.address
+            if (!web3s[chain]) console.error(`Requested balance of unsupported chain: ${chain}`)
+            const tokenData = ((contracts || {}).token || {})[chain] || {}
+            const token = new web3s[chain].eth.Contract(
+                tokenData.abi,
+                tokenData.address
             );
-            const balance = await swtContractInstance.methods.balanceOf(address).call()
+            const balance = await token.methods.balanceOf(address).call()
             return balance
         }
 
@@ -156,12 +169,9 @@
 
         function* getBalanceWrap({ address, chain }) {
             try {
-                if (chain) {
-                    yield call(getBalance, { address, chain })
-                } else {
-                    yield all(['mainnet', 'kovan'].map(_chain =>
-                        call(getBalance, { address, chain: _chain })))
-                }
+                if (chain) yield call(getBalance, { address, chain })
+                else yield all(['mainnet', 'kovan'].map(_chain =>
+                    call(getBalance, { address, chain: _chain })))
             } catch (e) {
                 console.error('Error on getBalanceWrap', e);
             }
@@ -169,12 +179,9 @@
 
         function* getTxsWrap({ address, chain }) {
             try {
-                if (chain) {
-                    yield call(getTxs, { address, chain })
-                } else {
-                    yield all(['mainnet', 'kovan'].map(_chain =>
-                        call(getTxs, { address, chain: _chain })))
-                }
+                if (chain) yield call(getTxs, { address, chain })
+                else yield all(['mainnet', 'kovan'].map(_chain =>
+                    call(getTxs, { address, chain: _chain })))
             } catch (e) {
                 console.error('Error on getTxsWrap', e);
             }
@@ -188,7 +195,7 @@
         function* rootSaga() {
             yield all([
                 yield takeEvery('GET_BALANCE', getBalanceWrap),
-                yield takeEvery('GET_TXS', getTxs),
+                yield takeEvery('GET_TXS', getTxsWrap),
             ]);
         }
 
