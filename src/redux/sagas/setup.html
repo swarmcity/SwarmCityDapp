@@ -1,8 +1,8 @@
 <script src="../../../node_modules/redux-saga/dist/redux-saga.js"></script>
 <script src="../../../node_modules/ethjs/dist/ethjs.min.js"></script>
 <script src="../../../node_modules/ipfs-api/dist/index.min.js"></script>
-<script src="./bs58.js"></script>
 <script src="./Buffer.js"></script>
+<script src="./cids.min.js"></script>
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
 <script src="../contractAbis.js"></script>
@@ -115,27 +115,36 @@
         })
 
         // Dependencies:
-        const bs58 = window.bs58
         const Buffer = window.buffer.Buffer
+        const CID = window.CID
 
         // Return bytes32 hex string from base58 encoded ipfs hash,
-        // stripping leading 2 bytes from 34 byte IPFS hash
-        // Assume IPFS defaults: function:0x12=sha2, size:0x20=256 bits
-        // E.g. "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL" -->
-        // "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
-
+        // Enforces that the encoding is SHA-256 32 bytes
+        // Supports CIDv0 and CIDv1
+        // |----------CID v1-----------------------------------------------------------------------------------------|
+        //       |----CID v0-----------------------------------------------------------------------------------------|
+        // 01 55 12 20 b1 02 74 3d b0 6d ab 56 5f a8 73 fc 41 28 13 90 02 34 1b 80 e2 24 f9 b8 de f7 d7 a4 e4 32 eb 10
+        // |  |  |  |  | Hash of the data (the rest of bytes)
+        // |  |  |  | Length of the hash
+        // |  |  | Hashing algorytm
+        // |  | 
+        // |
+        // 
+        // Will return the hash of the data only in hex prepended by 0x
         function hashToBytes32(hash) {
-            if (!hash) return
-            if (!hash.startsWith('Qm')) {
-                throw Error('Hash must use sha2-256 hashAlg, and start with \'Qm\'')
+            const cid = new CID(hash)
+            const hashId = cid.multihash.slice(0, 2).toString('hex')
+            const bytes32 = cid.multihash.slice(2).toString('hex')
+            if (hashId !== '1220' || bytes32.length / 2 !== 32) {
+                console.error(`IPFS hash is not SHA-256 32 bytes: ${hashId} !== "1220"`)
+            } else {
+                return "0x" + bytes32
             }
-            return "0x" + bs58.decode(hash).slice(2).toString('hex')
         }
 
         // Return base58 encoded ipfs hash from bytes32 hex string,
-        // Add our default ipfs values for first 2 bytes:
-        // function:0x12=sha2, size:0x20=256 bits
-        // and cut off leading "0x"
+        // Assumes the hashing options are: SHA-256 32 bytes (1220)
+        // Strips leading "0x" if necessary
         // E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
         // --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
 
@@ -143,10 +152,12 @@
             if (!bytes32) {
                 throw Error('In ipfs.bytes32ToHash, hash or bytes32 is not defined')
             }
-            const hashHex = "1220" + bytes32.slice(2)
-            const hashBytes = Buffer.from(hashHex, 'hex');
-            const hashStr = bs58.encode(hashBytes)
-            return hashStr
+            if (bytes32.startsWith('0x')) bytes32 = bytes32.slice(2)
+            // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
+            const cid = new CID(1, 'raw', buffer.Buffer('1220' + bytes32, 'hex'))
+            // Returns a base encodec string of the CID. Defaults to base58btc.
+            // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
+            return cid.toBaseEncodedString()
         }
 
         function ipfsAdd(data) {
@@ -172,13 +183,10 @@
             cat: retryable(ipfsCat)
         }
 
-        window.bs58 = {
+        window.ipfsUtils = {
             bytes32ToHash,
             hashToBytes32
         }
-
-        // Import contract data:
-        // const { swtToken, hashtagList, simpleDeal } = window.contractsData;
 
     }());
 </script>
