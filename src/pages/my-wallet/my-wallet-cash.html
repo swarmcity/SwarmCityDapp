@@ -12,6 +12,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="../../displays/display-divider.html">
+<link rel="import" href="../../displays/display-icon-back.html">
 <link rel="import" href="./my-wallet-balance.html">
 <link rel="import" href="./my-wallet-cash-transfer.html">
 <link rel="import" href="./my-wallet-history.html">
@@ -20,11 +21,11 @@ This code may only be used under the license found at https://github.com/swarmci
     <template>
         <app-location route="{{route}}"></app-location>
         <display-icon-close on-close="_handleOnClose"></display-icon-close>
-        <my-wallet-balance balance="[[balance]]"></my-wallet-balance>
-        <my-wallet-cash-transfer language="[[language]]" address="[[address]]" username="[[username]]" avatar="[[avatar]]"
+        <my-wallet-balance balance="[[balance.cash.hr]]" usd="[[balance.cash.usd]]"></my-wallet-balance>
+        <my-wallet-cash-transfer id="transfer" language="[[language]]" address="[[address]]" username="[[username]]" avatar="[[avatar]]"
             balance="[[balance]]"></my-wallet-cash-transfer>
         <display-divider></display-divider>
-        <my-wallet-history confirmed-tx="[[confirmedTx]]" language="[[language]]" address="[[address]]"></my-wallet-history>
+        <my-wallet-history kovan confirmed-tx="[[confirmedTx]]" language="[[language]]" address="[[address]]"></my-wallet-history>
     </template>
     <script>
         class MyWalletCash extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -47,6 +48,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnClose() {
                 this.dispatchEvent(new CustomEvent('close'));
+                this.$.transfer._handleOnClose();
             }
         }
         window.customElements.define(MyWalletCash.is, MyWalletCash);

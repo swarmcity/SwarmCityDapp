@@ -5,15 +5,92 @@
 <script src="./cids.min.js"></script>
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
+<script src="../contractAbis.js"></script>
 
 <script>
     (function () {
-        // Initialize web3Local
-        // const url = 'https://kovan.infura.io'
-        const url = 'wss://kovan.infura.io/ws'
-        // const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
-        window.web3Local = new Web3(url);
+
+        /**
+         * Setup web3 instances
+         */
+        const selectedProvider = 'infura'
+        const web3Providers = {
+            infura: {
+                mainnet: 'wss://mainnet.infura.io/ws',
+                kovan: 'wss://kovan.infura.io/ws'
+            },
+            dappnode: {
+                mainnet: 'ws://my.ethchain.dnp.dappnode.eth:8546',
+                kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
+            }
+        }
+        window.web3s = {
+            mainnet: new Web3(web3Providers[selectedProvider].mainnet),
+            kovan: new Web3(web3Providers[selectedProvider].kovan)
+        }
+        window.web3Mainnet = web3s.mainnet
+        window.web3Kovan = web3s.kovan
+        window.web3Local = window.web3Kovan
+
         console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
+
+        /**
+         * Contract addresses
+         */
+        const contracts = {
+            production: {
+                bridge: {
+                    mainnet: {
+                        address: '0x3410349F1e02E3beab54b1513FC2C9D2bAb6D7aC' // FOREIGN_BRIDGE_ADDRESS
+                    },
+                    kovan: {
+                        address: '0xFeAf593f51A53efA8523E5baA8f0EBDc6B2deB69' // HOME_BRIDGE_ADDRESS
+                    }
+                },
+                token: {
+                    mainnet: {
+                        address: '0xB9e7F8568e08d5659f5D29C4997173d84CdF2607', // ERC20_TOKEN_ADDRESS
+                        deployedBlockNumber: 3055641,
+                        abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
+                    },
+                    kovan: {
+                        address: '0x68b4bFF76B06FF72767ac1989Ea9706Bbc26Da4c', // BRIDGEABLE_TOKEN_ADDRESS
+                        deployedBlockNumber: 8420473,
+                        abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc677TokenTransferAndCall]
+                    }
+                },
+                hashtagDir: {
+                    address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
+                }
+            },
+            development: {
+                bridge: {
+                    mainnet: {
+                        address: null // No bridge
+                    },
+                    kovan: {
+                        address: null // No bridge
+                    }
+                },
+                token: {
+                    mainnet: {
+                        address: null, // ERC20_TOKEN_ADDRESS
+                        deployedBlockNumber: 0,
+                        abi: []
+                    },
+                    kovan: {
+                        address: '0x0adbc89464cb7fa752adcf3533514949a2547589', // Old test SWT token
+                        deployedBlockNumber: 7288019,
+                        abi: []
+                    }
+                },
+                hashtagDir: {
+                    address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
+                }
+            },
+        }
+        // development mode is NOT currently supported
+        window.contracts = contracts['production']
 
         /*
          * Setup IPFS with a simple retry async flow. 

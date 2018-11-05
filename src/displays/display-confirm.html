@@ -3,8 +3,10 @@
 Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="./display-unlock.html">
 <!--
 
 Example:
@@ -41,7 +43,7 @@ The following custom properties and mixins are available for styling:
                 position: absolute;
                 min-width: 100vw;
                 min-height: 100vh;
-                z-index: 2;
+                z-index: 1;
                 background-color: var(--sc-blue);
             }
 
@@ -126,11 +128,11 @@ The following custom properties and mixins are available for styling:
                 }
             }
         </style>
+        <display-unlock id="unlock" blue></display-unlock>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
-                <div class="title" id="title">{{localize('Post this request for')}} [[totalSum]] SWT?</div>
-                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[hashtagFee]] SWT
-                    {{localize('hashtagfee is included')}}.</div>
+                <div class="title" id="title">{{confirmTitle}}</div>
+                <div class="subtitle" id="subtitle">{{confirmSubtitle}}</div>
             </div>
             <div class="flexer">
             </div>
@@ -176,13 +178,6 @@ The following custom properties and mixins are available for styling:
                 };
             }
             /**
-            * Fired when the component is connected
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../../text-translations.json'));
-            }
-            /**
             * Takes the user to the previous page
             */
             _reject() {
@@ -192,7 +187,16 @@ The following custom properties and mixins are available for styling:
             * Takes the user to the previous page
             */
             _confirm() {
-                this.dispatchEvent(new CustomEvent('confirm'));
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        const { privateKey, address } = res;
+                        this.dispatchEvent(new CustomEvent('confirmed', {
+                            detail: {
+                                privateKey,
+                                address,
+                            },
+                        }));
+                    });
             }
 
 

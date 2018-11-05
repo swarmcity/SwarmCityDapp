@@ -9,6 +9,9 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="./my-wallet-reserves-transfer-choice.html">
+<link rel="import" href="./my-wallet-reserves-transfer-send.html">
+<link rel="import" href="../../displays/display-unlock.html">
+<link rel="import" href="../../data/data-transaction.html">
 
 <dom-module id="my-wallet-reserves-transfer">
     <template>
@@ -21,10 +24,20 @@ This code may only be used under the license found at https://github.com/swarmci
                 overflow: hidden;
             }
         </style>
+        <display-unlock id="unlock" blue></display-unlock>
+        <data-transaction id="transaction"></data-transaction>
+
         <div id="container" class="container">
+
             <template is="dom-if" if="{{_isEqualTo(status, 'choice')}}">
-                <my-wallet-reserves-transfer-choice language="[[language]]" on-send="_handleOnSend" on-receive="_handleOnReceive"></my-wallet-reserves-transfer-choice>
+                <my-wallet-reserves-transfer-choice language="[[language]]" on-withdraw="_handleOnWithdraw" on-receive="_handleOnReceive"></my-wallet-reserves-transfer-choice>
             </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'send')}}">
+                <my-wallet-reserves-transfer-send language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
+                    on-send="_handleOnSend"></my-wallet-reserves-transfer-send>
+            </template>
+
         </div>
     </template>
     <script>
@@ -48,6 +61,50 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _isEqualTo(string1, string2) {
                 return string1 == string2;
+            }
+
+            _handleOnWithdraw() {
+                this.status = 'send';
+            }
+
+            _handleOnReceive() {
+                console.log('receive');
+            }
+            _handleOnSend(e) {
+                console.log('send: ', e.detail);
+                
+                let amount = parseInt(e.detail.amount);
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const sender = {
+                                address,
+                                privateKey
+                            }
+
+                            const receiverAddress = '0xa90906A394A4Ae934f1A47B04ac64458D56A7273';
+
+                            const tokenContractAddress = '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607';
+
+                            this.$.transaction.tokenMainTx({ sender, receiverAddress, amount, tokenContractAddress })
+                                .then(receipt => {
+                                    console.log('Successfully sent tokens, receipt:', receipt);
+                                })
+                                .catch(err => {
+                                    console.log('Error sending tokens:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error sending tokens (catch block): ', e.stack)
+                        }
+                    });
+            }
+            _handleOnClose() {
+                this.status = 'choice';
             }
         }
         window.customElements.define(MyWalletReservesTransfer.is, MyWalletReservesTransfer);

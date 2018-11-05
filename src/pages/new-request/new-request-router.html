@@ -4,16 +4,13 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../redux-state.html">
-<link rel="import" href="../../data/data-transaction.html">
 <link rel="import" href="../../data/data-simpledeal.html">
 <!--
     Displays and shared styles only
 -->
-<link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./new-request-create.html">
 <link rel="import" href="./new-request-confirm.html">
 <link rel="import" href="../../displays/display-error.html">
@@ -25,10 +22,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <dom-module id="page-new-request">
     <template>
         <data-simpledeal id="simpledeal"></data-simpledeal>
-        <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-
         <display-unlock id="unlock" white></display-unlock>
 
         <!-- CREATE REQUEST -->
@@ -180,10 +174,8 @@ This code may only be used under the license found at https://github.com/swarmci
                             const { privateKey, address } = res;
                             this.status = 'processing'
 
-                            console.log('Received privateKey', privateKey)
-
                             if (!privateKey) {
-                                throw Error('Missing public key')
+                                throw Error('Missing private key')
                             }
                             const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
                             console.log(this.itemRequest);
@@ -207,7 +199,7 @@ This code may only be used under the license found at https://github.com/swarmci
                             const hashtag = {
                                 address: this.hashtag.address,
                                 fee: this.hashtag.hashtagFee,
-                                tokenAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
+                                tokenAddress: '0x68b4bff76b06ff72767ac1989ea9706bbc26da4c'
                             }
 
                             console.log('About to post item: ', { seeker, item, hashtag });

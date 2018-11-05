@@ -1,0 +1,195 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../displays/display-divider.html">
+
+<dom-module id="my-wallet-reserves-transfer-send">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                box-sizing: border-box;
+                padding: 50px 10vw 50px 10vw;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .notification {
+                font-size: 12px;
+                margin-top: 20px;
+            }
+
+            paper-input {
+                @apply --layout-flex;
+                width: 100%;
+                max-width: 400px;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .SWT {
+                @apply --small-bold;
+                box-sizing: border-box;
+                padding: 5px 0px 5px 5px;
+            }
+
+            .buttonbox {
+                margin-top: 50px;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+            }
+
+            .container[wide-layout] .buttonbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+                opacity: 0.5;
+            }
+            
+            .enabled {
+                cursor: pointer;
+                opacity: 1;
+            }
+
+            .enabled:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --next-blue-normal;
+            }
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .agree,
+                .disagree {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-divider></display-divider>
+        <div class="container">
+            <div class="input">
+                <div class="horizontal">
+                    <paper-input tabindex="1" type="Number" label="Amount" allowed-pattern="[0-9\.\,]" value="{{amount}}"
+                        on-keyup="_checkBalance"></paper-input>
+                    <div class="SWT">SWT</div>
+                </div>
+            </div>
+            <div>
+                <span id="error">{{error}}</span>
+            </div>
+            <div class="notification">You can only send from reserves to cash.<br />It can take a while to complete.</div>
+            <div class="buttonbox">
+                <div tabindex="3" class="disagree" on-tap="_close"></div>
+                <div tabindex="4" id="send" class="round-button" on-tap="_send">
+                    <div class="agree"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyWalletReservesTransferSend extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-reserves-transfer-send';
+            }
+
+            static get properties() {
+                return {
+                    language: String,
+                    amount: Number,
+                    balance: Object,
+                    error: String,
+                }
+            }
+            _checkBalance() {
+                let weiAmount = (parseFloat(this.amount) || 0) * 1e18;
+                if (parseFloat(weiAmount) > this.balance.reservesWei) {
+                    this.error = 'Your balance is too low.';
+                    return false;
+                } else if (parseFloat(weiAmount) <= 0) {
+                    this.error = null;
+                    this.$.send.classList.remove('enabled');
+                    return false;
+                }
+                else {
+                    this.error = null;
+                    this.$.send.classList.add('enabled');
+                    return true;
+                }
+            }
+            _close() {
+                this.dispatchEvent(new CustomEvent('close'));
+                this._reset();
+            }
+            _reset() {
+                this.amount = '';
+                this.$.send.classList.remove('enabled');
+            }
+            _send() {
+                if (this._checkBalance()) {
+                    this.dispatchEvent(new CustomEvent('send', {
+                        detail: {
+                            amount: this.amount,
+                            destination: 'cash',
+                        }
+                    }));
+                }
+            }
+        }
+        window.customElements.define(MyWalletReservesTransferSend.is, MyWalletReservesTransferSend);
+    </script>
+</dom-module>

@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../redux-state.html">
 
 <!--
@@ -136,6 +137,7 @@ The following custom properties and mixins are available for styling:
             }
         </style>
 
+<app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
         <div class="container" wide-layout$="{{wide}}">
@@ -160,7 +162,7 @@ The following custom properties and mixins are available for styling:
                                 <div class="balanceloadshape"></div> SWT
                             </template>
                             <template is="dom-if" if="{{!loadingBalance}}">
-                                [[_formatNumber(balance.swt)]] SWT
+                                [[balance.cash.hr]] SWT
                             </template>
                         </div>
                     </div>
@@ -259,16 +261,6 @@ The following custom properties and mixins are available for styling:
             */
             _toProfile() {
                 this.dispatchEvent(new CustomEvent('profile'));
-            }
-            /**
-            * formats epoch
-            * @param {DateTime} timestamp epoch in javascript milliseconds
-            * @return {string} formatted date string
-            */
-            _formatNumber(number) {
-                if (number) {
-                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-                }
             }
             /**
             * go to the page create account

@@ -47,7 +47,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-icon-back logout on-back="_handleOnBack"></display-icon-back>
         <div class="container" wide-layout$="{{wide}}">
-            <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
+            <display-my-info avatarSmall path="{{path}}" on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
             <template is="dom-repeat" items="[[hashtagList]]" filter="_showHashtag">
                 <hashtag-list-item item="[[item]]" on-hashtag="_handleOnHashtag"></hashtag-list-item>
             </template>
@@ -72,6 +72,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagList: {
                         type: Object,
                         statePath: AppStore.selectors.hashtagList,
+                    },
+                    path: {
+                        type: String,
+                        observer: '_path',
                     }
                 };
             }
@@ -94,6 +98,15 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnHashtag(e) {
                 this.set('route.path', `hashtag/${e.detail}`);
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', 'create-account/');
+                }
+                this.path = null;
             }
         }
         window.customElements.define(MyHashtagListrouter.is, MyHashtagListrouter);

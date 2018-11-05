@@ -11,7 +11,7 @@
             const ipfs = window.ipfs
 
             const {
-                swtToken,
+                kovSwtToken,
                 hashtagList,
                 simpleDeal
             } = contractsData;
@@ -33,15 +33,15 @@
                 const itemBudgetWei = item.budget * 1e18;
                 const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
 
-                // 1. Encode the newItem method to be sent through ApproveAndCall
+                // 1. Encode the newItem method to be sent through transferAndCall
                 const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
                 const rawNewItem = simpleDealContract.methods.newItem(
                     item.hash,
                     itemBudgetWei,
                     metadataHash.bytes32
                 ).encodeABI();
-                const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
-                const rawApproveAndCall = tokenContract.methods.approveAndCall(
+                const tokenContract = new _web3.eth.Contract(kovSwtToken.abi, hashtag.tokenAddress);
+                const rawTransferAndCall = tokenContract.methods.transferAndCall(
                     hashtag.address, // spender
                     totalSum, // totalSum
                     rawNewItem, // next call data
@@ -57,7 +57,7 @@
                     gasPrice: 1000000000,
                     gasLimit: 3000000,
                     to: hashtag.tokenAddress,
-                    data: rawApproveAndCall,
+                    data: rawTransferAndCall,
                     chainId: 42,
                 });
                 tx.sign(new Buffer(seeker.privateKey, 'hex'));
@@ -106,7 +106,6 @@
                 // Extra line for clarity
                 const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
                 return hash
-
             }
 
             async function selectReplierAsync({ seeker, replierAddress, itemHash, hashtagAddress }) {
@@ -150,8 +149,8 @@
                 const rawFundItem = simpleDealContract.methods.fundItem(
                     item.hash
                 ).encodeABI();
-                const tokenContract = new _web3.eth.Contract(swtToken.abi, hashtag.tokenAddress);
-                const rawApproveAndCall = tokenContract.methods.approveAndCall(
+                const tokenContract = new _web3.eth.Contract(kovSwtToken.abi, hashtag.tokenAddress);
+                const rawTransferAndCall = tokenContract.methods.transferAndCall(
                     hashtag.address, // spender
                     totalSum, // totalSum
                     rawFundItem, // next call data
@@ -167,7 +166,7 @@
                     gasPrice: 1000000000,
                     gasLimit: 3000000,
                     to: hashtag.tokenContractAddress,
-                    data: rawApproveAndCall,
+                    data: rawTransferAndCall,
                     chainId: 42,
                 });
                 tx.sign(new Buffer(provider.privateKey, 'hex'));
