@@ -12,6 +12,8 @@ window.contractAbis = {
     // =============================================
     // erc20TokenAbiBalance, standard method to retrieve balance of erc20, erc677, miniMe tokens
     erc20TokenBalance: [{ constant: true, inputs: [{ name: '_owner', type: 'address' }], name: 'balanceOf', outputs: [{ name: 'balance', type: 'uint256' }], payable: false, stateMutability: 'view', type: 'function' }],
+    // erc20TokenEventTransfer
+    erc20TokenEventTransfer: [{"anonymous": false, "inputs": [{"indexed": true, "name": "_from", "type": "address"}, {"indexed": true, "name": "_to", "type": "address"}, {"indexed": false, "name": "_amount", "type": "uint256"}], "name": "Transfer", "type": "event"}],   
     // erc20TokenAbiTransfer, transfer funds in a basic erc20
     erc20TokenTransfer: [{ constant: false, inputs: [{ name: '_to', type: 'address' }, { name: '_value', type: 'uint256' }], name: 'transfer', outputs: [{ name: '', type: 'bool' }], payable: false, stateMutability: 'nonpayable', type: 'function' }],
     // erc677TokenAbiTransfer, transfer funds in an erc677
