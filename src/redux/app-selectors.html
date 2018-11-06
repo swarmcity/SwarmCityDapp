@@ -3,21 +3,30 @@
         const selectors = {
             balance: (state) => {
                 if (state && state.balance) {
-                    return {
-                        // swt: (state.balance / 1e18).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "),
-                        swt: (state.balance.kovan / 1e18).toFixed(2),
-                        usd: 'A bunch more',
-                        cashWei: parseInt(state.balance.kovan),
-                        reservesWei: parseInt(state.balance.main),
-                        cash: (state.balance.kovan / 1e18).toFixed(2),
-                        cashUSD: '500.00',
-                        reserves: (state.balance.main / 1e18).toFixed(2),
-                        reservesUSD: '100.00',
+                    let balance = {}
+                    balance.cash = {
+                        wei: state.balance.kovan ? state.balance.kovan : 0,
+                        hr: state.balance.kovan ? (state.balance.kovan / 1e18).toFixed(2) : '...',
+                        usd: '20'
                     }
+                    balance.reserves = {
+                        wei: state.balance.main ? state.balance.main : 0,
+                        hr: state.balance.main ? (state.balance.main / 1e18).toFixed(2) : '...',
+                        usd: '20'
+                    }
+                    return balance;
                 } else {
                     return {
-                        swt: '?',
-                        usd: '?'
+                        cash: {
+                            wei: 0,
+                            hr: 'Fetching...',
+                            usd: '0'
+                        },
+                        reserves: {
+                            wei: 0,
+                            hr: 'Fetching...',
+                            usd: '0'
+                        }
                     }
                 }
 
