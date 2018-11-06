@@ -1,0 +1,116 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-button-disagree.html">
+<link rel="import" href="../../displays/display-button-confirm.html">
+<!--
+
+-->
+<dom-module id="detail-simpledeal-conflict">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+            }
+
+            .choice {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                padding: 30px 0;
+            }
+
+            paper-textarea {
+                text-indent: 2px;
+                margin-top: 5px;
+                box-sizing: border-box;
+                min-width: 200px;
+                text-align: left;
+                width: 100%;
+                @apply --sc-paper-input;
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-blue);
+                --paper-input-container-focus: @apply --body-bold;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+
+
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container">
+            <paper-textarea label="What's your motivation?" type="txt" value="{{message}}"
+                autofocus></paper-textarea>
+            <div class="choice">
+                <display-button-disagree on-tap="_close"></display-button-disagree>
+                <display-button-confirm on-tap="_conflict"></display-button-confirm>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDetailSimpledealConflict extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-conflict';
+            }
+            static get properties() {
+                return {
+                    item: Object,
+                    message: String,
+                };
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'funded',
+                }));
+                this._reset();
+            }
+            _conflict() {
+                this.dispatchEvent(new CustomEvent('conflict', {
+                    detail: this.message,
+                }));
+                this._reset();
+            }
+            _reset() {
+                this.message = '';
+            }
+        }
+        window.customElements.define(
+            MyDetailSimpledealConflict.is,
+            MyDetailSimpledealConflict
+        );
+    </script>
+</dom-module>

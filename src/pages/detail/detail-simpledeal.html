@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./detail-button-reply.html">
+<link rel="import" href="./detail-button-conflict.html">
 <link rel="import" href="./detail-simpledeal-loading.html">
 <link rel="import" href="./detail-simpledeal-main.html">
 <link rel="import" href="./detail-simpledeal-replies.html">
@@ -23,6 +24,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-selected.html">
 <link rel="import" href="./detail-simpledeal-funded.html">
 <link rel="import" href="./detail-simpledeal-done.html">
+<link rel="import" href="./detail-simpledeal-conflict.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
 
@@ -53,9 +55,7 @@ This code may only be used under the license found at https://github.com/swarmci
             .itemcontainer {
                 background-color: var(--sc-white);
                 width: 100%;
-                box-sizing: border-box;
-                padding: 0px 10px 25px 10px;
-                margin: 0px 10px 50px 0px;
+                margin: 0px 10px 25px 0px;
             }
 
             .container[wide-layout] .itemcontainer {
@@ -80,7 +80,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <display-unlock id="unlock" blue></display-unlock>
         <data-simpledeal id="simpledeal"></data-simpledeal>
-        
+
         <div class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="{{_isEqualTo(status, 'loading')}}">
                 <detail-simpledeal-loading></detail-simpledeal-loading>
@@ -121,7 +121,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
                         <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
                     </template>
+
+                    <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
+                        <detail-simpledeal-conflict on-status="_handleOnStatus" on-conflict="_handleOnConflict"></detail-simpledeal-conflict>
+                    </template>
                 </div>
+
+                <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
+                    <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
+                </template>
             </template>
         </div>
 
@@ -254,6 +262,11 @@ This code may only be used under the license found at https://github.com/swarmci
                     }));
                 }
             }
+            _conflict() {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'conflict',
+                }));
+            }
             _handleOnClose() {
                 let el = this.shadowRoot.querySelector('#input');
                 if (el) el._reset();
@@ -341,6 +354,10 @@ This code may only be used under the license found at https://github.com/swarmci
                             console.error('Error paying out item (catch block): ', e.stack)
                         }
                     });
+
+            }
+            _handleOnConflict(e) {
+                console.log(e.detail);
 
             }
             _allowReply() {
