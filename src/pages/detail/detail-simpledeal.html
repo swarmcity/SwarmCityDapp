@@ -16,6 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="./detail-button-reply.html">
 <link rel="import" href="./detail-button-conflict.html">
+<link rel="import" href="./detail-button-payout.html">
 <link rel="import" href="./detail-simpledeal-loading.html">
 <link rel="import" href="./detail-simpledeal-main.html">
 <link rel="import" href="./detail-simpledeal-replies.html">
@@ -24,6 +25,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./detail-simpledeal-selected.html">
 <link rel="import" href="./detail-simpledeal-funded.html">
 <link rel="import" href="./detail-simpledeal-done.html">
+<link rel="import" href="./detail-simpledeal-input-conflict.html">
 <link rel="import" href="./detail-simpledeal-conflict.html">
 <link rel="import" href="../../displays/display-unlock.html">
 
@@ -122,13 +124,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
                     </template>
 
+                    <template is="dom-if" if="{{_isEqualTo(status, 'input conflict')}}">
+                        <detail-simpledeal-input-conflict on-status="_handleOnStatus" on-conflict="_handleOnConflict"></detail-simpledeal-input-conflict>
+                    </template>
+
                     <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
-                        <detail-simpledeal-conflict on-status="_handleOnStatus" on-conflict="_handleOnConflict"></detail-simpledeal-conflict>
+                        <detail-simpledeal-conflict address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
+                            maintainer="[[maintainer]]"></detail-simpledeal-conflict>
                     </template>
                 </div>
 
                 <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
                     <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
+                </template>
+
+                <template is="dom-if" if="{{_showPayoutButton(status, address)}}">
+                    <detail-button-payout on-tap="_handleOnPayout"></detail-button-payout>
                 </template>
             </template>
         </div>
@@ -152,6 +163,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtag: Object,
                     replyDetail: Object,
                     username: String,
+                    maintainer: {
+                        type: Object,
+                        value: {
+                            avatar: 'QmZAh3yxeTyDV7MtLCrkKqpTQQXPFJRcby3VjfsQn7vpnx',
+                            username: 'Xardas',
+                            address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+                        }
+                    },
                 }
             }
             _handleOnReply(e) {
@@ -243,6 +262,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     });
 
             }
+            _showPayoutButton(status, userAddress) {
+                return false // (status == 'conflict' && userAddress == this.item.seekerAddress)
+            }
             _isEqualTo(string1, string2) {
                 return string1 == string2;
             }
@@ -264,7 +286,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _conflict() {
                 this.dispatchEvent(new CustomEvent('status', {
-                    detail: 'conflict',
+                    detail: 'input conflict',
                 }));
             }
             _handleOnClose() {
@@ -357,7 +379,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
             }
             _handleOnConflict(e) {
-                console.log(e.detail);
                 this.$.unlock._getPrivateKey()
                     .then((res) => {
                         try {
@@ -374,7 +395,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             this.$.simpledeal.disputeItem({ disputer, itemHash, hashtagAddress })
                                 .then(receipt => {
                                     console.log('Successfully disputed item, receipt:', receipt)
-                                })  
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                                            status: '3-pending',
+                                        }
+                                    })
+                                })
                                 .catch(err => {
                                     console.log('Error disputing item:', err)
                                 });

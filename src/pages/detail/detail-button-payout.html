@@ -1,0 +1,79 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<!--
+
+Example:
+```
+<detail-button-payout></detail-button-payout>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--detail-button-payout` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="detail-button-payout">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+            .container {
+                max-width: 175px;
+                text-align: center;
+                margin: 0 auto;
+            }
+
+            .button {
+                @apply --text-button-small;
+                color: var(--sc-grey4);
+                cursor: pointer;
+                box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -webkit-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -moz-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+                -o-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
+            }
+
+            .container[wide-layout] .button {
+                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.5);
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="button">
+                payout
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyDetailButtonPayout extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-button-payout';
+            }
+        }
+        window.customElements.define(MyDetailButtonPayout.is, MyDetailButtonPayout);
+    </script>
+</dom-module>
