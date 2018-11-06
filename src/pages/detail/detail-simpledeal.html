@@ -358,6 +358,31 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnConflict(e) {
                 console.log(e.detail);
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const disputer = {
+                                address,
+                                privateKey
+                            }
+                            const itemHash = this.item.itemHash;
+                            const hashtagAddress = this.hashtag.address;
+                            this.$.simpledeal.disputeItem({ disputer, itemHash, hashtagAddress })
+                                .then(receipt => {
+                                    console.log('Successfully disputed item, receipt:', receipt)
+                                })  
+                                .catch(err => {
+                                    console.log('Error disputing item:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error disputing item (catch block): ', e.stack)
+                        }
+                    });
 
             }
             _allowReply() {
