@@ -134,9 +134,7 @@
                 throw Error('JSON parsing error, string: ' + metadataString)
             }
             return {
-                description: metadata.description,
-                hashtagContract: metadata.hashtagContract,
-                webcomponent: metadata.webcomponent
+                metadata
             }
         }
 
@@ -161,10 +159,10 @@
                 // Step 2A. Resolve hashtagMetadata with IPFS
                 //   - ipfs.cat(hashtagMetadata) -> description
                 try {
-                    //const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
-                    const res = yield call(catIpfsMetadata, hashtagContractData.hashtagMetadataHash)
-                    console.log('flurkello res: ', hashtagContractData.hashtagMetadataHash);
-                    yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: res });
+                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
+                    //const res = yield call(catIpfsMetadata, hashtagContractData.hashtagMetadataHash)
+                    //console.log('flurkello res: ', hashtagContractData.hashtagMetadataHash);
+                    yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
                 } catch (e) {
                     console.error('Error fetching hashtag metadata of ' + hashtagAddress, e);
                 }
