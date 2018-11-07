@@ -1,0 +1,153 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<!--
+
+Example:
+```
+<display-geolocation></display-geolocation>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--hashtag-simpledeal-about-toggle` | Mixin applied to the toggle text | `{}` |
+| `--hashtag-simpledeal-about-box` | Mixin applied to the box | `{}` |
+| `--hashtag-simpledeal-about-maintained` | Mixin applied to the maintained text | `{}` |
+| `--hashtag-simpledeal-about-contact` | Mixin applied to the contact details | `{}` |
+
+-->
+<dom-module id="hashtag-simpledeal-about">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100vw;
+                background-color: green;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+                overflow-y: scroll;
+            }
+
+            .about-title {
+                @apply --small-light;
+                color: var(--sc-grey3);
+            }
+
+            .about {
+                width: 100%;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                margin-bottom: 20px;
+            }
+
+            .hashtagfee-title {
+                @apply --small-light;
+                color: var(--sc-grey3);
+            }
+
+            .maintainer-info {
+                @apply --layout-flex;
+                @apply --layout-vertical;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+            .maintainer-username {
+                @apply --blue-link;
+                margin: 5px 0px;
+            }
+
+            .arrowup {
+                width: 100%;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+            }
+
+            .arrowup-icon {
+                @apply --arrowup-blue-small;
+                cursor: pointer;
+            }
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .arrowup-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="aboutbox"></div>
+            <div class="arrowup">
+                <div class="arrowup-icon" on-click="_closeInfo"></div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyHashtagSimpledealAbout extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'hashtag-simpledeal-about';
+            }
+            static get properties() {
+                return {
+                    language: String,
+                    hashtag: {
+                        type: Object,
+                        observer: '_hashtagFee',
+                    },
+                    /**
+                    * hashtag info represents the selected hashtag
+                    * @type {Number}
+                    */
+                    hashtagFee: {
+                        type: Number,
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * Closes the infobox
+            */
+            _closeInfo() {
+                this.closeInfo = !this.closeInfo;
+            }
+            /**
+            * converts the fee from gwei to swt amount
+            */
+            _hashtagFee() {
+                this.hashtagFee = this.hashtag.hashtagFee / 1e18;
+            }
+        } window.customElements.define(MyHashtagSimpledealAbout.is, MyHashtagSimpledealAbout);
+    </script>
+</dom-module>
