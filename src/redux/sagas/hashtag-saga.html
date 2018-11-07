@@ -161,14 +161,17 @@
                 // Step 2A. Resolve hashtagMetadata with IPFS
                 //   - ipfs.cat(hashtagMetadata) -> description
                 try {
-                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
-                    yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
+                    //const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
+                    const res = yield call(catIpfsMetadata, hashtagContractData.hashtagMetadataHash)
+                    console.log('flurkello res: ', hashtagContractData.hashtagMetadataHash);
+                    yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: res });
                 } catch (e) {
                     console.error('Error fetching hashtag metadata of ' + hashtagAddress, e);
                 }
 
                 // Step 2B. Get hashtag items from past events
                 //   - getPastEvents('NewItem') -> itemHash, itemMetadataHash, itemValue, seekerAddr, seekerRep, blockNumber
+                console.log('deployblock: ', hashtagContractData.deployBlock)
                 const items = yield call(getPastItems, hashtagContract, hashtagContractData.deployBlock)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: { items } });
 
