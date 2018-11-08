@@ -85,22 +85,31 @@
         margin-right: 2px;
       }
 
-      .info-toggle {
+      #togglebox {
         @apply --small-bold;
         @apply --layout-center;
-        color: var(--sc-blue);
-        border-bottom: 2px dotted var(--sc-blue);
-        margin: 0px 0px 8px 10px;
         box-sizing: border-box;
+        margin: 0px 0px 8px 10px;
         padding: 1px 3px;
         cursor: pointer;
       }
 
-      .toggle {
+      .blue {
         background-color: var(--sc-blue);
+      }
+
+      .toggle {
+        padding: 1px 3px;
+      }
+
+      .untoggled {
+        border-bottom: 2px dotted var(--sc-blue);
+        color: var(--sc-blue);
+      }
+
+      .toggled {
         border-bottom: 2px dotted var(--sc-white);
         color: var(--sc-white);
-        padding: 1px 5px;
       }
     </style>
     <iron-media-query
@@ -118,8 +127,12 @@
           <div class="namebox">
             <span class="hashtagsymbol">#</span>{{ hashtag.hashtagName }}
           </div>
-          <div id="infolink" class="info-toggle" on-tap="_toggle">i</div>
-        </template>
+          <div id="togglebox">
+            <div id="infolink" class="toggle untoggled" on-tap="_toggle">
+              i
+            </div>
+          </div> </template
+        >z
       </dom-if>
     </div>
   </template>
@@ -157,9 +170,13 @@
       _toggle() {
         this.showDetails = !this.showDetails;
         if (this.showDetails) {
-          this.shadowRoot.querySelector("#infolink").classList.add("toggle");
+          this.shadowRoot.querySelector("#infolink").classList.add("toggled");
+          this.shadowRoot.querySelector("#togglebox").classList.add("blue");
+          this.shadowRoot.querySelector("#infolink").classList.remove("untoggled");
         } else {
-          this.shadowRoot.querySelector("#infolink").classList.remove("toggle");
+          this.shadowRoot.querySelector("#infolink").classList.add("untoggled");
+          this.shadowRoot.querySelector("#togglebox").classList.remove("blue");
+          this.shadowRoot.querySelector("#infolink").classList.remove("toggled");
         }
       }
     }
