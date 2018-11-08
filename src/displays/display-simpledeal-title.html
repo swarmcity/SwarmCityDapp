@@ -8,34 +8,9 @@
   rel="import"
   href="../../bower_components/iron-media-query/iron-media-query.html"
 />
-<link
-  rel="import"
-  href="../../bower_components/app-localize-behavior/app-localize-behavior.html"
-/>
-<link rel="import" href="../../bower_components/app-route/app-location.html" />
-<link rel="import" href="../redux-state.html" />
-<!--
-  Example:
-  ```
-  <title></title>
-  ```
+<!-- Displays and shared styles only -->
+<link rel="import" href="./display-simpledeal-about.html" />
 
-  ### Styling
-
-  Style the button with CSS as you would a normal DOM element.
-
-  The following custom properties and mixins are available for styling:
-
-  | Custom property | Description | Default |
-  | --- | --- | --- |
-  | `title` | Mixin applied to the avatar | `{}` |
-  | `title` | Mixin applied to the container | `{}` |
-  | `title` | Mixin applied to the time | `{}` |
-  | `title` | Mixin applied to the name | `{}` |
-  | `title` | Mixin applied to the description | `{}` |
-  | `title` | Mixin applied to the word for | `{}` |
-  | `title` | Mixin applied to the amount | `{}` |
--->
 <dom-module id="display-simpledeal-title">
   <template>
     <style include="shared-styles">
@@ -111,11 +86,20 @@
         border-bottom: 2px dotted var(--sc-white);
         color: var(--sc-white);
       }
+      display-simpledeal-about {
+        margin-top: 159px;
+        position: fixed;
+        z-index: 2;
+      }
     </style>
     <iron-media-query
       query="(min-width: 600px)"
       query-matches="{{wide}}"
     ></iron-media-query>
+    <display-simpledeal-about
+      language="[[language]]"
+      hashtag="[[hashtag]]"
+    ></display-simpledeal-about>
     <div class="container" wide-layout$="{{wide}}">
       <dom-if if="{{!hashtag.hashtagName}}">
         <template>
@@ -128,11 +112,11 @@
             <span class="hashtagsymbol">#</span>{{ hashtag.hashtagName }}
           </div>
           <div id="togglebox">
-            <div id="infolink" class="toggle untoggled" on-tap="_toggle">
+            <div id="infolink" class="toggle untoggled" on-tap="(_toggle)">
               i
             </div>
-          </div> </template
-        >z
+          </div>
+        </template>
       </dom-if>
     </div>
   </template>
@@ -172,11 +156,15 @@
         if (this.showDetails) {
           this.shadowRoot.querySelector("#infolink").classList.add("toggled");
           this.shadowRoot.querySelector("#togglebox").classList.add("blue");
-          this.shadowRoot.querySelector("#infolink").classList.remove("untoggled");
+          this.shadowRoot
+            .querySelector("#infolink")
+            .classList.remove("untoggled");
         } else {
           this.shadowRoot.querySelector("#infolink").classList.add("untoggled");
           this.shadowRoot.querySelector("#togglebox").classList.remove("blue");
-          this.shadowRoot.querySelector("#infolink").classList.remove("toggled");
+          this.shadowRoot
+            .querySelector("#infolink")
+            .classList.remove("toggled");
         }
       }
     }
