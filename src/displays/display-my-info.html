@@ -1,286 +1,296 @@
 <!--
-@license
-Copyright (c) 2018 Swarm City
-This code may only be used under the license found at https://github.com/swarmcity/license
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html" />
+<link
+  rel="import"
+  href="../../bower_components/app-localize-behavior/app-localize-behavior.html"
+/>
+<link
+  rel="import"
+  href="../../bower_components/iron-media-query/iron-media-query.html"
+/>
+<link rel="import" href="../../bower_components/app-route/app-location.html" />
+<link rel="import" href="../redux-state.html" />
 
 <!--
+  Example:
+  ```
+  <display-my-info></display-my-info>
+  ```
 
-Example:
-```
-<display-my-info></display-my-info>
-```
+  ### Styling
 
-### Styling
+  Style the button with CSS as you would a normal DOM element.
 
-Style the button with CSS as you would a normal DOM element.
+  The following custom properties and mixins are available for styling:
 
-The following custom properties and mixins are available for styling:
-
-| Custom property | Description | Default |
-| --- | --- | --- |
-| `--display-my-info-container` | Mixin applied to the container | `{}` |
-| `--display-my-info-avatar` | Mixin applied to the avatar | `{}` |
-| `--display-my-info-username` | Mixin applied to the username | `{}` |
-| `--display-my-info-balance` | Mixin applied to the balance | `{}` |
-
+  | Custom property | Description | Default |
+  | --- | --- | --- |
+  | `--display-my-info-container` | Mixin applied to the container | `{}` |
+  | `--display-my-info-avatar` | Mixin applied to the avatar | `{}` |
+  | `--display-my-info-username` | Mixin applied to the username | `{}` |
+  | `--display-my-info-balance` | Mixin applied to the balance | `{}` |
 -->
 <dom-module id="display-my-info">
-    <template>
-        <style include="shared-styles">
-            :host {
-                display: block;
-            }
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
 
-            .container {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-                background-image: var(--sc-bg);
-                width: 100%;
-                box-sizing: border-box;
-                padding: 40px 40px 20px 40px;
-            }
+      .container {
+        @apply --layout-horizontal;
+        @apply --layout-start-justified;
+        @apply --layout-start;
+        position: fixed;
+        top: 0;
+        z-index: 3;
+        background-image: var(--sc-bg);
+        width: 100%;
+        box-sizing: border-box;
+        padding: 40px 40px 20px 40px;
+      }
 
-            .container[wide-layout] {
-                box-sizing: border-box;
-                padding: 50px 10vw 20px 10vw;
-                min-height: 120px;
-            }
+      .container[wide-layout] {
+        box-sizing: border-box;
+        padding: 50px 10vw 20px 10vw;
+        min-height: 120px;
+      }
 
-            .container[wide-layout]>img {
-                width: 50px;
-                height: 50px;
-                background-size: 50px;
-            }
+      .container[wide-layout] > img {
+        width: 50px;
+        height: 50px;
+        background-size: 50px;
+      }
 
-            .container[wide-layout] .top-margin {
-                height: 10vh;
-            }
+      .container[wide-layout] .top-margin {
+        height: 10vh;
+      }
 
-            img {
-                width: 40px;
-                height: 40px;
-                cursor: pointer;
-                border-radius: 50%;
-                background-size: 40px;
-            }
+      img {
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        border-radius: 50%;
+        background-size: 40px;
+      }
 
-            .container[wide-layout] img {
-                width: 50px;
-                height: 50px;
-                background-size: 50px;
-            }
+      .container[wide-layout] img {
+        width: 50px;
+        height: 50px;
+        background-size: 50px;
+      }
 
-            .totalbox {
-                margin-left: 10px;
-                box-sizing: border-box;
-                padding-top: 5px;
-            }
+      .totalbox {
+        margin-left: 10px;
+        box-sizing: border-box;
+        padding-top: 5px;
+      }
 
-            .container[wide-layout] .totalbox {
-                margin-left: 20px;
-            }
+      .container[wide-layout] .totalbox {
+        margin-left: 20px;
+      }
 
-            #username {
-                @apply --small-bold;
-                cursor: pointer;
-            }
+      #username {
+        @apply --small-bold;
+        cursor: pointer;
+      }
 
-            #balance {
-                @apply --main-title4;
-                color: var(--sc-yellow);
-                cursor: pointer;
-                transform-origin: top left;
-                @apply --layout-horizontal;
-                overflow: hidden;
-            }
+      #balance {
+        @apply --main-title4;
+        color: var(--sc-yellow);
+        cursor: pointer;
+        transform-origin: top left;
+        @apply --layout-horizontal;
+        overflow: hidden;
+      }
 
+      .createbox {
+        @apply --layout-flex;
+        @apply --layout-horizontal;
+        @apply --layout-start;
+        @apply --layout-start-justified;
+      }
 
-            .createbox {
-                @apply --layout-flex;
-                @apply --layout-horizontal;
-                @apply --layout-start;
-                @apply --layout-start-justified;
-            }
+      .createlink {
+        @apply --small-light;
+        border: 0;
+        border-radius: 2px;
+        background-color: rgba(255, 255, 255, 0.25);
+        cursor: pointer;
+        color: var(--sc-grey3);
+        box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+        -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+        -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+        -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
+        padding: 9px 14px;
+      }
 
-            .createlink {
-                @apply --small-light;
-                border: 0;
-                border-radius: 2px;
-                background-color: rgba(255, 255, 255, 0.25);
-                cursor: pointer;
-                color: var(--sc-grey3);
-                box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                -webkit-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                -moz-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                -o-box-shadow: 0px 1px 2px -1px rgba(0, 0, 0, 0.25);
-                padding: 9px 14px;
-            }
+      .createlink:active {
+        @apply --button-active;
+      }
 
-            .createlink:active {
-                @apply --button-active;
-            }
+      .balanceloadshape {
+        width: 45px;
+        height: 12px;
+        margin: 8px 8px 0px 0px;
+        border-radius: 8px;
+        background-color: var(--sc-yellow);
+        opacity: 0.6;
+      }
+    </style>
 
-            .balanceloadshape {
-                width: 45px;
-                height: 12px;
-                margin: 8px 8px 0px 0px;
-                border-radius: 8px;
-                background-color: var(--sc-yellow);
-                opacity: 0.6;
-            }
-        </style>
+    <app-location route="{{route}}"></app-location>
+    <iron-media-query
+      query="(min-width: 600px)"
+      query-matches="{{wide}}"
+    ></iron-media-query>
+    <div class="container" wide-layout$="{{wide}}">
+      <dom-if if="{{!publicKey}}">
+        <template>
+          <div class="createbox">
+            <div
+              tabindex="1"
+              class="createlink"
+              on-tap="(_toCreateAccount)"
+              on-KeyPress="(_toCreateAccount)"
+            >
+              {{ localize("create account") }}
+            </div>
+          </div>
+        </template>
+      </dom-if>
 
-<app-location route="{{route}}"></app-location>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+      <dom-if if="{{publicKey}}">
+        <template>
+          <img id="image" on-click="(_toProfile)" src="{{avatar}}" />
+          <div class="totalbox">
+            <div id="username" on-click="(_toProfile)">{{ username }}</div>
+            <div id="balance" on-click="(_toWallet)">
+              <template is="dom-if" if="{{loadingBalance}}">
+                <div class="balanceloadshape"></div>
+                SWT
+              </template>
+              <template is="dom-if" if="{{!loadingBalance}}">
+                [[balance.cash.hr]] SWT
+              </template>
+            </div>
+          </div>
+        </template>
+      </dom-if>
+    </div>
+  </template>
+  <script>
+    class DisplayMyInfo extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "display-my-info";
+      }
+      static get properties() {
+        return {
+          /**
+           * language is the user selected language
+           * @type {String}
+           */
+          language: {
+            type: String,
+            statePath: "language"
+          },
+          /**
+           * Path is the current or requested path
+           * @type {String}
+           */
+          path: {
+            type: String,
+            reflectToAttribute: true,
+            notify: true
+          },
+          /**
+           * Username represents the users username
+           * @type {String}
+           */
+          username: {
+            type: String,
+            statePath: "username"
+          },
+          /**
+           * Avatar represents the user's base64 of their avatar image
+           * @type {String}
+           */
+          avatar: {
+            type: String,
+            statePath: "avatar"
+          },
+          /**
+           * Balance represents the users SWT balance
+           * @type {Number}
+           */
+          balance: {
+            type: Number,
+            statePath: AppStore.selectors.balance // eslint-disable-line
+          },
+          /**
+           * loadingBalance is the currently loaded hashtagItem object
+           * @type {Object}
+           */
+          loadingBalance: {
+            type: Boolean,
+            value: false
+          },
+          /**
+           * route data represents the current route
+           * @type {Object}
+           */
+          route: {
+            type: Object
+          },
+          /**
+           * PublicKey represents the user's public key
+           * @type {String}
+           */
+          publicKey: {
+            type: String,
+            statePath: "publicKey"
+          }
+        };
+      }
 
-        <div class="container" wide-layout$="{{wide}}">
+      /**
+       * Fired when the component first loads
+       */
 
-            <dom-if if="{{!publicKey}}">
-                <template>
-                    <div class="createbox">
-                        <div tabindex="1" class="createlink" on-tap="_toCreateAccount" on-KeyPress="_toCreateAccount">
-                            {{localize('create account')}}
-                        </div>
-                    </div>
-                </template>
-            </dom-if>
-
-            <dom-if if="{{publicKey}}">
-                <template>
-                    <img id="image" on-click="_toProfile" src="{{avatar}}">
-                    <div class="totalbox">
-                        <div id="username" on-click="_toProfile">{{username}}</div>
-                        <div id="balance" on-click="_toWallet">
-                            <template is="dom-if" if="{{loadingBalance}}">
-                                <div class="balanceloadshape"></div> SWT
-                            </template>
-                            <template is="dom-if" if="{{!loadingBalance}}">
-                                [[balance.cash.hr]] SWT
-                            </template>
-                        </div>
-                    </div>
-                </template>
-            </dom-if>
-        </div>
-    </template>
-    <script>
-        class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
-            Polymer.Element
-        )) {
-            static get is() {
-                return 'display-my-info';
-            }
-            static get properties() {
-                return {
-                    /**
-                    * language is the user selected language
-                    * @type {String}
-                    */
-                    language: {
-                        type: String,
-                        statePath: 'language',
-                    },
-                    /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        reflectToAttribute: true,
-                        notify: true,
-                    },
-                    /**
-                    * Username represents the users username
-                    * @type {String}
-                    */
-                    username: {
-                        type: String,
-                        statePath: 'username',
-                    },
-                    /**
-                    * Avatar represents the user's base64 of their avatar image
-                    * @type {String}
-                    */
-                    avatar: {
-                        type: String,
-                        statePath: 'avatar',
-                    },
-                    /**
-                    * Balance represents the users SWT balance
-                    * @type {Number}
-                    */
-                    balance: {
-                        type: Number,
-                        statePath: AppStore.selectors.balance, // eslint-disable-line
-                    },
-                    /**
-                    * loadingBalance is the currently loaded hashtagItem object
-                    * @type {Object}
-                    */
-                    loadingBalance: {
-                        type: Boolean,
-                        value: false,
-                    },
-                    /**
-                    * route data represents the current route
-                    * @type {Object}
-                    */
-                    route: {
-                        type: Object,
-                    },
-                    /**
-                    * PublicKey represents the user's public key
-                    * @type {String}
-                    */
-                    publicKey: {
-                        type: String,
-                        statePath: 'publicKey',
-                    },
-                };
-            }
-
-            /**
-            * Fired when the component first loads
-            */
-
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-            * takes the user to the my-profile page
-            */
-            _toProfile() {
-                this.dispatchEvent(new CustomEvent('profile'));
-            }
-            /**
-            * go to the page create account
-            * @param {Object} event element clicked.
-            */
-            _toCreateAccount(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    sessionStorage.setItem('origin', this.route.path);
-                    this.path = 'create-account/';
-                }
-            }
-
-
-            /**
-            * takes the user to the my-wallet page
-            */
-            _toWallet() {
-                this.dispatchEvent(new CustomEvent('wallet'));
-            }
+      connectedCallback() {
+        super.connectedCallback();
+        this.loadResources(this.resolveUrl("../text-translations.json"));
+      }
+      /**
+       * takes the user to the my-profile page
+       */
+      _toProfile() {
+        this.dispatchEvent(new CustomEvent("profile"));
+      }
+      /**
+       * go to the page create account
+       * @param {Object} event element clicked.
+       */
+      _toCreateAccount(event) {
+        if (event.keyCode === 13 || event.type == "tap") {
+          sessionStorage.setItem("origin", this.route.path);
+          this.path = "create-account/";
         }
-        window.customElements.define(DisplayMyInfo.is, DisplayMyInfo);
-    </script>
+      }
+
+      /**
+       * takes the user to the my-wallet page
+       */
+      _toWallet() {
+        this.dispatchEvent(new CustomEvent("wallet"));
+      }
+    }
+    window.customElements.define(DisplayMyInfo.is, DisplayMyInfo);
+  </script>
 </dom-module>
