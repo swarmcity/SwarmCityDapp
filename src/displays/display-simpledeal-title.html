@@ -87,7 +87,7 @@
         color: var(--sc-white);
       }
       display-simpledeal-about {
-        margin-top: 159px;
+        margin-top: -100vh;
         position: fixed;
         z-index: 2;
       }
@@ -97,8 +97,10 @@
       query-matches="{{wide}}"
     ></iron-media-query>
     <display-simpledeal-about
+      id="about"
       language="[[language]]"
       hashtag="[[hashtag]]"
+      on-close="_close"
     ></display-simpledeal-about>
     <div class="container" wide-layout$="{{wide}}">
       <dom-if if="{{!hashtag.hashtagName}}">
@@ -112,7 +114,7 @@
             <span class="hashtagsymbol">#</span>{{ hashtag.hashtagName }}
           </div>
           <div id="togglebox">
-            <div id="infolink" class="toggle untoggled" on-tap="(_toggle)">
+            <div id="infolink" class="toggle untoggled" on-tap="_toggle">
               i
             </div>
           </div>
@@ -151,6 +153,9 @@
           }
         };
       }
+      _close() {
+        this._toggle();
+      }
       _toggle() {
         this.showDetails = !this.showDetails;
         if (this.showDetails) {
@@ -159,12 +164,42 @@
           this.shadowRoot
             .querySelector("#infolink")
             .classList.remove("untoggled");
+
+          this.shadowRoot
+            .querySelector("#about")
+            .animate(
+              [
+                { transform: "translateY(0)" },
+                { transform: "translateY(100vh)" }
+              ],
+              {
+                fill: "both",
+                duration: 250,
+                direction: "normal",
+                easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
+              }
+            );
         } else {
           this.shadowRoot.querySelector("#infolink").classList.add("untoggled");
           this.shadowRoot.querySelector("#togglebox").classList.remove("blue");
           this.shadowRoot
             .querySelector("#infolink")
             .classList.remove("toggled");
+
+          this.shadowRoot
+            .querySelector("#about")
+            .animate(
+              [
+                { transform: "translateY(100vh)" },
+                { transform: "translateY(0)" }
+              ],
+              {
+                fill: "both",
+                duration: 250,
+                direction: "normal",
+                easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
+              }
+            );
         }
       }
     }
