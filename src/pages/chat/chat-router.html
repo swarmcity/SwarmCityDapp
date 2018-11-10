@@ -4,8 +4,6 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../redux-state.html">
 <!--
@@ -17,9 +15,8 @@ This code may only be used under the license found at https://github.com/swarmci
     <template>
         <style include="shared-styles">
         </style>
-        <app-location route="{{route}}"></app-location>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        test
+        <socket-redux id="socket"></socket-redux>
+        <div on-tap="_test">PRESS ME TO INSTANTIATE A CHAT</div>
     </template>
 
     <script>
@@ -46,19 +43,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                 };
             }
-            _handleOnRoute(e) {
-                this.set('route.path', e.detail);
-            }
-            _handleOnBack() {
-                this.set('route.path', 'hashtag-list/');
-            }
-            _handleOnWallet() {
-                sessionStorage.setItem('origin', this.route.path);
-                this.set('route.path', 'my-wallet');
-            }
-            _handleOnProfile() {
-                sessionStorage.setItem('origin', this.route.path);
-                this.set('route.path', 'my-profile');
+            _test() {
+                console.log('test chat');
+                this.$.socket._startChat({
+                    address: this.address,
+                    members: [],
+                    itemHash: ''
+                })
             }
         }
         window.customElements.define(MyChatRouter.is, MyChatRouter);
