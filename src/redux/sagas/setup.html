@@ -5,9 +5,36 @@
 <script src="./cids.min.js"></script>
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
+<script src="./HdWallet.min.js"></script>
+
+<!-- 
+          ==========================
+                Master Key (m = hash(privateKey))
+          ==========================
+             /               \
+        CKD(m,0)            CKD(m,1)
+           |                   |
+      ===========      ==================
+      Item Wallet      Access chat wallet
+      ===========      ==================
+           |                   |
+ CKD(m/tk,itemNonce_n)   CKD(m/ch,itemHash_n)
+           |                   |
+      ===========      ==================
+      Item Wallet      Access chat wallet
+    ed25519 keypair  x25519-xsalsa20-poly1305 keypair
+      ===========      ==================
+      Used to sign     Used to let the seeker
+      msgs proving     give access to this user
+      chat rights     (provider) to the item chat
+                  
+ -->
 
 <script>
     (function () {
+        // Initialize hdWallet
+        window.hdWallet = new HdWallet()
+
         // Initialize web3Local
         // const url = 'wss://kovan.infura.io/ws   '
         const url = 'ws://178.128.207.83:8546' // Swarm City Chain
@@ -17,8 +44,8 @@
 
         // 159.100.255.71:8546 or 8645
 
-        console.log('Redux-sagas is using web3Local version: ', web3Local.version,'host: ', web3Local.currentProvider)
-        console.log('Redux-sagas is using web3Mainnet version: ', web3Mainnet.version,'host: ', web3Mainnet.currentProvider)
+        console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
+        console.log('Redux-sagas is using web3Mainnet version: ', web3Mainnet.version, 'host: ', web3Mainnet.currentProvider)
 
         /*
          * Setup IPFS with a simple retry async flow. 
