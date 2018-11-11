@@ -122,12 +122,25 @@
             }))
         }
 
+        function isIpfsHash(hash) {
+            try {
+                const cid = new CID(hash)
+                return true
+            } catch (e) {
+                return false
+            }
+        }
+
         function ipfsCat(hash) {
-            if (hash && !hash.startsWith('Qm')) {
-                // Assuming hash is actually a bytes32
+            if (!hash) {
+                throw Error('In ipfs.cat, hash is not defined')
+            }
+            // First check if the hash is a bytes32 and needs conversion
+            // Case 1. Starts with "0x", hash for sure
+            // Case 2. Check if it is not an ipfs hash
+            if (hash.startsWith('0x') || !isIpfsHash(hash)) {
                 hash = bytes32ToHash(hash)
             }
-            console.log(hash)
             return ipfs.cat(hash).then(file => file.toString('utf8'))
         }
 
