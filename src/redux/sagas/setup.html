@@ -106,7 +106,7 @@
             }
             if (bytes32.startsWith('0x')) bytes32 = bytes32.slice(2)
             // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
-            const cid = new CID(1, 'raw', buffer.Buffer('1220' + bytes32, 'hex'))
+            const cid = new CID(0, 'raw', buffer.Buffer('1220' + bytes32, 'hex'))
             // Returns a base encodec string of the CID. Defaults to base58btc.
             // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
             return cid.toBaseEncodedString()
@@ -141,6 +141,7 @@
             if (hash.startsWith('0x') || !isIpfsHash(hash)) {
                 hash = bytes32ToHash(hash)
             }
+            console.log('Catting hash', hash)
             return ipfs.cat(hash).then(file => file.toString('utf8'))
         }
 
