@@ -9,6 +9,7 @@
         const _web3 = window.web3Local
         const sha3 = webpack.sha3
         const ipfs = window.ipfs
+        const hdWallet = window.hdWallet
 
         const {
             kovSwtToken,
@@ -17,7 +18,7 @@
         } = contractsData;
 
         async function createNewItemAsync({ seeker, item, hashtag }) {
-
+            debugger
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: seeker.username,
@@ -31,12 +32,15 @@
 
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
-            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
+            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);   
+
+            // generate the itemHash
+            const itemHash = hdWallet.createItem(seeker.privateKey);
 
             // 1. Encode the newItem method to be sent through approveAndCall
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             const rawNewItem = simpleDealContract.methods.newItem(
-                item.hash,
+                itemHash,
                 itemBudgetWei,
                 metadataHash.bytes32
             ).encodeABI();
@@ -71,12 +75,19 @@
         }
 
         async function createNewReplyAsync({ replier, reply, hashtag }) {
+
+            const hashArray = hdWallet.util.toUint8Array(reply.itemHash);
+            
+            // Add the accessKey
+            const accessKey = hdWallet.requestAccess(replier.privateKey, hashArray);
+
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: replier.username,
                 avatarHash: localStorage.getItem('avatarHash'),
                 replierAddress: replier.address,
                 message: reply.message,
+                accessKey: accessKey,
             }))
 
             // 1. Encode the raw replyItem
@@ -109,6 +120,9 @@
         }
 
         async function selectReplierAsync({ seeker, replierAddress, itemHash, hashtagAddress }) {
+            // Seeker gives Chat access to the provider
+            await hdWallet.giveAccess(seeker.privateKey, itemHash, accessKeyProvider);
+
             // 1. Encode the raw selectReplier
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
             const rawSelectReplier = simpleDealContract.methods.selectReplier(
@@ -184,7 +198,7 @@
             const rawPayoutItem = simpleDealContract.methods.payoutItem(
                 itemHash,
             ).encodeABI();
-            debugger
+            
             // 2. Get user's nonce
             const nonce = await _web3.eth.getTransactionCount(seeker.address);
 
