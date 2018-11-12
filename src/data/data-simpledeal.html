@@ -28,6 +28,7 @@
                     .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
                     .toString('hex')
             }))
+            debugger
 
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
@@ -69,8 +70,8 @@
 
             // 4. Send transaction, await receipt. 
             // Extra line for clarity
-            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
-            return hash
+            const txHash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return { txHash, itemHash }
         }
 
         async function createNewReplyAsync({ replier, reply, hashtag }) {

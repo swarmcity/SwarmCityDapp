@@ -199,8 +199,9 @@ This code may only be used under the license found at https://github.com/swarmci
                             console.log('About to post item: ', { seeker, item, hashtag });
 
                             this.$.simpledeal.createNewItem({ seeker, item, hashtag })
-                                .then(receipt => {
-                                    console.log('Successfully transacted item, receipt:', receipt)
+                                .then(res => {
+                                    const { txHash, itemHash } = res;
+                                    console.log('Successfully transacted item, receipt:', txHash)
                                     this.status = 'success'
                                     this.dispatch({
                                         type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
