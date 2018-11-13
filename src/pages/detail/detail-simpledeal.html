@@ -238,16 +238,23 @@ This code may only be used under the license found at https://github.com/swarmci
                                 address,
                                 privateKey
                             }
-                            const replierAddress = this.replyDetail.replierAddress;
-                            const itemHash = this.item.itemHash;
-                            const hashtagAddress = this.hashtag.address;
 
-                            this.$.simpledeal.selectReplier({ seeker, replierAddress, itemHash, hashtagAddress })
+                            const provider = {
+                                address: this.replyDetail.replierAddress,
+                                accessKey: this.replyDetail.accessKey
+                            }
+
+                            const item = {
+                                itemHash: this.item.itemHash,
+                                hashtag: this.hashtag.address
+                            }
+
+                            this.$.simpledeal.selectReplier({ seeker, provider, item })
                                 .then(receipt => {
                                     console.log('Successfully transacted select replier, receipt:', receipt)
                                     this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                                            providerAddress: replierAddress,
+                                        type: 'UPDATE_ITEM', hashtagAddress: item.hashtag, itemHash: item.itemHash, data: {
+                                            providerAddress: provider.address,
                                             status: 'selected-pending',
                                         }
                                     })

@@ -118,15 +118,16 @@
             return hash
         }
 
-        async function selectReplierAsync({ seeker, replierAddress, itemHash, hashtagAddress }) {
+        async function selectReplierAsync({ seeker, provider, item }) {
             // Seeker gives Chat access to the provider
-            await hdWallet.giveAccess(seeker.privateKey, itemHash, accessKeyProvider);
+            debugger
+            await hdWallet.giveAccess(seeker.privateKey, item.itemHash, provider.accessKey);
 
             // 1. Encode the raw selectReplier
-            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, item.hashtag);
             const rawSelectReplier = simpleDealContract.methods.selectReplier(
-                itemHash,
-                replierAddress
+                item.itemHash,
+                provider.address
             ).encodeABI();
 
             // 2. Get user's nonce
@@ -138,7 +139,7 @@
                 from: seeker.address,
                 gasPrice: 1000000000,
                 gasLimit: 3000000,
-                to: hashtagAddress,
+                to: item.hashtag,
                 data: rawSelectReplier,
                 chainId: 42,
             });
