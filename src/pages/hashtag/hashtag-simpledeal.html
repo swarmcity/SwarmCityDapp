@@ -86,7 +86,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="[[!_hasHashtag(hashtag)]]">
                 <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
             </template>
@@ -100,6 +100,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="middle">
                     <div class="filterbox">filter deals</div>
                     <div class="flex"></div>
+                    <div class="counterbox" on-tap="_backToTop">[[count]] active
+                        <div class="icon-scroll"></div>
+                    </div>
                 </div>
 
                 <template is="dom-repeat" items="[[items]]" filter="_isNotInvolved">
@@ -164,6 +167,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.dispatchEvent(new CustomEvent('route', {
                     detail: `/new-request/${this.hashtag.address}`,
                 }));
+            }
+            _backToTop() {
+                let scrollDuration = 250;
+                let scrollStep = -this.parentElement.scrollTop / (scrollDuration / 15);
+                let scrollInterval = setInterval(() => {
+                    if (this.parentElement.scrollTop != 0) {
+                        this.parentElement.scrollTop += scrollStep;
+                    }
+                    else clearInterval(scrollInterval);
+                },
+                    15);
             }
 
         }

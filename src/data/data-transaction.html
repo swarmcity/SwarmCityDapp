@@ -63,12 +63,15 @@
                 receiverAddress,
                 amount,
                 tokenContractAddress }) {
+
+                let tokens = _web3.utils.toWei(amount.toString(), 'ether');
+
                 const tokenContract = new webpack.Contract(
                     kovSwtToken.abi,
                     tokenContractAddress);
                 let rawTokenTx = tokenContract.methods.transfer(
                     receiverAddress,
-                    weiAmount
+                    tokens
                 ).encodeABI();
 
                 // 2. Get user's nonce

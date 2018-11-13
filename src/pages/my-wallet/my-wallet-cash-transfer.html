@@ -18,6 +18,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./my-wallet-cash-transfer-not-found.html">
 <link rel="import" href="../../displays/display-confirm.html">
 <link rel="import" href="../../displays/display-processing.html">
+<link rel="import" href="../../displays/display-success.html">
 
 <dom-module id="my-wallet-cash-transfer">
     <template>
@@ -63,6 +64,10 @@ This code may only be used under the license found at https://github.com/swarmci
             <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
                 <display-processing></display-processing>
             </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
+                <display-success success-title="[[successTitle]]" on-close="_handleOnClose"></display-success>
+            </template>
         </div>
     </template>
     <script>
@@ -90,6 +95,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     receiver: Object,
                     confirmTitle: String,
                     confirmSubtitle: String,
+                    successTitle: String,
                 }
             }
 
@@ -149,10 +155,11 @@ This code may only be used under the license found at https://github.com/swarmci
 
                     const tokenContractAddress = '0x0adbc89464cb7fa752adcf3533514949a2547589';
 
-
-                    this.$.transaction.tokenTx({ sender, receiverAddress: this.receiver.address, weiAmount: this.amount, tokenContractAddress })
+                    this.$.transaction.tokenTx({ sender, receiverAddress: this.receiver.address, amount: this.amount, tokenContractAddress })
                         .then(receipt => {
                             console.log('Successfully sent tokens, receipt:', receipt);
+                            this.successTitle = 'SWT has been sent.'
+                            this.status = 'success'
                         })
                         .catch(err => {
                             console.log('Error sending tokens:', err)
@@ -164,7 +171,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnConfirm() {
                 this.status = 'confirm';
-                this.confirmTitle = `You're about to send ${this.amount / 1e18} SWT to ${this.receiver.username}`;
+                this.confirmTitle = `You're about to send ${this.amount} SWT to ${this.receiver.username}`;
                 this.confirmSubtitle = 'This can not be undone.'
                 this.disableScroll();
                 window.scrollTo(0, 0);
