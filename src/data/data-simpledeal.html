@@ -28,7 +28,7 @@
                     .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
                     .toString('hex')
             }))
-            debugger
+            console.log('item metadata: ', metadataHash)
 
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
@@ -76,11 +76,10 @@
 
         async function createNewReplyAsync({ replier, reply, hashtag }) {
 
-            const hashArray = hdWallet.util.toUint8Array(reply.itemHash);
+            // const hashArray = hdWallet.util.toUint8Array(reply.itemHash);
             
             // Add the accessKey
-            const accessKey = hdWallet.requestAccess(replier.privateKey, hashArray);
-
+            const accessKey = hdWallet.requestAccess(replier.privateKey, reply.itemHash);
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: replier.username,

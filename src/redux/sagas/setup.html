@@ -6,162 +6,175 @@
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
 
-<!-- 
-          ==========================
-                Master Key (m = hash(privateKey))
-          ==========================
-             /               \
-        CKD(m,0)            CKD(m,1)
-           |                   |
-      ===========      ==================
-      Item Wallet      Access chat wallet
-      ===========      ==================
-           |                   |
- CKD(m/tk,itemNonce_n)   CKD(m/ch,itemHash_n)
-           |                   |
-      ===========      ==================
-      Item Wallet      Access chat wallet
-    ed25519 keypair  x25519-xsalsa20-poly1305 keypair
-      ===========      ==================
-      Used to sign     Used to let the seeker
-      msgs proving     give access to this user
-      chat rights     (provider) to the item chat
-                  
- -->
+<!--
+           ==========================
+                 Master Key (m = hash(privateKey))
+           ==========================
+              /               \
+         CKD(m,0)            CKD(m,1)
+            |                   |
+       ===========      ==================
+       Item Wallet      Access chat wallet
+       ===========      ==================
+            |                   |
+  CKD(m/tk,itemNonce_n)   CKD(m/ch,itemHash_n)
+            |                   |
+       ===========      ==================
+       Item Wallet      Access chat wallet
+     ed25519 keypair  x25519-xsalsa20-poly1305 keypair
+       ===========      ==================
+       Used to sign     Used to let the seeker
+       msgs proving     give access to this user
+       chat rights     (provider) to the item chat
+-->
 
 <script>
-    (function () {
+  (function() {
+    // Initialize web3Local
+    // const url = 'wss://kovan.infura.io/ws   '
+    const url = "ws://178.128.207.83:8546"; // Swarm City Chain
+    // const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
+    window.web3Local = new Web3(url);
+    window.web3Mainnet = new Web3("wss://mainnet.infura.io/ws");
 
-        // Initialize web3Local
-        // const url = 'wss://kovan.infura.io/ws   '
-        const url = 'ws://178.128.207.83:8546' // Swarm City Chain
-        // const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
-        window.web3Local = new Web3(url);
-        window.web3Mainnet = new Web3('wss://mainnet.infura.io/ws');
+    // 159.100.255.71:8546 or 8645
 
-        // 159.100.255.71:8546 or 8645
+    console.log(
+      "Redux-sagas is using web3Local version: ",
+      web3Local.version,
+      "host: ",
+      web3Local.currentProvider
+    );
+    console.log(
+      "Redux-sagas is using web3Mainnet version: ",
+      web3Mainnet.version,
+      "host: ",
+      web3Mainnet.currentProvider
+    );
 
-        console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
-        console.log('Redux-sagas is using web3Mainnet version: ', web3Mainnet.version, 'host: ', web3Mainnet.currentProvider)
+    /*
+     * Setup IPFS with a simple retry async flow.
+     * It will attempt each function 3 times before returning the error
+     *
+     **/
+    const ipfs = IpfsApi("localhost", "5001", { protocol: "http" });
+    console.log("Redux-sagas is using ipfs at http://localhost:5001");
 
-        /*
-         * Setup IPFS with a simple retry async flow. 
-         * It will attempt each function 3 times before returning the error
-         * 
-        **/
-        const ipfs = IpfsApi('localhost', '5001', { protocol: 'http' })
-        console.log('Redux-sagas is using ipfs at http://localhost:5001')
-
-        const retryable = (fn, times = 3) => (...args) => new Promise((resolve, reject) => {
-            let attempt = 0
-            function retryAttempt() {
-                fn(...args).then(
-                    resolve,
-                    e => {
-                        if (e && attempt++ < times) setTimeout(retryAttempt, 1000 * Math.random())
-                        else reject(e)
-                    }
-                )
-            }
-            retryAttempt()
-        })
-
-        // Dependencies:
-        const Buffer = window.buffer.Buffer
-        const CID = window.CID
-
-        // Return bytes32 hex string from base58 encoded ipfs hash,
-        // Enforces that the encoding is SHA-256 32 bytes
-        // Supports CIDv0 and CIDv1
-        // |----------CID v1-----------------------------------------------------------------------------------------|
-        //       |----CID v0-----------------------------------------------------------------------------------------|
-        // 01 55 12 20 b1 02 74 3d b0 6d ab 56 5f a8 73 fc 41 28 13 90 02 34 1b 80 e2 24 f9 b8 de f7 d7 a4 e4 32 eb 10
-        // |  |  |  |  | Hash of the data (the rest of bytes)
-        // |  |  |  | Length of the hash
-        // |  |  | Hashing algorithm
-        // |  | 
-        // |
-        // 
-        // Will return the hash of the data only in hex prepended by 0x
-        function hashToBytes32(hash) {
-            const cid = new CID(hash)
-            const hashId = cid.multihash.slice(0, 2).toString('hex')
-            const bytes32 = cid.multihash.slice(2).toString('hex')
-            if (hashId !== '1220' || bytes32.length / 2 !== 32) {
-                console.error(`IPFS hash is not SHA-256 32 bytes: ${hashId} !== "1220"`)
-            } else {
-                return "0x" + bytes32
-            }
+    const retryable = (fn, times = 3) => (...args) =>
+      new Promise((resolve, reject) => {
+        let attempt = 0;
+        function retryAttempt() {
+          fn(...args).then(resolve, e => {
+            if (e && attempt++ < times)
+              setTimeout(retryAttempt, 1000 * Math.random());
+            else reject(e);
+          });
         }
+        retryAttempt();
+      });
 
-        // Return base58 encoded ipfs hash from bytes32 hex string,
-        // Assumes the hashing options are: SHA-256 32 bytes (1220)
-        // Strips leading "0x" if necessary
-        // E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
-        // --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
+    // Dependencies:
+    const Buffer = window.buffer.Buffer;
+    const CID = window.CID;
 
-        function bytes32ToHash(bytes32) {
-            if (!bytes32) {
-                throw Error('In ipfs.bytes32ToHash, hash or bytes32 is not defined')
-            }
-            if (bytes32.startsWith('0x')) bytes32 = bytes32.slice(2)
-            // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
-            const cid = new CID(0, 'raw', buffer.Buffer('1220' + bytes32, 'hex'))
-            // Returns a base encodec string of the CID. Defaults to base58btc.
-            // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
-            return cid.toBaseEncodedString()
-        }
+    // Return bytes32 hex string from base58 encoded ipfs hash,
+    // Enforces that the encoding is SHA-256 32 bytes
+    // Supports CIDv0 and CIDv1
+    // |----------CID v1-----------------------------------------------------------------------------------------|
+    //       |----CID v0-----------------------------------------------------------------------------------------|
+    // 01 55 12 20 b1 02 74 3d b0 6d ab 56 5f a8 73 fc 41 28 13 90 02 34 1b 80 e2 24 f9 b8 de f7 d7 a4 e4 32 eb 10
+    // |  |  |  |  | Hash of the data (the rest of bytes)
+    // |  |  |  | Length of the hash
+    // |  |  | Hashing algorithm
+    // |  |
+    // |
+    //
+    // Will return the hash of the data only in hex prepended by 0x
+    function hashToBytes32(hash) {
+      const cid = new CID(hash);
+      const hashId = cid.multihash.slice(0, 2).toString("hex");
+      const bytes32 = cid.multihash.slice(2).toString("hex");
+      if (hashId !== "1220" || bytes32.length / 2 !== 32) {
+        console.error(
+          `IPFS hash is not SHA-256 32 bytes: ${hashId} !== "1220"`
+        );
+      } else {
+        return "0x" + bytes32;
+      }
+    }
 
-        function ipfsAdd(data) {
-            if (!Buffer.isBuffer(data)) {
-                data = Buffer.from(data, 'utf8')
-            }
-            return ipfs.add(data, { hashAlg: 'sha2-256', "cid-version": 0 }).then(res => {
-                const hash = res[0].hash
-                if (!hash.startsWith('Qm')) console.warn('WARNING TO SWARM.CITY DEVS: ipfs cids are not being stored as v0')
-                return {
-                    hash,
-                    bytes32: hashToBytes32(hash)
-                }
-            })
-        }
+    // Return base58 encoded ipfs hash from bytes32 hex string,
+    // Assumes the hashing options are: SHA-256 32 bytes (1220)
+    // Strips leading "0x" if necessary
+    // E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
+    // --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
 
-        function isIpfsHash(hash) {
-            try {
-                const cid = new CID(hash)
-                return true
-            } catch (e) {
-                return false
-            }
-        }
+    function bytes32ToHash(bytes32) {
+      if (!bytes32) {
+        throw Error("In ipfs.bytes32ToHash, hash or bytes32 is not defined");
+      }
+      if (bytes32.startsWith("0x")) bytes32 = bytes32.slice(2);
+      // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
+      const cid = new CID(0, "raw", buffer.Buffer("1220" + bytes32, "hex"));
+      // Returns a base encodec string of the CID. Defaults to base58btc.
+      // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
+      return cid.toBaseEncodedString();
+    }
 
-        function ipfsCat(hash) {
-            if (!hash) {
-                throw Error('In ipfs.cat, hash is not defined')
-            }
-            // First check if the hash is a bytes32 and needs conversion
-            // Case 1. Starts with "0x", hash for sure
-            // Case 2. Check if it is not an ipfs hash
-            if (hash.startsWith('0x') || !isIpfsHash(hash)) {
-                hash = bytes32ToHash(hash)
-            }
-            
-            console.log('Catting hash', hash)
-            return ipfs.cat(hash).then(file => file.toString('utf8'))     
-        }
+    function ipfsAdd(data) {
+      if (!Buffer.isBuffer(data)) {
+        data = Buffer.from(data, "utf8");
+      }
+      return ipfs
+        .add(data, { hashAlg: "sha2-256", "cid-version": 0 })
+        .then(res => {
+          const hash = res[0].hash;
+          if (!hash.startsWith("Qm"))
+            console.warn(
+              "WARNING TO SWARM.CITY DEVS: ipfs cids are not being stored as v0"
+            );
+          return {
+            hash,
+            bytes32: hashToBytes32(hash)
+          };
+        });
+    }
 
-        window.ipfs = {
-            add: retryable(ipfsAdd),
-            cat: retryable(ipfsCat)
-        }
+    function isIpfsHash(hash) {
+      try {
+        const cid = new CID(hash);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
 
-        window.ipfsUtils = {
-            bytes32ToHash,
-            hashToBytes32
-        }
+    function ipfsCat(hash) {
+      if (!hash) {
+        throw Error("In ipfs.cat, hash is not defined");
+      }
+      // First check if the hash is a bytes32 and needs conversion
+      // Case 1. Starts with "0x", hash for sure
+      // Case 2. Check if it is not an ipfs hash
+      if (hash.startsWith("0x") || !isIpfsHash(hash)) {
+        hash = bytes32ToHash(hash);
+      }
+      
+      console.log("Catting hash", hash);
+      return ipfs.cat(hash).then(file => file.toString("utf8"));
+    }
 
-        // Import contract data:
-        // const { kovSwtToken, hashtagList, simpleDeal } = window.contractsData;
+    window.ipfs = {
+      add: retryable(ipfsAdd),
+      cat: retryable(ipfsCat)
+    };
 
-    }());
+    window.ipfsUtils = {
+      bytes32ToHash,
+      hashToBytes32
+    };
+
+    // Import contract data:
+    // const { kovSwtToken, hashtagList, simpleDeal } = window.contractsData;
+  })();
 </script>

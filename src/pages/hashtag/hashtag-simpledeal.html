@@ -47,7 +47,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] {
                 padding: 0px 0 10px 10vw;
-                max-width: 78vw;
+                padding-right: 22vw;
+                margin-top: 159px;
             }
 
             .filterbox {
@@ -140,12 +141,14 @@ This code may only be used under the license found at https://github.com/swarmci
 
             }
             _isInvolved(item) {
-                return (
-                    this.address
-                    && item
-                    && (item.seekerAddress == this.address || item.providerAddress == this.address)
-                    && (!item.status) || item.status != '2'
-                )
+                let involved = false;
+                if (this.address) {
+                    if (item.seekerAddress == this.address) involved = true;
+                    if (item.providerAddress == this.address) involved = true;
+                    if (item.providerAddress == this.address) involved = true;
+                }
+                if (item.status && item.status == '2') involved = false
+                return involved;
             }
 
             _isNotInvolved(item) {
