@@ -279,6 +279,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             ready() {
                 super.ready();
+                // All handlers attached - please connect..
+                this.socket.connect();
                 // Listen for changes in the exchange rates
                 this.socket.on('fxChanged', (reply) => {
                     this.dispatch({
@@ -286,8 +288,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         fx: reply
                     });
                 });
-                // All handlers attached - please connect..
-                this.socket.connect();
+                // Listen for changes in the chat channels
+                this.socket.on('chatChanged', (chatObject) => {
+                    if ('itemHash' in chatObject) {
+                        this.dispatch({ type: 'UPDATE_CHAT', chatObject, itemHash: chatObject.itemHash })
+                    } else {
+                        console.error('chat object doesn\'t contain an itemHash: ', chatObject);
+                    }
+                });
             }
 
             /**
@@ -475,7 +483,6 @@ This code may only be used under the license found at https://github.com/swarmci
                                     key: 'secret',
                                     username: seeker.username,
                                     avatarHash: seeker.avatar,
-
                                 }
                             ],
                             itemHash,
@@ -485,6 +492,22 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                         else {
                             reject(new Error('Chat channel creation error: ' + reply.data));
+                        }
+                    });
+                });
+            }
+
+            _openChat({address, itemHash}) {
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('subscribeToChat', {
+                            emitterAddress: address,
+                            itemHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Chat channel joining error: ' + reply.data));
                         }
                     });
                 });

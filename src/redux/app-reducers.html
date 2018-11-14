@@ -31,6 +31,7 @@
             avatar: avatar,
             publicKey: publicKey,
             nonce: -1,
+            chats: {},
             broadcast: null,
             shortCode: null,
             toAddress: null,
@@ -376,15 +377,6 @@
                         userReputation: action.userReputation
                     }
                 }
-
-                // chatHistory is the object containing the full chat history
-                // ##### DANGEROUS, Triggers _chatHistory() in socket-redux, and does 3 things simultaneously
-                case 'CHATHISTORY': {
-                    return {
-                        ...state,
-                        chatHistory: action.chatHistory
-                    }
-                }
                 // the newChatMessage object contains a new chat message for a chat subscription
                 // ##### Triggers _newChatMessage() in socket-redux
                 case 'NEWCHATMESSAGE': {
@@ -451,9 +443,19 @@
                         }
                     })
                 }
+                case 'UPDATE_CHAT': {
+                    return {
+                        ...state,
+                        chats: {
+                            ...state.chats, 
+                            [action.itemHash]: action.chatObject 
+                        }
+                    }
+                }
                 default: {
                     return state
                 }
+                
             }
         };
         if (!window.AppStore) window.AppStore = {}
