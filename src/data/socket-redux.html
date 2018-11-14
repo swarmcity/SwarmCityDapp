@@ -252,7 +252,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io('https://apiweb3.swarm.city', // eslint-disable-line
+                this.socket = io('https://scapiweb3-c.swarm.city', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -480,7 +480,12 @@ This code may only be used under the license found at https://github.com/swarmci
                             ],
                             itemHash,
                     }, (reply) => {
-                        console.log('Instantiate chat channel: ', reply)
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Chat channel creation error: ' + reply.data));
+                        }
                     });
                 });
             }
