@@ -16,6 +16,10 @@ import {
     createCipheriv,
     pbkdf2Sync,
     createDecipheriv} from 'crypto';
+    import {
+    encryptWithPublicKey,
+    decryptWithPrivateKey
+    } from  'eth-crypto';
     import scrypt from 'scryptsy';
     import uuid from 'uuid';
     import Buffer from 'buffer';
@@ -48,5 +52,7 @@ export {
     moment,
     EthereumTx,
     Contract,
-    BN
+    BN,
+    encryptWithPublicKey,
+    decryptWithPrivateKey
 };
