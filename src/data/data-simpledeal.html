@@ -30,7 +30,11 @@
 
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
-            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);   
+
+            let tokens = _web3.utils.toWei(item.budget.toString(), 'ether');
+            let bntokens = _web3.utils.toBN(tokens)
+            let bnfee = _web3.utils.toBN(parseInt(hashtag.fee) / 2)
+            let totalSum = bntokens.add(bnfee).toString();
 
             // generate the itemHash
             const itemHash = hdWallet.createItem(seeker.privateKey);
@@ -39,7 +43,7 @@
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             const rawNewItem = simpleDealContract.methods.newItem(
                 itemHash,
-                itemBudgetWei,
+                tokens,
                 metadataHash.bytes32
             ).encodeABI();
             const tokenContract = new _web3.eth.Contract(kovSwtToken.abi, hashtag.tokenAddress);

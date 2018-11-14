@@ -161,6 +161,14 @@ The following custom properties and mixins are available for styling:
             .pending {
                 opacity: 0.5;
             }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .chat-icon {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -189,9 +197,9 @@ The following custom properties and mixins are available for styling:
                     </div>
                 </div>
                 <div class$="{{_checkPending(item.status)}}">
-                    <!-- <div class="chat-button" on-tap="_toChat">
+                    <div class="chat-button" on-tap="_toChat">
                         <div class="chat-icon"></div>
-                    </div> -->
+                    </div>
                     <div class="white-text">You're in a deal!</div>
                     <template is="dom-if" if="[[_isSeeker(item.seekerAddress, address)]]">
                         <div class="button" on-tap="_payout">
@@ -311,7 +319,7 @@ The following custom properties and mixins are available for styling:
             * Change the route to the chat view
             */
             _toChat() {
-                // this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
+                this.dispatchEvent(new CustomEvent('chat'));
             }
 
             _checkPending(status) {

@@ -1,0 +1,58 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/app-route/app-location.html"
+/>
+<link rel="import" href="../../redux-state.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="./chat-top.html" />
+<link rel="import" href="./chat-messages.html" />
+<link rel="import" href="./chat-new.html" />
+
+<dom-module id="page-chat">
+  <template>
+    <app-location route="{{route}}"></app-location>
+    <chat-top on-close="_handleOnClose"></chat-top>
+    <chat-new></chat-new>
+    <chat-messages></chat-messages>
+  </template>
+  <script>
+    class MyChatRouter extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "page-chat";
+      }
+      static get properties() {
+        return {
+          route: Object,
+          hashtag: {
+            type: Object,
+            statePath: AppStore.selectors.hashtag
+          },
+          item: {
+            type: Object,
+            statePath: AppStore.selectors.item
+          }
+        };
+      }
+      _handleOnClose() {
+        this.set(
+          "route.path",
+          `detail/${this.hashtag.address}/${this.item.itemHash}`
+        );
+      }
+    }
+    window.customElements.define(MyChatRouter.is, MyChatRouter);
+  </script>
+</dom-module>

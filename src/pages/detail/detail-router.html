@@ -26,7 +26,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
         <detail-simpledeal status="[[status]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]" username="[[username]]"
-            avatar="[[avatar]]" address="[[address]]" on-status="_handleOnStatus" on-close="_handleOnClose">
+            avatar="[[avatar]]" address="[[address]]" on-status="_handleOnStatus" on-close="_handleOnClose" on-chat="_handleOnChat">
         </detail-simpledeal>
     </template>
     <script>
@@ -103,9 +103,9 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnStatus(e) {
                 this.status = e.detail;
             }
-            /**
-            * changes the current path
-            */
+            _handleOnChat() {
+                this.set('route.path', `chat/${this.hashtag.address}/${this.item.itemHash}`);
+            }
             _handleOnClose() {
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
                 this.status = 'replies';
