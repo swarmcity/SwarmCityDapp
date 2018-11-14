@@ -24,9 +24,7 @@
                 avatarHash: localStorage.getItem('avatarHash'),
                 description: item.description,
                 location: item.location,
-                publicKeySeeker: webpack
-                    .privateToPublic(new Buffer(seeker.privateKey, 'hex'))
-                    .toString('hex')
+                publicKeySeeker: seeker.publicKey
             }))
             console.log('item metadata: ', metadataHash)
 
@@ -120,7 +118,7 @@
 
         async function selectReplierAsync({ seeker, provider, item }) {
             // Seeker gives Chat access to the provider
-            await hdWallet.giveAccess(seeker.privateKey, item.itemHash, provider.accessKey);
+            // await hdWallet.giveAccess(seeker.privateKey, item.itemHash, provider.accessKey);
 
             // 1. Encode the raw selectReplier
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, item.hashtag);
