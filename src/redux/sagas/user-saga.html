@@ -1,7 +1,7 @@
 <script>
     (function () {
         // Items initialized in setup.html
-        const { web3Mainnet, web3Local, ipfs, ReduxSaga, contractsData } = window;
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
         const { call, fork, take, put, takeEvery, all } = effects;
@@ -124,15 +124,9 @@
                 kovSwtToken.address
             );
 
-            const mainSwtContractInstance = new web3Mainnet.eth.Contract(
-                mainSwtToken.abi,
-                mainSwtToken.address
-            );
-
             const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
-            const main = await mainSwtContractInstance.methods.balanceOf(address).call()
-
-            return {main, kovan};
+            
+            return {kovan};
         }
 
         function* getBalance(action) {
