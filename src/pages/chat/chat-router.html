@@ -21,9 +21,10 @@
 
 <dom-module id="page-chat">
   <template>
+    <socket-redux id="socket"></socket-redux>
     <app-location route="{{route}}"></app-location>
     <chat-top on-close="_handleOnClose"></chat-top>
-    <chat-new></chat-new>
+    <chat-new avatar="[[avatar]]" on-send="_handleOnSend"></chat-new>
     <chat-messages></chat-messages>
   </template>
   <script>
@@ -47,15 +48,42 @@
           chat: {
             type: Object,
             statePath: AppStore.selectors.chat
+          },
+          avatar: {
+            type: String,
+            statePath: AppStore.selectors.avatar
+          },
+          address: {
+            type: String,
+            statePath: AppStore.selectors.address
           }
         };
       }
       _handleOnClose() {
-        console.log(this.chat)
-        // this.set(
-        //   "route.path",
-        //   `detail/${this.hashtag.address}/${this.item.itemHash}`
-        // );
+        this.set(
+          "route.path",
+          `detail/${this.hashtag.address}/${this.item.itemHash}`
+        );
+      }
+      _handleOnSend(e) {
+        const message = {
+          sender: this.address,
+          time: Math.floor(Date.now() / 1000),
+          message: e.detail
+        };
+        this.$.socket
+          ._sendChatMessage({
+            itemHash: this.item.itemHash,
+            message
+          })
+          .then(() => {
+            console.log(
+              "Successfully sent chat message"
+            );
+          })
+          .catch(err => {
+            console.log("Error sending chat message: ", err);
+          });
       }
     }
     window.customElements.define(MyChatRouter.is, MyChatRouter);

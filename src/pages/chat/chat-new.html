@@ -105,7 +105,7 @@
           class="avatar-main"
           sizing="cover"
           preload
-          src="https://scapiweb3-c.swarm.city/img/[[user.avatarHash]]"
+          src="https://scapiweb3-c.swarm.city/img/[[avatar]]"
           placeholder="../images/defaultavatar.png"
         >
         </iron-image>
@@ -113,12 +113,12 @@
           type="txt"
           value="{{message}}"
           autofocus
-          on-keypress="(_checkForEnter)"
+          on-keypress="_checkForEnter"
         ></paper-input>
         <div
           class="input-confirm"
-          on-up="(_sendMessage)"
-          on-keypress="(_checkForEnter)"
+          on-up="_sendMessage"
+          on-keypress="_checkForEnter"
         >
           <div class="input-confirm-icon"></div>
         </div>
@@ -134,10 +134,31 @@
       }
       static get properties() {
         return {
-          route: {
-            type: Object
-          }
+          avatar: String
         };
+      }
+      /**
+       * check if user pressed enter
+       * @param {object} e the fired event
+       */
+      _checkForEnter(e) {
+        if (e.keyCode === 13 && this.message) {
+          this._sendMessage();
+        }
+      }
+      /**
+       * send a new message on this item
+       */
+      _sendMessage() {
+        if (this.message) {
+          this.dispatchEvent(
+            new CustomEvent("send", {
+              detail: this.message
+            })
+          );
+          this.message = this.message.trim();
+          this.message = "";
+        }
       }
     }
     window.customElements.define(MyChatNew.is, MyChatNew);

@@ -37,8 +37,30 @@
     // const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
     window.web3Local = new Web3(url);
     // window.web3Mainnet = new Web3("wss://mainnet.infura.io/ws");
-
     // 159.100.255.71:8546 or 8645
+
+    // const RINKEBY_WSS = "wss://rinkeby.infura.io/ws";
+    // var provider = new Web3.providers.WebsocketProvider(RINKEBY_WSS);
+    // var web3 = new Web3(provider);
+
+    // provider.on("error", e => console.log("WS Error", e));
+    // provider.on("end", e => {
+    //   console.log("WS closed");
+    //   console.log("Attempting to reconnect...");
+    //   provider = new Web3.providers.WebsocketProvider(RINKEBY_WSS);
+
+    //   provider.on("connect", function() {
+    //     console.log("WSS Reconnected");
+    //   });
+
+    //   web3.setProvider(provider);
+    // });
+
+
+
+
+
+    
 
     console.log(
       "Redux-sagas is using web3Local version: ",
@@ -57,7 +79,6 @@
     // console.log("Redux-sagas is using ipfs at https://ipfs.infura.io:5001");
     const ipfs = IpfsApi("ipfs.swarm.city", "443", { protocol: "https" });
     console.log("Redux-sagas is using ipfs at https://ipfs.swarm.city:443");
-
 
     const retryable = (fn, times = 3) => (...args) =>
       new Promise((resolve, reject) => {
@@ -158,7 +179,7 @@
       if (hash.startsWith("0x") || !isIpfsHash(hash)) {
         hash = bytes32ToHash(hash);
       }
-      
+
       console.log("Catting hash", hash);
       return ipfs.cat(hash).then(file => file.toString("utf8"));
     }
