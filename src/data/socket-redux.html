@@ -296,14 +296,19 @@ This code may only be used under the license found at https://github.com/swarmci
                         console.error('chat object doesn\'t contain an itemHash: ', chatObject);
                     }
                 });
-                this._openChat({
-                    address: this.address,
-                    itemHash: '0x3b6dbc4030351890d63a7f913cfc64da9ecd1b26d3c39cd2749a656721d8dc23'
-                })
-                window.addEventListener('openChat', function (e) {
-                    const { itemHash, yourAddress } = e.detail
-                    // Do something with this
-                }, false);
+                let itemHash = '0x3b6dbc4030351890d63a7f913cfc64da9ecd1b26d3c39cd2749a656721d8dc23'
+                // window.addEventListener('openChat', function (e) {
+                //     const { itemHash, yourAddress } = e.detail
+                    this._openChat({
+                        itemHash,
+                    })
+                    .then(() => {
+                        console.log('Successfully joined chat channel for item: ', itemHash)
+                    })
+                    .catch(err => {
+                        console.log('Error instantiating chat channel:', err)
+                    });
+                // }, false);
             }
 
             /**
@@ -457,41 +462,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-
-            // if (this.chatHistory.instantiate) {
-            //     this.socket.emit('subscribeToChat', {
-            //         emitterAddress: this.publicKey.toLowerCase(),
-            //         members: this.chatHistory.instantiate,
-            //         itemHash: this.hashtagItem.itemHash.toLowerCase(),
-            //     });
-            // }
-            // if (this.chatHistory.subscribe) {
-            //     this.socket.emit('subscribeToChat', {
-            //         emitterAddress: this.publicKey.toLowerCase(),
-            //         itemHash: this.chatHistory.subscribe.toLowerCase(),
-            //     });
-            // }
-            // this.socket.on('chatChanged', (reply) => {
-            //     this.dispatch('CHATHISTORY', reply);
-            // }
-            // );
-
             _startChat({ provider, seeker, itemHash }) {
                 return new Promise((resolve, reject) => {
                     this.socket.emit('subscribeToChat', {
-                        emitterAddress: provider.address,
-                        members: [
-                            {
-                                address: provider.address,
-                                key: 'secret',
-                                username: provider.username,
-                                avatarHash: provider.avatar,
-                            }, {
-                                address: seeker.address,
-                                key: 'secret',
-                                username: seeker.username,
-                                avatarHash: seeker.avatar,
-                            }
+                        accessKeys: [
+                        // encrypted payload containing secret encrypted with public key of a participant 
                         ],
                         itemHash,
                     }, (reply) => {
@@ -505,10 +480,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
 
-            _openChat({ address, itemHash }) {
+            _openChat({ itemHash }) {
                 return new Promise((resolve, reject) => {
                     this.socket.emit('subscribeToChat', {
-                        emitterAddress: address,
                         itemHash,
                     }, (reply) => {
                         if (reply.response == 200) {

@@ -27,14 +27,9 @@
                 publicKeySeeker: seeker.publicKey
             }))
             console.log('item metadata: ', metadataHash)
-
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
-
-            let tokens = _web3.utils.toWei(item.budget.toString(), 'ether');
-            let bntokens = _web3.utils.toBN(tokens)
-            let bnfee = _web3.utils.toBN(parseInt(hashtag.fee) / 2)
-            let totalSum = bntokens.add(bnfee).toString();
+            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);   
 
             // generate the itemHash
             const itemHash = hdWallet.createItem(seeker.privateKey);
@@ -43,7 +38,7 @@
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
             const rawNewItem = simpleDealContract.methods.newItem(
                 itemHash,
-                tokens,
+                itemBudgetWei,
                 metadataHash.bytes32
             ).encodeABI();
             const tokenContract = new _web3.eth.Contract(kovSwtToken.abi, hashtag.tokenAddress);
