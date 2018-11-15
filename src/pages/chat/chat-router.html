@@ -9,6 +9,10 @@
 />
 <link
   rel="import"
+  href="../../../bower_components/iron-flex-layout/iron-flex-layout.html"
+/>
+<link
+  rel="import"
   href="../../../bower_components/app-route/app-location.html"
 />
 <link rel="import" href="../../redux-state.html" />
@@ -21,11 +25,27 @@
 
 <dom-module id="page-chat">
   <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      .container {
+        @apply --layout-vertical;
+        @apply --layout-end-justified;
+        height: 100vh;
+      }
+    </style>
     <socket-redux id="socket"></socket-redux>
     <app-location route="{{route}}"></app-location>
-    <chat-top item="[[item]]"  on-close="_handleOnClose"></chat-top>
-    <chat-new avatar="[[avatar]]" on-send="_handleOnSend"></chat-new>
-    <chat-messages address="[[address]]" messages="[[chat.messages]]"></chat-messages>
+    <chat-top item="[[item]]" on-close="_handleOnClose"></chat-top>
+    <div class="container">
+      <chat-messages
+        address="[[address]]"
+        messages="[[chat.messages]]"
+        avatars="[[avatars]]"
+      ></chat-messages>
+      <chat-new address="[[address]]" avatars="[[avatars]]" on-send="_handleOnSend"></chat-new>
+    </div>
   </template>
   <script>
     class MyChatRouter extends (new ReduxMixin(
@@ -43,20 +63,21 @@
           },
           item: {
             type: Object,
-            statePath: AppStore.selectors.item
+            statePath: AppStore.selectors.item,
+            observer: "_getAvatars"
           },
           chat: {
             type: Object,
             statePath: AppStore.selectors.chat
           },
-          avatar: {
-            type: String,
-            statePath: AppStore.selectors.avatar
-          },
           address: {
             type: String,
             statePath: AppStore.selectors.address
-          }
+          },
+          avatars: {
+            type: Object,
+            value: {}
+          },
         };
       }
       _handleOnClose() {
@@ -77,13 +98,23 @@
             message
           })
           .then(() => {
-            console.log(
-              "Successfully sent chat message"
-            );
+            console.log("Successfully sent chat message");
           })
           .catch(err => {
             console.log("Error sending chat message: ", err);
           });
+      }
+      _getAvatars() {
+        let avatars = {}
+        if (this.item) {
+          if (this.item.seekerAvatarHash)
+            avatars[this.item.seekerAddress] = this.item.seekerAvatarHash;
+          if (this.item.providerAddress)
+            avatars[this.item.providerAddress] = this.item.replies[
+              this.item.providerAddress
+            ].avatarHash;
+        }
+        this.set('avatars', avatars);
       }
     }
     window.customElements.define(MyChatRouter.is, MyChatRouter);

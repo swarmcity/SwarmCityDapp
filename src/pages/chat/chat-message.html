@@ -20,6 +20,39 @@
       .container {
         @apply --layout-horizontal;
         @apply --layout-end-justified;
+        margin: 15px 0;
+        width: 100%;
+        overflow-y: scroll;
+        box-sizing: border-box;
+        padding: 0 10px;
+        bottom: 150px;
+        height: auto;
+      }
+
+      iron-image {
+        border-radius: 50%;
+      }
+
+      .message-date {
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        @apply --smallest-light;
+        color: var(--sc-grey3b);
+      }
+
+      .message-text {
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        @apply --body-default;
+        color: black;
+        font-weight: 300;
+      }
+
+      .avatar-chat {
+        margin: 0 8px;
+        min-width: 28px;
+        height: 28px;
+        width: 28px;
       }
     </style>
     <div class="container">
@@ -31,8 +64,7 @@
         class="avatar-chat"
         sizing="cover"
         preload
-        fade
-        src="https://scapiweb3-c.swarm.city/img/[[_getAvatarHash(item)]]"
+        src="https://scapiweb3-c.swarm.city/img/[[_getAvatar(item, avatars)]]"
         placeholder="../images/defaultavatar.png"
       >
       </iron-image>
@@ -47,7 +79,8 @@
       }
       static get properties() {
         return {
-          item: Object
+          item: Object,
+          avatars: Object
         };
       }
 
@@ -63,6 +96,9 @@
         } else {
           return webpack.moment(milliseconds).format("DD MMM YYYY - HH:mm");
         }
+      }
+      _getAvatar(item, avatars) {
+        if (item.sender in avatars) return avatars[item.sender];
       }
     }
     window.customElements.define(MyChatMessage.is, MyChatMessage);

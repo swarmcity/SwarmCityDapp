@@ -30,8 +30,6 @@
         @apply --layout-vertical;
         @apply --layout-end-justified;
         @apply --layout-center;
-        position: fixed;
-        bottom: 0;
       }
 
       paper-input {
@@ -117,7 +115,7 @@
           class="avatar"
           sizing="cover"
           preload
-          src="[[avatar]]"
+          src="https://scapiweb3-c.swarm.city/img/[[_setAvatar(address, avatars)]]"
           placeholder="../images/defaultavatar.png"
         >
         </iron-image>
@@ -146,7 +144,8 @@
       }
       static get properties() {
         return {
-          avatar: String
+          avatars: Object,
+          address: String,
         };
       }
       /**
@@ -171,6 +170,9 @@
           this.message = this.message.trim();
           this.message = "";
         }
+      }
+      _setAvatar(address, avatars) {
+        if (address in avatars) return avatars[address]
       }
     }
     window.customElements.define(MyChatNew.is, MyChatNew);

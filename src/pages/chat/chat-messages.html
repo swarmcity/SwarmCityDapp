@@ -25,16 +25,16 @@
       .container {
         @apply --layout-vertical;
         @apply --layout-end-justified;
-        height: calc(100vh - 123px);
+        overflow: scroll;
       }
     </style>
     <div class="container">
       <template is="dom-repeat" items="[[messages]]">
         <template is="dom-if" if="[[_myMessage(item)]]">
-          <chat-my-message item="[[item]]"></chat-my-message>
+          <chat-my-message avatars="[[avatars]]" item="[[item]]"></chat-my-message>
         </template>
         <template is="dom-if" if="[[!_myMessage(item)]]">
-          <chat-message item="[[item]]"></chat-message>
+          <chat-message avatars="[[avatars]]" item="[[item]]"></chat-message>
         </template>
       </template>
     </div>
@@ -49,7 +49,8 @@
       static get properties() {
         return {
           messages: Array,
-          address: String
+          address: String,
+          avatars: Object,
         };
       }
       _myMessage(item) {
