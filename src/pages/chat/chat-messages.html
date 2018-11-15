@@ -23,15 +23,18 @@
         display: block;
       }
       .container {
-        @apply --layout-vertical;
-        @apply --layout-end-justified;
+        height: 75vh;
         overflow: scroll;
+        width: 100%;
       }
     </style>
-    <div class="container">
+    <div id="container" class="container">
       <template is="dom-repeat" items="[[messages]]">
         <template is="dom-if" if="[[_myMessage(item)]]">
-          <chat-my-message avatars="[[avatars]]" item="[[item]]"></chat-my-message>
+          <chat-my-message
+            avatars="[[avatars]]"
+            item="[[item]]"
+          ></chat-my-message>
         </template>
         <template is="dom-if" if="[[!_myMessage(item)]]">
           <chat-message avatars="[[avatars]]" item="[[item]]"></chat-message>
@@ -48,13 +51,37 @@
       }
       static get properties() {
         return {
-          messages: Array,
+          messages: {
+            type: Array,
+            observer: "_scrollToBottom"
+          },
           address: String,
           avatars: Object,
+          initialScroll: {
+            type: Boolean,
+            value: false
+          }
         };
       }
       _myMessage(item) {
-          return item.sender && item.sender == this.address
+        return item.sender && item.sender == this.address;
+      }
+      /**
+       * scrolls the messages box down to newest message if not scrolled up yet
+       */
+      _scrollToBottom() {
+
+        if (
+          this.$.container.scrollHeight - this.$.container.scrollTop <=
+          this.$.container.clientHeight + 100
+        ) {
+          this.$.container.scrollTop = this.$.container.scrollHeight;
+        }
+        // scroll down on initial load of the messages
+        if (!this.initialScroll && this.$.container.scrollHeight > 501) {
+          this.$.container.scrollTop = this.$.container.scrollHeight;
+          this.initialScroll = true;
+        }
       }
     }
     window.customElements.define(MyChatMessages.is, MyChatMessages);
