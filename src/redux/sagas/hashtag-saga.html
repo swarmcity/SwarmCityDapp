@@ -7,7 +7,7 @@
         const { selectors } = window.AppStore
         // ReduxSaga methods
         const { effects, eventChannel, delay, END } = ReduxSaga;
-        const { call, fork, take, put, takeEvery, all } = effects;
+        const { call, fork, take, put, takeEvery, all, select } = effects;
 
         // Import contract data:
         const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
@@ -213,7 +213,7 @@
                         status: res.status,
                     }
                 });
-                openChat({ hashtagAddress, itemHash, itemStatus: res.status, providerAddress: res.providerAddress, seekerAddress: item.seekerAddress })
+                yield call(openChat, { hashtagAddress, itemHash, itemStatus: res.status, providerAddress: res.providerAddress, seekerAddress: item.seekerAddress })
             } catch (e) {
                 console.log('Error calling readItem() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
             }
@@ -380,7 +380,7 @@
                     providerAddress,
                 }
             });
-            openChat({ itemHash, itemStatus: newstatus, providerAddress })
+            yield call(openChat, { itemHash, itemStatus: newstatus, providerAddress })
         }
 
 
