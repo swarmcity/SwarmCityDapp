@@ -88,6 +88,10 @@
         width: 100vw;
       }
 
+      iron-image {
+        border-radius: 50%;
+      }
+
       .close:active {
         @apply --button-active;
       }
@@ -106,7 +110,7 @@
         class="top-avatar top-avatar-seeker"
         sizing="cover"
         preload
-        src="https://scapiweb3-c.swarm.city/img/[[seeker.avatarHash]]"
+        src="https://scapiweb3-c.swarm.city/img/[[item.seekerAvatarHash]]"
         placeholder="../../images/defaultavatar.png"
       >
       </iron-image>
@@ -114,7 +118,7 @@
         class="top-avatar top-avatar-provider"
         sizing="cover"
         preload
-        src="https://scapiweb3-c.swarm.city/img/[[provider.avatarHash]]"
+        src="https://scapiweb3-c.swarm.city/img/[[_getProviderAvatar(item)]]"
         placeholder="../images/defaultavatar.png"
       >
       </iron-image>
@@ -135,6 +139,9 @@
       }
       _toDetail() {
         this.dispatchEvent(new CustomEvent('close'));
+      }
+      _getProviderAvatar(item) {
+        return item.replies && item.replies[item.providerAddress].avatarHash
       }
     }
     window.customElements.define(MyChatTop.is, MyChatTop);

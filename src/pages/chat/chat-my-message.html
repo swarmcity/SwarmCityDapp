@@ -11,7 +11,7 @@
 <!-- Displays and shared styles only -->
 <link rel="import" href="../../shared-styles.html" />
 
-<dom-module id="chat-message">
+<dom-module id="chat-my-message">
   <template>
     <style include="shared-styles">
       :host {
@@ -19,14 +19,10 @@
       }
       .container {
         @apply --layout-horizontal;
-        @apply --layout-end-justified;
+        @apply --layout-start-justified;
       }
     </style>
     <div class="container">
-      <div class="vertical">
-        <div class="message-date right">[[_formatDate(item.time)]]</div>
-        <div class="message-text right">[[item.message]]</div>
-      </div>
       <iron-image
         class="avatar-chat"
         sizing="cover"
@@ -36,18 +32,24 @@
         placeholder="../images/defaultavatar.png"
       >
       </iron-image>
+      <div class="vertical">
+        <div class="message-date">[[_formatDate(item.time)]]</div>
+        <div class="message-text">[[item.message]]</div>
+      </div>
     </div>
   </template>
   <script>
-    class MyChatMessage extends (new ReduxMixin(
+    class MyChatMyMessage extends (new ReduxMixin(
       Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
     )) {
       static get is() {
-        return "chat-message";
+        return "chat-my-message";
       }
       static get properties() {
         return {
-          item: Object
+          route: {
+            type: Object
+          }
         };
       }
 
@@ -65,6 +67,6 @@
         }
       }
     }
-    window.customElements.define(MyChatMessage.is, MyChatMessage);
+    window.customElements.define(MyChatMyMessage.is, MyChatMyMessage);
   </script>
 </dom-module>
