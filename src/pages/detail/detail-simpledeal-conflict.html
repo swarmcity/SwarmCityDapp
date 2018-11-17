@@ -204,6 +204,14 @@ The following custom properties and mixins are available for styling:
             .pending {
                 opacity: 0.5;
             }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .chat-icon {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
@@ -347,7 +355,7 @@ The following custom properties and mixins are available for styling:
             * Change the route to the chat view
             */
             _toChat() {
-                // this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
+                this.dispatchEvent(new CustomEvent('chat'));
             }
 
             _checkPending(status) {
