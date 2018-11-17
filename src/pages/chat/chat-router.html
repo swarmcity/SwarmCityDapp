@@ -3,18 +3,9 @@
   Copyright (c) 2018 Swarm City
   This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link
-  rel="import"
-  href="../../../bower_components/polymer/polymer-element.html"
-/>
-<link
-  rel="import"
-  href="../../../bower_components/iron-flex-layout/iron-flex-layout.html"
-/>
-<link
-  rel="import"
-  href="../../../bower_components/app-route/app-location.html"
-/>
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+<link rel="import" href="../../../bower_components/app-route/app-location.html" />
 <link rel="import" href="../../redux-state.html" />
 
 <!-- Displays and shared styles only -->
@@ -29,6 +20,7 @@
       :host {
         display: block;
       }
+
       .container {
         @apply --layout-vertical;
         @apply --layout-end-justified;
@@ -39,16 +31,8 @@
     <app-location route="{{route}}"></app-location>
     <chat-top item="[[item]]" on-close="_handleOnClose"></chat-top>
     <div class="container">
-      <chat-messages
-        address="[[address]]"
-        messages="[[chat.messages]]"
-        avatars="[[avatars]]"
-      ></chat-messages>
-      <chat-new
-        address="[[address]]"
-        avatars="[[avatars]]"
-        on-send="_handleOnSend"
-      ></chat-new>
+      <chat-messages address="[[address]]" messages="[[chat.messages]]" avatars="[[avatars]]"></chat-messages>
+      <chat-new address="[[address]]" avatars="[[avatars]]" on-send="_handleOnSend"></chat-new>
     </div>
   </template>
   <script>
@@ -96,6 +80,19 @@
           time: Math.floor(Date.now() / 1000),
           message: e.detail
         };
+
+        /**
+         * ENCRYPT MESSAGES
+         * - Make sure to reflect the structure define on the message object creation (chat-router.html)
+         */
+        const { symmetric } = window
+        if (!symmetric) throw Error('Object \"symmetric\" in not available in the global scope')
+
+        // ######### key is faked for now
+        const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw="
+
+        message.message = symmetric.encrypt(message.message, chatKey)
+
         this.$.socket
           ._sendChatMessage({
             itemHash: this.item.itemHash,

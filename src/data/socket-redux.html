@@ -291,6 +291,29 @@ This code may only be used under the license found at https://github.com/swarmci
                 // Listen for changes in the chat channels
                 this.socket.on('chatChanged', (chatObject) => {
                     if ('itemHash' in chatObject) {
+                        /**
+                         * DECRYPT MESSAGES
+                         * - Make sure to reflect the structure define on the message object creation (chat-router.html)
+                         */
+                        const { symmetric } = window
+                        if (!symmetric) throw Error('Object \"symmetric\" in not available in the global scope')
+
+                        // ######### key is faked for now
+                        const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw="
+
+                        // Modify chatObject in place, replacing the msg.message property by the decrypted message
+                        chatObject.messages = chatObject.messages.map(msg => {
+                            // If some messages are corrupted, try to decrypt the rest
+                            try {
+                                msg.message = symmetric.decrypt(msg.message, chatKey)
+                                // If decryption fails a null variable is returned
+                                if (!msg.message) throw Error('Decryption failed')
+                            } catch (e) {
+                                msg.error = e.message
+                            }
+                            return msg
+                        })
+
                         this.dispatch({ type: 'UPDATE_CHAT', chatObject, itemHash: chatObject.itemHash })
                     } else {
                         console.error('chat object doesn\'t contain an itemHash: ', chatObject);
