@@ -1,474 +1,613 @@
 <!--
-@license
-Copyright (c) 2018 Swarm City
-This code may only be used under the license found at https://github.com/swarmcity/license
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
-<link rel="import" href="../../redux-state.html">
-<link rel="import" href="../../data/data-transaction.html">
-<link rel="import" href="../../data/data-simpledeal.html">
-<link rel="import" href="../../data/socket-redux.html">
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-flex-layout/iron-flex-layout.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-image/iron-image.html"
+/>
+<link rel="import" href="../../redux-state.html" />
+<link rel="import" href="../../data/data-transaction.html" />
+<link rel="import" href="../../data/data-simpledeal.html" />
+<link rel="import" href="../../data/socket-redux.html" />
 
-<!--
-    Displays and shared styles only
--->
-<link rel="import" href="../../shared-styles.html">
-<link rel="import" href="./detail-button-reply.html">
-<link rel="import" href="./detail-button-conflict.html">
-<link rel="import" href="./detail-button-payout.html">
-<link rel="import" href="./detail-simpledeal-loading.html">
-<link rel="import" href="./detail-simpledeal-main.html">
-<link rel="import" href="./detail-simpledeal-replies.html">
-<link rel="import" href="./detail-simpledeal-input.html">
-<link rel="import" href="./detail-simpledeal-reply-detail.html">
-<link rel="import" href="./detail-simpledeal-selected.html">
-<link rel="import" href="./detail-simpledeal-funded.html">
-<link rel="import" href="./detail-simpledeal-done.html">
-<link rel="import" href="./detail-simpledeal-input-conflict.html">
-<link rel="import" href="./detail-simpledeal-conflict.html">
-<link rel="import" href="../../displays/display-unlock.html">
-
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="./detail-button-reply.html" />
+<link rel="import" href="./detail-button-conflict.html" />
+<link rel="import" href="./detail-button-payout.html" />
+<link rel="import" href="./detail-simpledeal-loading.html" />
+<link rel="import" href="./detail-simpledeal-main.html" />
+<link rel="import" href="./detail-simpledeal-replies.html" />
+<link rel="import" href="./detail-simpledeal-input.html" />
+<link rel="import" href="./detail-simpledeal-reply-detail.html" />
+<link rel="import" href="./detail-simpledeal-selected.html" />
+<link rel="import" href="./detail-simpledeal-funded.html" />
+<link rel="import" href="./detail-simpledeal-done.html" />
+<link rel="import" href="./detail-simpledeal-input-conflict.html" />
+<link rel="import" href="./detail-simpledeal-conflict.html" />
+<link rel="import" href="../../displays/display-unlock.html" />
 
 <dom-module id="detail-simpledeal">
-    <template>
-        <!--
-    Page specific styles, if the style is used on more than one page, move it to shared styles.
--->
-        <style include="shared-styles">
-            :host {
-                display: block;
-            }
+  <template>
+    <!--
+      Page specific styles, if the style is used on more than one page, move it to shared styles.
+    -->
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
 
-            .container {
-                background-image: var(--sc-bg);
-                @apply --layout-vertical;
-                margin-top: 159px;
-                min-height: calc(100vh - 159px);
-                box-sizing: border-box;
-                padding: 0px 10px 25px 10px;
-                height: 100%;
-                width: 100%;
-            }
+      .container {
+        background-image: var(--sc-bg);
+        @apply --layout-vertical;
+        margin-top: 159px;
+        min-height: calc(100vh - 159px);
+        box-sizing: border-box;
+        padding: 0px 10px 25px 10px;
+        height: 100%;
+        width: 100%;
+      }
 
-            .container[wide-layout] {
-                padding: 0px 0px 0px 0px;
-            }
+      .container[wide-layout] {
+        padding: 0px 0px 0px 0px;
+      }
 
-            .itemcontainer {
-                background-color: var(--sc-white);
-                width: 100%;
-                margin: 0px 10px 25px 0px;
-            }
+      .itemcontainer {
+        background-color: var(--sc-white);
+        width: 100%;
+        margin: 0px 10px 25px 0px;
+      }
 
-            .container[wide-layout] .itemcontainer {
-                max-width: 68vw;
-                margin: 0px 10vw 150px 10vw;
+      .container[wide-layout] .itemcontainer {
+        max-width: 68vw;
+        margin: 0px 10vw 150px 10vw;
+      }
 
-            }
+      detail-button-reply {
+        position: fixed;
+        bottom: 10vh;
+        right: 10vw;
+      }
 
-            detail-button-reply {
-                position: fixed;
-                bottom: 10vh;
-                right: 10vw;
-            }
+      .container[wide-layout] detail-button-reply {
+        bottom: auto;
+        right: 10vw;
+        bottom: 16vh;
+      }
+    </style>
+    <iron-media-query
+      query="(min-width: 600px)"
+      query-matches="{{wide}}"
+    ></iron-media-query>
 
-            .container[wide-layout] detail-button-reply {
-                bottom: auto;
-                right: 10vw;
-                bottom: 16vh;
-            }
-        </style>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+    <display-unlock id="unlock" blue></display-unlock>
+    <data-simpledeal id="simpledeal"></data-simpledeal>
+    <socket-redux id="socket"></socket-redux>
 
-        <display-unlock id="unlock" blue></display-unlock>
-        <data-simpledeal id="simpledeal"></data-simpledeal>
-        <socket-redux id="socket"></socket-redux>
+    <div class="container" wide-layout$="{{wide}}">
+      <template is="dom-if" if="{{_isEqualTo(status, 'loading')}}">
+        <detail-simpledeal-loading></detail-simpledeal-loading>
+      </template>
 
-        <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-if" if="{{_isEqualTo(status, 'loading')}}">
-                <detail-simpledeal-loading></detail-simpledeal-loading>
+      <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
+        <div class="itemcontainer">
+          <detail-simpledeal-main
+            address="[[address]]"
+            item="[[item]]"
+            on-close="_handleOnClose"
+          ></detail-simpledeal-main>
+
+          <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
+            <detail-simpledeal-replies
+              address="[[address]]"
+              item="[[item]]"
+              on-detail="_handleOnDetail"
+            ></detail-simpledeal-replies>
+
+            <template is="dom-if" if="[[_showReplyButton(item)]]">
+              <detail-button-reply on-tap="_input"></detail-button-reply>
             </template>
+          </template>
 
-            <template is="dom-if" if="{{!_isEqualTo(status, 'loading')}}">
-                <div class="itemcontainer">
-                    <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
+          <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
+            <detail-simpledeal-input
+              id="input"
+              item="[[item]]"
+              on-reply="_handleOnReply"
+              on-status="_handleOnStatus"
+            >
+            </detail-simpledeal-input>
+          </template>
 
-                    <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
-                        <detail-simpledeal-replies address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
+          <template is="dom-if" if="{{_isEqualTo(status, 'detail')}}">
+            <detail-simpledeal-reply-detail
+              item="[[item]]"
+              reply-detail="[[replyDetail]]"
+              on-status="_handleOnStatus"
+              on-select="_handleOnSelect"
+            ></detail-simpledeal-reply-detail>
+          </template>
 
-                        <template is="dom-if" if="[[_showReplyButton(item)]]">
-                            <detail-button-reply on-tap="_input"></detail-button-reply>
-                        </template>
-                    </template>
+          <template is="dom-if" if="{{_isEqualTo(status, 'selected')}}">
+            <detail-simpledeal-selected
+              address="[[address]]"
+              item="[[item]]"
+              balance="[[balance]]"
+              reply="[[_getProviderReply(item)]]"
+              on-status="_handleOnStatus"
+              on-fund="_handleOnFund"
+            ></detail-simpledeal-selected>
+          </template>
 
-                    <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-                        <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
-                        </detail-simpledeal-input>
-                    </template>
+          <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
+            <detail-simpledeal-funded
+              address="[[address]]"
+              item="[[item]]"
+              reply="[[_getProviderReply(item)]]"
+              on-payout="_handleOnPayout"
+              on-chat="_handleOnChat"
+            ></detail-simpledeal-funded>
+          </template>
 
-                    <template is="dom-if" if="{{_isEqualTo(status, 'detail')}}">
-                        <detail-simpledeal-reply-detail item="[[item]]" reply-detail="[[replyDetail]]" on-status="_handleOnStatus"
-                            on-select="_handleOnSelect"></detail-simpledeal-reply-detail>
-                    </template>
+          <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
+            <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
+          </template>
 
-                    <template is="dom-if" if="{{_isEqualTo(status, 'selected')}}">
-                        <detail-simpledeal-selected address="[[address]]" item="[[item]]" balance="[[balance]]" reply="[[_getProviderReply(item)]]"
-                            on-status="_handleOnStatus" on-fund="_handleOnFund"></detail-simpledeal-selected>
-                    </template>
+          <template is="dom-if" if="{{_isEqualTo(status, 'input conflict')}}">
+            <detail-simpledeal-input-conflict
+              on-status="_handleOnStatus"
+              on-conflict="_handleOnConflict"
+            ></detail-simpledeal-input-conflict>
+          </template>
 
-                    <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
-                        <detail-simpledeal-funded address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
-                            on-payout="_handleOnPayout" on-chat="_handleOnChat"></detail-simpledeal-funded>
-                    </template>
-
-                    <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
-                        <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
-                    </template>
-
-                    <template is="dom-if" if="{{_isEqualTo(status, 'input conflict')}}">
-                        <detail-simpledeal-input-conflict on-status="_handleOnStatus" on-conflict="_handleOnConflict"></detail-simpledeal-input-conflict>
-                    </template>
-
-                    <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
-                        <detail-simpledeal-conflict address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
-                            maintainer="[[hashtag.metadata.maintainer]]" on-chat="_handleOnChat"></detail-simpledeal-conflict>
-                    </template>
-                </div>
-
-                <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
-                    <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
-                </template>
-
-                <template is="dom-if" if="{{_showPayoutButton(status, address)}}">
-                    <detail-button-payout on-tap="_handleOnPayout"></detail-button-payout>
-                </template>
-            </template>
+          <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
+            <detail-simpledeal-conflict
+              address="[[address]]"
+              item="[[item]]"
+              reply="[[_getProviderReply(item)]]"
+              maintainer="[[hashtag.metadata.maintainer]]"
+              on-chat="_handleOnChat"
+            ></detail-simpledeal-conflict>
+          </template>
         </div>
 
-    </template>
-    <script>
-        class MyDetailSimpledeal extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
-            Polymer.Element
-        )) {
-            static get is() {
-                return 'detail-simpledeal';
-            }
-            static get properties() {
-                return {
-                    status: String,
-                    item: Object,
-                    address: String,
-                    balance: String,
-                    hashtag: Object,
-                    replyDetail: Object,
-                    username: String,
-                    avatar: String,
-                    maintainer: {
-                        type: Object,
-                        value: {
-                            avatar: 'QmZAh3yxeTyDV7MtLCrkKqpTQQXPFJRcby3VjfsQn7vpnx',
-                            username: 'Xardas',
-                            address: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
-                        }
-                    },
-                }
-            }
-            _handleOnReply(e) {
-                const message = e.detail;
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        this.dispatchEvent(new CustomEvent('status', {
-                            detail: 'replies',
-                        }));
-                        let el = this.shadowRoot.querySelector('#input');
-                        if (el) el._reset();
-                        try {
-                            const { privateKey, address, publicKey } = res;
-                            if (!privateKey) {
-                                throw Error('Missing address')
-                            }
-                            const replier = {
-                                username: this.username,
-                                address,
-                                privateKey
-                            }
-                            const reply = {
-                                message: message,
-                                itemHash: this.item.itemHash,
-                            }
-                            const hashtag = {
-                                address: this.hashtag.address,
-                                fee: this.hashtag.hashtagFee,
-                            }
-                            this.$.simpledeal.createNewReply({ replier, reply, hashtag })
-                                .then(receipt => {
-                                    console.log('Successfully transacted reply, receipt:', receipt)
-                                    this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress: hashtag.address, itemHash: this.item.itemHash, data: {
-                                            replies: {
-                                                [replier.address]: {
-                                                    username: replier.username,
-                                                    avatarHash: localStorage.getItem('avatarHash'),
-                                                    replierAddress: replier.address,
-                                                    message: reply.message,
-                                                }
-                                            }
-                                        }
-                                    })
-                                })
-                                .catch(err => {
-                                    console.log('Error posting reply:', err)
-                                });
-                        }
-                        catch (e) {
-                            console.error('Error posting reply (catch block): ', e.stack)
-                        }
-                    });
-            }
-            _handleOnSelect() {
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        try {
-                            const { privateKey, address, publicKey } = res;
-                            if (!privateKey) {
-                                throw Error('Missing address')
-                            }
-                            const seeker = {
-                                address,
-                                privateKey
-                            }
+        <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
+          <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
+        </template>
 
-                            const provider = {
-                                address: this.replyDetail.replierAddress,
-                                accessKey: this.replyDetail.accessKey
-                            }
+        <template is="dom-if" if="{{_showPayoutButton(status, address)}}">
+          <detail-button-payout
+            on-tap="_handleOnPayout"
+          ></detail-button-payout>
+        </template>
+      </template>
+    </div>
+  </template>
+  <script>
+    class MyDetailSimpledeal extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "detail-simpledeal";
+      }
+      static get properties() {
+        return {
+          status: String,
+          item: Object,
+          address: String,
+          balance: String,
+          hashtag: Object,
+          replyDetail: Object,
+          username: String,
+          avatar: String,
+          maintainer: {
+            type: Object,
+            value: {
+              avatar: "QmZAh3yxeTyDV7MtLCrkKqpTQQXPFJRcby3VjfsQn7vpnx",
+              username: "Xardas",
+              address: "0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F"
+            }
+          }
+        };
+      }
+      _handleOnReply(e) {
+        const message = e.detail;
+        this.$.unlock._getPrivateKey().then(res => {
+          this.dispatchEvent(
+            new CustomEvent("status", {
+              detail: "replies"
+            })
+          );
+          let el = this.shadowRoot.querySelector("#input");
+          if (el) el._reset();
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const replier = {
+              username: this.username,
+              address,
+              privateKey
+            };
+            const reply = {
+              message: message,
+              itemHash: this.item.itemHash
+            };
+            const hashtag = {
+              address: this.hashtag.address,
+              fee: this.hashtag.hashtagFee
+            };
+            this.$.simpledeal
+              .createNewReply({ replier, reply, hashtag })
+              .then(receipt => {
+                console.log("Successfully transacted reply, receipt:", receipt);
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress: hashtag.address,
+                  itemHash: this.item.itemHash,
+                  data: {
+                    replies: {
+                      [replier.address]: {
+                        username: replier.username,
+                        avatarHash: localStorage.getItem("avatarHash"),
+                        replierAddress: replier.address,
+                        message: reply.message
+                      }
+                    }
+                  }
+                });
+              })
+              .catch(err => {
+                console.log("Error posting reply:", err);
+              });
+          } catch (e) {
+            console.error("Error posting reply (catch block): ", e.stack);
+          }
+        });
+      }
+      _handleOnSelect() {
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const seeker = {
+              address,
+              privateKey
+            };
 
-                            const item = {
-                                itemHash: this.item.itemHash,
-                                hashtag: this.hashtag.address
-                            }
+            const provider = {
+              address: this.replyDetail.replierAddress,
+              accessKey: this.replyDetail.accessKey
+            };
 
-                            this.$.simpledeal.selectReplier({ seeker, provider, item })
-                                .then(receipt => {
-                                    console.log('Successfully transacted select replier, receipt:', receipt)
-                                    this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress: item.hashtag, itemHash: item.itemHash, data: {
-                                            providerAddress: provider.address,
-                                            status: 'selected-pending',
-                                        }
-                                    })
+            const item = {
+              itemHash: this.item.itemHash,
+              hashtag: this.hashtag.address
+            };
 
-                                })
-                                .catch(err => {
-                                    console.log('Error selecting replier:', err)
-                                });
-                        }
-                        catch (e) {
-                            console.error('Error selecting replier (catch block): ', e.stack)
-                        }
-                    });
-
-            }
-            _showPayoutButton(status, userAddress) {
-                return false // (status == 'conflict' && userAddress == this.item.seekerAddress)
-            }
-            _isEqualTo(string1, string2) {
-                return string1 == string2;
-            }
-            _showReplyButton(item) {
-                if ((item.seekerAddress || {}) == this.address) {
-                    return false;
-                } else if (item.replies && item.replies[this.address]) {
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-            _input() {
-                if (this._allowReply) {
-                    this.dispatchEvent(new CustomEvent('status', {
-                        detail: 'input',
-                    }));
-                }
-            }
-            _conflict() {
-                this.dispatchEvent(new CustomEvent('status', {
-                    detail: 'input conflict',
-                }));
-            }
-            _handleOnClose() {
-                let el = this.shadowRoot.querySelector('#input');
-                if (el) el._reset();
-                this.dispatchEvent(new CustomEvent('close'));
-            }
-            _handleOnStatus(e) {
-                this.dispatchEvent(new CustomEvent('status', {
-                    detail: e.detail,
-                }));
-            }
-            _handleOnChat() {
-                this.dispatchEvent(new CustomEvent('chat'));
-                this.dispatchEvent(new CustomEvent('openChat', {
-                    detail: { itemHash: this.item.itemHash, yourAddress: this.address },
-                    bubbles: true,
-                    composed: true
-                }));
-            }
-            _handleOnDetail(e) {
-                this.dispatchEvent(new CustomEvent('status', {
-                    detail: 'detail',
-                }));
-                this.replyDetail = e.detail;
-            }
-            _handleOnFund() {
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        try {
-                            const { privateKey, address, publicKey } = res;
-                            if (!privateKey) {
-                                throw Error('Missing address')
-                            }
-                            const provider = {
-                                address,
-                                privateKey,
-                            }
-
-                            const item = {
-                                hash: this.item.itemHash,
-                                value: this.item.itemValue,
-                            }
-                            
-                            const hashtag = {
-                                address: this.hashtag.address,
-                                fee: this.hashtag.hashtagFee,
-                                tokenContractAddress: '0x0adbc89464cb7fa752adcf3533514949a2547589'
-                            }
-                            
-                            this.$.simpledeal.fundItem({ provider, item, hashtag })
-                                .then(receipt => {
-                                    delete provider.privateKey;
-                                    console.log('Successfully transacted fund item, receipt:', receipt)
-                                    this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress: hashtag.address, itemHash: item.hash, data: {
-                                            status: '1-pending',
-                                        }
-                                    })
-                                    // Initiate a chat with seeker and provider as members
-                                    this.$.socket._startChat({ 
-                                            provider: {
-                                                address,
-                                                publicKey,
-                                                avatar: this.avatar,
-                                                username: this.username,
-                                            },
-                                            seeker: {
-                                                address: this.item.seekerAddress,
-                                                publicKey: this.item.seekerPublicKey,
-                                                avatar: this.item.seekerAvatarHash,
-                                                username: this.item.seekerUsername
-                                            }, 
-                                            itemHash: this.item.itemHash
-                                        })
-                                        .then(() => {
-                                            console.log('Successfully instantiated chat channel for item: ', this.item.itemHash)
-                                        })
-                                        .catch(err => {
-                                            console.log('Error instantiating chat channel:', err)
-                                        });
-                                    
-                                })
-                                .catch(err => {
-                                    console.log('Error funding item:', err)
-                                });
-                        }
-                        catch (e) {
-                            console.error('Error funding item (catch block): ', e.stack)
-                        }
-                    });
-
-            }
-            _handleOnPayout() {
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        try {
-                            const { privateKey, address, publicKey } = res;
-                            if (!privateKey) {
-                                throw Error('Missing address')
-                            }
-                            const seeker = {
-                                address,
-                                privateKey
-                            }
-                            const itemHash = this.item.itemHash;
-                            const hashtagAddress = this.hashtag.address;
-                            this.$.simpledeal.payoutItem({ seeker, itemHash, hashtagAddress })
-                                .then(receipt => {
-                                    console.log('Successfully paid out item, receipt:', receipt)
-                                    this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                                            status: '2-pending',
-                                        }
-                                    })
-                                })
-                                .catch(err => {
-                                    console.log('Error paying out item:', err)
-                                });
-                        }
-                        catch (e) {
-                            console.error('Error paying out item (catch block): ', e.stack)
-                        }
-                    });
-
-            }
-            _handleOnConflict(e) {
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        try {
-                            const { privateKey, address, publicKey } = res;
-                            if (!privateKey) {
-                                throw Error('Missing address')
-                            }
-                            const disputer = {
-                                address,
-                                privateKey
-                            }
-                            const itemHash = this.item.itemHash;
-                            const hashtagAddress = this.hashtag.address;
-                            this.$.simpledeal.disputeItem({ disputer, itemHash, hashtagAddress })
-                                .then(receipt => {
-                                    console.log('Successfully disputed item, receipt:', receipt)
-                                    this.dispatch({
-                                        type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                                            status: '3-pending',
-                                        }
-                                    })
-                                })
-                                .catch(err => {
-                                    console.log('Error disputing item:', err)
-                                });
-                        }
-                        catch (e) {
-                            console.error('Error disputing item (catch block): ', e.stack)
-                        }
-                    });
-
-            }
-            _allowReply() {
-                let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
-                let userBalance = parseInt(this.balance);
-                return userBalance - totalCost >= 0 ? true : false;
-            }
-            _getProviderReply(item) {
-                if (item.replies && item.providerAddress && item.replies[item.providerAddress]) {
-                    return item.replies[item.providerAddress];
-                }
-            }
-
+            this.$.simpledeal
+              .selectReplier({ seeker, provider, item })
+              .then(receipt => {
+                console.log(
+                  "Successfully transacted select replier, receipt:",
+                  receipt
+                );
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress: item.hashtag,
+                  itemHash: item.itemHash,
+                  data: {
+                    providerAddress: provider.address,
+                    status: "selected-pending"
+                  }
+                });
+              })
+              .catch(err => {
+                console.log("Error selecting replier:", err);
+              });
+          } catch (e) {
+            console.error("Error selecting replier (catch block): ", e.stack);
+          }
+        });
+      }
+      _showPayoutButton(status, userAddress) {
+        return false; // (status == 'conflict' && userAddress == this.item.seekerAddress)
+      }
+      _isEqualTo(string1, string2) {
+        return string1 == string2;
+      }
+      _showReplyButton(item) {
+        if ((item.seekerAddress || {}) == this.address) {
+          return false;
+        } else if (item.replies && item.replies[this.address]) {
+          return false;
+        } else {
+          return true;
         }
-        window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
-    </script>
+      }
+      _input() {
+        if (this._allowReply) {
+          this.dispatchEvent(
+            new CustomEvent("status", {
+              detail: "input"
+            })
+          );
+        }
+      }
+      _conflict() {
+        this.dispatchEvent(
+          new CustomEvent("status", {
+            detail: "input conflict"
+          })
+        );
+      }
+      _handleOnClose() {
+        let el = this.shadowRoot.querySelector("#input");
+        if (el) el._reset();
+        this.dispatchEvent(new CustomEvent("close"));
+      }
+      _handleOnStatus(e) {
+        this.dispatchEvent(
+          new CustomEvent("status", {
+            detail: e.detail
+          })
+        );
+      }
+      _handleOnChat() {
+        this.dispatchEvent(new CustomEvent("chat"));
+        this.dispatchEvent(
+          new CustomEvent("openChat", {
+            detail: { itemHash: this.item.itemHash, yourAddress: this.address },
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+      _handleOnDetail(e) {
+        this.dispatchEvent(
+          new CustomEvent("status", {
+            detail: "detail"
+          })
+        );
+        this.replyDetail = e.detail;
+      }
+      _handleOnFund() {
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const provider = {
+              address,
+              privateKey
+            };
+
+            const item = {
+              hash: this.item.itemHash,
+              value: this.item.itemValue
+            };
+
+            const hashtag = {
+              address: this.hashtag.address,
+              fee: this.hashtag.hashtagFee,
+              tokenContractAddress: "0x0adbc89464cb7fa752adcf3533514949a2547589"
+            };
+
+            this.$.simpledeal
+              .fundItem({ provider, item, hashtag })
+              .then(receipt => {
+                delete provider.privateKey;
+                console.log(
+                  "Successfully transacted fund item, receipt:",
+                  receipt
+                );
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress: hashtag.address,
+                  itemHash: item.hash,
+                  data: {
+                    status: "1-pending"
+                  }
+                });
+                // Initiate a chat with seeker and provider as members
+                this.$.socket
+                  ._startChat({
+                    provider: {
+                      address,
+                      publicKey,
+                      avatar: this.avatar,
+                      username: this.username
+                    },
+                    seeker: {
+                      address: this.item.seekerAddress,
+                      publicKey: this.item.seekerPublicKey,
+                      avatar: this.item.seekerAvatarHash,
+                      username: this.item.seekerUsername
+                    },
+                    itemHash: this.item.itemHash
+                  })
+                  .then(() => {
+                    console.log(
+                      "Successfully instantiated chat channel for item: ",
+                      this.item.itemHash
+                    );
+                  })
+                  .catch(err => {
+                    console.log("Error instantiating chat channel:", err);
+                  });
+              })
+              .catch(err => {
+                console.log("Error funding item:", err);
+              });
+          } catch (e) {
+            console.error("Error funding item (catch block): ", e.stack);
+          }
+        });
+      }
+      _handleOnPayout() {
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const seeker = {
+              address,
+              privateKey
+            };
+            const itemHash = this.item.itemHash;
+            const hashtagAddress = this.hashtag.address;
+            this.$.simpledeal
+              .payoutItem({ seeker, itemHash, hashtagAddress })
+              .then(receipt => {
+                console.log("Successfully paid out item, receipt:", receipt);
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress,
+                  itemHash,
+                  data: {
+                    status: "2-pending"
+                  }
+                });
+              })
+              .catch(err => {
+                console.log("Error paying out item:", err);
+              });
+          } catch (e) {
+            console.error("Error paying out item (catch block): ", e.stack);
+          }
+        });
+      }
+      _handleOnConflict(e) {
+        let motivation = e.detail;
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const disputer = {
+              address,
+              privateKey
+            };
+            const itemHash = this.item.itemHash;
+            const hashtagAddress = this.hashtag.address;
+            this.$.simpledeal
+              .disputeItem({ disputer, itemHash, hashtagAddress })
+              .then(receipt => {
+                console.log("Successfully disputed item, receipt:", receipt);
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress,
+                  itemHash,
+                  data: {
+                    status: "3-pending"
+                  }
+                });
+                this.$.socket
+                  ._sendChatMessage({
+                    itemHash: this.item.itemHash,
+                    message: {
+                      sender: this.address,
+                      time: Math.floor(Date.now() / 1000),
+                      type: "conflict-start"
+                    }
+                  })
+                  .then(() => {
+                    console.log("Successfully set chat to conflict status");
+                    this.$.socket
+                      ._sendChatMessage({
+                        itemHash: this.item.itemHash,
+                        message: {
+                          sender: this.address,
+                          time: Math.floor(Date.now() / 1000),
+                          message: this._encryptMessage(motivation),
+                        }
+                      })
+                      .then(() => {
+                        console.log(
+                          "Successfully sent conflict motivation message"
+                        );
+                        this.$.socket
+                          ._sendChatMessage({
+                            itemHash: this.item.itemHash,
+                            message: {
+                              sender: this.address,
+                              time: Math.floor(Date.now() / 1000),
+                              message: {
+                                avatar: this.hashtag.metadata.maintainer.avatar,
+                                username: this.hashtag.metadata.maintainer.username
+                              },
+                              type: "member-added",
+                            }
+                          })
+                          .then(() => {
+                            console.log(
+                              "Successfully added hashtag maintainer to chat"
+                            );
+                          });
+                      })
+                      .catch(err => {
+                        console.log("Error sending conflict message: ", err);
+                      });
+                  })
+                  .catch(err => {
+                    console.log("Error sending conflict message: ", err);
+                  });
+              })
+              .catch(err => {
+                console.log("Error disputing item:", err);
+              });
+          } catch (e) {
+            console.error("Error disputing item (catch block): ", e.stack);
+          }
+        });
+      }
+      _allowReply() {
+        let totalCost =
+          parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee / 2);
+        let userBalance = parseInt(this.balance);
+        return userBalance - totalCost >= 0 ? true : false;
+      }
+      _getProviderReply(item) {
+        if (
+          item.replies &&
+          item.providerAddress &&
+          item.replies[item.providerAddress]
+        ) {
+          return item.replies[item.providerAddress];
+        }
+      }
+      _encryptMessage(message) {
+        /**
+         * ENCRYPT MESSAGES
+         * - Make sure to reflect the structure define on the message object creation (chat-router.html)
+         */
+        const { symmetric } = window;
+        if (!symmetric)
+          throw Error(
+            'Object "symmetric" in not available in the global scope'
+          );
+
+        // ######### key is faked for now
+        const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw=";
+        return symmetric.encrypt(message.message, chatKey);
+      }
+    }
+    window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
+  </script>
 </dom-module>
