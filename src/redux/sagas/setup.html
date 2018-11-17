@@ -34,35 +34,27 @@
   (function () {
     // Initialize web3Local
     // const url = 'wss://kovan.infura.io/ws   '
-    const url = "wss://kovan.swarm.city"; // Swarm City Chain
+    const KOVAN_WSS = "wss://kovan.swarm.city"; // Swarm City Chain
     // const url = "ws://178.128.207.83:8546"; // Swarm City Chain
     // const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
-    window.web3Local = new Web3(url);
+
+    let provider = new Web3.providers.WebsocketProvider(KOVAN_WSS);
+    window.web3Local = new Web3(provider);
+    provider.on('error', e => console.log('WS Error', e));
+    provider.on('end', e => {
+        console.log('WSS closed');
+        console.log('Attempting to reconnect...');
+        provider = new Web3.providers.WebsocketProvider(KOVAN_WSS);
+
+        provider.on('connect', function () {
+            console.log('WSS Reconnected');
+        });
+        
+        window.web3Local.setProvider(provider);
+    });
+
     // window.web3Mainnet = new Web3("wss://mainnet.infura.io/ws");
     // 159.100.255.71:8546 or 8645
-
-    // const RINKEBY_WSS = "wss://rinkeby.infura.io/ws";
-    // var provider = new Web3.providers.WebsocketProvider(RINKEBY_WSS);
-    // var web3 = new Web3(provider);
-
-    // provider.on("error", e => console.log("WS Error", e));
-    // provider.on("end", e => {
-    //   console.log("WS closed");
-    //   console.log("Attempting to reconnect...");
-    //   provider = new Web3.providers.WebsocketProvider(RINKEBY_WSS);
-
-    //   provider.on("connect", function() {
-    //     console.log("WSS Reconnected");
-    //   });
-
-    //   web3.setProvider(provider);
-    // });
-
-
-
-
-
-
 
     console.log(
       "Redux-sagas is using web3Local version: ",
