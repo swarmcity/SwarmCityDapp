@@ -149,7 +149,7 @@
             ></detail-simpledeal-selected>
           </template>
 
-          <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
+          <template is="dom-if" if="{{_showFunded(item)}}">
             <detail-simpledeal-funded
               address="[[address]]"
               item="[[item]]"
@@ -170,7 +170,7 @@
             ></detail-simpledeal-input-conflict>
           </template>
 
-          <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
+          <template is="dom-if" if="{{_showConflict(item)}}">
             <detail-simpledeal-conflict
               address="[[address]]"
               item="[[item]]"
@@ -347,6 +347,29 @@
           ))) {
             return true;
         } else return false;
+      }
+
+      _showConflict(item) {
+        return ( 
+          (item && item.status && item.status == '3') &&
+          (this.address && (
+            item.seekerAddress && item.seekerAddress == this.address
+            ) || (
+            item && item.providerAddress && item.providerAddress == this.address
+            ) || (
+              this.hashtag && 
+              this.hashtag.metadata && 
+              this.hashtag.metadata.maintainer &&
+              this.hashtag.metadata.maintainer.address &&
+              this.hashtag.metadata.maintainer.address == this.address
+              )
+            )
+          )
+
+      }
+      _showFunded(item) {
+        return (item && item.status && item.status == '1') || 
+        (item && item.status && item.status == '3' && !this._showConflict(item));
       }
 
       _input() {
