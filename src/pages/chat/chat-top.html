@@ -41,10 +41,15 @@
       }
 
       .top-avatar-seeker {
-        z-index: 2;
+        z-index: 3;
       }
 
       .top-avatar-provider {
+        margin-left: -5px;
+        z-index: 2;
+      }
+
+      .top-avatar-maintainer {
         margin-left: -5px;
         z-index: 1;
       }
@@ -122,6 +127,16 @@
         placeholder="../images/defaultavatar.png"
       >
       </iron-image>
+      <template is="dom-if" if="[[_isConflict(item)]]">
+        <iron-image
+        class="top-avatar top-avatar-maintainer"
+        sizing="cover"
+        preload
+        src="https://scapiweb3-c.swarm.city/img/[[_getmaintainerAvatar(hashtag)]]"
+        placeholder="../images/defaultavatar.png"
+      >
+      </iron-image>
+      </template>
     </div>
     <div class="close" on-tap="_toDetail"></div>
   </template>
@@ -134,7 +149,8 @@
       }
       static get properties() {
         return {
-          chat: Object,
+          item: Object,
+          hashtag: Object,
         };
       }
       _toDetail() {
@@ -142,6 +158,16 @@
       }
       _getProviderAvatar(item) {
         return item.replies && item.replies[item.providerAddress].avatarHash
+      }
+      _isConflict(item) {
+        return item && item.status && item.status == '3';
+      }
+      _getmaintainerAvatar(hashtag) {
+        return hashtag 
+        && hashtag.metadata 
+        && hashtag.metadata.maintainer 
+        && hashtag.metadata.maintainer 
+        && hashtag.metadata.maintainer.avatar;
       }
     }
     window.customElements.define(MyChatTop.is, MyChatTop);

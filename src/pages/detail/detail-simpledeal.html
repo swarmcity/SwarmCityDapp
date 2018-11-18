@@ -181,7 +181,7 @@
           </template>
         </div>
 
-        <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
+        <template is="dom-if" if="{{_showConflictButton(item)}}">
           <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
         </template>
 
@@ -338,6 +338,17 @@
           return true;
         }
       }
+      
+      _showConflictButton(item) {
+        if (
+          (item && item.status && item.status == '1') && 
+          ((item && item.seekerAddress && item.seekerAddress == this.address) || (
+            item && item.providerAddress && item.providerAddress == this.address
+          ))) {
+            return true;
+        } else return false;
+      }
+
       _input() {
         if (this._allowReply) {
           this.dispatchEvent(
@@ -536,6 +547,7 @@
                           sender: this.address,
                           time: Math.floor(Date.now() / 1000),
                           message: this._encryptMessage(motivation),
+                          type: 'message'
                         }
                       })
                       .then(() => {
@@ -605,7 +617,7 @@
 
         // ######### key is faked for now
         const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw=";
-        return symmetric.encrypt(message.message, chatKey);
+        return symmetric.encrypt(message, chatKey);
       }
     }
     window.customElements.define(MyDetailSimpledeal.is, MyDetailSimpledeal);
