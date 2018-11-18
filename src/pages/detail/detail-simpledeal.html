@@ -149,7 +149,7 @@
             ></detail-simpledeal-selected>
           </template>
 
-          <template is="dom-if" if="{{_showFunded(item)}}">
+          <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
             <detail-simpledeal-funded
               address="[[address]]"
               item="[[item]]"
@@ -165,12 +165,13 @@
 
           <template is="dom-if" if="{{_isEqualTo(status, 'input conflict')}}">
             <detail-simpledeal-input-conflict
+              id="input-conflict"
               on-status="_handleOnStatus"
               on-conflict="_handleOnConflict"
             ></detail-simpledeal-input-conflict>
           </template>
 
-          <template is="dom-if" if="{{_showConflict(item)}}">
+          <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
             <detail-simpledeal-conflict
               address="[[address]]"
               item="[[item]]"
@@ -252,6 +253,7 @@
               .createNewReply({ replier, reply, hashtag })
               .then(receipt => {
                 console.log("Successfully transacted reply, receipt:", receipt);
+                const storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 this.dispatch({
                   type: "UPDATE_ITEM",
                   hashtagAddress: hashtag.address,
@@ -260,7 +262,7 @@
                     replies: {
                       [replier.address]: {
                         username: replier.username,
-                        avatarHash: localStorage.getItem("avatarHash"),
+                        avatarHash: storage.user.avatarHash,
                         replierAddress: replier.address,
                         message: reply.message
                       }
@@ -529,6 +531,8 @@
       _handleOnConflict(e) {
         let motivation = e.detail;
         this.$.unlock._getPrivateKey().then(res => {
+          let el = this.shadowRoot.querySelector("#input-conflict");
+          if (el) el._reset();
           try {
             const { privateKey, address, publicKey } = res;
             if (!privateKey) {

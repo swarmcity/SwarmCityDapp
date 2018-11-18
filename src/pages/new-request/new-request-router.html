@@ -203,13 +203,14 @@ This code may only be used under the license found at https://github.com/swarmci
                                 .then(res => {
                                     const { txHash, itemHash } = res;
                                     console.log('Successfully transacted item, receipt:', txHash)
-                                    this.status = 'success'
+                                    this.status = 'success';
+                                    const storage = JSON.parse(localStorage.getItem('SwarmCity'));
                                     this.dispatch({
                                         type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
                                             hashtagFee: this.hashtag.hashtagFee,
                                             itemValue: itemBudget * 1e18,
                                             seekerUsername: this.username,
-                                            seekerAvatarHash: this.avatar,
+                                            seekerAvatarHash: storage.user.avatarHash,
                                             seekerAddress: address,
                                             timestamp: 'pending',
                                             status: 0,

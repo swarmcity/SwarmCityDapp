@@ -19,9 +19,10 @@
 
         async function createNewItemAsync({ seeker, item, hashtag }) {
             // 0. Upload to IPFS
+            const storage = JSON.parse(localStorage.getItem('SwarmCity'));
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: seeker.username,
-                avatarHash: localStorage.getItem('avatarHash'),
+                avatar: storage.user.avatarHash,
                 description: item.description,
                 location: item.location,
                 publicKeySeeker: seeker.publicKey
@@ -74,12 +75,14 @@
 
             // const hashArray = hdWallet.util.toUint8Array(reply.itemHash);
             
+            
             // Add the accessKey
             const accessKey = hdWallet.requestAccess(replier.privateKey, reply.itemHash);
+            const storage = JSON.parse(localStorage.getItem('SwarmCity'));
             // 0. Upload to IPFS
             const metadataHash = await ipfs.add(JSON.stringify({
                 username: replier.username,
-                avatarHash: localStorage.getItem('avatarHash'),
+                avatarHash: storage.user.avatarHash,
                 replierAddress: replier.address,
                 message: reply.message,
                 accessKey: accessKey,
