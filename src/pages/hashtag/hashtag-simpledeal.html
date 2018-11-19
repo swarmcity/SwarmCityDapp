@@ -100,9 +100,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="middle">
                     <div class="filterbox">filter deals</div>
                     <div class="flex"></div>
-                    <div class="counterbox" on-tap="_backToTop">[[count]] active
-                        <div class="icon-scroll"></div>
-                    </div>
+                    <template is="dom-if" if="{{showCounter}}">
+                        <div class="counterbox" on-tap="_backToTop">[[count]] active
+                            <div class="icon-scroll"></div>
+                        </div>
+                    </template>
                 </div>
 
                 <template is="dom-repeat" items="[[items]]" filter="_isNotInvolved">
@@ -125,6 +127,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     address: String,
                     items: Array,
                     count: Number,
+                    showCounter: Boolean,
                     hashtag: {
                         type: Object,
                         observer: '_getItems',
@@ -140,7 +143,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.count = 0;
                 this.set('items', Object.values(this.hashtag.items || {})
                     .sort((a, b) => b.blockNumber - a.blockNumber));
-                this.items.forEach(item => { if (this._isInvolved(item)) this.count += 1 })
+                this.items.forEach(item => { 
+                    if (this._isInvolved(item)) {
+                        this.count += 1
+                        if (this.count > 0) {
+                            this.showCounter = true;
+                        } else this.showCounter = false;
+                    }
+                })
 
             }
             _isInvolved(item) {
@@ -179,18 +189,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.dispatchEvent(new CustomEvent('new'));
                 }
             }
-            // _backToTop() {
-            //     let scrollDuration = 250;
-            //     let scrollStep = -this.parentElement.scrollTop / (scrollDuration / 15);
-            //     let scrollInterval = setInterval(() => {
-            //         if (this.parentElement.scrollTop != 0) {
-            //             this.parentElement.scrollTop += scrollStep;
-            //         }
-            //         else clearInterval(scrollInterval);
-            //     },
-            //         15);
-            // }
-
+            _showCounter(hashtag) {
+                if (this.address) {
+                    this.showCounter = true
+                } else {
+                    this.showCounter = true
+                }
+            }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
     </script>

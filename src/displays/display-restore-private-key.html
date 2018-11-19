@@ -330,14 +330,6 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                     },
                     /**
-                    * routeEntry contains routing information
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                        observer: '_resetValues',
-                    },
-                    /**
                     * choosePassword if true gives the option to choose password
                     * @type {Boolean}
                     */
@@ -458,16 +450,14 @@ The following custom properties and mixins are available for styling:
             * When leaving the page, entered values get reset
             */
             _resetValues() {
-                if (this.routeEntry[0] == 'private-key') {
-                    this.password = null;
-                    this.confirmPassword = null;
-                    this.privateKey = null;
-                    this.privateKeyError = '';
-                    this.choosePassword = true;
-                    this.passwordWarning = false;
-                    this.passwordSubmit = false;
-                    this.passwordSet = false;
-                }
+                this.password = null;
+                this.confirmPassword = null;
+                this.privateKey = null;
+                this.privateKeyError = '';
+                this.choosePassword = true;
+                this.passwordWarning = false;
+                this.passwordSubmit = false;
+                this.passwordSet = false;
             }
             /**
             * Compares input realtime and toggles button and error message
@@ -546,6 +536,7 @@ The following custom properties and mixins are available for styling:
                                 storage.keyStore = KeyStore.utcKeystore;
                                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                                 this.path = 'choose-avatar-and-username';
+                                this.$._resetValues();
                             });
                     }
                     else {
