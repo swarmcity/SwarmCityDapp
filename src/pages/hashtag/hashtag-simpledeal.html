@@ -167,14 +167,16 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _handleOnDetail(e) {
-                this.dispatchEvent(new CustomEvent('route', {
-                    detail: `/detail/${this.hashtag.address}/${e.detail}`,
+                this.dispatchEvent(new CustomEvent('detail', {
+                    detail: e.detail,
                 }));
             }
             _handleOnCreate() {
-                this.dispatchEvent(new CustomEvent('route', {
-                    detail: `/new-request/${this.hashtag.address}`,
-                }));
+                if (this.address) {
+                    this.dispatchEvent(new CustomEvent('create'));
+                } else {
+                    this.dispatchEvent(new CustomEvent('new'));
+                }
             }
             _backToTop() {
                 let scrollDuration = 250;
