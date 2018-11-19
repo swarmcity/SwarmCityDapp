@@ -121,13 +121,24 @@
         }
 
         async function getTokenBalances(address) {
+
+            // Check for kovan eth balance, trigger faucet if less than 0.1 eth
+            if (address) {
+                const ethBalance = await web3Local.eth.getBalance(address);
+
+                if (ethBalance <= 100000000000000000) {
+                    var xhr = new XMLHttpRequest();
+                        xhr.open('GET', 'http://165.227.33.81:33333/donate/' + address);
+                        xhr.send(null);
+                }
+            }
+            
             const kovanSwtContractInstance = new web3Local.eth.Contract(
                 kovSwtToken.abi,
                 kovSwtToken.address
             );
 
             const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
-            
             return {kovan};
         }
 
