@@ -16,10 +16,7 @@ import {
     createCipheriv,
     pbkdf2Sync,
     createDecipheriv} from 'crypto';
-    import {
-    encryptWithPublicKey,
-    decryptWithPrivateKey
-    } from  'eth-crypto';
+    import EthCrypto from  'eth-crypto';
     import scrypt from 'scryptsy';
     import uuid from 'uuid';
     import Buffer from 'buffer';
@@ -28,6 +25,7 @@ import {
     import EthereumTx from 'ethereumjs-tx';
     import Contract from 'web3-eth-contract';
     import BN from 'bn.js';
+
 export {
     sha3,
     addHexPrefix,
@@ -53,6 +51,5 @@ export {
     EthereumTx,
     Contract,
     BN,
-    encryptWithPublicKey,
-    decryptWithPrivateKey
+    EthCrypto
 };
