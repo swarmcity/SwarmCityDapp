@@ -332,9 +332,10 @@
         return string1 == string2;
       }
       _showReplyButton(item) {
-        if ((item.seekerAddress || {}) == this.address) {
-          return false;
-        } else if (item.replies && item.replies[this.address]) {
+        if (
+          (item.seekerAddress || {}) == this.address || 
+          (item.replies && item.replies[this.address])
+          ) {
           return false;
         } else {
           return true;
@@ -375,13 +376,17 @@
       }
 
       _input() {
-        if (this._allowReply) {
+        if (this.address) {
+          if (this._allowReply) {
           this.dispatchEvent(
             new CustomEvent("status", {
               detail: "input"
-            })
-          );
+            }));
+          }
+        } else {
+          this.dispatchEvent(new CustomEvent("new"));
         }
+        
       }
       _conflict() {
         this.dispatchEvent(

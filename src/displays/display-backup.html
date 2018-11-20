@@ -10,6 +10,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../redux-state.html">
+<link rel="import" href="../displays/display-unlock.html" />
 <!--
 
 Example:
@@ -70,6 +71,7 @@ The following custom properties and mixins are available for styling:
                 max-width: 320px;
             }
         </style>
+        <display-unlock id="unlock" blue></display-unlock>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
@@ -166,8 +168,19 @@ The following custom properties and mixins are available for styling:
             _unlock() {
                 this.qrCodePublicKey = null;
                 this.qrCodePrivateKey = null;
-                window.scrollTo(0, 0);
-                this.toggleUnlock = !this.toggleUnlock;
+                this.$.unlock._getPrivateKey().then(res => {
+                try {
+                    const { privateKey, address, publicKey, qrCodePrivateKey, qrCodePublicKey } = res;
+                        if (!privateKey) {
+                        throw Error("Missing address");
+                        }
+                        this.privateKey = privateKey;
+                        this.qrCodePublicKey = qrCodePublicKey;
+                        this.qrCodePrivateKey = qrCodePrivateKey;
+                    }   catch (e) {
+                        console.error("Error showing keys (catch block): ", e.stack);
+                    }
+                });
             }
             /**
             * Prints the paper wallet
