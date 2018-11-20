@@ -29,14 +29,23 @@
         /**
          * FOR TESTING PURPOSES ONLY
          */
-        function getRandomIdentity() {
+        function randomIdentity() {
             return EthCrypto.createIdentity()
+        }
+        async function test() {
+            const message = 'secret-message'
+            const identity = randomIdentity()
+            const envelope = await encrypt(message, identity.publicKey)
+            const _message = await decrypt(envelope, identity.privateKey)
+            if (message === _message) console.log('Test passed')
+            else console.log(`Test error: ${message} !== ${_message}`)
         }
 
         window.asymmetric = {
             encrypt,
             decrypt,
-            getRandomIdentity
+            test,
+            randomIdentity
         }
 
         // Import contract data:
