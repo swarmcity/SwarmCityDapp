@@ -99,7 +99,8 @@
         }
         function* getTxs(action) {
             try {
-                const txs = yield call(createLogsForDirection, action.address)
+                let txs;
+                if (action.address) txs = yield call(createLogsForDirection, action.address)
                 yield put(AppStore.actions.updateTxs(txs));
                 console.log('Received txs', txs)
 
@@ -120,13 +121,25 @@
         }
 
         async function getTokenBalances(address) {
+
+            // Check for kovan eth balance, trigger faucet if less than 0.1 eth
+            if (address) {
+                const ethBalance = await web3Local.eth.getBalance(address);
+
+                if (ethBalance < 50000000000000000) {
+                    console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
+                    var xhr = new XMLHttpRequest();
+                        xhr.open('GET', 'http://165.227.33.81:33333/donate/' + address);
+                        xhr.send(null);
+                }
+            }
+            
             const kovanSwtContractInstance = new web3Local.eth.Contract(
                 kovSwtToken.abi,
                 kovSwtToken.address
             );
 
             const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
-            
             return {kovan};
         }
 
