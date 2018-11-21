@@ -259,9 +259,101 @@
         };
       }
 
-      /**
-       * Fired when the component first loads
-       */
+            <dom-if if="{{publicKey}}">
+                <template>
+                    <img id="image" on-click="_toProfile" src="{{avatar}}">
+                    <div class="totalbox">
+                        <div id="username" on-click="_toProfile">{{username}}</div>
+                        <div id="balance" on-click="_toWallet">
+                            <template is="dom-if" if="{{loadingBalance}}">
+                                <div class="balanceloadshape"></div> SWT
+                            </template>
+                            <template is="dom-if" if="{{!loadingBalance}}">
+                                [[balance.cash.hr]] SWT
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </dom-if>
+        </div>
+    </template>
+    <script>
+        class DisplayMyInfo extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'display-my-info';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true,
+                    },
+                    /**
+                    * Username represents the users username
+                    * @type {String}
+                    */
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    /**
+                    * Avatar represents the user's base64 of their avatar image
+                    * @type {String}
+                    */
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    /**
+                    * Balance represents the users SWT balance
+                    * @type {Number}
+                    */
+                    balance: {
+                        type: Number,
+                        statePath: AppStore.selectors.balance, // eslint-disable-line
+                    },
+                    /**
+                    * loadingBalance is the currently loaded hashtagItem object
+                    * @type {Object}
+                    */
+                    loadingBalance: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * route data represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    publicKey: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                };
+            }
 
       connectedCallback() {
         super.connectedCallback();
