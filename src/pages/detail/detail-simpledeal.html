@@ -409,13 +409,6 @@
       }
       _handleOnChat() {
         this.dispatchEvent(new CustomEvent("chat"));
-        this.dispatchEvent(
-          new CustomEvent("openChat", {
-            detail: { itemHash: this.item.itemHash, yourAddress: this.address },
-            bubbles: true,
-            composed: true
-          })
-        );
       }
       _handleOnDetail(e) {
         this.dispatchEvent(
@@ -464,32 +457,28 @@
                     status: "1-pending"
                   }
                 });
-                // Initiate a chat with seeker and provider as members
-                this.$.socket
-                  ._startChat({
-                    provider: {
-                      address,
-                      publicKey,
-                      avatar: this.avatar,
-                      username: this.username
-                    },
-                    seeker: {
-                      address: this.item.seekerAddress,
-                      publicKey: this.item.seekerPublicKey,
-                      avatar: this.item.seekerAvatarHash,
-                      username: this.item.seekerUsername
-                    },
-                    itemHash: this.item.itemHash
-                  })
-                  .then(() => {
-                    console.log(
-                      "Successfully instantiated chat channel for item: ",
-                      this.item.itemHash
-                    );
-                  })
-                  .catch(err => {
-                    console.log("Error instantiating chat channel:", err);
-                  });
+                let accessKeys = [];
+                const secret = JSON.stringify(webpack.createIdentity());
+                webpack.encryptWithPublicKey(publicKey, secret).then(encryptedProvider => {
+                  accessKeys.push(encryptedProvider);
+                  webpack.encryptWithPublicKey(this.item.seekerPublicKey, secret).then(encryptedSeeker => {
+                    accessKeys.push(encryptedSeeker);
+                      this.$.socket._subscribeToChat({
+                        accessKeys,
+                        itemHash: this.item.itemHash
+                      })
+                      .then(() => {
+                        console.log(
+                          "Successfully instantiated chat channel for item: ",
+                          this.item.itemHash
+                        );
+                      })
+                      .catch(err => {
+                        console.log("Error instantiating chat channel:", err);
+                      });
+                  })      
+                  
+                })              
               })
               .catch(err => {
                 console.log("Error funding item:", err);

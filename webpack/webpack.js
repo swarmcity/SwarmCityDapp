@@ -18,7 +18,9 @@ import {
     createDecipheriv} from 'crypto';
     import {
     encryptWithPublicKey,
-    decryptWithPrivateKey
+    decryptWithPrivateKey,
+    createIdentity,
+    cipher
     } from  'eth-crypto';
     import scrypt from 'scryptsy';
     import uuid from 'uuid';
@@ -54,5 +56,7 @@ export {
     Contract,
     BN,
     encryptWithPublicKey,
-    decryptWithPrivateKey
+    decryptWithPrivateKey,
+    createIdentity,
+    cipher
 };

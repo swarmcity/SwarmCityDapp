@@ -9,6 +9,7 @@
 <link rel="import" href="../../redux-state.html" />
 
 <!-- Displays and shared styles only -->
+<link rel="import" href="../../displays/display-unlock.html" />
 <link rel="import" href="../../shared-styles.html" />
 <link rel="import" href="./chat-top.html" />
 <link rel="import" href="./chat-messages.html" />
@@ -28,11 +29,12 @@
         height: 100vh;
       }
     </style>
+    <display-unlock id="unlock" blue></display-unlock>
     <socket-redux id="socket"></socket-redux>
     <app-location route="{{route}}"></app-location>
     <chat-top item="[[item]]" hashtag="[[hashtag]]" on-close="_handleOnClose"></chat-top>
     <div class="container">
-      <chat-messages address="[[address]]" messages="[[chat.messages]]" avatars="[[avatars]]"></chat-messages>
+      <chat-messages address="[[address]]" messages="[[decrypted]]" avatars="[[avatars]]"></chat-messages>
       <chat-new address="[[address]]" avatars="[[avatars]]" on-send="_handleOnSend"></chat-new>
     </div>
   </template>
@@ -45,7 +47,10 @@
       }
       static get properties() {
         return {
-          route: Object,
+          route: {
+            type: Object,
+            observer: "_getSecret"
+          },
           hashtag: {
             type: Object,
             statePath: AppStore.selectors.hashtag
@@ -58,6 +63,7 @@
           chat: {
             type: Object,
             statePath: AppStore.selectors.chat,
+            observer: "_getSecret"
           },
           address: {
             type: String,
@@ -66,7 +72,12 @@
           avatars: {
             type: Object,
             value: {}
-          }
+          },
+          secret: {
+            type: Object,
+            value: {},
+          },
+          decrypted: Array,
         };
       }
       _handleOnClose() {
@@ -82,19 +93,6 @@
           message: e.detail,
           type: 'message'
         };
-
-        /**
-         * ENCRYPT MESSAGES
-         * - Make sure to reflect the structure define on the message object creation (chat-router.html)
-         */
-        const { symmetric } = window
-        if (!symmetric) throw Error('Object \"symmetric\" in not available in the global scope')
-
-        // ######### key is faked for now
-        const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw="
-
-        message.message = symmetric.encrypt(message.message, chatKey)
-
         this.$.socket
           ._sendChatMessage({
             itemHash: this.item.itemHash,
@@ -106,6 +104,47 @@
           .catch(err => {
             console.log("Error sending chat message: ", err);
           });
+      }
+      _getSecret() {
+        if (
+          this.route.path.split('/')[1] == 'chat' &&
+          !(this.secret &&
+          this.secret.chat
+          ) || 
+          (
+          this.secret &&
+          this.secret.chat && 
+          this.secret.chat != this.chat.itemHash
+          )
+        )
+        // If there is no secret, or if secret stored is not the correct one (check by itemHash), start the decryption phase.
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            this.chat.accessKeys.forEach( accessKey => {
+              console.log(accessKey)
+              try {
+                //decrypt accessKey
+                webpack.decryptWithPrivateKey(privateKey, accessKey).then(res => {
+                  const decrypted = JSON.parse(res);
+                  this.secret.decryptKey = decrypted.privateKey;
+                  this.secret.encryptKey = decrypted.publicKey
+                  this.secret.chat = this.chat.itemHash;
+                  console.log(this.secret);
+                });
+                // If decryption fails a null variable is returned
+                // if (!msg.message) throw Error('Decryption failed')
+              } catch (e) {
+                  // msg.error = e.message
+              }
+            });
+          } catch (e) {
+            console.error("Error unlocking wallet (catch block): ", e.stack);
+          }
+        })
+        .catch(() => {
+          this._handleOnClose();
+        });
       }
       _getAvatars() {
         let avatars = {};
