@@ -46,7 +46,7 @@ The following custom properties and mixins are available for styling:
                 position: absolute;
                 min-width: 100vw;
                 min-height: 100vh;
-                z-index: 2;
+                z-index: 99;
             }
 
             .blue {
@@ -389,9 +389,12 @@ The following custom properties and mixins are available for styling:
                                 });
                             const address = this.publicKey;
                             this.confirmed = false;
-                            this.enableScroll() 
-                            this.getPrivateKeyresolve({ privateKey, address });
-                        })
+                            this.$.wallet.derivePublicKey(privateKey)
+                                .then( publicKey => {
+                                    this.enableScroll()
+                                    this.getPrivateKeyresolve({ privateKey, address, publicKey, qrCodePrivateKey: this.qrCodePrivateKey, qrCodePublicKey: this.qrCodePublicKey });
+                                })
+                            })
                         .catch(() => {
                             this.password = '';
                             this.confirmed = false;

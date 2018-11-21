@@ -28,6 +28,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 min-height: calc(100vh - 159px);
                 width: 100%;
+                margin-top: 159px;
             }
 
             .middle {
@@ -35,10 +36,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center-justified;
                 @apply --layout-end;
                 background-image: var(--sc-bg);
-                /* z-index: 99;
+                z-index: 11;
                 position: sticky;
                 position: -webkit-sticky;
-                top: 158px; */
+                top: 158px;
                 width: 100%;
                 box-sizing: border-box;
                 padding: 0px 36px 15px 36px;
@@ -46,7 +47,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container[wide-layout] {
                 padding: 0px 0 10px 10vw;
-                max-width: 78vw;
+                padding-right: 22vw;
+                margin-top: 159px;
             }
 
             .filterbox {
@@ -84,7 +86,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
+        <div id="container" class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="[[!_hasHashtag(hashtag)]]">
                 <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
             </template>
@@ -98,6 +100,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="middle">
                     <div class="filterbox">filter deals</div>
                     <div class="flex"></div>
+                    <template is="dom-if" if="{{showCounter}}">
+                        <div class="counterbox" on-tap="_backToTop">[[count]] active
+                            <div class="icon-scroll"></div>
+                        </div>
+                    </template>
                 </div>
 
                 <template is="dom-repeat" items="[[items]]" filter="_isNotInvolved">
@@ -120,6 +127,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     address: String,
                     items: Array,
                     count: Number,
+                    showCounter: Boolean,
                     hashtag: {
                         type: Object,
                         observer: '_getItems',
@@ -128,40 +136,66 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             _hasHashtag(hashtag) {
-                return hashtag && ('items' in hashtag) ? true : false;
+                return hashtag && ('hashtagName' in hashtag) ? true : false;
             }
 
             _getItems() {
                 this.count = 0;
                 this.set('items', Object.values(this.hashtag.items || {})
                     .sort((a, b) => b.blockNumber - a.blockNumber));
-                this.items.forEach(item => { if (this._isInvolved(item)) this.count += 1 })
+                this.items.forEach(item => { 
+                    if (this._isInvolved(item)) {
+                        this.count += 1
+                        if (this.count > 0) {
+                            this.showCounter = true;
+                        } else this.showCounter = false;
+                    }
+                })
 
             }
             _isInvolved(item) {
-                return (
-                    this.address
-                    && item
-                    && (item.seekerAddress == this.address || item.providerAddress == this.address)
-                    && (!item.status) || item.status != '2'
-                )
+                let involved = false;
+                if (this.address) {
+                    if (item.seekerAddress == this.address) involved = true;
+                    if (item.providerAddress == this.address) involved = true;
+                    // If you're maintainer && item is in conflict
+                    if ((this.hashtag && 
+                    this.hashtag.metadata && 
+                    this.hashtag.metadata.maintainer &&
+                    this.hashtag.metadata.maintainer.address && 
+                    this.hashtag.metadata.maintainer.address == this.address) &&(
+                        item.status &&
+                        item.status == '3'
+                    )) involved = true;
+                }
+                if (item.status && item.status == '2') involved = false
+                return involved;
             }
 
             _isNotInvolved(item) {
-                return !this._isInvolved(item);
+                return (
+                    !this._isInvolved(item) && (item.status || {}) != '1' && (item.status || {}) != '3');
             }
 
             _handleOnDetail(e) {
-                this.dispatchEvent(new CustomEvent('route', {
-                    detail: `/detail/${this.hashtag.address}/${e.detail}`,
+                this.dispatchEvent(new CustomEvent('detail', {
+                    detail: e.detail,
                 }));
             }
             _handleOnCreate() {
-                this.dispatchEvent(new CustomEvent('route', {
-                    detail: `/new-request/${this.hashtag.address}`,
-                }));
+                if (this.address) {
+                    this.dispatchEvent(new CustomEvent('create'));
+                } else {
+                    this.dispatchEvent(new CustomEvent('new'));
+                }
             }
-
+            _showCounter(hashtag) {
+                if (this.address) {
+                    this.showCounter = true
+                } else {
+                    this.showCounter = true
+                }
+            }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
     </script>

@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
+<script src="../redux/sagas/HdWallet.min.js"></script>
 <dom-module id="socket-redux">
 
     <script>
@@ -74,15 +75,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Number,
                         statePath: 'reqtokey',
                         observer: '_reqToKey',
-                    },
-                    /**
-                     * This is the signed transaction to be broadcast
-                     * @type {String}
-                     */
-                    broadcast: {
-                        type: String,
-                        statePath: 'broadcast',
-                        observer: '_broadcast',
                     },
                     /**
                      * Historic transactions for publickey
@@ -260,7 +252,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io('https://dev.swarm.city', // eslint-disable-line
+                this.socket = io('https://scapiweb3-c.swarm.city', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -277,10 +269,18 @@ This code may only be used under the license found at https://github.com/swarmci
                             autoConnect: true,
                         });
                 };
+
+                // Initialize hdWallet
+                window.hdWallet = new HdWallet({
+                    transport: this.socket,
+                    name: this.username,
+                })
             }
 
             ready() {
                 super.ready();
+                // All handlers attached - please connect..
+                this.socket.connect();
                 // Listen for changes in the exchange rates
                 this.socket.on('fxChanged', (reply) => {
                     this.dispatch({
@@ -288,8 +288,57 @@ This code may only be used under the license found at https://github.com/swarmci
                         fx: reply
                     });
                 });
-                // All handlers attached - please connect..
-                this.socket.connect();
+                // Listen for changes in the chat channels
+                this.socket.on('chatChanged', (chatObject) => {
+                    if (!('itemHash' in chatObject)) {
+                        console.error('chat object doesn\'t contain an itemHash: ', chatObject);
+                        return
+                    }
+
+                    /**
+                     * DECRYPT MESSAGES
+                     * - Make sure to reflect the structure define on the message object creation (chat-router.html)
+                     */
+                    const { symmetric, asymmetric } = window
+                    if (!symmetric) throw Error('Object \"symmetric\" in not available in the global scope')
+                    if (!asymmetric) throw Error('Object \"asymmetric\" in not available in the global scope')
+
+                    // ######### key is faked for now
+                    const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw="
+
+                    chatObject.forEach(accessKey => {
+
+                    })
+
+                    // Modify chatObject in place, replacing the msg.message property by the decrypted message
+                    chatObject.messages = chatObject.messages.map(msg => {
+                        // If some messages are corrupted, try to decrypt the rest
+                        try {
+                            msg.message = symmetric.decrypt(msg.message, chatKey)
+                            // If decryption fails a null variable is returned
+                            if (!msg.message) throw Error('Decryption failed')
+                        } catch (e) {
+                            msg.error = e.message
+                        }
+                        return msg
+                    })
+
+                    this.dispatch({ type: 'UPDATE_CHAT', chatObject, itemHash: chatObject.itemHash })
+                });
+                // let itemHash = '0x6403386dea3153e53c39cb7a59952591270890a09c96285bfd720063f3c9273e'
+                var self = this;
+                window.addEventListener('openChat', function (e) {
+                    const { itemHash, yourAddress } = e.detail;
+                    self._openChat({
+                        itemHash,
+                    })
+                        .then(() => {
+                            console.log('Successfully joined chat channel for item: ', itemHash)
+                        })
+                        .catch(err => {
+                            console.log('Error instantiating chat channel:', err)
+                        });
+                }, false);
             }
 
             /**
@@ -398,28 +447,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
 
-            _reqToKey() {
-                this.socket.emit('readShortCode', {
-                    shortCode: this.reqtokey,
-                }, (reply) => {
-                    if (reply.response === 200) {
-                        this.tokey = reply;
-                        this.tokey.found = true;
-                        this.dispatch({
-                            type: 'UPDATE_SHORTCODE_DATA',
-                            tokey: this.tokey
-                        });
-                    }
-                    if (reply.response === 400) {
-                        this.tokey = reply;
-                        this.tokey.found = false;
-                        this.dispatch({
-                            type: 'UPDATE_SHORTCODE_DATA',
-                            tokey: this.tokey
-                        });
-                    }
-                });
-            }
 
             /**
             * const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
@@ -451,27 +478,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         });
                 })
             }
-
-            _broadcast() {
-                // Called with
-                // this.dispatch({
-                //     type: 'BROADCAST',
-                //     broadcast: '0x' + serializedTx.toString('hex'),
-                // });
-                if (this.reqtokey != null) {
-                    this.sendSignedTransaction(this.broadcast)
-                        .then(txHash => {
-                            this.dispatch({ type: 'TXHASH', txHash });
-                        })
-                    this.socket.emit('replyShortCode', {
-                        shortCode: this.reqtokey,
-                        tx: '0x0',
-                    }, (reply) => {
-                        // Deleted shortcode successfully
-                    });
-                }
-            }
-
             // Get a certain user's reputation balance by address
             _getUserReputation() {
                 if (this.userReputation.request) {
@@ -484,6 +490,87 @@ This code may only be used under the license found at https://github.com/swarmci
                         });
                     });
                 }
+            }
+
+            _startChat({ provider, seeker, itemHash }) {
+                const { asymmetric } = window;
+
+                if (!asymmetric)
+                    throw Error(
+                        'Object "asymmetric" in not available in the global scope'
+                    );
+
+                // ######### key is faked for now
+                const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw=";
+
+                let accessKeys = [];
+
+                accessKeys.push(asymmetric.encrypt(chatKey, provider.publicKey));
+                accessKeys.push(asymmetric.encrypt(chatKey, seeker.publicKey))
+
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('subscribeToChat', {
+                        accessKeys: accessKeys,
+                        itemHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Chat channel creation error: ' + reply.data));
+                        }
+                    });
+                });
+            }
+
+            _updateChat({ accessKeys, itemHash }) {
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('subscribeToChat', {
+                        accessKeys: accessKeys,
+                        itemHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Chat channel creation error: ' + reply.data));
+                        }
+                    });
+                });
+
+            }
+
+            _openChat({ itemHash }) {
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('subscribeToChat', {
+                        itemHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Chat channel joining error: ' + reply.data));
+                        }
+                    });
+                });
+            }
+
+            _sendChatMessage({ itemHash, message }) {
+                console.log('itemHash: ', itemHash)
+                console.log('message: ', message)
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('newChatMessage', {
+                        itemHash,
+                        message,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Error sending chat message: ' + reply.data));
+                        }
+                    });
+                });
             }
 
             _getShortcode(address, username, avatar) {

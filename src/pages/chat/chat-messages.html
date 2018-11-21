@@ -1,0 +1,114 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-flex-layout/iron-flex-layout.html"
+/>
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="./chat-message.html" />
+<link rel="import" href="./chat-my-message.html" />
+<link rel="import" href="./chat-conflict-start.html" />
+<link rel="import" href="./chat-member-added.html" />
+
+<dom-module id="chat-messages">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      .container {
+        height: 75vh;
+        overflow: scroll;
+        width: 100%;
+        max-width: 1000px;
+        margin-bottom: 40px;
+        box-sizing: border-box;
+        padding: 150px 30px 0 30px;
+        margin: 0 auto 20px auto;
+      }
+    </style>
+    <div id="container" class="container">
+      <template is="dom-repeat" items="[[messages]]">
+        <template is="dom-if" if="[[!_statusMessage(item)]]">
+          <template is="dom-if" if="[[_myMessage(item)]]">
+            <chat-my-message
+              avatars="[[avatars]]"
+              item="[[item]]"
+            ></chat-my-message>
+          </template>
+          <template is="dom-if" if="[[!_myMessage(item)]]">
+            <chat-message avatars="[[avatars]]" item="[[item]]"></chat-message>
+          </template>
+        </template>
+        <template is="dom-if" if="[[_statusMessage(item)]]">
+            <template is="dom-if" if="[[_conflictStart(item)]]">
+              <chat-conflict-start item="[[item]]"></chat-conflict-start>
+            </template>
+            <template is="dom-if" if="[[_memberAdded(item)]]">
+                <chat-member-added item="[[item]]"></chat-member-added>
+            </template>
+        </template>
+      </template>
+    </div>
+  </template>
+  <script>
+    class MyChatMessages extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "chat-messages";
+      }
+      static get properties() {
+        return {
+          messages: {
+            type: Array,
+            observer: "_scrollToBottom"
+          },
+          address: String,
+          avatars: Object,
+          initialScroll: {
+            type: Boolean,
+            value: false
+          }
+        };
+      }
+      _statusMessage(item) {
+        return ('type' in item && item.type != 'message');
+      }
+      _conflictStart(item) {
+        return item.type && item.type == 'conflict-start';
+      }
+      _memberAdded(item) {
+        return item.type && item.type == 'member-added';
+      }
+      _myMessage(item) {
+        return item.sender && item.sender == this.address;
+      }
+      /**
+       * scrolls the messages box down to newest message if not scrolled up yet
+       */
+      _scrollToBottom() {
+        if (
+          this.$.container.scrollHeight - this.$.container.scrollTop <=
+          this.$.container.clientHeight + 100
+        ) {
+          this.$.container.scrollTop = this.$.container.scrollHeight;
+        }
+        // scroll down on initial load of the messages
+        if (!this.initialScroll && this.$.container.scrollHeight > 501) {
+          this.$.container.scrollTop = this.$.container.scrollHeight;
+          this.initialScroll = true;
+        }
+      }
+    }
+    window.customElements.define(MyChatMessages.is, MyChatMessages);
+  </script>
+</dom-module>

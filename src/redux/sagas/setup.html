@@ -7,6 +7,10 @@
 <script src="../contractsData.js"></script>
 <script src="../contractAbis.js"></script>
 
+<link rel="import" href="symmetric.html">
+<link rel="import" href="asymmetric.html">
+<link rel="import" href="ledger.html">
+
 <script>
     (function () {
 
@@ -24,10 +28,27 @@
                 kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
             }
         }
-        window.web3s = {
-            mainnet: new Web3(web3Providers[selectedProvider].mainnet),
-            kovan: new Web3(web3Providers[selectedProvider].kovan)
+        // ################################
+        // Used chains
+        const chains = ['mainnet', 'kovan']
+        // ################################
+        for (const chain of chains) {
+          let provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
+          window.web3s[chain] = new Web3(provider);
+          console.log(`Redux-sagas is using web3 ${chain} version ${window.web3s[chain].version} host`, window.web3s[chain].currentProvider)
+          provider.on('error', e => console.error('web3 ws '+chain+' error', e));
+          provider.on('end', e => {
+            console.log('web3 ws '+chain+' connection closed');
+            console.log('Attempting to reconnect...');
+            provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
+            provider.on('connect', () => {
+              console.log('web3 ws '+chain+' reconnected');
+            });
+            window.web3s[chain].setProvider(provider);
+          });
+          // setInterval(() => { web3Local.eth.getBlockNumber().then(console.log) }, 30 * 1000);
         }
+
         window.web3Mainnet = web3s.mainnet
         window.web3Kovan = web3s.kovan
         window.web3Local = window.web3Kovan
@@ -93,100 +114,128 @@
         window.contracts = contracts['production']
 
         /*
-         * Setup IPFS with a simple retry async flow. 
-         * It will attempt each function 3 times before returning the error
-         * 
-        **/
-        const ipfs = IpfsApi('localhost', '5001', { protocol: 'http' })
-        console.log('Redux-sagas is using ipfs at http://localhost:5001')
+     * Setup IPFS with a simple retry async flow.
+     * It will attempt each function 3 times before returning the error
+     *
+     **/
+    // const ipfs = IpfsApi("localhost", "5001", { protocol: "http" });
+    // const ipfs = IpfsApi("ipfs.infura.io", "5001", { protocol: "https" });
+    // console.log("Redux-sagas is using ipfs at https://ipfs.infura.io:5001");
+    const ipfs = IpfsApi("ipfs.swarm.city", "443", { protocol: "https" });
+    console.log("Redux-sagas is using ipfs at https://ipfs.swarm.city:443");
 
-        const retryable = (fn, times = 3) => (...args) => new Promise((resolve, reject) => {
-            let attempt = 0
-            function retryAttempt() {
-                fn(...args).then(
-                    resolve,
-                    e => {
-                        if (e && attempt++ < times) setTimeout(retryAttempt, 1000 * Math.random())
-                        else reject(e)
-                    }
-                )
-            }
-            retryAttempt()
-        })
-
-        // Dependencies:
-        const Buffer = window.buffer.Buffer
-        const CID = window.CID
-
-        // Return bytes32 hex string from base58 encoded ipfs hash,
-        // Enforces that the encoding is SHA-256 32 bytes
-        // Supports CIDv0 and CIDv1
-        // |----------CID v1-----------------------------------------------------------------------------------------|
-        //       |----CID v0-----------------------------------------------------------------------------------------|
-        // 01 55 12 20 b1 02 74 3d b0 6d ab 56 5f a8 73 fc 41 28 13 90 02 34 1b 80 e2 24 f9 b8 de f7 d7 a4 e4 32 eb 10
-        // |  |  |  |  | Hash of the data (the rest of bytes)
-        // |  |  |  | Length of the hash
-        // |  |  | Hashing algorytm
-        // |  | 
-        // |
-        // 
-        // Will return the hash of the data only in hex prepended by 0x
-        function hashToBytes32(hash) {
-            const cid = new CID(hash)
-            const hashId = cid.multihash.slice(0, 2).toString('hex')
-            const bytes32 = cid.multihash.slice(2).toString('hex')
-            if (hashId !== '1220' || bytes32.length / 2 !== 32) {
-                console.error(`IPFS hash is not SHA-256 32 bytes: ${hashId} !== "1220"`)
-            } else {
-                return "0x" + bytes32
-            }
+    const retryable = (fn, times = 3) => (...args) =>
+      new Promise((resolve, reject) => {
+        let attempt = 0;
+        function retryAttempt() {
+          fn(...args).then(resolve, e => {
+            if (e && attempt++ < times)
+              setTimeout(retryAttempt, 1000 * Math.random());
+            else reject(e);
+          });
         }
+        retryAttempt();
+      });
 
-        // Return base58 encoded ipfs hash from bytes32 hex string,
-        // Assumes the hashing options are: SHA-256 32 bytes (1220)
-        // Strips leading "0x" if necessary
-        // E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
-        // --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
+    // Dependencies:
+    const Buffer = window.buffer.Buffer;
+    const CID = window.CID;
 
-        function bytes32ToHash(bytes32) {
-            if (!bytes32) {
-                throw Error('In ipfs.bytes32ToHash, hash or bytes32 is not defined')
-            }
-            if (bytes32.startsWith('0x')) bytes32 = bytes32.slice(2)
-            // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
-            const cid = new CID(1, 'raw', buffer.Buffer('1220' + bytes32, 'hex'))
-            // Returns a base encodec string of the CID. Defaults to base58btc.
-            // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
-            return cid.toBaseEncodedString()
-        }
+    // Return bytes32 hex string from base58 encoded ipfs hash,
+    // Enforces that the encoding is SHA-256 32 bytes
+    // Supports CIDv0 and CIDv1
+    // |----------CID v1-----------------------------------------------------------------------------------------|
+    //       |----CID v0-----------------------------------------------------------------------------------------|
+    // 01 55 12 20 b1 02 74 3d b0 6d ab 56 5f a8 73 fc 41 28 13 90 02 34 1b 80 e2 24 f9 b8 de f7 d7 a4 e4 32 eb 10
+    // |  |  |  |  | Hash of the data (the rest of bytes)
+    // |  |  |  | Length of the hash
+    // |  |  | Hashing algorithm
+    // |  |
+    // |
+    //
+    // Will return the hash of the data only in hex prepended by 0x
+    function hashToBytes32(hash) {
+      const cid = new CID(hash);
+      const hashId = cid.multihash.slice(0, 2).toString("hex");
+      const bytes32 = cid.multihash.slice(2).toString("hex");
+      if (hashId !== "1220" || bytes32.length / 2 !== 32) {
+        console.error(
+          `IPFS hash is not SHA-256 32 bytes: ${hashId} !== "1220"`
+        );
+      } else {
+        return "0x" + bytes32;
+      }
+    }
 
-        function ipfsAdd(data) {
-            if (!Buffer.isBuffer(data)) {
-                data = Buffer.from(data, 'utf8')
-            }
-            return ipfs.add(data, { hashAlg: 'sha2-256' }).then(res => ({
-                hash: res[0].hash,
-                bytes32: hashToBytes32(res[0].hash)
-            }))
-        }
+    // Return base58 encoded ipfs hash from bytes32 hex string,
+    // Assumes the hashing options are: SHA-256 32 bytes (1220)
+    // Strips leading "0x" if necessary
+    // E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
+    // --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
 
-        function ipfsCat(hash) {
-            if (hash && !hash.startsWith('Qm')) {
-                // Assuming hash is actually a bytes32
-                hash = bytes32ToHash(hash)
-            }
-            return ipfs.cat(hash).then(file => file.toString('utf8'))
-        }
+    function bytes32ToHash(bytes32) {
+      if (!bytes32) {
+        throw Error("In ipfs.bytes32ToHash, hash or bytes32 is not defined");
+      }
+      if (bytes32.startsWith("0x")) bytes32 = bytes32.slice(2);
+      // new CID(1, 'raw', buffer.Buffer('12206e6ff7950a36187a801613426e858dce686cd7d7e3c0fc42ee0330072d245c95', 'hex'))
+      const cid = new CID(0, "raw", buffer.Buffer("1220" + bytes32, "hex"));
+      // Returns a base encodec string of the CID. Defaults to base58btc.
+      // zb2rhe5P4gXftAwvA4eXQ5HJwsER2owDyS9sKaQRRVQPn93bA
+      return cid.toBaseEncodedString();
+    }
 
-        window.ipfs = {
-            add: retryable(ipfsAdd),
-            cat: retryable(ipfsCat)
-        }
+    function ipfsAdd(data) {
+      if (!Buffer.isBuffer(data)) {
+        data = Buffer.from(data, "utf8");
+      }
+      return ipfs
+        .add(data, { hashAlg: "sha2-256", "cid-version": 0 })
+        .then(res => {
+          const hash = res[0].hash;
+          if (!hash.startsWith("Qm"))
+            console.warn(
+              "WARNING TO SWARM.CITY DEVS: ipfs cids are not being stored as v0"
+            );
+          return {
+            hash,
+            bytes32: hashToBytes32(hash)
+          };
+        });
+    }
 
-        window.ipfsUtils = {
-            bytes32ToHash,
-            hashToBytes32
-        }
+    function isIpfsHash(hash) {
+      try {
+        const cid = new CID(hash);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function ipfsCat(hash) {
+      if (!hash) {
+        throw Error("In ipfs.cat, hash is not defined");
+      }
+      // First check if the hash is a bytes32 and needs conversion
+      // Case 1. Starts with "0x", hash for sure
+      // Case 2. Check if it is not an ipfs hash
+      if (hash.startsWith("0x") || !isIpfsHash(hash)) {
+        hash = bytes32ToHash(hash);
+      }
+      return ipfs.cat(hash).then(file => file.toString("utf8"));
+    }
+
+    window.ipfs = {
+      add: retryable(ipfsAdd),
+      cat: retryable(ipfsCat)
+    };
+
+    window.ipfsUtils = {
+      bytes32ToHash,
+      hashToBytes32
+    };
+
 
     }());
 </script>

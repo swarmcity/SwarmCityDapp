@@ -114,10 +114,9 @@
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close,
-                .rotate-icon,
-                .disagree,
-                .agree {
+                .container .rotate-icon,
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
                     @apply --retina;
                 }
             }
@@ -491,12 +490,16 @@
                 ctx.scale(2.15, 2.15);
                 ctx.drawImage(this.$.canvas, -77, -77);
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                const ipfs = window.ipfs
                 storage.user.avatar = newCanvas.toDataURL('image/jpeg');
-                localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                let avatarUrl = newCanvas.toDataURL('image/png');
-                this.dispatch({ type: 'AVATAR', avatar: avatarUrl });
+                ipfs.add(storage.user.avatar).then( hash => {
+                    storage.user.avatarHash = hash.hash;
+                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                    let avatarUrl = newCanvas.toDataURL('image/png');
+                    this.dispatch({ type: 'AVATAR', avatar: avatarUrl });
 
-                window.history.back();
+                    window.history.back();
+                })
             }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
     </script>

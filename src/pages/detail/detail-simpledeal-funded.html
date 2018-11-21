@@ -161,13 +161,21 @@ The following custom properties and mixins are available for styling:
             .pending {
                 opacity: 0.5;
             }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .chat-icon {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="[[_isInvolved(item.seekerAddress, reply.providerAddress, address)]]">
                 <div class="whitebox">
                     <div class="descriptionbox">
-                        <div class="description">[[item.description]]</div>
+                        <div class="description">[[reply.message]]</div>
                         <div class="price">for [[_formatValue(item.itemValue)]] SWT</div>
                     </div>
                     <div class="date">
@@ -175,7 +183,7 @@ The following custom properties and mixins are available for styling:
                     </div>
                     <div class="providerbox" on-tap="_toUserReputation">
                         <div class="avatar">
-                            <iron-image sizing="cover" preload src="https://dev.swarm.city/img/[[reply.avatarHash]]"
+                            <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[reply.avatarHash]]"
                                 placeholder="../images/defaultavatar.png">
                             </iron-image>
                         </div>
@@ -189,9 +197,9 @@ The following custom properties and mixins are available for styling:
                     </div>
                 </div>
                 <div class$="{{_checkPending(item.status)}}">
-                    <!-- <div class="chat-button" on-tap="_toChat">
+                    <div class="chat-button" on-tap="_toChat">
                         <div class="chat-icon"></div>
-                    </div> -->
+                    </div>
                     <div class="white-text">You're in a deal!</div>
                     <template is="dom-if" if="[[_isSeeker(item.seekerAddress, address)]]">
                         <div class="button" on-tap="_payout">
@@ -311,7 +319,7 @@ The following custom properties and mixins are available for styling:
             * Change the route to the chat view
             */
             _toChat() {
-                // this.path = `chat/${this.hashtag.hashtagAddress}/${this.hashtagItem.itemHash}`;
+                this.dispatchEvent(new CustomEvent('chat'));
             }
 
             _checkPending(status) {

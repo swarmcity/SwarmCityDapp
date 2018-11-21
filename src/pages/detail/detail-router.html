@@ -23,10 +23,10 @@ This code may only be used under the license found at https://github.com/swarmci
         <data-simpledeal id="simpledeal"></data-simpledeal>
         <data-transaction id="transaction"></data-transaction>
         <app-location route="{{route}}"></app-location>
-        <display-my-info avatarSmall on-wallet="_handleOnWallet"></display-my-info>
+        <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
         <detail-simpledeal status="[[status]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]" username="[[username]]"
-            address="[[address]]" on-status="_handleOnStatus" on-close="_handleOnClose">
+            avatar="[[avatar]]" address="[[address]]" on-new="_handleOnNew" on-status="_handleOnStatus" on-close="_handleOnClose" on-chat="_handleOnChat">
         </detail-simpledeal>
     </template>
     <script>
@@ -75,11 +75,15 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                     balance: {
                         type: String,
-                        statePath: 'balance',
+                        statePath: AppStore.selectors.balance,
                     },
                     username: {
                         type: String,
-                        statePath: 'username',
+                        statePath: AppStore.selectors.username,
+                    },
+                    avatar: {
+                        type: String,
+                        statePath: AppStore.selectors.avatar,
                     },
                 };
             }
@@ -99,9 +103,13 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnStatus(e) {
                 this.status = e.detail;
             }
-            /**
-            * changes the current path
-            */
+            _handleOnChat() {
+                this.set('route.path', `chat/${this.hashtag.address}/${this.item.itemHash}`);
+            }
+            _handleOnNew() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'new-here');
+            }
             _handleOnClose() {
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
                 this.status = 'replies';
@@ -109,6 +117,10 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnWallet() {
                 sessionStorage.setItem('origin', this.route.path);
                 this.set('route.path', 'my-wallet/');
+            }
+            _handleOnProfile() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-profile');
             }
             _setStatus() {
                 if (this.item
@@ -142,11 +154,15 @@ This code may only be used under the license found at https://github.com/swarmci
                             // Item paid out
                             this.status = 'done';
                             break;
+                        case ('3-pending'):
+                        case ('3'):
+                            this.status = 'conflict';
+                            break;
                         default:
                             this.status = 'loading';
                     }
                 } else {
-                    this.status = 'loading';
+                    this.status = 'replies';
                 }
             }
         }

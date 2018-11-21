@@ -30,15 +30,10 @@
             username: username,
             avatar: avatar,
             publicKey: publicKey,
-            nonce: -1,
-            broadcast: null,
-            shortCode: null,
-            toAddress: null,
-            toUserName: null,
+            chats: {},
             amountToSend: 0,
             confirmedTx: [],
             shownTx: [],
-            usingShortCode: false,
             language: 'en',
             fx: {
                 priceBtc: 1,
@@ -225,82 +220,6 @@
                         username: action.username
                     }
                 }
-                // A string containing the ipfs hash of an image
-                // Dispatched by display-restore-json-file.html
-                // ##### Triggers _reqIpfs, in socket-redux.html
-                case 'REQIPFS': {
-                    return {
-                        ...state,
-                        reqipfs: action.reqipfs
-                    }
-                }
-
-                // >>>> FORM at display-transaction-status.html
-                // A string containing the address of the recipient
-                case 'TOADDRESS': {
-                    return {
-                        ...state,
-                        toAddress: action.toAddress
-                    }
-                }
-                // A string containing the username of the recipient
-                case 'TOUSERNAME': {
-                    return {
-                        ...state,
-                        toUserName: action.toUserName
-                    }
-                }
-                // A string containing the amount to send
-                case 'AMOUNTTOSEND': {
-                    return {
-                        ...state,
-                        amountToSend: action.amountToSend
-                    }
-                }
-                // <<<< FORM at display-transaction-status.html
-
-                // >>>> FORM at display-create-request.html
-                // A string containing the budget for a new request
-                case 'ITEMBUDGET': {
-                    return {
-                        ...state,
-                        itemBudget: action.itemBudget
-                    }
-                }
-                // A string containing the description for a new request
-                case 'ITEMDESCRIPTION': {
-                    return {
-                        ...state,
-                        itemDescription: action.itemDescription
-                    }
-                }
-                // GeoHash is the new item's geohash
-                case 'ITEMGEOHASH': {
-                    return {
-                        ...state,
-                        itemGeohash: action.itemGeohash
-                    }
-                }
-                // <<<< FORM at display-create-request.html
-
-                // A string containing the hashtag fee
-                // Called at display-complete-request.thml
-                // ##### Triggers _itemToIpfs() at socket-redux 
-                // which will trigger ITEMDATAHASH
-                case 'ITEMTOIPFS': {
-                    return {
-                        ...state,
-                        itemToIpfs: action.itemToIpfs
-                    }
-                }
-                // The IPFS hash with the new request item data
-                case 'ITEMDATAHASH': {
-                    return {
-                        ...state,
-                        itemDataHash: action.itemDataHash
-                    }
-                }
-
                 // A string containing the hashtag fee
                 // Called at display-complete-reply.thml
                 // ##### Triggers _replyToIpfs() at socket-redux 
@@ -348,15 +267,6 @@
                     return {
                         ...state,
                         userReputation: action.userReputation
-                    }
-                }
-
-                // chatHistory is the object containing the full chat history
-                // ##### DANGEROUS, Triggers _chatHistory() in socket-redux, and does 3 things simultaneously
-                case 'CHATHISTORY': {
-                    return {
-                        ...state,
-                        chatHistory: action.chatHistory
                     }
                 }
                 // the newChatMessage object contains a new chat message for a chat subscription
@@ -425,9 +335,19 @@
                         }
                     })
                 }
+                case 'UPDATE_CHAT': {
+                    return {
+                        ...state,
+                        chats: {
+                            ...state.chats, 
+                            [action.itemHash]: action.chatObject 
+                        }
+                    }
+                }
                 default: {
                     return state
                 }
+                
             }
         };
         if (!window.AppStore) window.AppStore = {}

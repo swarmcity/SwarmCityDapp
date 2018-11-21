@@ -1,0 +1,54 @@
+<script src="../../data/webpack.min.js"></script>
+
+<script>
+    (function () {
+        const { EthCrypto } = webpack
+        /**
+         * Encrypts utf-8 message with the recepient's publicKey.
+         * Uses authentication encryption.
+         * @param {String} messageUtf8 must be a utf-8 string
+         * @param {String} publicKey 
+         * @return {String} envelop, encoded result and parameters by EthCrypto
+         */
+        async function encrypt(messageUtf8, publicKey) {
+            const encrypted = await EthCrypto.encryptWithPublicKey(publicKey, messageUtf8);
+            return EthCrypto.cipher.stringify(encrypted)
+        }
+
+        /**
+         * Decrypts envelope with the receiver's privateKey 
+         * @param {String} envelope parsed parameters by EthCrypto to decypher
+         * @param {String} privateKey
+         * @return {String} utf-8 message
+         */
+        async function decrypt(envelope, privateKey) {
+            const encrypted = EthCrypto.cipher.parse(envelope)
+            return await EthCrypto.decryptWithPrivateKey(privateKey, encrypted)
+        }
+
+        /**
+         * FOR TESTING PURPOSES ONLY
+         */
+        function randomIdentity() {
+            return EthCrypto.createIdentity()
+        }
+        async function test() {
+            const message = 'secret-message'
+            const identity = randomIdentity()
+            const envelope = await encrypt(message, identity.publicKey)
+            const _message = await decrypt(envelope, identity.privateKey)
+            if (message === _message) console.log('Test passed')
+            else console.log(`Test error: ${message} !== ${_message}`)
+        }
+
+        window.asymmetric = {
+            encrypt,
+            decrypt,
+            test,
+            randomIdentity
+        }
+
+        // Import contract data:
+        // const { kovSwtToken, hashtagList, simpleDeal } = window.contractsData;
+    })();
+</script>

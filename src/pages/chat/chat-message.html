@@ -1,0 +1,111 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-image/iron-image.html"
+/>
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+
+<dom-module id="chat-message">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      .container {
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        word-wrap: break-word;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 0;
+      }
+
+      iron-image {
+        border-radius: 50%;
+      }
+
+      .message-date {
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        @apply --smallest-light;
+        color: var(--sc-grey3b);
+      }
+
+      .message-text {
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        @apply --body-default;
+        text-align: right;
+        white-space: normal;
+        color: black;
+        font-weight: 300;
+        max-width: 65vw;
+        overflow-x: scroll;
+      }
+
+      .avatar-chat {
+        margin: 4px 0 0 8px;
+        min-width: 25px;
+        height: 25px;
+        width: 25px;
+      }
+    </style>
+    <div class="container">
+      <div class="vertical">
+        <div class="message-date">[[_formatDate(item.time)]]</div>
+        <div class="message-text">[[item.message]]</div>
+      </div>
+      <iron-image
+        class="avatar-chat"
+        sizing="cover"
+        preload
+        src="https://scapiweb3-c.swarm.city/img/[[_getAvatar(item, avatars)]]"
+        placeholder="../images/defaultavatar.png"
+      >
+      </iron-image>
+    </div>
+  </template>
+  <script>
+    class MyChatMessage extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "chat-message";
+      }
+      static get properties() {
+        return {
+          item: Object,
+          avatars: Object
+        };
+      }
+
+      /**
+       * formats epoch
+       * @param {DateTime} dateTime epoch in javascript milliseconds
+       * @return {string} formatted date string
+       */
+      _formatDate(dateTime) {
+        let milliseconds = dateTime * 1000;
+        if (webpack.moment().valueOf() - milliseconds < 86400000) {
+          return webpack.moment(milliseconds).fromNow();
+        } else {
+          return webpack.moment(milliseconds).format("DD MMM YYYY - HH:mm");
+        }
+      }
+      _getAvatar(item, avatars) {
+        if (item.sender in avatars) return avatars[item.sender];
+      }
+    }
+    window.customElements.define(MyChatMessage.is, MyChatMessage);
+  </script>
+</dom-module>

@@ -28,6 +28,22 @@
 
 
         // worker Saga: will be fired on LOAD_LIST actions
+        function createTxsChannel(address) {
+            return eventChannel(emitter => {
+                const swtContractInstance = new web3Local.eth.Contract(
+                    kovSwtToken.abi,
+                    kovSwtToken.address
+                );
+                swtContractInstance.events.Transfer({
+                    filter: { _to: address },
+                }, function (error, event) {
+                    emitter(event)
+                })
+                swtContractInstance.events.Transfer({
+                    filter: { _from: address },
+                }, function (error, event) {
+                    emitter(event)
+                })
 
         const createTxsChannel = (address, chain) => eventChannel(emitter => {
             let tokenData
@@ -155,6 +171,27 @@
                 tokenData.address
             );
             const balance = await token.methods.balanceOf(address).call()
+            
+            // Check for kovan eth balance, trigger faucet if less than 0.1 eth
+//             if (address) {
+//                 const ethBalance = await web3Local.eth.getBalance(address);
+
+//                 if (ethBalance < 50000000000000000) {
+//                     console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
+//                     var xhr = new XMLHttpRequest();
+//                         xhr.open('GET', 'http://165.227.33.81:33333/donate/' + address);
+//                         xhr.send(null);
+//                 }
+//             }
+            
+//             const kovanSwtContractInstance = new web3Local.eth.Contract(
+//                 kovSwtToken.abi,
+//                 kovSwtToken.address
+//             );
+
+//             const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
+//             return {kovan};
+          
             return balance
         }
 

@@ -1,0 +1,422 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../displays/display-chat-messages.html">
+<link rel="import" href="../displays/display-unlock.html">
+
+<dom-module id="page-chat">
+    <template>
+        <!--
+        Page specific styles, if the style is used on more than one page, moveit to shared styles.
+    -->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --layout-center;
+                width: 100vw;
+                min-height: 100%;
+                overflow-y: scroll;
+            }
+
+            .input-box {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-start;
+                width: 100vw;
+                box-sizing: border-box;
+                padding: 30px;
+            }
+
+            iron-image {
+                border-radius: 50%;
+            }
+
+            paper-input {
+                @apply --layout-flex;
+                max-width: 60vw;
+                text-indent: 1px;
+                box-sizing: border-box;
+                padding: 0 2px;
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-grey4);
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-default;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .input-confirm {
+                @apply --icon-button-big;
+                margin: 10px 0 0 10px;
+                width: 52px;
+                height: 52px;
+                min-height: 52px;
+                min-width: 52px;
+            }
+
+            .blur {
+                @apply --unlock-blur;
+            }
+
+            .input-confirm:active {
+                @apply --button-active
+            }
+
+            .input-confirm-icon {
+                @apply --vmark-blue-small;
+            }
+
+            .divider {
+                background-color: var(--sc-grey3b);
+                height: 1px;
+                width: 95vw;
+            }
+
+            .avatar-main {
+                margin: 13px 10px 0 0;
+                min-width: 40px;
+                height: 40px;
+                width: 40px;
+            }
+
+            .bottom {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --layout-center;
+            }
+
+            display-chat-messages {
+                box-sizing: border-box;
+                padding-top: 10vh;
+                height: 75vh;
+                overflow: scroll;
+                width: 100%;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .input-confirm-icon,
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <app-location route="{{route}}"></app-location>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <display-chat-messages id="messagesbox" toggle-unlock="{{toggleUnlock}}" private-key="[[privateKey]]" hashtag="[[hashtag]]"
+                hashtag-item="[[hashtagItem]]" chat-history="[[chatHistory]]" address="[[address]]" secret="{{secret}}" messages="{{messages}}"></display-chat-messages>
+
+            
+
+            <div class="bottom">
+                <div class="divider"></div>
+                <div class="input-box">
+                    <iron-image class="avatar-main" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[user.avatarHash]]" placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                    <paper-input type="txt" value="{{message}}" autofocus on-keypress="_checkForEnter"></paper-input>
+                    <div class="input-confirm" on-up="_sendMessage" on-keypress="_checkForEnter">
+                        <div class="input-confirm-icon"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyChat extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-chat';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Path is the current or requested path
+                    * @type {String}
+                    */
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * Route is the current browser route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        notify: true,
+                        observer: '_getChat',
+                    },
+                    /**
+                    * chatHistory is this item's chathistory
+                    * @type {Object}
+                    */
+                    chatHistory: {
+                        type: Object,
+                        statePath: 'chatHistory',
+                        observer: '_load',
+                    },
+                    /**
+                    * hashtagItem is the item linked to this chat
+                    * @type {Object}
+                    */
+                    hashtagItem: {
+                        type: Object,
+                        statePath: 'hashtagItem',
+                        observer: '_load',
+                    },
+                    /**
+                    * PublicKey represents the user's public key
+                    * @type {String}
+                    */
+                    address: {
+                        type: String,
+                        statePath: 'publicKey',
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: 'hashtag',
+                    },
+                    /**
+                    * toggles the unlock display
+                    * @type {Boolean}
+                    */
+                    toggleUnlock: {
+                        type: Boolean,
+                        value: false,
+                        observer: '_blur',
+                    },
+                    /**
+                    * contains the current user's private key
+                    * @type {String}
+                    */
+                    privateKey: {
+                        type: String,
+                    },
+                    /**
+                    * secret contains the information needed to decrypt messages of a certain chatHistory
+                    * @type {Object}
+                    */
+                    secret: {
+                        type: Object,
+                    },
+                    /**
+                    * secret contains the information needed to decrypt messages of a certain chatHistory
+                    * @type {Object}
+                    */
+                    focus: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    /**
+                    * message is the new message string
+                    * @type {String}
+                    */
+                    message: {
+                        type: String,
+                    },
+                    /**
+                    * unlockByDisplay is the unlocked boolean as changed within display-unlock
+                    * @type {Boolean}
+                    */
+                    toggleUnlockByDisplay: {
+                        type: Boolean,
+                        observer: '_unlockByDisplay',
+                    },
+                    /**
+                    * messages is an Array of decrypted chat messages
+                    * @type {Array}
+                    */
+                    messages: {
+                        type: Array,
+                        observer: '_newMessage',
+                    },
+                    /**
+                    * initialScroll will be true after the scroll down on load
+                    * @type {Boolean}
+                    */
+                    initialScroll: {
+                        type: Boolean,
+                        value: false,
+                    },
+                };
+            }
+            /**
+            * Redux actions for starting a chat subscription
+            * @param {string} broadcast
+            */
+            static get actions() {
+                return Object.assign({
+                    CHATHISTORY: function(chatHistory) {
+                        return {
+                            type: 'CHATHISTORY',
+                            chatHistory: chatHistory,
+                        };
+                    },
+                    NEWCHATMESSAGE: function(newChatMessage) {
+                        return {
+                            type: 'NEWCHATMESSAGE',
+                            newChatMessage: newChatMessage,
+                        };
+                    },
+                });
+            }
+
+            /**
+            * Fired on initial element load.
+            */
+            ready() {
+                super.ready();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+            }
+            /**
+            * compare the chat & hashtagItem objects and populate seeker & provider
+            */
+            _load() {
+                if (this.hashtagItem &&
+                    this.hashtagItem.seeker &&
+                    this.hashtagItem.selectee &&
+                    this.chatHistory &&
+                    this.chatHistory.members) {
+                    this.user = this.chatHistory.members[this.address];
+                    this.seeker = this.chatHistory.members[this.hashtagItem.seeker.address];
+                    this.selectee = this.chatHistory.members[this.hashtagItem.selectee.address];
+                }
+            }
+            /**
+            * Check the route and subscribe to the corresponding chat channel
+            */
+            _getChat() {
+                if (this.route.path.split('/')[1] == 'chat') {
+                    this.focus = !this.focus;
+                    let subscribe = {
+                        subscribe: this.route.path.split('/')[3],
+                    };
+                    this.dispatch('CHATHISTORY', subscribe);
+                }
+            }
+            /**
+            * Switch unlock state depending on unlock button press
+            */
+            _unlockByDisplay() {
+                this.async(() => {
+                    if (!this.privateKey) {
+                        this._toDetail();
+                    }
+                });
+            }
+            /**
+            * changes the current path
+            */
+            _toDetail() {
+                this.path = `detail/${this.route.path.split('/')[2]}/${this.route.path.split('/')[3]}`;
+            }
+            /**
+            * blurs the current page
+            */
+            _blur() {
+                if (this.toggleUnlock) {
+                    this.$.container.classList.add('blur');
+                } else {
+                    this.$.container.classList.remove('blur');
+                }
+            }
+            /**
+            * changes the current path
+            */
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', this.path);
+                }
+                this.path = null;
+            }
+            /**
+            * check if user pressed enter
+            * @param {object} e the fired event
+            */
+            _checkForEnter(e) {
+                if (e.keyCode === 13 && this.message) {
+                    this._sendMessage();
+                }
+            }
+            /**
+            * send a new message on this item
+            */
+            _sendMessage() {
+                if (this.message) {
+                    let message = {
+                        itemHash: this.route.path.split('/')[3],
+                        message: this.message,
+                    };
+                    this.dispatch('NEWCHATMESSAGE', message);
+                    this.message = this.message.trim();
+                    this.message = '';
+                }
+            }
+
+            /**
+            * scrolls the messages box down to newest message if not scrolled up yet
+            */
+            _newMessage() {
+                setTimeout(() => {
+                    // only scroll down to new message if the last message is still in sight
+                    if (this.$.messagesbox.scrollHeight - this.$.messagesbox.scrollTop
+                        <= this.$.messagesbox.clientHeight + 100) {
+                        this.$.messagesbox.scrollTop = this.$.messagesbox.scrollHeight;
+                    }
+                    // scroll down on initial load of the messages
+                    if (!this.initialScroll && this.$.messagesbox.clientHeight > 0) {
+                        this.$.messagesbox.scrollTop = this.$.messagesbox.scrollHeight;
+                        this.initialScroll = true;
+                    }
+                }, 1);
+            }
+        } window.customElements.define(MyChat.is, MyChat);
+    </script>
+</dom-module>

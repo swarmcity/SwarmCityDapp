@@ -29,6 +29,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 min-height: 100vh;
                 width: 100%;
+                margin-top: 107px;
+            }
+
+            .container[wide-layout] {
+                margin-top: 120px;
             }
 
             display-hashtagadd-btn {
@@ -44,6 +49,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 bottom: 16vh;
             }
         </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <app-location route="{{route}}"></app-location>
         <display-icon-back logout on-back="_handleOnBack"></display-icon-back>
         <div class="container" wide-layout$="{{wide}}">
@@ -86,7 +92,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.set('route.path', 'new-hashtag');
             }
             _showHashtag(hashtag) {
-                return !hashtag.hashtagShown;
+                return hashtag.hashtagShown;
             }
             _handleOnWallet() {
                 sessionStorage.setItem('origin', this.route.path);
@@ -99,9 +105,6 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnHashtag(e) {
                 this.set('route.path', `hashtag/${e.detail}`);
             }
-            /**
-            * changes the current path
-            */
             _path() {
                 if (this.path != null) {
                     this.set('route.path', 'create-account/');

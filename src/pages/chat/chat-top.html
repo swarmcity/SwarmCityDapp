@@ -1,0 +1,175 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-flex-layout/iron-flex-layout.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-image/iron-image.html"
+/>
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+
+<dom-module id="chat-top">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .top-avatar-box {
+        @apply --layout-horizontal;
+        position: absolute;
+        top: 40px;
+        left: 30px;
+        z-index: 99;
+      }
+
+      .top-avatar {
+        min-width: 25px;
+        height: 25px;
+        width: 25px;
+      }
+
+      .top-avatar-seeker {
+        z-index: 3;
+      }
+
+      .top-avatar-provider {
+        margin-left: -5px;
+        z-index: 2;
+      }
+
+      .top-avatar-maintainer {
+        margin-left: -5px;
+        z-index: 1;
+      }
+
+      .close {
+        @apply --xmark-blue-small;
+        position: absolute;
+        z-index: 99;
+        top: 40px;
+        right: 16px;
+      }
+
+      .top {
+        background: -moz-linear-gradient(
+          bottom,
+          rgba(241, 241, 241, 0) 0%,
+          rgba(241, 241, 241, 0.01) 1%,
+          rgba(241, 241, 241, 1) 100%
+        );
+        /* FF3.6-15 */
+        background: -webkit-linear-gradient(
+          bottom,
+          rgba(241, 241, 241, 0) 0%,
+          rgba(241, 241, 241, 0.01) 1%,
+          rgba(241, 241, 241, 1) 100%
+        );
+        /* Chrome10-25,Safari5.1-6 */
+        background: linear-gradient(
+          to top,
+          rgba(241, 241, 241, 0) 0%,
+          rgba(241, 241, 241, 0.1) 1%,
+          rgba(241, 241, 241, 0.9) 35%,
+          rgba(241, 241, 241, 1) 100%
+        );
+        /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 98;
+        height: 20vh;
+        width: 100vw;
+      }
+
+      iron-image {
+        border-radius: 50%;
+      }
+
+      .close:active {
+        @apply --button-active;
+      }
+      @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+        only screen and (min--moz-device-pixel-ratio: 1.5),
+        only screen and (min-resolution: 240dpi) {
+        .input-confirm-icon,
+        .close {
+          @apply --retina;
+        }
+      }
+    </style>
+    <div class="top"></div>
+    <div class="top-avatar-box">
+      <iron-image
+        class="top-avatar top-avatar-seeker"
+        sizing="cover"
+        preload
+        src="https://scapiweb3-c.swarm.city/img/[[item.seekerAvatarHash]]"
+        placeholder="../../images/defaultavatar.png"
+      >
+      </iron-image>
+      <iron-image
+        class="top-avatar top-avatar-provider"
+        sizing="cover"
+        preload
+        src="https://scapiweb3-c.swarm.city/img/[[_getProviderAvatar(item)]]"
+        placeholder="../images/defaultavatar.png"
+      >
+      </iron-image>
+      <template is="dom-if" if="[[_isConflict(item)]]">
+        <iron-image
+        class="top-avatar top-avatar-maintainer"
+        sizing="cover"
+        preload
+        src="https://scapiweb3-c.swarm.city/img/[[_getmaintainerAvatar(hashtag)]]"
+        placeholder="../images/defaultavatar.png"
+      >
+      </iron-image>
+      </template>
+    </div>
+    <div class="close" on-tap="_toDetail"></div>
+  </template>
+  <script>
+    class MyChatTop extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "chat-top";
+      }
+      static get properties() {
+        return {
+          item: Object,
+          hashtag: Object,
+        };
+      }
+      _toDetail() {
+        this.dispatchEvent(new CustomEvent('close'));
+      }
+      _getProviderAvatar(item) {
+        return item.replies && item.replies[item.providerAddress].avatarHash
+      }
+      _isConflict(item) {
+        return item && item.status && item.status == '3';
+      }
+      _getmaintainerAvatar(hashtag) {
+        return hashtag 
+        && hashtag.metadata 
+        && hashtag.metadata.maintainer 
+        && hashtag.metadata.maintainer 
+        && hashtag.metadata.maintainer.avatar;
+      }
+    }
+    window.customElements.define(MyChatTop.is, MyChatTop);
+  </script>
+</dom-module>

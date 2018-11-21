@@ -52,14 +52,26 @@
                 });
             }
             /**
-            * create a address from public key
-            * @return {utcKeyStore} utcKeyStore
+            * create an address from public key
+            * @return {String} public key
             * @argument {String} privateKey
             */
             deriveAddress(privateKey) {
                 return new Promise((resolve) => {
                     const publicKey = webpack.privateToPublic(privateKey);
                     resolve(webpack.publicToAddress(publicKey));
+                });
+            }
+            /**
+            * derive a public key from private key
+            * @return {utcKeyStore} utcKeyStore
+            * @argument {String} privateKey
+            */
+            derivePublicKey(privateKey) {
+                return new Promise((resolve) => {
+                    const Buffer = webpack.Buffer.Buffer;
+                    const privateKeyHex = new Buffer(privateKey, 'hex');
+                    resolve(webpack.privateToPublic(privateKeyHex).toString('hex'));
                 });
             }
             /**

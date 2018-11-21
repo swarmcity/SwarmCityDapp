@@ -1,0 +1,125 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+<link rel="import" href="../../../bower_components/app-route/app-location.html" />
+<link rel="import" href="../../redux-state.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="./chat-top.html" />
+<link rel="import" href="./chat-messages.html" />
+<link rel="import" href="./chat-new.html" />
+
+<dom-module id="page-chat">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply --layout-vertical;
+        @apply --layout-end-justified;
+        background-image: var(--sc-bg);
+        height: 100vh;
+      }
+    </style>
+    <socket-redux id="socket"></socket-redux>
+    <app-location route="{{route}}"></app-location>
+    <chat-top item="[[item]]" hashtag="[[hashtag]]" on-close="_handleOnClose"></chat-top>
+    <div class="container">
+      <chat-messages address="[[address]]" messages="[[chat.messages]]" avatars="[[avatars]]"></chat-messages>
+      <chat-new address="[[address]]" avatars="[[avatars]]" on-send="_handleOnSend"></chat-new>
+    </div>
+  </template>
+  <script>
+    class MyChatRouter extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "page-chat";
+      }
+      static get properties() {
+        return {
+          route: Object,
+          hashtag: {
+            type: Object,
+            statePath: AppStore.selectors.hashtag
+          },
+          item: {
+            type: Object,
+            statePath: AppStore.selectors.item,
+            observer: "_getAvatars"
+          },
+          chat: {
+            type: Object,
+            statePath: AppStore.selectors.chat,
+          },
+          address: {
+            type: String,
+            statePath: AppStore.selectors.address
+          },
+          avatars: {
+            type: Object,
+            value: {}
+          }
+        };
+      }
+      _handleOnClose() {
+        this.set(
+          "route.path",
+          `detail/${this.hashtag.address}/${this.item.itemHash}`
+        );
+      }
+      _handleOnSend(e) {
+        const message = {
+          sender: this.address,
+          time: Math.floor(Date.now() / 1000),
+          message: e.detail,
+          type: 'message'
+        };
+
+        /**
+         * ENCRYPT MESSAGES
+         * - Make sure to reflect the structure define on the message object creation (chat-router.html)
+         */
+        const { symmetric } = window
+        if (!symmetric) throw Error('Object \"symmetric\" in not available in the global scope')
+
+        // ######### key is faked for now
+        const chatKey = "YSToLKUrS77d4taT53XSPMVN5tHpQ/eGYg4Eq9fwVFw="
+
+        message.message = symmetric.encrypt(message.message, chatKey)
+
+        this.$.socket
+          ._sendChatMessage({
+            itemHash: this.item.itemHash,
+            message
+          })
+          .then(() => {
+            console.log("Successfully sent chat message");
+          })
+          .catch(err => {
+            console.log("Error sending chat message: ", err);
+          });
+      }
+      _getAvatars() {
+        let avatars = {};
+        if (this.item && this.item.replies) {
+          if (this.item.seekerAvatarHash)
+            avatars[this.item.seekerAddress] = this.item.seekerAvatarHash;
+          if (this.item.providerAddress)
+            avatars[this.item.providerAddress] = this.item.replies[
+              this.item.providerAddress
+            ].avatarHash;
+        }
+        this.set("avatars", avatars);
+      }
+    }
+    window.customElements.define(MyChatRouter.is, MyChatRouter);
+  </script>
+</dom-module>

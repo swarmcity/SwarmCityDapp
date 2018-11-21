@@ -4,6 +4,7 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../shared-styles.html">
 
 <link rel="import" href="./display-unlock.html">
@@ -128,7 +129,8 @@ The following custom properties and mixins are available for styling:
                 }
             }
         </style>
-        <display-unlock id="unlock" blue></display-unlock>
+        <display-unlock id="unlock" white></display-unlock>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <div class="top">
                 <div class="title" id="title">{{confirmTitle}}</div>
@@ -189,11 +191,12 @@ The following custom properties and mixins are available for styling:
             _confirm() {
                 this.$.unlock._getPrivateKey()
                     .then((res) => {
-                        const { privateKey, address } = res;
+                        const { privateKey, address, publicKey } = res;
                         this.dispatchEvent(new CustomEvent('confirmed', {
                             detail: {
                                 privateKey,
                                 address,
+                                publicKey
                             },
                         }));
                     });
