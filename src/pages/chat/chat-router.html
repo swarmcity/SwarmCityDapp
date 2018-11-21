@@ -96,13 +96,14 @@
           message: e.detail,
           type: 'message'
         };
-        console.log(message);
-        webpack.encryptWithPublicKey(this.secret.encryptKey, JSON.stringify(message))
+        console.log(message.message);
+        webpack.encryptWithPublicKey(this.secret.encryptKey, JSON.stringify(message.message))
           .then(encrypted => {
+            message.message = encrypted
             this.$.socket
               ._sendChatMessage({
                 itemHash: this.item.itemHash,
-                encrypted
+                message,
               })
               .then(() => {
                 console.log("Successfully sent chat message");
@@ -165,7 +166,7 @@
           }
           else {
             // There is a secret, and the secret corresponds to the current item chat --> decrypt messages
-            this.$_decryptMessages();
+            this._decryptMessages();
           }
         }
       }
@@ -190,7 +191,8 @@
         // 1 verify the length of decrypted array & current chat messages array
         let difference = this.chat.messages.length - this.decryptedMessages.length;
         if (difference >= 1) {
-          console.log('difference: ', difference )
+          
+          console.log('difference: ', this.chat )
         } else {
 
           console.log('no difference: ', difference )
