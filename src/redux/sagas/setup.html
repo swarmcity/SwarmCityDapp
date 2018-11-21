@@ -12,112 +12,113 @@
 <link rel="import" href="ledger.html">
 
 <script>
-    (function () {
+  (function () {
 
-        /**
-         * Setup web3 instances
-         */
-        const selectedProvider = 'infura'
-        const web3Providers = {
-            infura: {
-                mainnet: 'wss://mainnet.infura.io/ws',
-                kovan: 'wss://kovan.infura.io/ws'
-            },
-            dappnode: {
-                mainnet: 'ws://my.ethchain.dnp.dappnode.eth:8546',
-                kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
-            }
+    /**
+     * Setup web3 instances
+     */
+    const selectedProvider = 'infura'
+    const web3Providers = {
+      infura: {
+        mainnet: 'wss://mainnet.infura.io/ws',
+        kovan: 'wss://kovan.infura.io/ws'
+      },
+      dappnode: {
+        mainnet: 'ws://my.ethchain.dnp.dappnode.eth:8546',
+        kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
+      }
+    }
+
+    // ################################
+    // Used chains
+    const chains = ['mainnet', 'kovan']
+    // ################################
+
+    window.web3s = {}
+    for (const chain of chains) {
+      let provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
+      window.web3s[chain] = new Web3(provider);
+      console.log(`Redux-sagas is using web3 ${chain} version ${window.web3s[chain].version} host ${((window.web3s[chain].currentProvider || {}).connection || {}).url}`)
+      provider.on('error', e => console.error('web3 ws ' + chain + ' error', e));
+      provider.on('end', e => {
+        console.log('web3 ws ' + chain + ' connection closed');
+        console.log('Attempting to reconnect to ' + chain + '...');
+        provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
+        provider.on('connect', () => {
+          console.log('web3 ws ' + chain + ' reconnected');
+        });
+        window.web3s[chain].setProvider(provider);
+      });
+      // setInterval(() => { web3Local.eth.getBlockNumber().then(console.log) }, 30 * 1000);
+    }
+
+    window.web3Mainnet = web3s.mainnet
+    window.web3Kovan = web3s.kovan
+    window.web3Local = window.web3Kovan
+
+    /**
+     * Contract addresses
+     */
+    const contracts = {
+      production: {
+        bridge: {
+          mainnet: {
+            address: '0x3410349F1e02E3beab54b1513FC2C9D2bAb6D7aC' // FOREIGN_BRIDGE_ADDRESS
+          },
+          kovan: {
+            address: '0xFeAf593f51A53efA8523E5baA8f0EBDc6B2deB69' // HOME_BRIDGE_ADDRESS
+          }
+        },
+        token: {
+          mainnet: {
+            address: '0xB9e7F8568e08d5659f5D29C4997173d84CdF2607', // ERC20_TOKEN_ADDRESS
+            deployedBlockNumber: 3055641,
+            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
+          },
+          kovan: {
+            address: '0x68b4bFF76B06FF72767ac1989Ea9706Bbc26Da4c', // BRIDGEABLE_TOKEN_ADDRESS
+            deployedBlockNumber: 8420473,
+            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc677TokenTransferAndCall]
+          }
+        },
+        hashtagDir: {
+          address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
         }
-        // ################################
-        // Used chains
-        const chains = ['mainnet', 'kovan']
-        // ################################
-        for (const chain of chains) {
-          let provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
-          window.web3s[chain] = new Web3(provider);
-          console.log(`Redux-sagas is using web3 ${chain} version ${window.web3s[chain].version} host`, window.web3s[chain].currentProvider)
-          provider.on('error', e => console.error('web3 ws '+chain+' error', e));
-          provider.on('end', e => {
-            console.log('web3 ws '+chain+' connection closed');
-            console.log('Attempting to reconnect...');
-            provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
-            provider.on('connect', () => {
-              console.log('web3 ws '+chain+' reconnected');
-            });
-            window.web3s[chain].setProvider(provider);
-          });
-          // setInterval(() => { web3Local.eth.getBlockNumber().then(console.log) }, 30 * 1000);
+      },
+      development: {
+        bridge: {
+          mainnet: {
+            address: null // No bridge
+          },
+          kovan: {
+            address: null // No bridge
+          }
+        },
+        token: {
+          mainnet: {
+            address: null, // ERC20_TOKEN_ADDRESS
+            deployedBlockNumber: 0,
+            abi: []
+          },
+          kovan: {
+            address: '0x0adbc89464cb7fa752adcf3533514949a2547589', // Old test SWT token
+            deployedBlockNumber: 7288019,
+            abi: []
+          }
+        },
+        hashtagDir: {
+          address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
         }
+      },
+    }
+    // development mode is NOT currently supported
+    window.contracts = contracts['production']
 
-        window.web3Mainnet = web3s.mainnet
-        window.web3Kovan = web3s.kovan
-        window.web3Local = window.web3Kovan
-
-        console.log('Redux-sagas is using web3Local version: ', web3Local.version, 'host: ', web3Local.currentProvider)
-
-        /**
-         * Contract addresses
-         */
-        const contracts = {
-            production: {
-                bridge: {
-                    mainnet: {
-                        address: '0x3410349F1e02E3beab54b1513FC2C9D2bAb6D7aC' // FOREIGN_BRIDGE_ADDRESS
-                    },
-                    kovan: {
-                        address: '0xFeAf593f51A53efA8523E5baA8f0EBDc6B2deB69' // HOME_BRIDGE_ADDRESS
-                    }
-                },
-                token: {
-                    mainnet: {
-                        address: '0xB9e7F8568e08d5659f5D29C4997173d84CdF2607', // ERC20_TOKEN_ADDRESS
-                        deployedBlockNumber: 3055641,
-                        abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
-                    },
-                    kovan: {
-                        address: '0x68b4bFF76B06FF72767ac1989Ea9706Bbc26Da4c', // BRIDGEABLE_TOKEN_ADDRESS
-                        deployedBlockNumber: 8420473,
-                        abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc677TokenTransferAndCall]
-                    }
-                },
-                hashtagDir: {
-                    address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
-                }
-            },
-            development: {
-                bridge: {
-                    mainnet: {
-                        address: null // No bridge
-                    },
-                    kovan: {
-                        address: null // No bridge
-                    }
-                },
-                token: {
-                    mainnet: {
-                        address: null, // ERC20_TOKEN_ADDRESS
-                        deployedBlockNumber: 0,
-                        abi: []
-                    },
-                    kovan: {
-                        address: '0x0adbc89464cb7fa752adcf3533514949a2547589', // Old test SWT token
-                        deployedBlockNumber: 7288019,
-                        abi: []
-                    }
-                },
-                hashtagDir: {
-                    address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
-                }
-            },
-        }
-        // development mode is NOT currently supported
-        window.contracts = contracts['production']
-
-        /*
-     * Setup IPFS with a simple retry async flow.
-     * It will attempt each function 3 times before returning the error
-     *
-     **/
+    /*
+ * Setup IPFS with a simple retry async flow.
+ * It will attempt each function 3 times before returning the error
+ *
+ **/
     // const ipfs = IpfsApi("localhost", "5001", { protocol: "http" });
     // const ipfs = IpfsApi("ipfs.infura.io", "5001", { protocol: "https" });
     // console.log("Redux-sagas is using ipfs at https://ipfs.infura.io:5001");
@@ -237,5 +238,5 @@
     };
 
 
-    }());
+  }());
 </script>

@@ -88,13 +88,11 @@
                 // User balance, fetched from the blockchain
                 // Don't use deepmerge in case the balance is null
                 case 'UPDATE_BALANCE': {
-                    return {
-                        ...state,
+                    return deepmerge(state, {
                         balance: {
-                            ...state.balance,
                             [action.chain]: action.balance
                         }
-                    }
+                    })
                 }
                 // SWT prices, fetched from some API
                 case 'UPDATE_FX': {
@@ -339,15 +337,15 @@
                     return {
                         ...state,
                         chats: {
-                            ...state.chats, 
-                            [action.itemHash]: action.chatObject 
+                            ...state.chats,
+                            [action.itemHash]: action.chatObject
                         }
                     }
                 }
                 default: {
                     return state
                 }
-                
+
             }
         };
         if (!window.AppStore) window.AppStore = {}
