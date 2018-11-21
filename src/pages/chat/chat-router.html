@@ -93,18 +93,26 @@
           message: e.detail,
           type: 'message'
         };
-        this.$.socket
-          ._sendChatMessage({
-            itemHash: this.item.itemHash,
-            message
-          })
-          .then(() => {
-            console.log("Successfully sent chat message");
+        console.log(message);
+        webpack.encryptWithPublicKey(this.secret.encryptKey, JSON.stringify(message))
+          .then(encrypted => {
+            this.$.socket
+              ._sendChatMessage({
+                itemHash: this.item.itemHash,
+                encrypted
+              })
+              .then(() => {
+                console.log("Successfully sent chat message");
+              })
+              .catch(err => {
+                console.log("Error sending chat message: ", err);
+              });
           })
           .catch(err => {
-            console.log("Error sending chat message: ", err);
+            console.error("Error encrypting chat message: ", err);
           });
-      }
+        }
+
       _getSecret() {
         if (
           this.route.path.split('/')[1] == 'chat' &&
@@ -113,33 +121,40 @@
           ) || 
           (
           this.secret &&
-          this.secret.chat && 
+          this.secret.chat &&
+          this.chat &&
+          this.chat.itemHash &&
           this.secret.chat != this.chat.itemHash
           )
         )
         // If there is no secret, or if secret stored is not the correct one (check by itemHash), start the decryption phase.
         this.$.unlock._getPrivateKey().then(res => {
           try {
+            if (!this.chat) throw Error("Not a participant in this chat");
             const { privateKey, address, publicKey } = res;
             this.chat.accessKeys.forEach( accessKey => {
               console.log(accessKey)
               try {
                 //decrypt accessKey
-                webpack.decryptWithPrivateKey(privateKey, accessKey).then(res => {
+                webpack.decryptWithPrivateKey(privateKey, accessKey)
+                .then(res => {
                   const decrypted = JSON.parse(res);
                   this.secret.decryptKey = decrypted.privateKey;
                   this.secret.encryptKey = decrypted.publicKey
                   this.secret.chat = this.chat.itemHash;
                   console.log(this.secret);
+                })
+                .catch(err => {
+                  console.error(err.message);
                 });
-                // If decryption fails a null variable is returned
-                // if (!msg.message) throw Error('Decryption failed')
               } catch (e) {
+                console.error(e.message)
                   // msg.error = e.message
               }
             });
           } catch (e) {
             console.error("Error unlocking wallet (catch block): ", e.stack);
+            this._handleOnClose();
           }
         })
         .catch(() => {
