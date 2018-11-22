@@ -34,7 +34,7 @@
     <app-location route="{{route}}"></app-location>
     <chat-top item="[[item]]" hashtag="[[hashtag]]" on-close="_handleOnClose"></chat-top>
     <div class="container">
-      <chat-messages address="[[address]]" messages="[[decryptedMessages]]" avatars="[[avatars]]"></chat-messages>
+      <chat-messages address="[[address]]" messages="[[messages]]" avatars="[[avatars]]"></chat-messages>
       <chat-new address="[[address]]" avatars="[[avatars]]" on-send="_handleOnSend"></chat-new>
     </div>
   </template>
@@ -75,12 +75,12 @@
           },
           secret: {
             type: Object,
-            value: {},
+            value: {}
           },
-          decryptedMessages: {
+          messages: {
             object: Array,
-            value: [],
-          },
+            value: []
+          }
         };
       }
       _handleOnClose() {
@@ -94,16 +94,16 @@
           sender: this.address,
           time: Math.floor(Date.now() / 1000),
           message: e.detail,
-          type: 'message'
+          type: "message"
         };
-        console.log(message.message);
-        webpack.encryptWithPublicKey(this.secret.encryptKey, JSON.stringify(message.message))
+        webpack
+          .encryptWithPublicKey(this.secret.encryptKey, message.message)
           .then(encrypted => {
-            message.message = encrypted
+            message.message = encrypted;
             this.$.socket
               ._sendChatMessage({
                 itemHash: this.item.itemHash,
-                message,
+                message
               })
               .then(() => {
                 console.log("Successfully sent chat message");
@@ -115,56 +115,58 @@
           .catch(err => {
             console.error("Error encrypting chat message: ", err);
           });
-        }
+      }
 
       _getSecret() {
-        if (this.route.path.split('/')[1] == 'chat') {
+        if (this.route.path.split("/")[1] == "chat") {
           if (
-          !(this.secret &&
-          this.secret.chat
-          ) || 
-          (
-          this.secret &&
-          this.secret.chat &&
-          this.chat &&
-          this.chat.itemHash &&
-          this.secret.chat != this.chat.itemHash
-          )
+            !(this.secret && this.secret.chat) ||
+            (this.secret &&
+              this.secret.chat &&
+              this.chat &&
+              this.chat.itemHash &&
+              this.secret.chat != this.chat.itemHash)
           ) {
             // If there is no secret, or if secret stored is not the correct one (check by itemHash), start the decryption phase.
-            this.$.unlock._getPrivateKey().then(res => {
-              try {
-                if (!this.chat) throw Error("Not a participant in this chat");
-                const { privateKey, address, publicKey } = res;
-                this.chat.accessKeys.forEach( accessKey => {
-                  console.log(accessKey)
-                  try {
-                    //decrypt accessKey
-                    webpack.decryptWithPrivateKey(privateKey, accessKey)
-                    .then(res => {
-                      const decrypted = JSON.parse(res);
-                      this.secret.decryptKey = decrypted.privateKey;
-                      this.secret.encryptKey = decrypted.publicKey
-                      this.secret.chat = this.chat.itemHash;
-                      this._decryptMessages();
-                    })
-                    .catch(err => {
-                      console.error(err.message);
-                    });
-                  } catch (e) {
-                    console.error(e.message)
-                  }
-                });
-              } catch (e) {
-                console.error("Error unlocking wallet (catch block): ", e.stack);
+            this.set('messages', []);
+            this.$.unlock
+              ._getPrivateKey()
+              .then(res => {
+                try {
+                  if (!this.chat) throw Error("Not a participant in this chat");
+                  const { privateKey, address, publicKey } = res;
+                  this.chat.accessKeys.forEach(accessKey => {
+                    console.log(accessKey);
+                    try {
+                      //decrypt accessKey
+                      webpack
+                        .decryptWithPrivateKey(privateKey, accessKey)
+                        .then(res => {
+                          const decrypted = JSON.parse(res);
+                          this.secret.decryptKey = decrypted.privateKey;
+                          this.secret.encryptKey = decrypted.publicKey;
+                          this.secret.chat = this.chat.itemHash;
+                          this._decryptMessages();
+                        })
+                        .catch(err => {
+                          console.error(err.message);
+                        });
+                    } catch (e) {
+                      console.error(e.message);
+                    }
+                  });
+                } catch (e) {
+                  console.error(
+                    "Error unlocking wallet (catch block): ",
+                    e.stack
+                  );
+                  this._handleOnClose();
+                }
+              })
+              .catch(() => {
                 this._handleOnClose();
-              }
-            })
-            .catch(() => {
-              this._handleOnClose();
-            });
-          }
-          else {
+              });
+          } else {
             // There is a secret, and the secret corresponds to the current item chat --> decrypt messages
             this._decryptMessages();
           }
@@ -184,20 +186,33 @@
         this.set("avatars", avatars);
       }
 
-
       _decryptMessages() {
-        console.log('There is a decryptkey loaded, now we can decrypt messages');
-
-        // 1 verify the length of decrypted array & current chat messages array
-        let difference = this.chat.messages.length - this.decryptedMessages.length;
-        if (difference >= 1) {
-          
-          console.log('difference: ', this.chat )
-        } else {
-
-          console.log('no difference: ', difference )
+        let decryptedMessages = [];
+        let plainMessages = []
+        for (let i = 0; i < this.chat.messages.length; i++) {
+          if (this.chat.messages[i].message && this.chat.messages[i].message.iv) {
+            decryptedMessages.push(this._decryptMessage(this.chat.messages[i]));
+          } else {
+            plainMessages.push(this.chat.messages[i])
+          }
         }
-        // if length of decrypted is less, decrypt the missing amount with for loop, starting from bottom, and adding them to bottom
+        Promise.all(decryptedMessages)
+          .then(decryptedMessages => {
+            this.set('messages', plainMessages
+              .concat(decryptedMessages)
+              .sort((a, b) => a.time - b.time)
+            )
+          });
+      }
+      _decryptMessage(msg) {
+        return new Promise((resolve) => {
+          webpack.decryptWithPrivateKey(this.secret.decryptKey, msg.message)
+            .then(decryptedMessage => {
+              msg.message = decryptedMessage;
+              resolve(msg)
+            })
+        })
+
       }
     }
     window.customElements.define(MyChatRouter.is, MyChatRouter);
