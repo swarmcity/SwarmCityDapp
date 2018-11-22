@@ -142,6 +142,7 @@
                       webpack
                         .decryptWithPrivateKey(privateKey, accessKey)
                         .then(res => {
+                          console.log(res);
                           const decrypted = JSON.parse(res);
                           this.secret.decryptKey = decrypted.privateKey;
                           this.secret.encryptKey = decrypted.publicKey;
@@ -183,6 +184,10 @@
               this.item.providerAddress
             ].avatarHash;
         }
+        if (this.hashtag && this.hashtag.metadata && this.hashtag.metadata.maintainer
+        && this.hashtag.metadata.maintainer.address && this.hashtag.metadata.maintainer.avatar) {
+          avatars[this.hashtag.metadata.maintainer.address] = this.hashtag.metadata.maintainer.avatar;
+        }
         this.set("avatars", avatars);
       }
 
@@ -208,8 +213,11 @@
         return new Promise((resolve) => {
           webpack.decryptWithPrivateKey(this.secret.decryptKey, msg.message)
             .then(decryptedMessage => {
-              msg.message = decryptedMessage;
-              resolve(msg)
+              // JSON parse & string is a hack to have a real copy for msg,
+              // otherwise we add decrypted msg.message within redux chat.messages
+              let copyByValue = JSON.parse(JSON.stringify(msg));
+              copyByValue.message = decryptedMessage;
+              resolve(copyByValue);
             })
         })
 
