@@ -151,7 +151,7 @@
                 tokenData.abi,
                 tokenData.address
             );
-            return await token.methods.balanceOf(address).call()
+            if (chain == 'kovan') return await token.methods.balanceOf(address).call()
         }
 
         const createNewBlocksChannel = (chain) => eventChannel(emitter => {
@@ -234,7 +234,7 @@
             }
         }
 
-        function* getBalanceWrap({ address, chain }) {
+        function* getBalanceWrap({ address, chain }) {  
             if (!address || !address.length) {
                 console.warn('Aborting GET_BALANCE request because address is missing or is \"\"')
                 return
