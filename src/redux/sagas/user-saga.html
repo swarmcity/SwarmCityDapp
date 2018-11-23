@@ -180,7 +180,6 @@
             try {
                 while (true) {
                     const blockHeader = yield take(newBlocksChannel)
-                    console.log(blockHeader)
                     // Re-fetch balance
                     yield fork(getBalance, { address, chain })
                     // take(END) will cause the saga to terminate by jumping to the finally block
@@ -195,24 +194,16 @@
             const balance = await web3s[chain].eth.getBalance(address).then(web3s[chain].utils.fromWei)
 
             // Check for kovan eth balance, trigger faucet if less than 0.1 eth
-            // if (address) {
-            //     const ethBalance = await web3Local.eth.getBalance(address);
+            if (address && chain == 'kovan') {
+                const ethBalance = await web3s[chain].eth.getBalance(address);
 
-            //     if (ethBalance < 50000000000000000) {
-            //         console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
-            //         var xhr = new XMLHttpRequest();
-            //             xhr.open('GET', 'http://scapiweb3-c.swarm.city/faucet/' + address);
-            //             xhr.send(null);
-            //     }
-            // }
-
-            // const kovanSwtContractInstance = new web3Local.eth.Contract(
-            //     kovSwtToken.abi,
-            //     kovSwtToken.address
-            // );
-
-            // const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
-            // return {kovan};
+                if (ethBalance < 100000000000000000) {
+                    console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
+                    var xhr = new XMLHttpRequest();
+                        xhr.open('GET', 'https://scapiweb3-c.swarm.city/faucet/' + address);
+                        xhr.send(null);
+                }
+            }
 
             return balance
         }
