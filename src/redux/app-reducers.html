@@ -40,49 +40,14 @@
                 priceEur: 1,
                 priceUsd: 1,
             },
-            balance: {
-                swt: {
-                    balanceSwt: 0,
-                    balanceUsd: 0,
-                },
-            },
+            balance: {},
             hashtagList: [],
             fetching: {},
             hashtags: {},
             current: {},
-            reputation: {}
+            reputation: {},
+            txs: {}
         };
-
-        /**
-         * Recalculate balances & formatting of
-         *
-         * @param      {Object}  balance  The balance object
-         * @param      {Object}  fx       The fx object ( exchange rates )
-         * @return     {Object}  decorated balance object
-         */
-        function updateBalance(balance, fx) {
-            if (balance &&
-                balance.swt &&
-                balance.swt.balance &&
-                fx &&
-                fx.priceEur &&
-                fx.priceBtc &&
-                fx.priceUsd
-            ) {
-                balance.swt.balanceSwt = (balance.swt.balance / 1e18).toFixed(2);
-                balance.swt.balanceEur = (balance.swt.balance / 1e18 * fx.priceEur).toFixed(2);
-                balance.swt.balanceBtc = (balance.swt.balance / 1e18 * fx.priceBtc);
-                balance.swt.balanceUsd = (balance.swt.balance / 1e18 * fx.priceUsd).toFixed(2);
-            }
-            if (balance &&
-                balance.eth &&
-                balance.eth.balance
-            ) {
-                balance.eth.balanceEth = (balance.eth.balance / 1e18);
-            }
-            return balance;
-        }
-
         /**
          * safely parse a string to Number. Independent of locale ( , or . )
          *
@@ -122,10 +87,11 @@
                 }
                 // User balance, fetched from the blockchain
                 case 'UPDATE_BALANCE': {
-                    return {
-                        ...state,
-                        balance: action.balance
-                    }
+                    return deepmerge(state, {
+                        balance: {
+                            [action.chain]: action.balance
+                        }
+                    })
                 }
                 // SWT prices, fetched from some API
                 case 'UPDATE_FX': {
@@ -206,11 +172,16 @@
                 // Transaction history fetched from the API.
                 // ##### Trigers _confirmedTx() in display-transaction-history.html
                 case 'UPDATE_TXS': {
-                    const confirmedTx = action.confirmedTx || action.txs
-                    return {
-                        ...state,
-                        confirmedTx
-                    }
+                    return deepmerge(state, {
+                        txs: {
+                            [action.chain]: action.txs
+                        }
+                    })
+                    // const confirmedTx = action.confirmedTx || action.txs
+                    // return {
+                    //     ...state,
+                    //     confirmedTx
+                    // }
                 }
                 // Shown transaction merges the pending txs and the past (confirmed) txs
                 // Set internally in the display-transaction-history.html
@@ -365,15 +336,15 @@
                     return {
                         ...state,
                         chats: {
-                            ...state.chats, 
-                            [action.itemHash]: action.chatObject 
+                            ...state.chats,
+                            [action.itemHash]: action.chatObject
                         }
                     }
                 }
                 default: {
                     return state
                 }
-                
+
             }
         };
         if (!window.AppStore) window.AppStore = {}

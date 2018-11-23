@@ -18,7 +18,9 @@ import {
     createDecipheriv} from 'crypto';
     import {
     encryptWithPublicKey,
-    decryptWithPrivateKey
+    decryptWithPrivateKey,
+    createIdentity,
+    cipher
     } from  'eth-crypto';
     import scrypt from 'scryptsy';
     import uuid from 'uuid';
@@ -28,6 +30,7 @@ import {
     import EthereumTx from 'ethereumjs-tx';
     import Contract from 'web3-eth-contract';
     import BN from 'bn.js';
+
 export {
     sha3,
     addHexPrefix,
@@ -54,5 +57,7 @@ export {
     Contract,
     BN,
     encryptWithPublicKey,
-    decryptWithPrivateKey
+    decryptWithPrivateKey,
+    createIdentity,
+    cipher
 };

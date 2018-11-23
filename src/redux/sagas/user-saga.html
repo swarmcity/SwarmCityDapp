@@ -1,13 +1,20 @@
 <script>
     (function () {
         // Items initialized in setup.html
-        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        const {
+            web3Local,
+            web3s,
+            ipfs,
+            ReduxSaga,
+            contractsData,
+            contracts
+        } = window;
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
         const { call, fork, take, put, takeEvery, all } = effects;
 
         // Import contract data:
-        const { mainSwtToken, kovSwtToken, hashtagList, simpleDeal } = contractsData;
+        const { swtToken, hashtagList, simpleDeal } = contractsData;
 
         /*
          * Selector functions
@@ -19,96 +26,113 @@
          * redux-saga worker functions
          */
 
+        const createTokenTxsChannel = (address, chain) => eventChannel(emitter => {
+            let tokenData
+            try {
+                if (!web3s[chain]) throw Error(`Requested tx sub of unsupported chain: ${chain}`)
+                if (!chain) throw Error('chain is not defined')
+                if (!contracts.token[chain]) throw Error('Unknown chain: ' + chain)
 
-
-        // worker Saga: will be fired on LOAD_LIST actions
-        function createTxsChannel(address) {
-            return eventChannel(emitter => {
-                const swtContractInstance = new web3Local.eth.Contract(
-                    kovSwtToken.abi,
-                    kovSwtToken.address
+                tokenData = ((contracts || {}).token || {})[chain] || {}
+                if (tokenData.abi.length === 0) throw Error(`Empty ABI for token address ${address} chain ${chain}`)
+                const token = new web3s[chain].eth.Contract(
+                    tokenData.abi,
+                    tokenData.address
                 );
-                swtContractInstance.events.Transfer({
-                    filter: { _to: address },
-                }, function (error, event) {
-                    emitter(event)
-                })
-                swtContractInstance.events.Transfer({
-                    filter: { _from: address },
-                }, function (error, event) {
-                    emitter(event)
-                })
-                
-
-                // The subscriber must return an unsubscribe function
-                return () => {
-                    // No unsubscribe function for now
+                const handler = (err, event) => {
+                    if (err) console.error(`Error receiving ${chain} token Transfer event`, err)
+                    else emitter(event)
                 }
+                if (token && token.events && token.events.Transfer) {
+                    token.events.Transfer({ filter: { _to: address } }, handler)
+                    token.events.Transfer({ filter: { _from: address } }, handler)
+                } else {
+                    console.log({ token, events: token.events })
+                    throw Error('Transfer event not supported: ', { token, events: token.events })
+                }
+            } catch (e) {
+                console.error(`Error creating subscription to ${chain} token contract ${(tokenData || {}).address}`, e)
             }
-            )
-        }
 
-        function* saga() {
-            const txsChannel = yield call(createTxsChannel, address)
+            // The subscriber must return an unsubscribe function
+            return () => {
+                // No unsubscribe function for now
+            }
+        })
+
+        function* tokenTxsSubscription(address, chain) {
+            const tokenTxsChannel = yield call(createTokenTxsChannel, address, chain)
             try {
                 while (true) {
+                    const event = yield take(tokenTxsChannel)
+                    const events = [event]
+                    const tokenTxs = handleTransferEvents(events, address, chain)
+                    yield put({ type: 'UPDATE_TXS', chain, txs: tokenTxs });
+                    console.log('Received tx', chain, tokenTxs)
+                    // Re-fetch balance
+                    yield fork(getTokenBalance, { address, chain })
                     // take(END) will cause the saga to terminate by jumping to the finally block
-                    let event = yield take(txsChannel)
-                    console.log('Received event', event)
                 }
             } finally {
-                console.log('countdown terminated')
+                console.log('subscription terminated')
             }
         }
 
-
-        async function createLogsForDirection(address) {
-            const swtContractInstance = new web3Local.eth.Contract(
-                kovSwtToken.abi,
-                kovSwtToken.address
+        async function createLogsForDirection(address, chain) {
+            if (!web3s[chain]) console.error(`Requested tx logs of unsupported chain: ${chain}`)
+            const tokenData = ((contracts || {}).token || {})[chain] || {}
+            const token = new web3s[chain].eth.Contract(
+                tokenData.abi,
+                tokenData.address
             );
             // Fetch transactions
-            const [incoming, outgoing] = await Promise.all([
-                swtContractInstance.getPastEvents('Transfer', {
-                    'fromBlock': kovSwtToken.creationBlock,
-                    'filter': { _to: address },
-                }),
-                swtContractInstance.getPastEvents('Transfer', {
-                    'fromBlock': kovSwtToken.creationBlock,
-                    'filter': { _from: address },
+            const [incoming, outgoing] = await Promise.all(['_to', '_from'].map(direction =>
+                token.getPastEvents('Transfer', {
+                    fromBlock: contracts.token[chain].deployedBlockNumber,
+                    filter: { [direction]: address }
                 })
-            ])
-            // Merge transactions, mark outgoing as so. For incoming, tx.outgoing is false
-            // Keep only the relevant data
-            const txs = [...incoming, ...outgoing].map(tx => ({
-                transactionHash: tx.transactionHash,
-                to: tx.returnValues._to,
-                from: tx.returnValues._from,
-                amount: tx.returnValues._amount,
-                outgoing: tx.returnValues._from === address,
-                blockNumber: tx.blockNumber
-            }))
-            // Fetch the time of the transaction, and assign it to the tx object
-            await Promise.all(txs.map(tx =>
-                web3Local.eth.getBlock(tx.blockNumber)
-                    .then(block => tx.timestamp = block.timestamp)
-                    .catch(e => console.error('Error fetching datetime of block ' + tx.blockNumber))
             ))
+            // Merge transactions
+            const events = [...incoming, ...outgoing]
+            return handleTransferEvents(events, address, chain)
+        }
+
+        async function handleTransferEvents(events, address, chain) {
+            const getTimestamps = (blockNumber) => web3s[chain].eth.getBlock(blockNumber)
+                .then(block => block.timestamp)
+                .catch(e => console.error('Error fetching datetime of block ' + blockNumber))
+
+            const txs = {}
+            // Keep only the relevant data
+            await Promise.all(events.map(async event => {
+                txs[event.transactionHash] = {
+                    transactionHash: event.transactionHash,
+                    to: event.returnValues._to,
+                    from: event.returnValues._from,
+                    amount: event.returnValues._amount,
+                    // Mark outgoing as so. For incoming, tx.outgoing is false
+                    outgoing: event.returnValues._from === address,
+                    blockNumber: event.blockNumber,
+                    // Fetch the time of the transaction, and assign it to the tx object
+                    timestamp: await getTimestamps(event.blockNumber)
+                }
+            }))
             // Return the result
             return txs
         }
-        function* getTxs(action) {
+
+        function* getTxs({ address, chain }) {
             try {
-                let txs;
-                if (action.address) txs = yield call(createLogsForDirection, action.address)
-                yield put(AppStore.actions.updateTxs(txs));
-                console.log('Received txs', txs)
+                if (!chain) throw Error('chain is not defined')
+
+                yield fork(tokenTxsSubscription, address, chain)
+
+                const txs = yield call(createLogsForDirection, address, chain)
+                yield put({ type: 'UPDATE_TXS', chain, txs });
 
                 // The code below is left as example / reference to add loaders during fetch
 
                 // let result = [1, 2, 3, 4, 5];
-                // // Artificial to delay to simulate a REST call like behavior
-                // yield ReduxSaga.delay(1000);
                 // yield put(MyApp.actions.setLoadedList(result));
                 // yield put(MyApp.actions.showSpinner(false));
                 // yield put(MyApp.actions.showInfo('List loaded'));
@@ -120,38 +144,130 @@
             }
         }
 
-        async function getTokenBalances(address) {
-
-            // Check for kovan eth balance, trigger faucet if less than 0.1 eth
-            if (address) {
-                const ethBalance = await web3Local.eth.getBalance(address);
-
-                if (ethBalance < 50000000000000000) {
-                    console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
-                    var xhr = new XMLHttpRequest();
-                        xhr.open('GET', 'https://kovan.swarm.city/faucet/' + address);
-                        xhr.send(null);
-                }
-            }
-            
-            const kovanSwtContractInstance = new web3Local.eth.Contract(
-                kovSwtToken.abi,
-                kovSwtToken.address
+        async function getTokenBalanceAsync(address, chain) {
+            if (!web3s[chain]) console.error(`Requested balance of unsupported chain: ${chain}`)
+            const tokenData = ((contracts || {}).token || {})[chain] || {}
+            const token = new web3s[chain].eth.Contract(
+                tokenData.abi,
+                tokenData.address
             );
-
-            const kovan = await kovanSwtContractInstance.methods.balanceOf(address).call()
-            return {kovan};
+            if (chain == 'kovan') return await token.methods.balanceOf(address).call()
         }
 
-        function* getBalance(action) {
+        const createNewBlocksChannel = (chain) => eventChannel(emitter => {
+            let subscription;
             try {
-                const balance = yield call(getTokenBalances, action.address)
-                yield put({ type: 'UPDATE_BALANCE', balance });
+                if (!web3s[chain]) throw Error(`Requested new block headers of unsupported chain: ${chain}`)
+                if (!chain) throw Error('chain is not defined')
+
+                subscription = web3s[chain].eth.subscribe('newBlockHeaders', (err, blockHeader) => {
+                    if (err) console.error(`Error receiving ${chain} newBlockHeaders event`, err)
+                    else emitter(blockHeader)
+                })
+            } catch (e) {
+                console.error(`Error creating subscription to ${chain} newBlockHeaders`, e)
+            }
+            // The subscriber must return an unsubscribe function
+            return () => {
+                subscription.unsubscribe((error, success) => {
+                    if (success) console.log('Successfully unsubscribed!');
+                });
+            }
+        })
+
+        function* ethBalanceSubscription({ address, chain }) {
+            const newBlocksChannel = yield call(createNewBlocksChannel, chain)
+            try {
+                while (true) {
+                    const blockHeader = yield take(newBlocksChannel)
+                    // Re-fetch balance
+                    yield fork(getBalance, { address, chain })
+                    // take(END) will cause the saga to terminate by jumping to the finally block
+                }
+            } finally {
+                console.log('subscription terminated')
+            }
+        }
+
+        async function getBalanceAsync(address, chain) {
+            if (!web3s[chain]) console.error(`Requested balance of unsupported chain: ${chain}`)
+            const balance = await web3s[chain].eth.getBalance(address)
+
+            // Check for kovan eth balance, trigger faucet if less than 0.1 eth
+            if (address && chain == 'kovan') {
+                const ethBalance = await web3s[chain].eth.getBalance(address);
+
+                if (ethBalance < 100000000000000000) {
+                    console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', 'https://scapiweb3-c.swarm.city/faucet/' + address);
+                    xhr.send(null);
+                }
+            }
+
+            return balance
+        }
+
+        function* getBalance({ address, chain }) {
+            try {
+                const ethBalance = yield call(getBalanceAsync, address, chain)
+                yield put({
+                    type: 'UPDATE_BALANCE', chain, balance: {
+                        eth: ethBalance
+                    }
+                });
             } catch (e) {
                 console.error(e);
             }
         }
 
+        function* getTokenBalance({ address, chain }) {
+            try {
+                const tokenBalance = yield call(getTokenBalanceAsync, address, chain)
+                yield put({
+                    type: 'UPDATE_BALANCE', chain, balance: {
+                        swt: tokenBalance
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function* getBalanceWrap({ address, chain }) {  
+            if (!address || !address.length) {
+                console.warn('Aborting GET_BALANCE request because address is missing or is \"\"')
+                return
+            }
+            try {
+                yield all(['mainnet', 'kovan'].map(_chain =>
+                    all([
+                        // Get ETH balance
+                        call(getBalance, { address, chain: _chain }),
+                        // Subscribe to ETH balance
+                        call(ethBalanceSubscription, { address, chain: _chain }),
+                        // Get token balance
+                        call(getTokenBalance, { address, chain: _chain })
+                    ])
+                ))
+            } catch (e) {
+                console.error('Error on getBalanceWrap', e);
+            }
+        }
+
+        function* getTxsWrap({ address, chain }) {
+            if (!address || !address.length) {
+                console.warn('Aborting GET_TXS request because address is missing or is \"\"')
+                return
+            }
+            try {
+                if (chain) yield call(getTxs, { address, chain })
+                else yield all(['mainnet', 'kovan'].map(_chain =>
+                    call(getTxs, { address, chain: _chain })))
+            } catch (e) {
+                console.error('Error on getTxsWrap', e);
+            }
+        }
 
         /*
          * redux-saga root function, which is responsible to call the correct workers
@@ -160,8 +276,8 @@
 
         function* rootSaga() {
             yield all([
-                yield takeEvery('GET_BALANCE', getBalance),
-                yield takeEvery('GET_TXS', getTxs),
+                yield takeEvery('GET_BALANCE', getBalanceWrap),
+                yield takeEvery('GET_TXS', getTxsWrap),
             ]);
         }
 

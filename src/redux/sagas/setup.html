@@ -5,67 +5,121 @@
 <script src="./cids.min.js"></script>
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
-
-<link rel="import" href="symmetric.html">
-
-<!--
-           ==========================
-                 Master Key (m = hash(privateKey))
-           ==========================
-              /               \
-         CKD(m,0)            CKD(m,1)
-            |                   |
-       ===========      ==================
-       Item Wallet      Access chat wallet
-       ===========      ==================
-            |                   |
-  CKD(m/tk,itemNonce_n)   CKD(m/ch,itemHash_n)
-            |                   |
-       ===========      ==================
-       Item Wallet      Access chat wallet
-     ed25519 keypair  x25519-xsalsa20-poly1305 keypair
-       ===========      ==================
-       Used to sign     Used to let the seeker
-       msgs proving     give access to this user
-       chat rights     (provider) to the item chat
--->
+<script src="../contractAbis.js"></script>
 
 <script>
   (function () {
-    // Initialize web3Local
-    // const url = 'wss://kovan.infura.io/ws   '
-    const KOVAN_WSS = "wss://kovan.swarm.city"; // Swarm City Chain
-    // const url = "ws://178.128.207.83:8546"; // Swarm City Chain
-    // const url = 'ws://my.kovan.dnp.dappnode.eth:8546'
 
-    let provider = new Web3.providers.WebsocketProvider(KOVAN_WSS);
-    window.web3Local = new Web3(provider);
-    provider.on('error', e => console.log('WS Error', e));
-    provider.on('end', e => {
-        console.log('WSS closed');
-        console.log('Attempting to reconnect...');
-        provider = new Web3.providers.WebsocketProvider(KOVAN_WSS);
+    /**
+     * Setup web3 instances
+     */
+    const selectedProvider = 'swarmcity'
+    const web3Providers = {
+      infura: {
+        mainnet: 'wss://mainnet.infura.io/ws',
+        kovan: 'wss://kovan.infura.io/ws'
+      },
+      dappnode: {
+        mainnet: 'ws://my.ethchain.dnp.dappnode.eth:8546',
+        kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
+      },
+      swarmcity: {
+        mainnet: 'wss://mainnet.swarm.city',
+        kovan: 'wss://kovan.swarm.city'
+      }
+    }
 
-        provider.on('connect', function () {
-            console.log('WSS Reconnected');
+    // ################################
+    // Used chains
+    const chains = ['mainnet', 'kovan']
+    // ################################
+
+    window.web3s = {}
+    for (const chain of chains) {
+      let provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
+      window.web3s[chain] = new Web3(provider);
+      console.log(`Redux-sagas is using web3 ${chain} version ${window.web3s[chain].version} host ${((window.web3s[chain].currentProvider || {}).connection || {}).url}`)
+      provider.on('error', e => console.error('web3 ws ' + chain + ' error', e));
+      provider.on('end', e => {
+        console.log('web3 ws ' + chain + ' connection closed');
+        console.log('Attempting to reconnect to ' + chain + '...');
+        provider = new Web3.providers.WebsocketProvider(web3Providers[selectedProvider][chain]);
+        provider.on('connect', () => {
+          console.log('web3 ws ' + chain + ' reconnected');
         });
-        
-        window.web3Local.setProvider(provider);
-    });
-    setInterval(() => { web3Local.eth.getBlockNumber() }, 30 * 1000);
+        window.web3s[chain].setProvider(provider);
+      });
+      setInterval(() => { web3s['kovan'].eth.getBlockNumber().then(console.log) }, 30 * 1000);
+      // setInterval(() => { web3s['mainnet'].eth.getBlockNumber().then(console.log) }, 30 * 1000);
+    }
 
-    console.log(
-      "Redux-sagas is using web3Local version: ",
-      web3Local.version,
-      "host: ",
-      web3Local.currentProvider
-    );
+    window.web3Mainnet = web3s.mainnet
+    window.web3Kovan = web3s.kovan
+    window.web3Local = window.web3Kovan
+
+    /**
+     * Contract addresses
+     */
+    const contracts = {
+      production: {
+        bridge: {
+          mainnet: {
+            address: '0x3410349F1e02E3beab54b1513FC2C9D2bAb6D7aC' // FOREIGN_BRIDGE_ADDRESS
+          },
+          kovan: {
+            address: '0xFeAf593f51A53efA8523E5baA8f0EBDc6B2deB69' // HOME_BRIDGE_ADDRESS
+          }
+        },
+        token: {
+          mainnet: {
+            address: '0xB9e7F8568e08d5659f5D29C4997173d84CdF2607', // ERC20_TOKEN_ADDRESS
+            deployedBlockNumber: 3055641,
+            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
+          },
+          kovan: {
+            address: '0x0adbc89464cb7fa752adcf3533514949a2547589',// ERC20_TOKEN_ADDRESS for KOVAN FAKE SWT (unbridged)
+            deployedBlockNumber: 7288019,
+            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
+          }
+        },
+        hashtagDir: {
+          address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
+        }
+      },
+      development: {
+        bridge: {
+          mainnet: {
+            address: null // No bridge
+          },
+          kovan: {
+            address: null // No bridge
+          }
+        },
+        token: {
+          mainnet: {
+            address: null, // ERC20_TOKEN_ADDRESS
+            deployedBlockNumber: 0,
+            abi: []
+          },
+          kovan: {
+            address: '0x0adbc89464cb7fa752adcf3533514949a2547589', // Old test SWT token
+            deployedBlockNumber: 7288019,
+            abi: []
+          }
+        },
+        hashtagDir: {
+          address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
+        }
+      },
+    }
+    // development mode is NOT currently supported
+    window.contracts = contracts['production']
 
     /*
-     * Setup IPFS with a simple retry async flow.
-     * It will attempt each function 3 times before returning the error
-     *
-     **/
+ * Setup IPFS with a simple retry async flow.
+ * It will attempt each function 3 times before returning the error
+ *
+ **/
     // const ipfs = IpfsApi("localhost", "5001", { protocol: "http" });
     // const ipfs = IpfsApi("ipfs.infura.io", "5001", { protocol: "https" });
     // console.log("Redux-sagas is using ipfs at https://ipfs.infura.io:5001");
@@ -184,7 +238,6 @@
       hashToBytes32
     };
 
-    // Import contract data:
-    // const { kovSwtToken, hashtagList, simpleDeal } = window.contractsData;
-  })();
+
+  }());
 </script>
