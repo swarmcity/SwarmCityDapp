@@ -45,7 +45,9 @@
             ></chat-my-message>
           </template>
           <template is="dom-if" if="[[!_myMessage(item)]]">
-            <chat-message avatars="[[avatars]]" item="[[item]]"></chat-message>
+            <chat-message
+              avatars="[[avatars]]" 
+              item="[[item]]"></chat-message>
           </template>
         </template>
         <template is="dom-if" if="[[_statusMessage(item)]]">
@@ -74,6 +76,7 @@
           },
           address: String,
           avatars: Object,
+          secret: Object,
           initialScroll: {
             type: Boolean,
             value: false
@@ -81,16 +84,16 @@
         };
       }
       _statusMessage(item) {
-        return ('type' in item && item.type != 'message');
+        return (item && item.type && item.type != 'message');
       }
       _conflictStart(item) {
-        return item.type && item.type == 'conflict-start';
+        return item && item.type && item.type == 'conflict-start';
       }
       _memberAdded(item) {
-        return item.type && item.type == 'member-added';
+        return item && item.type && item.type == 'member-added';
       }
       _myMessage(item) {
-        return item.sender && item.sender == this.address;
+        return (item && item.sender && item.sender == this.address);
       }
       /**
        * scrolls the messages box down to newest message if not scrolled up yet

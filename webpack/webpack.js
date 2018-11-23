@@ -16,7 +16,12 @@ import {
     createCipheriv,
     pbkdf2Sync,
     createDecipheriv} from 'crypto';
-    import EthCrypto from  'eth-crypto';
+    import {
+    encryptWithPublicKey,
+    decryptWithPrivateKey,
+    createIdentity,
+    cipher
+    } from  'eth-crypto';
     import scrypt from 'scryptsy';
     import uuid from 'uuid';
     import Buffer from 'buffer';
@@ -51,5 +56,8 @@ export {
     EthereumTx,
     Contract,
     BN,
-    EthCrypto
+    encryptWithPublicKey,
+    decryptWithPrivateKey,
+    createIdentity,
+    cipher
 };
