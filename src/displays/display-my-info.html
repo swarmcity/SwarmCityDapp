@@ -4,15 +4,10 @@
   This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html" />
-<link
-  rel="import"
-  href="../../bower_components/app-localize-behavior/app-localize-behavior.html"
-/>
-<link
-  rel="import"
-  href="../../bower_components/iron-media-query/iron-media-query.html"
-/>
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html" />
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html" />
 <link rel="import" href="../../bower_components/app-route/app-location.html" />
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 
 <!--
   Example:
@@ -59,7 +54,7 @@
         min-height: 120px;
       }
 
-      .container[wide-layout] > img {
+      .container[wide-layout]>iron-image {
         width: 50px;
         height: 50px;
         background-size: 50px;
@@ -69,7 +64,7 @@
         height: 10vh;
       }
 
-      img {
+      iron-image {
         width: 40px;
         height: 40px;
         cursor: pointer;
@@ -77,7 +72,7 @@
         background-size: 40px;
       }
 
-      .container[wide-layout] img {
+      .container[wide-layout] iron-image {
         width: 50px;
         height: 50px;
         background-size: 50px;
@@ -144,20 +139,12 @@
     </style>
 
     <app-location route="{{route}}"></app-location>
-    <iron-media-query
-      query="(min-width: 600px)"
-      query-matches="{{wide}}"
-    ></iron-media-query>
+    <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
     <div class="container" wide-layout$="{{wide}}">
       <dom-if if="{{!publicKey}}">
         <template>
           <div class="createbox">
-            <div
-              tabindex="1"
-              class="createlink"
-              on-tap="_toCreateAccount"
-              on-KeyPress="_toCreateAccount"
-            >
+            <div tabindex="1" class="createlink" on-tap="_toCreateAccount" on-KeyPress="_toCreateAccount">
               {{ localize("create account") }}
             </div>
           </div>
@@ -166,7 +153,7 @@
 
       <dom-if if="{{publicKey}}">
         <template>
-          <img id="image" on-click="_toProfile" src="{{avatar}}" />
+          <iron-image id="image" sizing="cover" on-click="_toProfile" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png"></iron-image>
           <div class="totalbox">
             <div id="username" on-click="_toProfile">{{ username }}</div>
             <div id="balance" on-click="_toWallet">
@@ -221,9 +208,9 @@
            * Avatar represents the user's base64 of their avatar image
            * @type {String}
            */
-          avatar: {
+          avatarHash: {
             type: String,
-            statePath: "avatar"
+            statePath: AppStore.selectors.avatarHash
           },
           /**
            * Balance represents the users SWT balance

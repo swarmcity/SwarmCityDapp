@@ -100,7 +100,7 @@
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-            <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
+            <detail-simpledeal-input id="input" item="[[item]]" avatar-hash="[[avatarHash]]" language="[[language]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
             </detail-simpledeal-input>
           </template>
 
@@ -160,7 +160,8 @@
           replyDetail: Object,
           username: String,
           chat: Object,
-          avatar: String,
+          avatarHash: String,
+          language: String,
           maintainer: {
             type: Object,
             value: {
@@ -283,8 +284,8 @@
       }
       _showReplyButton(item) {
         if (
-          (item.seekerAddress || {}) == this.address ||
-          (item.replies && item.replies[this.address])
+          (item && item.seekerAddress || {}) == this.address ||
+          (item && item.replies && item.replies[this.address])
         ) {
           return false;
         } else {
