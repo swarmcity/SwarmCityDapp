@@ -191,7 +191,7 @@
 
         async function getBalanceAsync(address, chain) {
             if (!web3s[chain]) console.error(`Requested balance of unsupported chain: ${chain}`)
-            const balance = await web3s[chain].eth.getBalance(address).then(web3s[chain].utils.fromWei)
+            const balance = await web3s[chain].eth.getBalance(address)
 
             // Check for kovan eth balance, trigger faucet if less than 0.1 eth
             if (address && chain == 'kovan') {
@@ -200,8 +200,8 @@
                 if (ethBalance < 100000000000000000) {
                     console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
                     var xhr = new XMLHttpRequest();
-                        xhr.open('GET', 'https://scapiweb3-c.swarm.city/faucet/' + address);
-                        xhr.send(null);
+                    xhr.open('GET', 'https://scapiweb3-c.swarm.city/faucet/' + address);
+                    xhr.send(null);
                 }
             }
 
@@ -236,23 +236,20 @@
 
         function* getBalanceWrap({ address, chain }) {
             if (!address || !address.length) {
-                console.warn('Aboring GET_BALANCE request because address is missing or is \"\"')
+                console.warn('Aborting GET_BALANCE request because address is missing or is \"\"')
                 return
             }
             try {
-                // Get ETH balance
-                if (chain) yield call(getBalance, { address, chain })
-                else yield all(['mainnet', 'kovan'].map(_chain =>
-                    call(getBalance, { address, chain: _chain })))
-                // Subscribe to ETH balance
-                if (chain) yield call(ethBalanceSubscription, { address, chain })
-                else yield all(['mainnet', 'kovan'].map(_chain =>
-                    call(ethBalanceSubscription, { address, chain: _chain })))
-
-                // Get token balance
-                if (chain) yield call(getTokenBalance, { address, chain })
-                else yield all(['mainnet', 'kovan'].map(_chain =>
-                    call(getTokenBalance, { address, chain: _chain })))
+                yield all(['mainnet', 'kovan'].map(_chain =>
+                    all([
+                        // Get ETH balance
+                        call(getBalance, { address, chain: _chain }),
+                        // Subscribe to ETH balance
+                        call(ethBalanceSubscription, { address, chain: _chain }),
+                        // Get token balance
+                        call(getTokenBalance, { address, chain: _chain })
+                    ])
+                ))
             } catch (e) {
                 console.error('Error on getBalanceWrap', e);
             }
@@ -260,7 +257,7 @@
 
         function* getTxsWrap({ address, chain }) {
             if (!address || !address.length) {
-                console.warn('Aboring GET_TXS request because address is missing or is \"\"')
+                console.warn('Aborting GET_TXS request because address is missing or is \"\"')
                 return
             }
             try {
