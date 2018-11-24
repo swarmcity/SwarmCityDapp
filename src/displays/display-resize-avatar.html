@@ -192,15 +192,6 @@
                     */
                     avatar: {
                         type: String,
-                        statePath: 'avatar',
-                    },
-                    /**
-                    * routeEntry changes the exact moment pages change when routing
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * The image
@@ -294,21 +285,10 @@
                         value: 0,
                         observer: '_drawFile',
                     },
-                };
-            }
-            /**
-            * Redux action for setting avatar
-            * @param {String} avatar
-            */
-            static get actions() {
-                return Object.assign({
-                    AVATAR: function (avatar) {
-                        return {
-                            type: 'AVATAR',
-                            avatar: avatar,
-                        };
+                    avatarHash: {
+                        type: String,
                     },
-                });
+                };
             }
             /**
             * Fired when the component is connected
@@ -467,10 +447,6 @@
                 }
             }
 
-            _loadEntryAnimations() {
-                this._firstLoad();
-            }
-
             /**
             * Fired when user selects the X back button, routs to previous page
             */
@@ -492,13 +468,18 @@
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 const ipfs = window.ipfs
                 storage.user.avatar = newCanvas.toDataURL('image/jpeg');
-                ipfs.add(storage.user.avatar).then( hash => {
+                ipfs.add(storage.user.avatar)
+                .then( hash => {
                     storage.user.avatarHash = hash.hash;
+                    this.dispatch({
+                        type: 'UPDATE_AVATARHASH',
+                        avatarHash: storage.user.avatarHash
+                    });
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    let avatarUrl = newCanvas.toDataURL('image/png');
-                    this.dispatch({ type: 'AVATAR', avatar: avatarUrl });
-
                     window.history.back();
+                })
+                .catch(err => {
+                    console.error('error resolving ipfs hash for avatar', err)
                 })
             }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);

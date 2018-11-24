@@ -118,6 +118,13 @@
       }
 
       _getSecret() {
+        if (!this.chat) {
+          this.dispatchEvent(new CustomEvent('openChat', {
+            detail: { itemHash: this.item.itemHash, yourAddress: this.address },
+            bubbles: true,
+            composed: true
+          }));
+        }
         if (this.route.path.split("/")[1] == "chat") {
           if (
             !(this.secret && this.secret.chat) ||
@@ -142,7 +149,6 @@
                       webpack
                         .decryptWithPrivateKey(privateKey, accessKey)
                         .then(res => {
-                          console.log(res);
                           const decrypted = JSON.parse(res);
                           this.secret.decryptKey = decrypted.privateKey;
                           this.secret.encryptKey = decrypted.publicKey;
@@ -185,7 +191,7 @@
             ].avatarHash;
         }
         if (this.hashtag && this.hashtag.metadata && this.hashtag.metadata.maintainer
-        && this.hashtag.metadata.maintainer.address && this.hashtag.metadata.maintainer.avatar) {
+          && this.hashtag.metadata.maintainer.address && this.hashtag.metadata.maintainer.avatar) {
           avatars[this.hashtag.metadata.maintainer.address] = this.hashtag.metadata.maintainer.avatar;
         }
         this.set("avatars", avatars);

@@ -92,7 +92,7 @@
           <detail-simpledeal-main address="[[address]]" item="[[item]]" on-close="_handleOnClose"></detail-simpledeal-main>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'replies')}}">
-            <detail-simpledeal-replies address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></detail-simpledeal-replies>
+            <detail-simpledeal-replies address="[[address]]" item="[[item]]" on-detail="_handleOnDetail" on-reputation="_handleOnReputation"></detail-simpledeal-replies>
 
             <template is="dom-if" if="[[_showReplyButton(item)]]">
               <detail-button-reply on-tap="_input"></detail-button-reply>
@@ -100,7 +100,8 @@
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'input')}}">
-            <detail-simpledeal-input id="input" item="[[item]]" on-reply="_handleOnReply" on-status="_handleOnStatus">
+            <detail-simpledeal-input id="input" item="[[item]]" avatar-hash="[[avatarHash]]" language="[[language]]"
+              on-reply="_handleOnReply" on-status="_handleOnStatus">
             </detail-simpledeal-input>
           </template>
 
@@ -160,7 +161,8 @@
           replyDetail: Object,
           username: String,
           chat: Object,
-          avatar: String,
+          avatarHash: String,
+          language: String,
           maintainer: {
             type: Object,
             value: {
@@ -283,8 +285,8 @@
       }
       _showReplyButton(item) {
         if (
-          (item.seekerAddress || {}) == this.address ||
-          (item.replies && item.replies[this.address])
+          (item && item.seekerAddress || {}) == this.address ||
+          (item && item.replies && item.replies[this.address])
         ) {
           return false;
         } else {
@@ -560,26 +562,26 @@
                         accessKeys,
                         itemHash: this.item.itemHash
                       })
-                      .then(() => {
-                            this.$.socket
-                              ._sendChatMessage({
-                                itemHash: this.item.itemHash,
+                        .then(() => {
+                          this.$.socket
+                            ._sendChatMessage({
+                              itemHash: this.item.itemHash,
+                              message: {
+                                sender: this.address,
+                                time: Math.floor(Date.now() / 1000),
                                 message: {
-                                  sender: this.address,
-                                  time: Math.floor(Date.now() / 1000),
-                                  message: {
-                                    avatar: this.hashtag.metadata.maintainer.avatar,
-                                    username: this.hashtag.metadata.maintainer.username
-                                  },
-                                  type: "member-added",
-                                }
-                              })
-                              .then(() => {
-                                console.log(
-                                  "Successfully added hashtag maintainer to chat"
-                                );
-                              });
-                          })
+                                  avatar: this.hashtag.metadata.maintainer.avatar,
+                                  username: this.hashtag.metadata.maintainer.username
+                                },
+                                type: "member-added",
+                              }
+                            })
+                            .then(() => {
+                              console.log(
+                                "Successfully added hashtag maintainer to chat"
+                              );
+                            });
+                        })
                     })
                 })
                 .catch(err => {
@@ -590,6 +592,13 @@
             }
           });
         })
+      }
+      _handleOnReputation(e) {
+        this.dispatchEvent(
+          new CustomEvent("reputation", {
+            detail: e.detail
+          })
+        );
       }
 
       _allowReply() {
