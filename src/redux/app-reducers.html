@@ -1,37 +1,35 @@
 <script src="../../node_modules/redux/dist/redux.min.js"></script>
 <script src="../../node_modules/deepmerge/dist/umd.js"></script>
-<script src="../defaultAvatar.js"></script>
 
 <script>
     (function () {
         //  Fetch local storage
         let publicKey;
-        let avatar;
+        let avatarHash;
         let username;
         let storage = JSON.parse(localStorage.getItem('SwarmCity'));
 
         if (storage && storage.keyStore && storage.keyStore.address) {
             publicKey = storage.keyStore.address;
         } else {
-            publicKey = '';
+            publicKey = null;
         }
         if (storage && storage.user && storage.user.username) {
             username = storage.user.username;
         } else {
-            username = '';
+            username = null;
         }
-        if (storage && storage.user && storage.user.avatar) {
-            avatar = storage.user.avatar;
+        if (storage && storage.user && storage.user.avatarHash) {
+            avatarHash = storage.user.avatarHash;
         } else {
-            avatar = defaultAvatar; // eslint-disable-line
+            avatarHash = null;
         }
 
         const initialState = {
             username: username,
-            avatar: avatar,
+            avatarHash: avatarHash,
             publicKey: publicKey,
             chats: {},
-            amountToSend: 0,
             confirmedTx: [],
             shownTx: [],
             language: 'en',
@@ -192,18 +190,9 @@
                         shownTx: action.shownTx
                     }
                 }
-                // A base64 string containing the user avatar
-                // Get set in > 9 places, when the user is deleted it gets set to the location of the default
-                // ##### Trigers _avatarChanged() in socket-redux.html, to send it to receive avatarHash
-                case 'AVATAR': {
-                    return {
-                        ...state,
-                        avatar: action.avatar
-                    }
-                }
                 // An ipfsHash resolving to the user's base64 avatar
-                // It is needed to createItem, shortCode, etc. Fetched from the API after adding to IPFS
-                case 'AVATARHASH': {
+                // It is needed to createItem, shortCode, etc.
+                case 'UPDATE_AVATARHASH': {
                     return {
                         ...state,
                         avatarHash: action.avatarHash
@@ -215,23 +204,6 @@
                     return {
                         ...state,
                         username: action.username
-                    }
-                }
-                // A string containing the hashtag fee
-                // Called at display-complete-reply.thml
-                // ##### Triggers _replyToIpfs() at socket-redux 
-                // which will trigger REPLYDATAHASH
-                case 'REPLYTOIPFS': {
-                    return {
-                        ...state,
-                        replyToIpfs: action.replyToIpfs
-                    }
-                }
-                // A string containing the hashtag fee
-                case 'REPLYDATAHASH': {
-                    return {
-                        ...state,
-                        replyDataHash: action.replyDataHash
                     }
                 }
 

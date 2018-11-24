@@ -41,64 +41,11 @@ This code may only be used under the license found at https://github.com/swarmci
                 box-sizing: border-box;
                 padding: 80px 10vw 20vh 10vw;
             }
-
-            .avatarcontainer {
-                @apply --layout-vertical;
-                @apply --layout-end-justified;
-                background-color: var(--sc-grey4);
-                width: 250px;
-                height: 250px;
-            }
-
-            .avatar {
-                @apply --layout-horizontal;
-                @apply --layout-center-justified;
-                width: 100%;
-                height: 100%;
-                box-sizing: border-box;
-                padding-top: 73px;
-            }
-
-            img {
-                width: 100px;
-                height: 100px;
-                cursor: pointer;
-                border-radius: 50%;
-                border: 2px solid var(--sc-blue);
-            }
-
-            .rotate {
-                width: 100%;
-                @apply --layout-horizontal;
-                @apply --layout-end-justified;
-                @apply --layout-end;
-            }
-
-            .rotate-icon {
-                @apply --rotate-blue-normal;
-                cursor: pointer;
-            }
-
-            .container[wide-layout] .bottom {
-                @apply --layout-start;
-                height: 35vh;
-            }
-
-            .bluetext {
-                @apply --small-bold;
-                cursor: pointer;
-                color: var(--sc-blue);
-                border-bottom: 2px dotted var(--sc-blue);
-            }
-
-            .container[wide-layout] .bluetext {
-                margin-top: 40px;
-            }
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}" id="container">
-            <display-resize-avatar path="{{path}}" route-entry="{{routeEntry}}" default-avatar="../images/defaultavatar.png"></display-resize-avatar>
+            <display-resize-avatar avatar-hash="[[avatarHash]]" default-avatar="../images/defaultavatar.png"></display-resize-avatar>
         </div>
     </template>
     <script>
@@ -121,47 +68,18 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'language',
                     },
                     /**
-                    * Path is the current or requested path
+                    * Avatar represents the users IPFS to their avatar image
                     * @type {String}
                     */
-                    path: {
+                    avatarHash: {
                         type: String,
-                        observer: '_path',
-                    },
-                    /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
-                    pageID: {
-                        type: String,
-                        value: 'resize-avatar',
+                        statePath: AppStore.selectors.avatarHash
                     },
                 };
             }
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
-            }
-            /**
-            *changes the current path to password warning
-            **/
-            _agree() {
-                this.path = 'choose-avatar-and-username/';
-            }
-            /**
-            *changes the current path to previous
-            **/
-            _disagree() {
-                window.history.back();
-            }
-            /**
-            * changes the current path
-            */
-            _path() {
-                if (this.path != null) {
-                    this.set('route.path', this.path);
-                }
-                this.path = null;
             }
         }
         window.customElements.define(MyResizeAvatar.is, MyResizeAvatar);

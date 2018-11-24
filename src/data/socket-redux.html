@@ -34,15 +34,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         statePath: 'username',
                     },
                     /**
-                     * Avatar represents the user's base64 of their avatar image
-                     * @type {String}
-                     */
-                    avatar: {
-                        type: String,
-                        statePath: 'avatar',
-                        observer: '_avatarChanged',
-                    },
-                    /**
                      * fx is the SWT exchange rates
                      * @type {Object}
                      */
@@ -112,15 +103,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_itemToIpfs',
                     },
                     /**
-                     * Send new reply metadata to IPFS
-                     * @type {Object}
-                     */
-                    replyToIpfs: {
-                        type: Object,
-                        statePath: 'replyToIpfs',
-                        observer: '_replyToIpfs',
-                    },
-                    /**
                      * Send new signed tx to the blockchain
                      * @type {Object}
                      */
@@ -178,76 +160,16 @@ This code may only be used under the license found at https://github.com/swarmci
                             fx: fx,
                         };
                     },
-                    NONCE: function (nonce) {
-                        return {
-                            type: 'NONCE',
-                            nonce: nonce,
-                        };
-                    },
-                    TOKEY: function (tokey) {
-                        return {
-                            type: 'TOKEY',
-                            tokey: tokey,
-                        };
-                    },
-                    AVATAR: function (avatar) {
-                        return {
-                            type: 'AVATAR',
-                            avatar: avatar,
-                        };
-                    },
-                    AVATARHASH: function (avatarHash) {
-                        return {
-                            type: 'AVATARHASH',
-                            avatarHash: avatarHash,
-                        };
-                    },
                     TXHASH: function (txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function (txHashItem) {
-                        return {
-                            type: 'TXHASHITEM',
-                            txHashItem: txHashItem,
-                        };
-                    },
                     CONFIRMEDTX: function (confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
-                        };
-                    },
-                    ITEMDATAHASH: function (itemDataHash) {
-                        return {
-                            type: 'ITEMDATAHASH',
-                            itemDataHash: itemDataHash,
-                        };
-                    },
-                    REPLYDATAHASH: function (replyDataHash) {
-                        return {
-                            type: 'REPLYDATAHASH',
-                            replyDataHash: replyDataHash,
-                        };
-                    },
-                    IPFSHASH: function (ipfsHash) {
-                        return {
-                            type: 'IPFSHASH',
-                            ipfsHash: ipfsHash,
-                        };
-                    },
-                    USERREPUTATION: function (userReputation) {
-                        return {
-                            type: 'USERREPUTATION',
-                            userReputation: userReputation,
-                        };
-                    },
-                    HASHTAGS: function (hashtags) {
-                        return {
-                            type: 'HASHTAGS',
-                            hashtags: hashtags,
                         };
                     },
                 });
@@ -312,77 +234,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         console.log('Error instantiating chat channel:', err)
                     });
                 }.bind(this), false);
-            }
-
-            /**
-             * Send an IPFS hash of a base64 avatar
-             * Get the corresponding bas64 back and store it as the user's avatar
-             */
-            _reqipfs() {
-                this.socket.emit('ipfscat', {
-                    hash: this.reqipfs,
-                    format: 'base64',
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                        this.dispatch({
-                            type: 'AVATAR',
-                            avatar: 'data:image/jpg;base64,' + reply.data
-                        });
-                    }
-                });
-            }
-
-
-            _avatarChanged() {
-                // Send the user's base64 image and get the ipfsHash back
-                this.socket.emit('ipfsAdd', {
-                    payload: this.avatar,
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.avatarHash = reply.data;
-                        this.dispatch({
-                            type: 'AVATARHASH',
-                            avatarHash: reply.data
-                        });
-                        localStorage.setItem('avatarHash', this.avatarHash);
-                    }
-                });
-            }
-
-            _itemToIpfs() {
-                window.ipfs.add(this.itemToIpfs).then((res) => {
-                    this.dispatch({
-                        type: 'ITEMDATAHASH',
-                        itemDataHash: {
-                            response: 200,
-                            data: res.bytes32
-                        }
-                    });
-                }).catch(err => {
-                    this.dispatch({
-                        type: 'ITEMDATAHASH',
-                        itemDataHash: {
-                            response: 500,
-                            data: err.message
-                        }
-                    });
-                })
-            }
-
-            _replyToIpfs() {
-                this.socket.emit('ipfsAdd', {
-                    payload: this.replyToIpfs,
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.dispatch({
-                            type: 'REPLYDATAHASH',
-                            replyDataHash: reply.data
-                        });
-                    }
-                });
             }
 
             _publickeyChanged() {
@@ -497,7 +348,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 });
             }
 
-            _getShortcode(address, username, avatar) {
+            _getShortcode(address, username, avatarHash) {
                 return new Promise((resolve, reject) => {
                     const sec = 10;
                     setTimeout(() => {
@@ -506,7 +357,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     this.socket.emit('idToShortcode', {
                         address,
                         username,
-                        avatar,
+                        avatar: avatarHash,
                     }, (reply) => {
                         if (reply.response == 200) {
                             resolve(reply.data);
