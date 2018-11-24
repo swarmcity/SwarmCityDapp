@@ -12,17 +12,17 @@
         if (storage && storage.keyStore && storage.keyStore.address) {
             publicKey = storage.keyStore.address;
         } else {
-            publicKey = '';
+            publicKey = null;
         }
         if (storage && storage.user && storage.user.username) {
             username = storage.user.username;
         } else {
-            username = '';
+            username = null;
         }
         if (storage && storage.user && storage.user.avatarHash) {
             avatarHash = storage.user.avatarHash;
         } else {
-            avatarHash = '';
+            avatarHash = null;
         }
 
         const initialState = {
@@ -30,7 +30,6 @@
             avatarHash: avatarHash,
             publicKey: publicKey,
             chats: {},
-            amountToSend: 0,
             confirmedTx: [],
             shownTx: [],
             language: 'en',
@@ -193,7 +192,7 @@
                 }
                 // An ipfsHash resolving to the user's base64 avatar
                 // It is needed to createItem, shortCode, etc.
-                case 'AVATARHASH': {
+                case 'UPDATE_AVATARHASH': {
                     return {
                         ...state,
                         avatarHash: action.avatarHash

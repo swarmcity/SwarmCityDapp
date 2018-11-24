@@ -297,20 +297,6 @@
                 };
             }
             /**
-            * Redux action for setting avatar
-            * @param {String} avatar
-            */
-            static get actions() {
-                return Object.assign({
-                    AVATAR: function (avatar) {
-                        return {
-                            type: 'AVATAR',
-                            avatar: avatar,
-                        };
-                    },
-                });
-            }
-            /**
             * Fired when the component is connected
             */
             connectedCallback() {
@@ -492,13 +478,19 @@
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 const ipfs = window.ipfs
                 storage.user.avatar = newCanvas.toDataURL('image/jpeg');
-                ipfs.add(storage.user.avatar).then( hash => {
+                ipfs.add(storage.user.avatar)
+                .then( hash => {
                     storage.user.avatarHash = hash.hash;
+                    this.dispatch({
+                        type: 'UPDATE_AVATARHASH',
+                        avatarHash: storage.user.avatarHash
+                    });
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
                     let avatarUrl = newCanvas.toDataURL('image/png');
-                    this.dispatch({ type: 'AVATAR', avatar: avatarUrl });
-
                     window.history.back();
+                })
+                .catch(err => {
+                    console.error('error resolving avatar for ipfs hash', err)
                 })
             }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
