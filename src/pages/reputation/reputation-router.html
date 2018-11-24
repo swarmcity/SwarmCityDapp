@@ -1,0 +1,47 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+
+<dom-module id="page-reputation">
+    <template>
+        <style include="shared-styles">
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+    </template>
+
+    <script>
+        class MyReputationRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-reputation';
+            }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                    },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                };
+            }
+        }
+        window.customElements.define(MyReputationRouter.is, MyReputationRouter);
+    </script>
+</dom-module>
