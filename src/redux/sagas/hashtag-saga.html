@@ -264,20 +264,20 @@
             // ##### 
             // Check if the item may contain a conversation that you are interested in
             // First, the item must be in Funded or Disputed state.
-            function getItem(state) {
-                return ((state.hashtags[hashtagAddress] || {}).items || {})[itemHash] || {}
-            }
-            
+            const getHashtag = (state) => state.hashtags[hashtagAddress] || {}
+            const getItem = (state) => ((getHashtag(state)).items || {})[itemHash] || {}
+
             if (itemStatus == 1 || itemStatus == 3) {
                 // If the seeker or the provider are not provided, fetch them from the current state
                 if (!seekerAddress) seekerAddress = yield select(getItem).seekerAddress
                 if (!providerAddress) providerAddress = yield select(getItem).providerAddress
+                const mantainerAddress = yield select(getHashtag).mantainerAddress
                 const yourAddress = yield select(selectors.address)
                 if (!yourAddress) {
                     console.warn('Warning, yourAddress is not defined at the moment of checking if you belong in a chat. Possible race condition.')
                 }
                 // Check if the user is either the seeker or the provider
-                if (providerAddress == yourAddress || seekerAddress == yourAddress || (itemStatus == 3 && yourAddress == '0xd8B35fea1aEA9FDAeA853ab35B4611E016131D99')) {
+                if (providerAddress == yourAddress || seekerAddress == yourAddress || (itemStatus == 3 && yourAddress == mantainerAddress)) {
                     window.dispatchEvent(new CustomEvent('openChat', {
                         detail: { itemHash, yourAddress }
                     }));

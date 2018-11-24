@@ -25,7 +25,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
         <display-simpledeal-title></display-simpledeal-title>
         <detail-simpledeal status="[[status]]" language="[[language]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]" username="[[username]]"
-            avatar-hash="[[avatarHash]]" address="[[address]]" chat="[[chat]]" on-new="_handleOnNew" on-status="_handleOnStatus" on-close="_handleOnClose" on-chat="_handleOnChat">
+            avatar-hash="[[avatarHash]]" address="[[address]]" chat="[[chat]]" on-new="_handleOnNew" on-status="_handleOnStatus" on-close="_handleOnClose" on-chat="_handleOnChat" on-reputation="_handleOnReputation">
         </detail-simpledeal>
     </template>
     <script>
@@ -124,6 +124,10 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnProfile() {
                 sessionStorage.setItem('origin', this.route.path);
                 this.set('route.path', 'my-profile');
+            }
+            _handleOnReputation(e) {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', `reputation/${e.detail.address}/${e.detail.avatarHash}/${e.detail.username}`)
             }
             _setStatus() {
                 if (this.item
