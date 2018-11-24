@@ -192,15 +192,6 @@
                     */
                     avatar: {
                         type: String,
-                        statePath: 'avatar',
-                    },
-                    /**
-                    * routeEntry changes the exact moment pages change when routing
-                    * @type {Array}
-                    */
-                    routeEntry: {
-                        type: Array,
-                        observer: '_loadEntryAnimations',
                     },
                     /**
                     * The image
@@ -293,6 +284,9 @@
                         type: Number,
                         value: 0,
                         observer: '_drawFile',
+                    },
+                    avatarHash: {
+                        type: String,
                     },
                 };
             }
@@ -453,10 +447,6 @@
                 }
             }
 
-            _loadEntryAnimations() {
-                this._firstLoad();
-            }
-
             /**
             * Fired when user selects the X back button, routs to previous page
             */
@@ -486,11 +476,10 @@
                         avatarHash: storage.user.avatarHash
                     });
                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                    let avatarUrl = newCanvas.toDataURL('image/png');
                     window.history.back();
                 })
                 .catch(err => {
-                    console.error('error resolving avatar for ipfs hash', err)
+                    console.error('error resolving ipfs hash for avatar', err)
                 })
             }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
