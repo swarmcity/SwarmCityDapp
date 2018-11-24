@@ -273,7 +273,7 @@ window.contractsData = {
     ]
   },
   kovSwtToken: {
-    address: "0x0adbc89464cb7fa752adcf3533514949a2547589",
+    address: "0x68b4bFF76B06FF72767ac1989Ea9706Bbc26Da4c",
     creationBlock: 7288019,
     abi: [
       {

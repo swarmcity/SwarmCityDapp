@@ -52,7 +52,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                     status: {
                         type: String,
-                        value: 'cash',
+                        value: 'overview',
                     },
                     balance: {
                         type: Object,
@@ -98,25 +98,17 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _handleOnClose() {
-                if (sessionStorage.getItem('origin')) {
-                    this.set('route.path', sessionStorage.getItem('origin'));
-                    sessionStorage.removeItem('origin');
+                if (this.status == 'overview') {
+                    if (sessionStorage.getItem('origin')) {
+                        this.set('route.path', sessionStorage.getItem('origin'));
+                        sessionStorage.removeItem('origin');
+                    }
+                    else {
+                        this.set('route.path', 'hashtag-list');
+                    }
+                } else {
+                    this.status = 'overview';
                 }
-                else {
-                    this.set('route.path', 'hashtag-list');
-                }
-
-                // if (this.status == 'overview') {
-                //     if (sessionStorage.getItem('origin')) {
-                //         this.set('route.path', sessionStorage.getItem('origin'));
-                //         sessionStorage.removeItem('origin');
-                //     }
-                //     else {
-                //         this.set('route.path', 'hashtag-list');
-                //     }
-                // } else {
-                //     this.status = 'overview';
-                // }
             }
         }
         window.customElements.define(MyWalletRouter.is, MyWalletRouter);

@@ -24,7 +24,8 @@
         kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
       },
       swarmcity: {
-        mainnet: 'wss://mainnet.swarm.city',
+        mainnet: 'wss://mainnet.infura.io/ws',
+        // mainnet: 'wss://mainnet.swarm.city',
         kovan: 'wss://kovan.swarm.city'
       }
     }
@@ -49,13 +50,14 @@
         });
         window.web3s[chain].setProvider(provider);
       });
-      setInterval(() => { web3s['kovan'].eth.getBlockNumber() }, 30 * 1000);
-      setInterval(() => { web3s['mainnet'].eth.getBlockNumber() }, 30 * 1000);
     }
 
     window.web3Mainnet = web3s.mainnet
     window.web3Kovan = web3s.kovan
     window.web3Local = window.web3Kovan
+
+    setInterval(() => { window.web3Kovan.eth.getBlockNumber() }, 30 * 1000);
+    setInterval(() => { window.web3Mainnet.eth.getBlockNumber().catch( e => console.log('error on mainnet, need to reconnect', e)) }, 30 * 1000);
 
     /**
      * Contract addresses
@@ -77,9 +79,9 @@
             abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
           },
           kovan: {
-            address: '0x0adbc89464cb7fa752adcf3533514949a2547589',// ERC20_TOKEN_ADDRESS for KOVAN FAKE SWT (unbridged)
-            deployedBlockNumber: 7288019,
-            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
+            address: '0x68b4bFF76B06FF72767ac1989Ea9706Bbc26Da4c', // BRIDGEABLE_TOKEN_ADDRESS
+            deployedBlockNumber: 8420473,
+            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc677TokenTransferAndCall]
           }
         },
         hashtagDir: {
