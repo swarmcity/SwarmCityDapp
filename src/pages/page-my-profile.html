@@ -17,6 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-profile-swr.html">
 <link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-show-keys.html">
+<link rel="import" href="../displays/display-reputation-balances.html">
 
 <dom-module id="page-my-profile">
     <template>
@@ -262,16 +263,14 @@ This code may only be used under the license found at https://github.com/swarmci
                 max-width: 100%;
             }
 
-            display-profile-swr {
+            display-reputation-balances {
                 box-sizing: border-box;
-                padding: 50px 0;
                 background-image: var(--sc-bg);
                 width: 100%;
             }
 
-            .container[wide-layout] display-profile-swr {
+            .container[wide-layout] display-reputation-balances {
                 box-sizing: border-box;
-                padding: 50px 0;
 
             }
 
@@ -367,6 +366,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
             <div class="divider" id="divider1"></div>
+            <display-reputation-balances reputation="[[reputationArray]]"></display-reputation-balances>
             <div class="divider" id="divider2"></div>
             <div class="buttonbox" id="buttonBox">
                 <div class="backup" on-click="_backup">{{localize('backup this user')}}</div>
@@ -470,6 +470,16 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                    reputation: {
+                        type: String,
+                        statePath: AppStore.selectors.reputation,
+                        observer: '_toArray',
+                    },
+                    reputationArray: Array,
                 };
             }
             /**
@@ -585,6 +595,21 @@ This code may only be used under the license found at https://github.com/swarmci
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
+            }
+
+            _toArray() {
+                if (this.reputation[this.address]) {
+                    let array = [];
+                    for (let key in this.reputation[this.address]) {
+                        if (this.reputation[this.address].hasOwnProperty(key)) {
+                            array.push(this.reputation[this.address][key]);
+                        }
+                    }
+                    this.set('reputationArray', array);
+                } else {
+                    console.log('Get reputation for: ', this.address);
+                    this.dispatch({ type: 'GET_REPUTATION', address: this.address })
+                }
             }
         }
         window.customElements.define(MyProfile.is, MyProfile);
