@@ -26,6 +26,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 max-width: 100%;
             }
 
+            .container[wide-layout] {
+                @apply --layout-start;
+                width: 100%;
+            }
+
+
             .horizontal {
                 @apply --layout-horizontal;
                 @apply --layout-start-justified;
@@ -36,7 +42,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .notification {
                 font-size: 12px;
-                margin-top: 20px;
+                color: var(--sc-grey3b)
             }
 
             paper-input {
@@ -117,18 +123,19 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <display-divider></display-divider>
-        <div class="container">
+        <div class="container" wide-layout$="{{wide}}">
             <div class="input">
                 <div class="horizontal">
                     <paper-input tabindex="1" type="Number" label="Amount" allowed-pattern="[0-9\.\,]" value="{{amount}}"
                         on-keyup="_checkBalance"></paper-input>
                     <div class="SWT">SWT</div>
                 </div>
+
+            <div class="notification">From Cash</div>
             </div>
             <div>
                 <span id="error">{{error}}</span>
             </div>
-            <div class="notification">You can only send from reserves to cash.<br />It can take a while to complete.</div>
             <div class="buttonbox">
                 <div tabindex="3" class="disagree" on-tap="_close"></div>
                 <div tabindex="4" id="send" class="round-button" on-tap="_add">
@@ -188,7 +195,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         }
                     }));
                 }
-                this.$_reset();
+                this._reset();
             }
         }
         window.customElements.define(MyWalletReservesTransferAdd.is, MyWalletReservesTransferAdd);
