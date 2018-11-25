@@ -10,6 +10,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="./my-wallet-reserves-transfer-choice.html">
 <link rel="import" href="./my-wallet-reserves-transfer-send.html">
+<link rel="import" href="./my-wallet-reserves-transfer-add.html">
 <link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../data/data-transaction.html">
 
@@ -36,6 +37,11 @@ This code may only be used under the license found at https://github.com/swarmci
             <template is="dom-if" if="{{_isEqualTo(status, 'send')}}">
                 <my-wallet-reserves-transfer-send language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
                     on-send="_handleOnSend"></my-wallet-reserves-transfer-send>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'add')}}">
+                <my-wallet-reserves-transfer-add language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
+                    on-add="_handleOnAdd"></my-wallet-reserves-transfer-add>
             </template>
 
         </div>
@@ -68,11 +74,11 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _handleOnReceive() {
-                console.log('receive');
+                this.status = 'add';
             }
             _handleOnSend(e) {
                 console.log('send: ', e.detail);
-                
+
                 let amount = parseInt(e.detail.amount);
                 this.$.unlock._getPrivateKey()
                     .then((res) => {
@@ -86,11 +92,44 @@ This code may only be used under the license found at https://github.com/swarmci
                                 privateKey
                             }
 
-                            const receiverAddress = '0xa90906A394A4Ae934f1A47B04ac64458D56A7273';
-
-                            const tokenContractAddress = '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607';
+                            const contracts = window.contracts;
+                            const receiverAddress = contracts.bridge.mainnet.address;
+                            const tokenContractAddress = contracts.token.mainnet.address;
 
                             this.$.transaction.tokenMainTx({ sender, receiverAddress, amount, tokenContractAddress })
+                                .then(receipt => {
+                                    console.log('Successfully sent tokens, receipt:', receipt);
+                                })
+                                .catch(err => {
+                                    console.log('Error sending tokens:', err)
+                                });
+                        }
+                        catch (e) {
+                            console.error('Error sending tokens (catch block): ', e.stack)
+                        }
+                    });
+            }
+            _handleOnAdd(e) {
+                console.log('add: ', e.detail);
+
+                let amount = parseInt(e.detail.amount);
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address, publicKey } = res;
+                            if (!privateKey) {
+                                throw Error('Missing address')
+                            }
+                            const sender = {
+                                address,
+                                privateKey
+                            }
+
+                            const contracts = window.contracts;
+                            const receiverAddress = contracts.bridge.kovan.address;
+                            const tokenContractAddress = contracts.token.kovan.address;
+
+                            this.$.transaction.tokenTx({ sender, receiverAddress, amount, tokenContractAddress })
                                 .then(receipt => {
                                     console.log('Successfully sent tokens, receipt:', receipt);
                                 })
