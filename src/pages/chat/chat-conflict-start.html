@@ -1,0 +1,79 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+
+<dom-module id="chat-conflict-start">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .container {
+        margin-top: 50px;}
+
+      .date {
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        @apply --smallest-light;
+        color: var(--sc-grey3b);
+      }
+      .text {
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        @apply --small-bold;
+        margin-top: 5px;
+        padding: 10px 0;
+        box-sizing: border-box;
+        background-color: var(--sc-grey1b);
+      }
+      .red {
+        color: var(--sc-red);
+      }
+    </style>
+    <div class="container">
+      <div class="date">[[_formatDate(item.time)]]</div>
+      <div class="text">
+          This deal is now&nbsp;<span class="red">in conflict.</span>
+      </div>
+    </div>
+  </template>
+  <script>
+    class MyChatConflictStart extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "chat-conflict-start";
+      }
+      static get properties() {
+        return {
+          item: Object,
+        };
+      }
+
+      /**
+       * formats epoch
+       * @param {DateTime} dateTime epoch in javascript milliseconds
+       * @return {string} formatted date string
+       */
+      _formatDate(dateTime) {
+        let milliseconds = dateTime * 1000;
+        if (webpack.moment().valueOf() - milliseconds < 86400000) {
+          return webpack.moment(milliseconds).fromNow();
+        } else {
+          return webpack.moment(milliseconds).format("DD MMM YYYY - HH:mm");
+        }
+      }
+    }
+    window.customElements.define(MyChatConflictStart.is, MyChatConflictStart);
+  </script>
+</dom-module>

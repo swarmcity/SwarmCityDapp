@@ -13,7 +13,6 @@ This code may only be used under the license found at https://github.com/swarmci
     Displays and shared styles only
 -->
 <link rel="import" href="../shared-styles.html">
-<link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-backup.html">
 
 <dom-module id="page-make-backup">
@@ -143,11 +142,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 border-bottom: 2px dotted var(--sc-blue);
             }
 
-            .blur {
-                @apply --unlock-blur;
-            }
-
-
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -157,7 +151,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
         </style>
-
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="container" class="container" wide-layout$="{{wide}}">
@@ -177,10 +170,6 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="bottom">
                 <div class="buttons" id="buttons">
                     <display-backup
-                        toggle-unlock="{{toggleUnlock}}"
-                        qr-code-private-key="{{qrCodePrivateKey}}"
-                        qr-code-public-key="{{qrCodePublicKey}}"
-                        private-key="{{privateKey}}"
                         path="{{path}}"
                         route="[[route]]">
                     </display-backup>
@@ -189,19 +178,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="bluetext-margins" id="keys">
                     <span class="bluetext" on-click="_toKeys">{{localize('show my keys')}}</span>
                 </div>
-    </div>
-    </div>
-    <dom-if if="{{toggleUnlock}}">
-        <template>
-                <display-unlock 
-                    blue
-                    toggle-unlock="{{toggleUnlock}}" 
-                    private-key="{{privateKey}}" 
-                    qr-code-private-key="{{qrCodePrivateKey}}"
-                    qr-code-public-key="{{qrCodePublicKey}}">
-                </display-unlock> 
-            </template>
-    </dom-if>
+            </div>
+        </div>
 
     </template>
 
@@ -240,15 +218,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'make-backup',
                     },
-                    /**
-                     * toggles the unlock display
-                     * @type {Boolean}
-                     */
-                    toggleUnlock: {
-                        type: Boolean,
-                        value: false,
-                        observer: '_blur',
-                    },
                 };
             }
             connectedCallback() {
@@ -283,15 +252,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     }
                     this.path = null;
                 }
-                /**
-                 * blurs the current page
-                 */
-            _blur() {
-                if (this.toggleUnlock) {
-                    this.$.container.classList.add('blur');
-                } else {
-                    this.$.container.classList.remove('blur');
-                }
+                this.path = null;
             }
         }
         window.customElements.define(MyMakeBackup.is, MyMakeBackup);

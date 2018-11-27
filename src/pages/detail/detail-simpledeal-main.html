@@ -1,0 +1,313 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+
+<dom-module id="detail-simpledeal-main">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+                background-color: var(--sc-white);
+                box-sizing: border-box;
+                padding: 10px 10px 0px 0px;
+                border-bottom: 1px dashed rgba(51, 51, 51, 0.08);
+                @apply --layout-vertical;
+                @apply --layout-start;
+            }
+
+            .container[wide-layout] {
+                max-width: 68vw;
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                @apply --layout-self-end;
+                background-color: rgba(250, 250, 250, 0.9);
+                border-radius: 50%;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .seeker-avatar {
+                width: 40px;
+                z-index: 0;
+                height: 40px;
+                cursor: pointer;
+                border-radius: 50%;
+                margin-right: 10px;
+                background-size: 40px;
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .container .description {
+                @apply --layout-vertical;
+                @apply --layout-end-justified;
+                @apply --body-detail;
+                color: var(--sc-grey4);
+                margin: 20px 30px 0 30px;
+            }
+
+            .container[wide-layout] .description {
+                margin: 20px 20px 0 30px;
+            }
+
+            .pricebox {
+                @apply --layout-vertical;
+                @apply --layout-end;
+                @apply --layout-start-justified;
+                @apply --layout-flex;
+            }
+
+            .container[wide-layout] .pricebox {
+                @apply --layout-end-justified;
+            }
+
+            .unit {
+                @apply --small-bold;
+                color: var(--sc-yellow);
+            }
+
+            .value {
+                @apply --main-title3;
+                color: var(--sc-yellow);
+            }
+
+            .linkbox {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 20px 20px 30px 30px;
+            }
+
+            .link {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey2);
+            }
+
+            .tempswitch {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                @apply --small-bold;
+                position: fixed;
+                top: 5px;
+                left: 5px;
+                cursor: pointer;
+            }
+
+            .container[wide-layout] .namebox {
+                margin: 0 21vw 40px 11vw;
+            }
+
+            .namebox {
+                @apply --main-title2;
+                font-size: 30px;
+                color: var(--sc-grey4);
+                padding: 0px 10px 0px 40px;
+                margin-bottom: 20px;
+            }
+
+            .hashtagsymbol {
+                font-weight: 800;
+                font-size: 27px;
+                margin-right: 2px;
+            }
+
+            .date {
+                @apply --small-light;
+                color: var(--sc-grey3b);
+                margin: 4px 30px 0 30px;
+            }
+
+            .seeker {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 15px 15px 0 30px;
+            }
+
+            .seeker-info {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                @apply --small-bold;
+                color: var(--sc-blue);
+            }
+
+            .seeker-owner {
+                color: var(--sc-grey4);
+            }
+
+            .copied {
+                @apply --small-bold;
+                color: var(--sc-grey3);
+                height: 0px;
+                margin-bottom: -5px;
+                visibility: hidden;
+                background-image: var(--sc-bg);
+            }
+
+            .truncate {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .showcopied {
+                visibility: visible;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+
+                .icon,
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="closebox">
+                <div class="close" on-tap="_close" tabindex="1"></div>
+            </div>
+            <div class="spacer"></div>
+            <div class="description">
+                [[item.description]]
+            </div>
+            <div class="date">
+                [[_formatDate(item.timestamp)]]
+            </div>
+            <div class="seeker">
+
+                <iron-image class="seeker-avatar" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[item.seekerAvatarHash]]"
+                    placeholder="../images/defaultavatar.png" on-tap="_toUserReputation">
+                </iron-image>
+
+                <template is="dom-if" if="[[_isSeeker(item)]]">
+                    <div id="seeker" class="seeker-info seeker-owner horizontal" on-tap="_toUserReputation">
+                        <div class="truncate">[[item.seekerUsername]]</div>&nbsp;·
+                        [[item.seekerRep]]
+                    </div>
+                </template>
+
+                <template is="dom-if" if="[[!_isSeeker(item)]]">
+                    <div id="seeker" class="seeker-info horizontal" on-tap="_toUserReputation">
+                        <div class="truncate">[[item.seekerUsername]]</div>&nbsp;·
+                        [[item.seekerRep]]
+                    </div>
+                </template>
+
+                <div class="pricebox">
+                    <div class="unit">SWT</div>
+                    <div class="value">[[_formatValue(item.itemValue)]]</div>
+                </div>
+            </div>
+            <div class="linkbox">
+                <div class="copied" id="copied">copied</div>
+                <span on-tap="_copyUrl" class="link">shareable link</span>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        class MyDetailSimpledealMain extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-main';
+            }
+            static get properties() {
+                return {
+                    item:  Object,
+                    address: String,
+                }
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            _toUserReputation(event) {
+                this.dispatchEvent(new CustomEvent('reputation', {
+                    detail: {
+                        address: this.item.seekerAddress,
+                        avatarHash: this.item.seekerAvatarHash,
+                        username: this.item.seekerUsername,
+                    },
+                }));
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} hashtagItem the hashtagItem (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker(item) {
+                return (item && item.seekerAddress && this.address && item.seekerAddress == this.address);
+            }
+        }
+        window.customElements.define(MyDetailSimpledealMain.is, MyDetailSimpledealMain);
+    </script>
+</dom-module>

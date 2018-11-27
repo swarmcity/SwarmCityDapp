@@ -1,0 +1,181 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-button-disagree.html">
+<link rel="import" href="../../displays/display-button-confirm.html">
+
+<dom-module id="detail-simpledeal-input">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
+            }
+
+            .provider {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-center;
+                width: 100%;
+            }
+
+            .inputbox {
+                @apply --layout-vertical;
+            }
+
+            .choice {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                padding: 30px 0;
+            }
+
+            iron-image {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                margin-right: 10px;
+            }
+
+            .price {
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
+
+            paper-textarea {
+                text-indent: 2px;
+                margin-top: 5px;
+                box-sizing: border-box;
+                min-width: 200px;
+                text-align: left;
+                width: 100%;
+                max-width: 55vw;
+                @apply --sc-paper-input;
+                --paper-input-container-color: var(--sc-grey4);
+                --paper-input-container-focus-color: var(--sc-blue);
+                --paper-input-container-focus: @apply --body-bold;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-bold;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="provider">
+                <iron-image preload sizing="cover" src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png"></iron-image>
+                <div class="inputbox">
+                    <paper-textarea label="Your reply" type="txt" value="{{message}}" autofocus></paper-textarea>
+                    <div class="price">for [[_formatValue(item.itemValue)]] SWT </div>
+                </div>
+            </div>
+            <div class="choice">
+                <display-button-disagree on-tap="_close"></display-button-disagree>
+                <display-button-confirm on-tap="_reply"></display-button-confirm>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDetailSimpledealInput extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-input';
+            }
+            static get properties() {
+                return {
+                    language: String,
+                    item: Object,
+                    message: String,
+                    avatarHash: String,
+                };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                this.dispatchEvent(new CustomEvent('status', {
+                    detail: 'replies',
+                }));
+                this._reset();
+            }
+            _reset() {
+                this.message = '';
+            }
+            _reply() {
+                if (this.message) {
+                    this.dispatchEvent(new CustomEvent('reply', {
+                        detail: this.message,
+                    }));
+
+                }
+            }
+        }
+        window.customElements.define(MyDetailSimpledealInput.is, MyDetailSimpledealInput);
+    </script>
+</dom-module>

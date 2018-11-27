@@ -1,0 +1,180 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link
+  rel="import"
+  href="../../../bower_components/polymer/polymer-element.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/paper-input/paper-input.html"
+/>
+<link
+  rel="import"
+  href="../../../bower_components/iron-image/iron-image.html"
+/>
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+
+<dom-module id="chat-new">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply --layout-vertical;
+        @apply --layout-end-justified;
+        @apply --layout-center;
+      }
+
+      paper-input {
+        @apply --layout-flex;
+        max-width: 60vw;
+        text-indent: 1px;
+        box-sizing: border-box;
+        padding: 0 2px;
+        --paper-input-container-color: var(--sc-grey4);
+        --paper-input-container-focus-color: var(--sc-grey4);
+        --paper-input-container-label: {
+          @apply --body-default;
+        }
+        --paper-input-container-input: {
+          @apply --body-default;
+        }
+        --paper-input-error: {
+          @apply --body-bold;
+        }
+        --paper-input-prefix: {
+          @apply --body-default;
+        }
+        --paper-input-suffix: {
+          @apply --body-default;
+        }
+      }
+
+      .input-box {
+        @apply --layout-horizontal;
+        @apply --layout-center-justified;
+        @apply --layout-start;
+        width: 100vw;
+        box-sizing: border-box;
+        padding: 30px;
+      }
+
+      .input-confirm {
+        @apply --icon-button-big;
+        margin: 10px 0 0 10px;
+        width: 52px;
+        height: 52px;
+        min-height: 52px;
+        min-width: 52px;
+      }
+
+      .input-confirm:active {
+        @apply --button-active;
+      }
+
+      .input-confirm-icon {
+        @apply --vmark-blue-small;
+      }
+
+      .divider {
+        background-color: var(--sc-grey2);
+        height: 1px;
+        width: 95vw;
+      }
+
+      iron-image {
+        border-radius: 50%;
+      }
+
+      .avatar {
+        margin: 13px 10px 0 0;
+        min-width: 40px;
+        height: 40px;
+        width: 40px;
+      }
+
+      @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+      only screen and (min--moz-device-pixel-ratio: 1.5),
+      only screen and (min-resolution: 240dpi) {
+          .input-confirm-icon {
+              @apply --retina;
+          }
+      }
+    </style>
+    <div class="container">
+      <div class="divider"></div>
+      <div class="input-box">
+        <iron-image
+          class="avatar"
+          sizing="cover"
+          preload
+          src="https://scapiweb3-c.swarm.city/img/[[_setAvatar(address, avatars)]]"
+          placeholder="../images/defaultavatar.png"
+        >
+        </iron-image>
+        <paper-input
+          type="txt"
+          value="{{message}}"
+          autofocus
+          on-keypress="_checkForEnter"
+        ></paper-input>
+        <div
+          class="input-confirm"
+          on-tap="_sendMessage"
+          on-keypress="_checkForEnter"
+        >
+          <div class="input-confirm-icon"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script>
+    class MyChatNew extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "chat-new";
+      }
+      static get properties() {
+        return {
+          avatars: Object,
+          address: String,
+        };
+      }
+      /**
+       * check if user pressed enter
+       * @param {object} e the fired event
+       */
+      _checkForEnter(e) {
+        if (e.keyCode === 13 && this.message) {
+          this._sendMessage();
+        }
+      }
+      /**
+       * send a new message on this item
+       */
+      _sendMessage() {
+        if (this.message) {
+          this.dispatchEvent(
+            new CustomEvent("send", {
+              detail: this.message
+            })
+          );
+          this.message = this.message.trim();
+          this.message = "";
+        }
+      }
+      _setAvatar(address, avatars) {
+        if (address in avatars) return avatars[address]
+      }
+    }
+    window.customElements.define(MyChatNew.is, MyChatNew);
+  </script>
+</dom-module>

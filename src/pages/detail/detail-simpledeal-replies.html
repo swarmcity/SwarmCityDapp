@@ -1,0 +1,318 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../displays/display-button-disagree.html">
+<link rel="import" href="../../displays/display-button-confirm.html">
+<link>
+
+<dom-module id="detail-simpledeal-replies">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                height: 100%;
+                display: block;
+            }
+
+            .top {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .box {
+                width: 100%;
+                @apply --layout-vertical;
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
+            }
+
+            .pending {
+                opacity: 0.5;
+            }
+
+            .container[wide-layout] .box {
+                box-sizing: border-box;
+                padding: 20px 30px 15px 30px;
+                max-width: 68vw;
+            }
+
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey2);
+                margin: 4px 0px 0px 0px;
+            }
+
+            .user {
+                @apply --small-bold;
+                color: var(--sc-blue);
+                @apply --layout-flex;
+            }
+
+            .replier {
+                color: var(--sc-grey4);
+            }
+
+            .price {
+                @apply --small-bold;
+                text-align: right;
+                color: var(--sc-grey4);
+                white-space: nowrap;
+                margin: 0px 0px 0px 10px;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .description {
+                @apply --layout-flex;
+                @apply --body-default;
+                color: var(--sc-grey4);
+                box-sizing: border-box;
+            }
+
+            .bottom {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                margin-top: 10px;
+            }
+
+            .container .noreplies {
+                @apply --body-default;
+                width: 100%;
+                color: var(--sc-grey2);
+                text-align: center;
+            }
+
+            .container[wide-layout] .noreplies {
+                text-align: left;
+            }
+
+            iron-image {
+                height: 24px;
+                width: 24px;
+                border-radius: 50%;
+                min-height: 24px;
+                min-width: 24px;
+                margin-right: 10px;
+            }
+
+            .vmarkmini {
+                @apply --vmark-grey4-mini;
+                opacity: 0.1;
+                margin-right: 2px;
+            }
+
+            .container .spacer {
+                width: 100%;
+                height: 15px;
+                background-color: var(--sc-white);
+            }
+
+            .container[wide-layout] .spacer {
+                width: 100%;
+                height: 10px;
+                background-color: var(--sc-white);
+            }
+
+            .choose {
+                @apply --icon-button-mini;
+            }
+
+            .choose:active {
+                @apply --button-active;
+            }
+
+            .choose-icon {
+                @apply --next-blue-small;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .choose-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="[[_noReplies(item)]]">
+                <div class="box">
+                    <div class="noreplies">No replies yet.</div>
+                </div>
+            </template>
+            <div class="spacer"></div>
+            <template is="dom-repeat" items="{{_toArray(item.replies)}}" as="reply">
+                <div class="box">
+                    <div class$="{{_checkPending(reply)}}">
+                        <div class="top">
+                            <div class="description">
+                                [[reply.message]]
+                            </div>
+                            <div class="price">
+                                <div class="vmarkmini"></div> [[_formatValue(item.itemValue)]] SWT
+                            </div>
+                        </div>
+
+                        <div class="date">[[_formatDate(reply.timestamp)]]</div>
+
+                        <div class="bottom">
+                            <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[reply.avatarHash]]"
+                                placeholder="../images/defaultavatar.png" on-tap="_toUserReputation">
+                            </iron-image>
+
+                            <template is="dom-if" if="[[!_isReplier(reply)]]">
+                                <div class="user">[[reply.username]] · [[reply.providerRep]] SWR</div>
+
+                                <template is="dom-if" if="[[_isSeeker()]]">
+                                    <div class="choose" on-tap="_replyDetail">
+                                        <div class="choose-icon"></div>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <template is="dom-if" if="[[_isReplier(reply)]]">
+                                <div class="user replier">[[reply.username]] · [[reply.providerRep]] SWR</div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <div class="spacer"></div>
+
+    </template>
+    <script>
+        class MySimpledealItemreplies extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-replies';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * address represents the user's public key
+                    * @type {String}
+                    */
+                    address: String,
+                    item: Object,
+                };
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} timestamp epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(timestamp) {
+                let milliseconds = timestamp ? timestamp * 1000 : Date.now();
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * Here we check if a reply is owned by the current user
+            * @param {Object} reply a item reply
+            * @return {Boolean} true when user owns this reply
+            */
+            _isReplier(reply) {
+                return (reply.replierAddress || {}) == this.address;
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} item the item (request)
+            * @return {Boolean} true when user owns this request
+            */
+            _isSeeker() {
+                return (this.item.seekerAddress || {}) == this.address;
+            }
+            /**
+            * Here we check if there are any replies
+            * @param {Object} item a hashtagItem
+            * @return {Boolean} true when the replies array doesn't exist or is empty
+            */
+            _noReplies(item) {
+                return (!item.replies || Object.keys(item.replies).length == 0);
+            }
+            /**
+            * takes the user to the selected user reputation page
+            * @param {Object} event object clicked containing the specific replier item
+            */
+            _toUserReputation(event) {
+                this.dispatchEvent(new CustomEvent('reputation', {
+                    detail: {
+                        address: event.model.__data.reply.replierAddress,
+                        avatarHash: event.model.__data.reply.avatarHash,
+                        username: event.model.__data.reply.username,
+                    },
+                }));
+            }
+            /**
+            * show the reply detail
+            * @param {Object} event object clicked containing the specific replier item
+            */
+            _replyDetail(event) {
+                this.dispatchEvent(new CustomEvent('detail', {
+                    detail: event.model.__data.reply,
+                }));
+            }
+            /**
+            * return an array of an object's values
+            * @param {Object} obj an object (in this case the item's replies)
+            * @return {Array} an array of the object's values
+            */
+            _toArray(obj) {
+                if (obj) {
+                    return Object.values(obj);
+                }
+            }
+            /**
+            * verifies if item reply is still pending
+            * @param {Object} reply item object
+            * @return {string} class name
+            */
+            _checkPending(reply) {
+                if (!('blockNumber' in reply)) {
+                    return 'pending';
+                }
+            }
+        }
+        window.customElements.define(MySimpledealItemreplies.is, MySimpledealItemreplies);
+    </script>
+</dom-module>

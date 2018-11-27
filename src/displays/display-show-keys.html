@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../redux-state.html">
+<link rel="import" href="../displays/display-unlock.html" />
 <!--
 
 Example:
@@ -172,6 +173,7 @@ Example:
                 }
             }
         </style>
+        <display-unlock id="unlock" blue></display-unlock>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div id="keyBox" class="keybox" wide-layout$="{{wide}}">
 
@@ -184,10 +186,10 @@ Example:
     <dom-if if="{{!toggleKeys}}">
         <template>
                     <div class="txtbox">
-                        <div class="subtitle">{{localize('Your public key')}}</div>
+                        <div class="subtitle">{{localize('Your address')}}</div>
                         <div class="key">{{publicKey}}</div>
                         <div class="copied" id="copied">{{localize('copied')}}</div>
-                        <div class="bluelink" on-click="_copyPublicKey">{{localize('copy public key')}}</div>
+                        <div class="bluelink" on-click="_copyPublicKey">{{localize('copy address')}}</div>
 
                         <template is="dom-if" if="{{!togglePrivateKey}}">
                             <div class="privbtn" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
@@ -240,9 +242,9 @@ Example:
                         type: Array,
                     },
                     /**
-                     * contains the user's public key
-                     * @type {String}
-                     */
+                    * contains the user's address
+                    * @type {String}
+                    */
                     publicKey: {
                         type: String,
                         statePath: 'publicKey',
@@ -275,18 +277,9 @@ Example:
                         notify: true,
                     },
                     /**
-                     * toggles the unlock display
-                     * @type {Boolean}
-                     */
-                    toggleUnlock: {
-                        type: Boolean,
-                        value: false,
-                        notify: true,
-                    },
-                    /**
-                     * contains route information
-                     * @type {String}
-                     */
+                    * contains route information
+                    * @type {String}
+                    */
                     route: {
                         type: String,
                         observer: '_close',
@@ -302,19 +295,15 @@ Example:
                  * All animations this page needs
                  */
             _loadAnimations() {
-                    this.anim = {
-                        moveUp: {
-                            arr: [{
-                                transform: 'translateY(20px)',
-                            }, {
-                                transform: 'translateY(0px)',
-                            }],
-                            obj: {
-                                fill: 'both',
-                                duration: 250,
-                                direction: 'normal',
-                                easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
-                            },
+                this.anim = {
+                    moveUp: {
+                        arr: [{ transform: 'translateY(20px)' },
+                        { transform: 'translateY(0px)' }],
+                        obj: {
+                            fill: 'both',
+                            duration: 250,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
                         },
                     };
                 }
@@ -402,11 +391,23 @@ Example:
                  * Toggles the visibility of the full Private Key
                  */
             _togglePrivateKey() {
-                    this.toggleUnlock = !this.toggleUnlock;
-                }
-                /**
-                 * Scrolls to show keys in viewport
-                 */
+                this.$.unlock._getPrivateKey()
+                .then(res => {
+                try {
+                    const { privateKey, address, publicKey } = res;
+                        if (!privateKey) {
+                        throw Error("Missing address");
+                        }
+                        this.privateKey = privateKey;
+                    }   catch (e) {
+                        console.error("Error showing keys (catch block): ", e.stack);
+                    }
+                })
+                .catch(e)
+            }
+            /**
+            * Scrolls to show keys in viewport
+            */
             _scrollTo() {
                 this.async(() => {
                     this.$.keyBox.scrollIntoView({

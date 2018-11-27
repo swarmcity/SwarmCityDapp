@@ -1,0 +1,154 @@
+<link rel="import" href="./handleReplyItem.html">
+
+<script>
+    (function () {
+        // Items initialized in setup.html
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        // ReduxSaga methods
+        const { effects, eventChannel, delay } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all, select } = effects;
+
+        // Import contract data:
+        const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
+
+        // Import methods
+        const { handleReplyItem } = window;
+
+        /**
+         * Gets hashtag from the blockchain
+         */
+        async function getItemData(hashtagContract, itemHash) {
+            try {
+                let itemData = {};
+                await Promise.all([
+                    hashtagContract.methods.readItemData(itemHash).call().then(res => {
+                        itemData.status = res.status
+                        itemData.providerAddress = res.providerAddress
+                        itemData.providerRep = res.providerRep
+                        itemData.numberOfReplies = res.numberOfReplies
+                    }).catch(e => {
+                        console.error(`Error calling readItemData(${itemHash}): ${e}`)
+                    }),
+                    hashtagContract.methods.readItemState(itemHash).call().then(res => {
+                        itemData.itemValue = res._itemValue
+                        itemData.seekerRep = res._seekerRep
+                        itemData.seekerAddress = res._seekerAddress
+                        itemData.itemMetadataHash = res._itemMetadataHash
+                        itemData.creationBlock = res._creationBlock
+                    }).catch(e => {
+                        console.error(`Error calling readItemState(${itemHash}): ${e}`)
+                    })
+                ])
+                return itemData
+            } catch (e) {
+                console.error('Error on getItemData from ' + itemHash, e)
+            }
+        }
+
+        function catIpfsMetadata(hash) {
+            return ipfs.cat(hash).then(JSON.parse)
+        }
+
+        function getPastReplies(hashtagContract, itemHash, fromBlock) {
+            return hashtagContract.getPastEvents('ReplyItem', {
+                filter: { itemHash },
+                fromBlock,
+                toBlock: 'latest',
+            })
+        }
+
+        function* getItemReplies(hashtagContract, itemHash, creationBlock) {
+            try {
+                const replyEvents = yield call(getPastReplies, hashtagContract, itemHash, creationBlock)
+                yield all(replyEvents.map(replyEvent => call(handleReplyItem, replyEvent)))
+            } catch (e) {
+                console.error(`Error getting item ${itemHash} replies: ${e.stack}`)
+            }
+        }
+
+        function* getItem({ item: itemHash }) {
+            console.log('GET ITEM req', itemHash)
+            if (!itemHash || !itemHash.startsWith('0x')) {
+                return console.error(`itemHash is not correct, itemHash = ${itemHash}`)
+            }
+
+            // Get current hashtag
+            const hashtagAddress = yield select(state => state.current.hashtag)
+            const hashtagContract = new web3Local.eth.Contract(
+                simpleDeal.abi,
+                hashtagAddress
+            );
+
+            // Step 1. Call contract state: 
+            // Revelant props:
+            // item.itemMetadataHash
+            // item.creationBlock
+            const itemData = yield call(getItemData, hashtagContract, itemHash)
+
+            const { itemMetadataHash, creationBlock } = itemData
+
+            const updateThisItem = (data) => ({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data })
+            yield put(updateThisItem(itemData));
+
+            yield all([
+                call(function* () {
+                    try {
+                        const res = yield call(catIpfsMetadata, itemMetadataHash)
+                        console.log(res)
+                        yield put(updateThisItem({
+                            seekerAvatarHash: res.avatar || res.avatarHash,
+                            description: res.description,
+                            seekerPublicKey: res.publicKeySeeker,
+                            seekerUsername: res.username,
+                        }))
+                    } catch (e) {
+                        console.error(`Error fetching itemMetadata of item: ${itemHash}`, e)
+                    }
+                }),
+                call(function* () {
+                    try {
+                        yield call(getItemReplies, hashtagContract, itemHash, creationBlock)
+                    } catch (e) {
+                        console.error(`Error fetching replies of item: ${itemHash}`, e)
+                    }
+                }),
+                call(function* () {
+                    try {
+                        const timestamp = yield call(getBlockTime, creationBlock)
+                        yield put(updateThisItem({ timestamp }));
+                    } catch (e) {
+                        console.error(`Error fetching timestamp of item: ${itemHash}`, e)
+                    }
+                })
+            ])
+        }
+
+        async function getBlockTime(blockNumber) {
+            try {
+                const block = await web3Local.eth.getBlock(blockNumber);
+                if (block && block.timestamp) {
+                    return parseInt(block.timestamp);
+                } else {
+                    console.error('Error fetching block ' + blockNumber + ' :', block)
+                    return 'error';
+                }
+            } catch (e) {
+                console.error('Error fetching timestamp for block ' + blockNumber, e)
+            }
+        }
+
+
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield all([
+                yield takeEvery('GET_ITEM', getItem),
+            ]);
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        if (!window.AppStore.sagas) window.AppStore.sagas = []
+        window.AppStore.sagas.push(rootSaga)
+    }());
+</script>

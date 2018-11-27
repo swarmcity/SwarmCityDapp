@@ -1,0 +1,111 @@
+<script>
+    (function () {
+        // Items initialized in setup.html
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        // ReduxSaga methods
+        const { effects, eventChannel, delay, END } = ReduxSaga;
+        const { call, fork, take, put, takeEvery, all } = effects;
+
+
+        /** 
+         * Data fetching strategy: 
+         * 
+         * SUBSCRIPTION
+         * ============
+         * 
+         * A subscription to all hashtag items will be activated. 
+         * The relevant events to listen are:
+         * - NewItem(owner, itemHash, ipfsMetadata, itemValue, hashtagFee, seekerRep)
+         *   - Emitted on: newItem
+         *   - After receiving: resolve ipfsMetadata
+         * - ItemChange(indexed itemHash, newstatus, providerAddress)
+         *   - Emitted on: selectReplier, fundItem, payoutItem, cancelItem, disputeItem, resolveItem
+         *   - After receiving: -
+         * - ReplyItem(indexed itemHash, ipfsMetadata, provider) // provider => providerAddress
+         *   - Emitted on: replyItem
+         *   - After receiving: resolve ipfsMetadata
+         * 
+        */
+
+        const subscribe = (socket, { key }) =>
+            eventChannel(emit => {
+                socket.on('fxChanged', (reply) => {
+                    emit({ type: 'UPDATE_FX', fx: reply });
+                });
+                socket.on('chatChanged', (reply) => {
+                    emit({ type: 'CHATHISTORY', chatHistory: reply });
+                });
+                socket.on('nonceChanged', (reply) => {
+                    if (reply.response == 200) {
+                        emit({ type: 'UPDATE_NONCE', nonce: reply.data.nonce });
+                    }
+                });
+                // The subscriber must return an unsubscribe function. Could be socket.off('event', handler)
+                return () => { };
+            });
+
+        function* read(socket, credentials) {
+            const channel = yield call(subscribe, socket, credentials);
+            try {
+                while (true) {
+                    let action = yield take(channel);
+                    yield put(action);
+                }
+            } finally {
+                console.log("Socket.io read channel terminated");
+            }
+        }
+
+        function* write(socket, { id, key }) {
+            yield takeEvery("IPFS_CAT", function* (action) {
+                socket.emit('ipfscat', {
+                    hash: action.reqipfs,
+                    format: 'base64',
+                }, (reply) => {
+                    if (reply.response == 200) {
+                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                        storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
+                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                        yield put({ type: 'AVATAR', avatar: 'data:image/jpg;base64,' + reply.data });
+                    }
+                });
+            })
+
+            // yield takeLatest("UPLOAD", upload);
+        }
+
+        const options = {
+            query: 'apiUser=swarmCity',
+            path: '/api',
+            transports: ['websocket', 'xhr-polling'],
+            autoConnect: false,
+        }
+
+        const connect = url => new Promise(resolve => {
+            const socket = io(url, options);
+            socket.on("connect", () => {
+                resolve(socket);
+            });
+        });
+
+        function* startSocket(url) {
+            const socket = yield call(connect, url);
+            yield fork(read, socket);
+            yield fork(write, socket);
+        }
+
+
+        /*
+         * redux-saga root function, which is responsible to call the correct workers
+         */
+        function* rootSaga() {
+            yield all([
+                yield call(startSocket, 'https://dev.swarm.city'),
+            ]);
+        }
+
+        if (!window.AppStore) window.AppStore = {}
+        if (!window.AppStore.sagas) window.AppStore.sagas = []
+        window.AppStore.sagas.push(rootSaga)
+    }());
+</script>

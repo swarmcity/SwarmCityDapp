@@ -42,6 +42,14 @@ The following custom properties and mixins are available for styling:
                 @apply --plus-grey4-normal;
             }
 
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .icon {
+                    @apply --retina;
+                }
+            }
+
         </style>
 
         <div tabindex="5" class="hashtaggadd" on-tap="_newHashtag" on-KeyPress="_newHashtag">
@@ -58,61 +66,7 @@ The following custom properties and mixins are available for styling:
             static get is() {
                 return 'display-hashtagadd-btn';
             }
-            static get properties() {
-                return {
-                    /**
-                    * Loading indicates if the component is loading
-                    * @type {Boolean}
-                    */
-                    loading: {
-                        type: Boolean,
-                        value: false,
-                        notify: true,
-                    },
-                    /**
-                    * route data represents the current route
-                    * @type {Object}
-                    */
-                    route: {
-                        type: Object,
-                    },
-                    /**
-                    * Path signals to the parent to change the path
-                    * @type {Boolean}
-                    */
-                    path: {
-                        type: String,
-                        value: null,
-                        notify: true,
-                    },
-                    /**
-                    * completeAccount represents true of the user
-                    * has a username, avatar and address
-                    * @type {Boolean}
-                    */
-                    completeAccount: {
-                        type: Boolean,
-                        value: true,
-                    },
-                };
-            }
 
-            /**
-            * Either go to the new here or new deal page depending if the user has a
-            * complete acocunt.
-            * @param {Object} event element clicked.
-            */
-            _newHashtag(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    sessionStorage.setItem('origin', this.route.path);
-                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                    if (storage.keyStore && storage.keyStore.Crypto) {
-                        this.path = 'new-hashtag/';
-                    } else {
-                        this.path = 'new-hashtag/';
-                    }
-                }
-            }
         }
         window.customElements.define(MyDisplayHashtagAddBtn.is, MyDisplayHashtagAddBtn);
     </script>

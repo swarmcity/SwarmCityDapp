@@ -1,0 +1,398 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may  be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../redux-state.html">
+<!--
+    Displays and shared styles 
+-->
+<!--
+
+Example:
+```
+<my-wallet-history></my-wallet-history>
+```
+
+-->
+<dom-module id="my-wallet-history">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --start-justified;
+                @apply --small-light;
+                background-image: var(--sc-bg);
+                box-sizing: border-box;
+                padding: 25px 10vw 50px 10vw;
+                width: 100%;
+                max-width: 99%;
+                min-height: calc(100vh - 283px);
+            }
+
+            .item {
+                margin-bottom: 30px;
+            }
+
+            .success {
+                color: var(--sc-grey3b);
+            }
+
+            .failed {
+                color: red;
+            }
+
+            .failed-text {
+                font-weight: bold;
+            }
+
+            .pending {
+                color: var(--sc-grey3);
+            }
+
+            .pending>span {
+                color: blue;
+            }
+
+            .horizontal {
+                @apply --body-detail;
+                @apply --layout-horizontal;
+                @apply --start-justified;
+            }
+
+            .container[wide-layout] .truncate {
+                width: 50vw;
+            }
+
+            .truncate {
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
+                width: 150px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .linkbox {
+                margin-top: 5px;
+            }
+
+            .linkbox-top {
+                margin-bottom: 40px;
+            }
+
+            .link {
+                @apply --small-bold;
+                cursor: pointer;
+                border-bottom: 2px dotted var(--sc-grey3);
+                color: var(--sc-grey3);
+            }
+
+            .greylink {
+                @apply --small-light;
+                cursor: pointer;
+                color: var(--sc-grey3);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-grey3b);
+            }
+
+            .bluelink {
+                @apply --small-bold;
+                cursor: pointer;
+                color: var(--sc-blue);
+                text-decoration: none;
+                border-bottom: 2px dotted var(--sc-blue);
+            }
+
+            .pending-dots {
+                @apply --layout-horizontal;
+                margin: 2px 0px 2px 0px;
+                box-sizing: border-box;
+                padding: 4px;
+                @apply --layout-horizontal;
+                @apply --layout-end;
+            }
+
+            .smallpoint {
+                margin: 0px 3px 0px 3px;
+                width: 2px;
+                height: 2px;
+                border-radius: 50%;
+                background-color: var(--sc-blue);
+            }
+
+            #point1 {
+                animation: loadanimation 1.5s linear 0s infinite;
+            }
+
+            #point2 {
+                animation: loadanimation 1.5s linear 0.3s infinite;
+            }
+
+            #point3 {
+                animation: loadanimation 1.5s linear 0.6s infinite;
+            }
+
+            @keyframes loadanimation {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+
+                25% {
+                    transform: scale(1.5);
+                    opacity: 1;
+                }
+
+                50% {
+                    transform: scale(1);
+                    opacity: 0.2;
+                }
+
+                100% {
+                    transform: scale(1);
+                    opacity: 0;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="linkbox-top">
+                <span class="link" on-click="_toEtherscanAddress">{{localize('show address on etherscan')}}</span>
+            </div>
+            <template is="dom-repeat" items="{{confirmedTx}}" sort="sort">
+                <div class="item">
+                    <div class$="[[_checkState(item.status)]]">
+                        <div class="date">[[_formatDate(item.timestamp)]]</div>
+                        <div class="horizontal">
+
+                            <template is="dom-if" if="[[_isFailed(item.status)]]">
+                                <span class="failed-text">Failed:&nbsp;</span>
+                            </template>
+
+                            <template is="dom-if" if="[[_isIncoming(item.direction)]]">+&nbsp;</template>
+                            <template is="dom-if" if="[[_isOutgoing(item.direction)]]">-&nbsp;</template>
+
+                            <div>[[_format(item.amount)]]&nbsp;SWT&nbsp;</div>
+
+                            <template is="dom-if" if="[[!_isPending(item.status)]]">
+                                <template is="dom-if" if="[[!item.outgoing]]">from&nbsp;
+                                    <span class="truncate">[[item.from]]</span>
+                                </template>
+                                <template is="dom-if" if="[[item.outgoing]]">to&nbsp;
+                                    <span class="truncate">[[item.to]]</span>
+                                </template>
+                            </template>
+
+                            <template is="dom-if" if="[[_isPending(item.status)]]">
+                                <div class="pending-dots">
+                                    <div class="smallpoint" id="point1"></div>
+                                    <div class="smallpoint" id="point2"></div>
+                                    <div class="smallpoint" id="point3"></div>
+                                </div>
+                            </template>
+
+                        </div>
+
+                        <template is="dom-if" if="[[_isPending(item.status)]]">
+                            <div class="horizontal">
+                                <template is="dom-if" if="[[_isIncoming(item.direction)]]">Receiving&nbsp;from&nbsp;
+                                    <span class="truncate">[[item.from]]</span>
+                                </template>
+                                <template is="dom-if" if="[[_isOutgoing(item.direction)]]">Sending&nbsp;to&nbsp;
+                                    <span class="truncate">[[item.to]]</span>
+                                </template>
+                            </div>
+                        </template>
+
+                    </div>
+                    <div class="linkbox">
+                        <span class$="[[_checkLinkStyle(item.status)]]" on-click="_toEtherscanTx">show on etherscan</span>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+
+    </template>
+    <script>
+        class MyWalletHistory extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-history';
+            }
+            static get properties() {
+                return {
+                    language: String,
+                    address: String,
+                    kovan: Boolean,
+                    mainnet: Boolean,
+                    /**
+                    * An array containing the confirmed transaction history for this public key
+                    * @type {Array}
+                    */
+                    confirmedTx: {
+                        type: Array,
+                    },
+                    /**
+                    * An array containing the pending transaction history for this public key
+                    * @type {Array}
+                    */
+                    pendingTx: {
+                        type: Array,
+                        value: [],
+                    },
+                    /**
+                    * An array containing the visible transaction history for this public key
+                    * @type {Object}
+                    */
+                    shownTx: {
+                        type: Object,
+                        statePath: 'shownTx',
+                    },
+                };
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+
+            /**
+            * returns style class depending on item status
+            * @param {Number} status statuscode of item
+            * @return {string} classname
+            */
+            _checkState(status) {
+                switch (status) {
+                    case 0:
+                        return 'success';
+                    case 1:
+                        return 'failed';
+                    case 2:
+                        return 'pending';
+                    default:
+                        return 'success';
+                }
+            }
+
+            /**
+            * returns true if transaction is outgoing
+            * @param {string} direction direction of transaction
+            * @return {boolean} boolean
+            */
+            _isOutgoing(direction) {
+                return direction == 'out' ? true : false;
+            }
+
+            /**
+            * returns true if transaction is incoming
+            * @param {string} direction direction of transaction
+            * @return {boolean} boolean
+            */
+            _isIncoming(direction) {
+                return direction == 'in' ? true : false;
+            }
+
+            /**
+            * returns true if transactioncode states pending
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
+            _isPending(status) {
+                return status == 2 ? true : false;
+            }
+
+
+            sort(a, b) {
+                return b.blockNumber - a.blockNumber
+            }
+
+            /**
+            * returns true if transactioncode states success
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
+            _isSucces(status) {
+                return status == 0 ? true : false;
+            }
+
+            /**
+            * returns true if transactioncode states failed
+            * @param {Number} status statuscode of item
+            * @return {boolean} boolean
+            */
+            _isFailed(status) {
+                return status == 1 ? true : false;
+            }
+
+            /**
+            * formats epoch
+            * @param {DateTime} dateTime epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(dateTime) {
+                let milliseconds = dateTime * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+
+            /**
+            * formats amount to more readable format
+            * @param {Number} amount amount that has been transferred
+            * @return {Number} formatted amount
+            */
+            _format(amount) {
+                return amount / 1e18;
+            }
+
+            /**
+            * switches to correct styling depending on item status
+            * @param {Number} status statuscode of item
+            * @return {string} classname
+            */
+            _checkLinkStyle(status) {
+                return status == 2 ? 'bluelink' : 'greylink';
+            }
+
+            /**
+            * takes the user to txHash page on etherscan
+            * @param {Object} event element clicked
+            */
+            _toEtherscanTx(event) {
+                window.open('https://kovan.etherscan.io/tx/'
+                    + event.model.__data.item.transactionHash, '_blank');
+            }
+
+            _toEtherscanAddress() {
+                if (this.kovan) {
+                    window.open('https://kovan.etherscan.io/address/'
+                        + this.address, '_blank');
+                }
+                if (this.mainnet) {
+                    window.open('https://etherscan.io/address/'
+                        + this.address, '_blank');
+                }
+            }
+
+        }
+
+        window.customElements
+            .define(MyWalletHistory.is, MyWalletHistory);
+    </script>
+</dom-module>

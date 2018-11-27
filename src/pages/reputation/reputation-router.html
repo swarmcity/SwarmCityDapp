@@ -1,0 +1,114 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-icon-close.html">
+<link rel="import" href="./reputation-user-info.html">
+<link rel="import" href="../../displays/display-reputation-balances.html">
+
+<dom-module id="page-reputation">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                background-image: var(--sc-bg);
+                height: 100vh;
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <display-icon-close on-close="_handleOnClose"></display-icon-close>
+        <div class="container">
+            <reputation-user-info avatar-hash="[[avatarHash]]" username="[[username]]" on-lookup="_handleOnLookup"></reputation-user-info>
+            <display-reputation-balances reputation="[[reputationArray]]"></display-reputation-balances>
+        </div>
+    </template>
+
+    <script>
+        class MyReputationRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-reputation';
+            }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                        observer: '_routeChanged',
+                    },
+                    address: {
+                        type: Object,
+                        observer: '_getReputation',
+                    },
+                    avatarHash: String,
+                    username: String,
+                    reputation: {
+                        type: String,
+                        statePath: AppStore.selectors.reputation,
+                        observer: '_toArray',
+                    },
+                    reputationArray: Array,
+
+                };
+            }
+            /**
+            * set the values from the route on route change
+            */
+            _routeChanged() {
+                if (
+                    this.route.path.split('/')[1] == 'reputation') {
+                    this.address = this.route.path.split('/')[2];
+                    this.avatarHash = this.route.path.split('/')[3];
+                    this.username = this.route.path.split('/')[4];
+                } else {
+                    this.set('reputationArray', []);
+                }
+            }
+            _getReputation() {
+                if (this.address) {
+                    console.log('Get reputation for: ', this.address);
+                    this.dispatch({ type: 'GET_REPUTATION', address: this.address })
+                }
+            }
+            _handleOnClose() {
+                if (sessionStorage.getItem('origin')) {
+                    this.set('route.path', sessionStorage.getItem('origin'));
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+            }
+            _handleOnLookup() {
+                window.open(`https://kovan.etherscan.io/address/${this.address}`, '_blank');
+            }
+            _toArray() {
+                if (this.reputation[this.address]) {
+                    let array = [];
+                    for (let key in this.reputation[this.address]) {
+                        if (this.reputation[this.address].hasOwnProperty(key)) {
+                            array.push(this.reputation[this.address][key]);
+                        }
+                    }
+                    this.set('reputationArray', array);
+                }
+            }
+        }
+        window.customElements.define(MyReputationRouter.is, MyReputationRouter);
+    </script>
+</dom-module>

@@ -1,0 +1,202 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./hashtag-simpledeal-loading.html">
+<link rel="import" href="./hashtag-simpledeal-item.html">
+<link rel="import" href="./hashtag-simpledeal-create.html">
+
+<dom-module id="hashtag-simpledeal">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, move it to shared styles.
+-->
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                background-image: var(--sc-bg);
+                min-height: calc(100vh - 159px);
+                width: 100%;
+                margin-top: 159px;
+            }
+
+            .middle {
+                @apply --layout-horizontal;
+                @apply --layout-center-justified;
+                @apply --layout-end;
+                background-image: var(--sc-bg);
+                z-index: 11;
+                position: sticky;
+                position: -webkit-sticky;
+                top: 158px;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 0px 36px 15px 36px;
+            }
+
+            .container[wide-layout] {
+                padding: 0px 0 10px 10vw;
+                padding-right: 22vw;
+                margin-top: 159px;
+            }
+
+            .filterbox {
+                @apply --small-bold;
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                height: 25px;
+                color: var(--sc-grey3);
+                cursor: pointer;
+                background-color: rgba(0, 0, 0, 0.035);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .counterbox {
+                @apply --small-bold;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                height: 25px;
+                color: var(--sc-blue);
+                cursor: pointer;
+                background-color: var(--sc-white);
+                border-radius: 3px;
+                box-sizing: border-box;
+                padding: 0px 10px;
+            }
+
+            .icon-scroll {
+                @apply --arrowup-blue-small;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <template is="dom-if" if="[[!_hasHashtag(hashtag)]]">
+                <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
+            </template>
+            <template is="dom-if" if="[[_hasHashtag(hashtag)]]">
+                <hashtag-simpledeal-create on-create="_handleOnCreate"></hashtag-simpledeal-create>
+
+                <template is="dom-repeat" items="[[items]]" filter="_isInvolved" observe="status">
+                    <hashtag-simpledeal-item address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></hashtag-simpledeal-item>
+                </template>
+
+                <div class="middle">
+                    <div class="filterbox">filter deals</div>
+                    <div class="flex"></div>
+                    <template is="dom-if" if="{{showCounter}}">
+                        <div class="counterbox" on-tap="_backToTop">[[count]] active
+                            <div class="icon-scroll"></div>
+                        </div>
+                    </template>
+                </div>
+
+                <template is="dom-repeat" items="[[items]]" filter="_isNotInvolved">
+                    <hashtag-simpledeal-item address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></hashtag-simpledeal-item>
+                </template>
+
+            </template>
+    </template>
+    <script>
+        class MyHashtagSimpledeal extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'hashtag-simpledeal';
+            }
+            static get properties() {
+                return {
+                    address: String,
+                    items: Array,
+                    count: Number,
+                    showCounter: Boolean,
+                    hashtag: {
+                        type: Object,
+                        observer: '_getItems',
+                    },
+
+                }
+            }
+            _hasHashtag(hashtag) {
+                return hashtag && ('hashtagName' in hashtag) ? true : false;
+            }
+
+            _getItems() {
+                this.count = 0;
+                this.set('items', Object.values(this.hashtag.items || {})
+                    .sort((a, b) => b.blockNumber - a.blockNumber));
+                this.items.forEach(item => { 
+                    if (this._isInvolved(item)) {
+                        this.count += 1
+                        if (this.count > 0) {
+                            this.showCounter = true;
+                        } else this.showCounter = false;
+                    }
+                })
+
+            }
+            _isInvolved(item) {
+                let involved = false;
+                if (this.address) {
+                    if (item.seekerAddress == this.address) involved = true;
+                    if (item.providerAddress == this.address) involved = true;
+                    // If you're maintainer && item is in conflict
+                    if ((this.hashtag && 
+                    this.hashtag.metadata && 
+                    this.hashtag.metadata.maintainer &&
+                    this.hashtag.metadata.maintainer.address && 
+                    this.hashtag.metadata.maintainer.address == this.address) &&(
+                        item.status &&
+                        item.status == '3'
+                    )) involved = true;
+                }
+                if (item.status && item.status == '2') involved = false
+                return involved;
+            }
+
+            _isNotInvolved(item) {
+                return (
+                    !this._isInvolved(item) && (item.status || {}) != '1' && (item.status || {}) != '3');
+            }
+
+            _handleOnDetail(e) {
+                this.dispatchEvent(new CustomEvent('detail', {
+                    detail: e.detail,
+                }));
+            }
+            _handleOnCreate() {
+                if (this.address) {
+                    this.dispatchEvent(new CustomEvent('create'));
+                } else {
+                    this.dispatchEvent(new CustomEvent('new'));
+                }
+            }
+            _showCounter(hashtag) {
+                if (this.address) {
+                    this.showCounter = true
+                } else {
+                    this.showCounter = true
+                }
+            }
+        }
+        window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
+    </script>
+</dom-module>

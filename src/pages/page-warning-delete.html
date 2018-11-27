@@ -16,7 +16,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
 <dom-module id="page-warning-delete">
     <template>
-<!--
+        <!--
     Page specific styles, if the style is used on more than one page, moveit to shared styles.
 -->
         <style include="shared-styles">
@@ -165,19 +165,19 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    PUBLICKEY: function(publicKey) {
+                    PUBLICKEY: function (publicKey) {
                         return {
                             type: 'PUBLICKEY',
                             publicKey: publicKey,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    USERNAME: function(username) {
+                    USERNAME: function (username) {
                         return {
                             type: 'USERNAME',
                             username: username,
@@ -201,16 +201,19 @@ This code may only be used under the license found at https://github.com/swarmci
             * deletes the profile
             */
             _deleteProfile() {
-                this.dispatch('PUBLICKEY', null);
-                this.dispatch('AVATAR', '[[importHref]]../../images/defaultavatar.png');
-                this.dispatch('USERNAME', null);
+                this.dispatch({ type: 'PUBLICKEY', publicKey: null });
+                this.dispatch({ type: 'UPDATE_AVATARHASH', avatarHash: null });
+                this.dispatch({ type: 'USERNAME', username: null });
                 localStorage.clear();
-                let storage = {user: {
-                    language: 'en',
-                    username: '',
-                    location: '',
-                    avatar: ''},
-                    keyStore: {}};
+                let storage = {
+                    user: {
+                        language: 'en',
+                        username: '',
+                        location: '',
+                        avatar: ''
+                    },
+                    keyStore: {}
+                };
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                 this.path = '/';
             }

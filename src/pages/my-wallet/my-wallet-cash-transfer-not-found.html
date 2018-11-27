@@ -1,0 +1,84 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+
+
+<dom-module id="my-wallet-cash-transfer-not-found">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-center-justified;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 10px 0 30px 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .greytext {
+                margin-top: 8px;
+                @apply --body-bold;
+                color: var(--sc-grey4);
+            }
+
+            .close {
+                @apply --xmark-blue-small;
+                cursor: pointer;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="greytext">
+                {{localize('No receiver found.')}}
+            </div>
+            <div class="close" on-tap="_close"></div>
+        </div>
+
+    </template>
+    <script>
+        class MyWalletCashTransferNotFound extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'my-wallet-cash-transfer-not-found';
+            }
+
+            static get properties() {
+                return {
+                    language: String,
+                }
+            }
+
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+
+            _close() {
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+        }
+        window.customElements.define(MyWalletCashTransferNotFound.is, MyWalletCashTransferNotFound);
+    </script>
+</dom-module>

@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
@@ -138,7 +139,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --next-blue-normal;
             }
 
-            img {
+            iron-image {
                 width: 90px;
                 height: 90px;
                 cursor: pointer;
@@ -190,14 +191,14 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="flexer"></div>
             <div class="bottom">
                 <div class="avatarandinput">
-                    <div class="avatar" id="contentavatar"><img src="{{avatar}}">
+                    <div class="avatar" id="contentavatar">
+                        <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png"></iron-image>
                         <div class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
                     </div>
                     <div class="inputcontainer" id="contentinput">
-                        <paper-input id="input" label="{{localize('Username')}}" autofocus value="{{username}}"
-                            on-keydown="_checkForEnter">
+                        <paper-input id="input" label="{{localize('Username')}}" autofocus value="{{username}}" on-keydown="_checkForEnter">
                         </paper-input>
                     </div>
                 </div>
@@ -245,20 +246,12 @@ This code may only be used under the license found at https://github.com/swarmci
                         observer: '_path',
                     },
                     /**
-                    * pageID is an id givven to every page specific
-                    * @type {String}
-                    */
-                    pageID: {
-                        type: String,
-                        value: 'choose-avatar-and-username',
-                    },
-                    /**
                     * The base 64 image of the users avatar or default file path
                     * @type {String}
                     */
-                    avatar: {
+                    avatarHash: {
                         type: String,
-                        statePath: 'avatar',
+                        statePath: AppStore.selectors.avatarHash
                     },
                     /**
                     * Username represents the users username
@@ -274,19 +267,19 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    PUBLICKEY: function(publicKey) {
+                    PUBLICKEY: function (publicKey) {
                         return {
                             type: 'PUBLICKEY',
                             publicKey: publicKey,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    USERNAME: function(username) {
+                    USERNAME: function (username) {
                         return {
                             type: 'USERNAME',
                             username: username,
@@ -334,9 +327,9 @@ This code may only be used under the license found at https://github.com/swarmci
             * deletes the profile
             */
             _deleteProfile() {
-                this.dispatch('PUBLICKEY', null);
-                this.dispatch('AVATAR', '[[importHref]]../../images/defaultavatar.png');
-                this.dispatch('USERNAME', null);
+                this.dispatch({ type: 'PUBLICKEY', publicKey: null });
+                this.dispatch({ type: 'UPDATE_AVATARHASH', avatarHash: null });
+                this.dispatch({ type: 'USERNAME', username: null });
                 localStorage.clear();
                 let storage = {
                     user: {
@@ -354,7 +347,7 @@ This code may only be used under the license found at https://github.com/swarmci
             * takes the user to the next page in user creation
             */
             _toResizeAvatar() {
-                this.dispatch('USERNAME', this.username);
+                this.dispatch({ type: 'USERNAME', username: this.username });
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
@@ -380,12 +373,13 @@ This code may only be used under the license found at https://github.com/swarmci
             * Dispatches the chosen or default username to redux
             */
             _setUsername() {
-                this.dispatch('USERNAME', this.username);
+                this.dispatch({ type: 'USERNAME', username: this.username });
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
                 storage.keyStore && storage.keyStore.Crypto ?
                     this.path = 'account-complete/' : this.path = 'password-warning/';
+                this._resetValues();
             }
             /**
             * changes the current path

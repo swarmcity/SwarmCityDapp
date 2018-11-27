@@ -23,17 +23,29 @@
     "webpack-cli": "^3.1.0"
   },
   "scripts": {
+    "start": "polymer serve",
     "lint": "npm run lint:javascript",
     "lint:javascript": "eslint . --ext js,html --ignore-path .eslintignore",
     "test": "polymer test",
     "test:integration": "polymer build # test that psk builds without error with the CLI",
-    "build": "npm install && npm run webpack && node --max-old-space-size=4096 ./node_modules/.bin/polymer build",
+    "build": "npm install && npm run webpack && node --max-old-space-size=8192 ./node_modules/.bin/polymer build",
+    "build:nowp": "node --max-old-space-size=8192 ./node_modules/.bin/polymer build --verbose",
+    "build:fix": "node --max-old-space-size=8192 ./node_modules/.bin/polymer build --verbose --add-service-worker",
     "serve": "polymer serve build/es6-bundled",
     "push": "git add build/es6-bundled -f && git commit -m 'deploying to branch' && git subtree push --prefix build/es6-bundled origin gh-pages",
     "webpack": "npx webpack --config ./webpack/webpack.config.js",
     "check": "npm run build && npm run serve"
   },
   "dependencies": {
-    "redux": "^4.0.0"
+    "bs58": "^4.0.1",
+    "deepmerge": "^2.1.1",
+    "eth-crypto": "^1.2.7",
+    "ethjs": "^0.4.0",
+    "ipfs-api": "^24.0.1",
+    "redux": "^4.0.0",
+    "redux-saga": "^0.16.0",
+    "tweetnacl": "^1.0.0",
+    "tweetnacl-util": "^0.15.0",
+    "web3": "^1.0.0-beta.36"
   }
 }

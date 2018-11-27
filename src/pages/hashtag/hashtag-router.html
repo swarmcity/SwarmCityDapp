@@ -1,0 +1,90 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-simpledeal-title.html">
+<link rel="import" href="../../displays/display-icon-back.html">
+<link rel="import" href="./hashtag-simpledeal.html">
+
+<dom-module id="page-hashtag">
+    <template>
+        <style include="shared-styles">
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-icon-back on-back="_handleOnBack"></display-icon-back>
+        <display-my-info avatarSmall path="{{path}}" on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
+        <hashtag-simpledeal address="[[address]]" hashtag="[[hashtag]]" on-create="_handleOnCreate" on-new="_handleOnNew" on-detail="_handleOnDetail"></hashtag-simpledeal>
+    </template>
+
+    <script>
+        class MyHashtagRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-hashtag';
+            }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                    },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    },
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    }
+                };
+            }
+            _handleOnDetail(e) {
+                this.set('route.path', `/detail/${this.hashtag.address}/${e.detail}`,);
+            }
+            _handleOnBack() {
+                this.set('route.path', 'hashtag-list/');
+            }
+            _handleOnNew() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'new-here/');
+            }
+            _handleOnCreate() {
+                this.set('route.path', `/new-request/${this.hashtag.address}`);
+            }
+            _handleOnWallet() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-wallet');
+            }
+            _handleOnProfile() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-profile');
+            }
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', 'create-account/');
+                }
+                this.path = null;
+            }
+        }
+        window.customElements.define(MyHashtagRouter.is, MyHashtagRouter);
+    </script>
+</dom-module>

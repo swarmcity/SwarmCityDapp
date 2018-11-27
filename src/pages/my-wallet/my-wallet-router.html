@@ -1,0 +1,124 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-icon-close.html">
+<link rel="import" href="./my-wallet-overview.html">
+<link rel="import" href="./my-wallet-cash.html">
+<link rel="import" href="./my-wallet-reserves.html">
+
+<dom-module id="page-my-wallet">
+    <template>
+        <app-location route="{{route}}"></app-location>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'overview')}}">
+            <my-wallet-overview language="[[language]]" balance="[[balance]]" on-close="_handleOnClose" on-cash="_handleOnCash"
+                on-reserves="_handleOnReserves"></my-wallet-overview>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'cash')}}">
+            <my-wallet-cash language="[[language]]" balance="[[balance]]" address="[[address]]" username="[[username]]"
+                avatar="[[avatar]]" confirmed-tx="[[txCash]]" on-close="_handleOnClose"></my-wallet-cash>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'reserves')}}">
+            <my-wallet-reserves language="[[language]]" balance="[[balance]]" address="[[address]]" username="[[username]]"
+                avatar="[[avatar]]" confirmed-tx="[[txReserves]]" on-close="_handleOnClose"></my-wallet-reserves>
+        </template>
+
+    </template>
+    <script>
+        class MyWalletRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-my-wallet';
+            }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                    },
+                    status: {
+                        type: String,
+                        value: 'cash',
+                    },
+                    balance: {
+                        type: Object,
+                        statePath: AppStore.selectors.balance,
+                    },
+                    txCash: {
+                        type: Array,
+                        statePath: AppStore.selectors.confirmedTx,
+                    },
+                    txReserves: {
+                        type: Array,
+                        statePath: AppStore.selectors.confirmedTx,
+                    },
+                    language: {
+                        type: Array,
+                        statePath: AppStore.selectors.language,
+                    },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                    username: {
+                        type: String,
+                        statePath: AppStore.selectors.username,
+                    },
+                    avatar: {
+                        type: String,
+                        statePath: AppStore.selectors.avatar,
+                    },
+                };
+            }
+
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+
+            _handleOnCash() {
+                this.status = 'cash';
+            }
+
+            _handleOnReserves() {
+                this.status = 'reserves';
+            }
+
+            _handleOnClose() {
+                if (sessionStorage.getItem('origin')) {
+                    this.set('route.path', sessionStorage.getItem('origin'));
+                    sessionStorage.removeItem('origin');
+                }
+                else {
+                    this.set('route.path', 'hashtag-list');
+                }
+
+                // if (this.status == 'overview') {
+                //     if (sessionStorage.getItem('origin')) {
+                //         this.set('route.path', sessionStorage.getItem('origin'));
+                //         sessionStorage.removeItem('origin');
+                //     }
+                //     else {
+                //         this.set('route.path', 'hashtag-list');
+                //     }
+                // } else {
+                //     this.status = 'overview';
+                // }
+            }
+        }
+        window.customElements.define(MyWalletRouter.is, MyWalletRouter);
+    </script>
+</dom-module>
