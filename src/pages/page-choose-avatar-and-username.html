@@ -100,18 +100,23 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 100%;
                 text-align: center;
                 @apply --sc-paper-input;
+
                 --paper-input-container-label: {
                     @apply --body-default;
                 }
+
                 --paper-input-container-input: {
                     @apply --body-bold;
                 }
+
                 --paper-input-error: {
                     @apply --body-bold;
                 }
+
                 --paper-input-prefix: {
                     @apply --body-default;
                 }
+
                 --paper-input-suffix: {
                     @apply --body-default;
                 }
@@ -168,6 +173,7 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
+
                 .container .close,
                 .container .arrowup,
                 .container .agree {
@@ -223,6 +229,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     language: {
                         type: String,
                         statePath: 'language',
+                    },
+                    /**
+                    * The current route
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_resetValues',
                     },
                     /**
                     * Path is the current or requested path
@@ -305,7 +318,10 @@ This code may only be used under the license found at https://github.com/swarmci
             * When leaving the page, entered values get reset
             */
             _resetValues() {
-                this.username = null;
+                if (this.route.path != '/choose-avatar-and-username/' &&
+                    this.route.path != '/resize-avatar/') {
+                    this.username = null;
+                }
             }
             /**
             * deletes the profile

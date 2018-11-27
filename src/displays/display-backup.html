@@ -75,96 +75,102 @@ The following custom properties and mixins are available for styling:
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
             <div class="printbtn" on-click="_unlock">{{localize('print paper wallet')}}</div>
-            <dom-if if="[[_isShowDownload()]]" restamp="true">
+            <dom-if if="{{showJsonButton}}" restamp="true">
                 <template>
                     <div class="downloadbtn" on-click="_download">{{localize('download my file')}}</div>
                 </template>
-            </dom-if>
-        </div>
+
+    </dom-if>
+    </div>
     </template>
     <script>
         class MyDisplayBackup extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
+                Polymer.AppLocalizeBehavior,
+            ],
             Polymer.Element
         )) {
             static get is() {
                 return 'display-backup';
             }
             static get properties() {
-                return {
-                    /**
-                    * Language is the user selected language
-                    * @type {String}
-                    */
-                    language: {
-                        type: String,
-                        statePath: 'language',
-                    },
-                    /**
-                    * Path is the current or requested path
-                    * @type {String}
-                    */
-                    path: {
-                        type: String,
-                        notify: true,
-                    },
-                    /**
-                    * toggles the unlock display
-                    * @type {Boolean}
-                    */
-                    toggleUnlock: {
-                        type: Boolean,
-                        notify: true,
-                    },
-                    /**
-                    * contains the qrCodePrivateKey
-                    * @type {String}
-                    */
-                    qrCodePrivateKey: {
-                        type: String,
-                        observer: '_print',
-                        notify: true,
-                    },
-                    /**
-                    * contains the qrCodePublicKey
-                    * @type {String}
-                    */
-                    qrCodePublicKey: {
-                        type: String,
-                        observer: '_print',
-                        notify: true,
-                    },
-                    /**
-                    * contains the private key
-                    * @type {String}
-                    */
-                    privateKey: {
-                        type: String,
-                        observer: '_print',
-                    },
-                    /**
-                    * contains the osType
-                    * @type {String}
-                    */
-                    osType: {
-                        type: String,
-                        notify: true,
-                    },
-                };
-            }
-            /**
-            * Fired when the component is connected
-            */
+                    return {
+                        /**
+                         * Language is the user selected language
+                         * @type {String}
+                         */
+                        language: {
+                            type: String,
+                            statePath: 'language',
+                        },
+                        /**
+                         * Path is the current or requested path
+                         * @type {String}
+                         */
+                        path: {
+                            type: String,
+                            notify: true,
+                        },
+                        /**
+                         * toggles the unlock display
+                         * @type {Boolean}
+                         */
+                        toggleUnlock: {
+                            type: Boolean,
+                            notify: true,
+                        },
+                        /**
+                         * contains the qrCodePrivateKey
+                         * @type {String}
+                         */
+                        qrCodePrivateKey: {
+                            type: String,
+                            observer: '_print',
+                            notify: true,
+                        },
+                        /**
+                         * contains the qrCodePublicKey
+                         * @type {String}
+                         */
+                        qrCodePublicKey: {
+                            type: String,
+                            observer: '_print',
+                            notify: true,
+                        },
+                        /**
+                         * contains the private key
+                         * @type {String}
+                         */
+                        privateKey: {
+                            type: String,
+                            observer: '_print',
+                        },
+                        /**
+                         * contains the osType
+                         * @type {String}
+                         */
+                        osType: {
+                            type: String,
+                            notify: true,
+                        },
+                        showJsonButton: {
+                            type: Boolean,
+                            value: true,
+                        },
+                    };
+                }
+                /**
+                 * Fired when the component is connected
+                 */
             connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../text-translations.json'));
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                this.publicKey = storage.keyStore.address;
-            }
-            /**
-            * toggles the password unlock display
-            */
+                    super.connectedCallback();
+                    this._isShowDownload();
+                    this.loadResources(this.resolveUrl('../text-translations.json'));
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    this.publicKey = storage.keyStore.address;
+                }
+                /**
+                 * toggles the password unlock display
+                 */
             _unlock() {
                 this.qrCodePublicKey = null;
                 this.qrCodePrivateKey = null;
@@ -284,47 +290,40 @@ The following custom properties and mixins are available for styling:
                         if (this.route.path == '/make-backup/') {
                             this.path = 'print-success/';
                         } else {
-                            this.path = 'print-success-profile/';
+                            if (this.route.path == '/make-backup/') {
+                                this.path = 'print-success/';
+                            } else {
+                                this.path = 'print-success-profile/';
+                            }
                         }
                     }
                 }
-            }
-            /**
-            * downloads account info, after success routs to download-success
-            */
+                /**
+                 * downloads account info, after success routs to download-success
+                 */
             _download() {
-                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                const filename = 'SwarmCity - UTC KeyStore';
-                storage.keyStore.avatar = storage.user.avatar;
-                storage.keyStore.username = storage.user.username;
-                const text = JSON.stringify(storage.keyStore);
-                const element = document.createElement('a');
-                element.setAttribute('href', 'data:application/json;charset=utf-8,'
-                    + encodeURIComponent(text));
-                element.setAttribute('download', filename);
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-                if (this.route.path == '/make-backup/') {
-                    this.path = 'download-success/';
-                } else {
-                    this.path = 'download-success-profile/';
+                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                    const filename = `SwarmCity - UTC KeyStore`;
+                    storage.keyStore.avatar = storage.user.avatar;
+                    storage.keyStore.username = storage.user.username;
+                    const text = JSON.stringify(storage.keyStore);
+                    const element = document.createElement('a');
+                    element.setAttribute('href', `data:application/json;charset=utf-8,${encodeURIComponent(text)}`);
+                    element.setAttribute('download', filename);
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                    if (this.route.path == '/make-backup/') {
+                        this.path = 'download-success/';
+                    } else {
+                        this.path = 'download-success-profile/';
+                    }
                 }
-            }
-            /**
-            * check for operating system for enable/disable the download backup file link
-            * @return {boolean} boolean
-            */
+                /**
+                 * check for operating system for enable/disable the download backup file link
+                 */
             _isShowDownload() {
-                this.getOS();
-                return this.osType !== 'iOS';
-            }
-            /**
-            * update the osType variable (operating system)
-            * @return {string} Mac OS,iOS,Windows,Android,Android
-            */
-            getOS() {
                 let userAgent = window.navigator.userAgent;
                 let platform = window.navigator.platform;
                 let macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
@@ -344,7 +343,11 @@ The following custom properties and mixins are available for styling:
                     os = 'Linux';
                 }
                 this.osType = os;
-                return os;
+                if (this.osType === 'iOS') {
+                    this.showJsonButton = false;
+                } else {
+                    this.showJsonButton = true;
+                }
             }
         }
         window.customElements.define(MyDisplayBackup.is, MyDisplayBackup);
