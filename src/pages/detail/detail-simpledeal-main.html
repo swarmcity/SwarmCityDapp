@@ -75,6 +75,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --body-detail;
                 color: var(--sc-grey4);
                 margin: 20px 30px 0 30px;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
             }
 
             .container[wide-layout] .description {
@@ -174,7 +178,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --small-bold;
                 color: var(--sc-grey3);
                 height: 0px;
-                margin-bottom: -5px;
+                /* margin-bottom: -5px; */
                 visibility: hidden;
                 background-image: var(--sc-bg);
             }
@@ -192,6 +196,10 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .horizontal {
                 @apply --layout-horizontal;
+            }
+
+            .showcopied {
+                visibility: visible;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -244,6 +252,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <div class="linkbox">
                 <div class="copied" id="copied">copied</div>
                 <span on-tap="_copyUrl" class="link">shareable link</span>
+                <div class="copied" id="copied">copied</div>
             </div>
         </div>
 
@@ -259,8 +268,23 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             static get properties() {
                 return {
-                    item:  Object,
+                    item: Object,
                     address: String,
+                    anim: {
+                        type: Object,
+                        value: {
+                            moveUp: {
+                                arr: [{ transform: 'translateY(0px)' },
+                                { transform: 'translateY(-20px)' }],
+                                obj: {
+                                    fill: 'both',
+                                    duration: 250,
+                                    direction: 'normal',
+                                    easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
+                                },
+                            }
+                        }
+                    }
                 }
             }
             /**
@@ -306,6 +330,23 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _isSeeker(item) {
                 return (item && item.seekerAddress && this.address && item.seekerAddress == this.address);
+            }
+            _copyUrl() {
+                let textArea = document.createElement('textarea');
+                textArea.value = window.location.href;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                let copied = this.shadowRoot.querySelector('#copied');
+                copied.classList.add('showcopied');
+                copied.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                );
+                setTimeout(() => {
+                    copied.classList.remove('showcopied');
+                }, 500);
             }
         }
         window.customElements.define(MyDetailSimpledealMain.is, MyDetailSimpledealMain);
