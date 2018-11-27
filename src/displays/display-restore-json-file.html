@@ -180,7 +180,8 @@ The following custom properties and mixins are available for styling:
                     <div>{{filename}}</div>
                     <div class="cancel" on-click="_cancel"></div>
                 </div>
-                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}" on-keydown="_checkForEnter"></paper-input>
+                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"
+                    on-keydown="_checkForEnter"></paper-input>
                 <div class="error">{{error}}</div>
                 <div class="btn">
                     <div class="confirm" on-click="_decrypt"></div>
@@ -346,7 +347,7 @@ The following custom properties and mixins are available for styling:
             */
             _decrypt() {
                 if (this.wallet.Crypto) {
-                    // check password before dooing any of this
+                    // check password before doing any of this
                     this.$.wallet.decryptUtcKeystore(this.wallet, this.password)
                         .then(() => {
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
@@ -356,20 +357,32 @@ The following custom properties and mixins are available for styling:
                             } else {
                                 storage.user.avatar = this.wallet.avatar;
                             }
-                            storage.user.username = this.wallet.username;
-                            delete storage.keyStore.username;
-                            delete storage.keyStore.avatar;
-                            localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                            this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
-                            this.dispatch({ type: 'USERNAME', username: storage.user.username });
+                            const ipfs = window.ipfs
+                            ipfs.add(storage.user.avatar)
+                                .then(hash => {
+                                    storage.user.avatarHash = hash.hash;
+                                    storage.user.username = this.wallet.username;
+                                    delete storage.keyStore.username;
+                                    delete storage.keyStore.avatar;
+                                    delete storage.keyStore.avatarHash;
+                                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                    this.dispatch({ type: 'UPDATE_AVATARHASH', avatarHash: storage.user.avatarHash });
+                                    this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
+                                    this.dispatch({ type: 'USERNAME', username: storage.user.username });
 
-                            if (sessionStorage.getItem('origin')) {
-                                this.path = sessionStorage.getItem('origin');
-                                sessionStorage.removeItem('origin');
-                            }
-                            else {
-                                this.set('route.path', 'hashtag-list');
-                            }
+                                    if (sessionStorage.getItem('origin')) {
+                                        this.path = sessionStorage.getItem('origin');
+                                        sessionStorage.removeItem('origin');
+                                    }
+                                    else {
+                                        this.set('route.path', 'hashtag-list');
+                                    }
+
+
+                                })
+                                .catch(err => {
+                                    console.error('error resolving ipfs hash for avatar', err)
+                                })
                         })
                         .catch(() => {
                             this.error = 'wrong password';
@@ -387,7 +400,7 @@ The following custom properties and mixins are available for styling:
                                     storage.user.username = this.wallet.identity.username;
                                     localStorage.setItem('SwarmCity', JSON.stringify(storage));
                                     if (this.wallet.identity.avatarhash) {
-                                        this.dispatch({ type: 'REQIPFS', reqipfs: this.wallet.identity.avatarhash });
+                                        this.dispatch({ type: 'UPDATE_AVATARHASH', avatarHash: this.wallet.identity.avatarhash });
                                     }
                                     this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
                                     this.dispatch({ type: 'USERNAME', username: storage.user.username });

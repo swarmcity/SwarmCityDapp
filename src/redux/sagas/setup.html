@@ -24,7 +24,8 @@
         kovan: 'ws://my.kovan.dnp.dappnode.eth:8546'
       },
       swarmcity: {
-        mainnet: 'wss://mainnet.swarm.city',
+        //mainnet: 'wss://mainnet.infura.io/ws',
+        mainnet: 'wss://paritymain.swarm.city',
         kovan: 'wss://kovan.swarm.city'
       }
     }
@@ -49,13 +50,14 @@
         });
         window.web3s[chain].setProvider(provider);
       });
-      setInterval(() => { web3s['kovan'].eth.getBlockNumber() }, 30 * 1000);
-      setInterval(() => { web3s['mainnet'].eth.getBlockNumber() }, 30 * 1000);
     }
 
     window.web3Mainnet = web3s.mainnet
     window.web3Kovan = web3s.kovan
     window.web3Local = window.web3Kovan
+
+    setInterval(() => { window.web3Kovan.eth.getBlockNumber() }, 30 * 1000);
+    setInterval(() => { window.web3Mainnet.eth.getBlockNumber().catch(e => console.log('error on mainnet, need to reconnect', e)) }, 30 * 1000);
 
     /**
      * Contract addresses
@@ -64,10 +66,10 @@
       production: {
         bridge: {
           mainnet: {
-            address: '0x3410349F1e02E3beab54b1513FC2C9D2bAb6D7aC' // FOREIGN_BRIDGE_ADDRESS
+            address: '0xa90906A394A4Ae934f1A47B04ac64458D56A7273' // FOREIGN_BRIDGE_ADDRESS
           },
           kovan: {
-            address: '0xFeAf593f51A53efA8523E5baA8f0EBDc6B2deB69' // HOME_BRIDGE_ADDRESS
+            address: '0x46037e01Dae6D4D85e3160298863Ee5916073ee4' // HOME_BRIDGE_ADDRESS
           }
         },
         token: {
@@ -77,13 +79,13 @@
             abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
           },
           kovan: {
-            address: '0x0adbc89464cb7fa752adcf3533514949a2547589',// ERC20_TOKEN_ADDRESS for KOVAN FAKE SWT (unbridged)
-            deployedBlockNumber: 7288019,
-            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc20TokenTransfer]
+            address: '0xf69ca736d959519a79f9075021444a8a0ee384d3', // BRIDGEABLE_TOKEN_ADDRESS
+            deployedBlockNumber: 8420473,
+            abi: [...contractAbis.erc20TokenBalance, ...contractAbis.erc20TokenEventTransfer, ...contractAbis.erc677TokenTransferAndCall]
           }
         },
         hashtagDir: {
-          address: '0xbde0a0218b87f138a4f421d5c75e71e19af9bc50'
+          address: '0x315e21f889F9a722367c211a0AD636E7b97D087A'
         }
       },
       development: {
@@ -116,10 +118,10 @@
     window.contracts = contracts['production']
 
     /*
- * Setup IPFS with a simple retry async flow.
- * It will attempt each function 3 times before returning the error
- *
- **/
+    * Setup IPFS with a simple retry async flow.
+    * It will attempt each function 3 times before returning the error
+    *
+    **/
     // const ipfs = IpfsApi("localhost", "5001", { protocol: "http" });
     // const ipfs = IpfsApi("ipfs.infura.io", "5001", { protocol: "https" });
     // console.log("Redux-sagas is using ipfs at https://ipfs.infura.io:5001");

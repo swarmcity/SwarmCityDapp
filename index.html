@@ -1,82 +1,92 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
-    <title>Swarm City</title>
-    <meta name="description" content="Swarm City">
-    <base href="/">
-    <link rel="icon" href="images/favicon.ico">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#EFD96F">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Swarm City">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Swarm City"> 
-    <link href='https://fonts.googleapis.com/css?family=Montserrat:200,300,700' rel='stylesheet' type='text/css'>
-    <link rel="apple-touch-icon" href="images/manifest/icon-48x48.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="images/manifest/icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="96x96" href="images/manifest/icon-96x96.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="images/manifest/icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="images/manifest/icon-192x192.png">
-    <meta name="msapplication-TileImage" content="images/manifest/icon-144x144.png">
-    <meta name="msapplication-TileColor" content="#3f51b5">
-    <meta name="msapplication-tap-highlight" content="no">
-    <script src='socket.io.js'></script>
-    
-    <script>
-        if (!localStorage.getItem('SwarmCity')) {
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0, user-scalable=no">
+  <title>Swarm City</title>
+  <meta name="description" content="Swarm City">
+  <base href="/">
+  <link rel="icon" href="images/favicon.ico">
+  <link rel="manifest" href="manifest.json">
+
+  <meta property="og:title" content="Swarm City">
+  <meta property="og:image" content="images/manifest/icon-48x48.png">
+  <meta property="og:description" content="Swarm City is a blockchain based marketplace with a built in reputation system. It uses blockchain technology and smart contracts to allow people to communicate and transact value, and earn contextual reputation.">
+  <meta property="og:url" content="https://swarm.city">
+  <meta name="twitter:card" content="images/manifest/icon-192x192.png">
+  <meta name="theme-color" content="#3f51b5">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Swarm City">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Swarm City">
+  <link rel="apple-touch-icon" href="images/manifest/icon-48x48.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="images/manifest/icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="96x96" href="images/manifest/icon-96x96.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="images/manifest/icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="images/manifest/icon-192x192.png">
+  <meta name="msapplication-TileImage" content="images/manifest/icon-144x144.png">
+  <meta name="msapplication-TileColor" content="#3f51b5">
+  <meta name="msapplication-tap-highlight" content="no">
+  <script src='socket.io.js'></script>
+  <script>
+    if (!localStorage.getItem('SwarmCity')) {
       let storage = { // eslint-disable-line
-          user: {
-            language: 'en',
-            username: '',
-            location: '',
-            avatar: '[[importHref]]../../images/defaultavatar.png'},
-          keyStore: {},
-        };
-        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-      }
-      window.Polymer = {rootPath: '/'};
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('service-worker.js', {
-            scope: Polymer.rootPath,
-          });
+        user: {
+          language: 'en',
+          username: '',
+          location: '',
+          avatar: '[[importHref]]../../images/defaultavatar.png'
+        },
+        keyStore: {},
+      };
+      localStorage.setItem('SwarmCity', JSON.stringify(storage));
+    }
+    window.Polymer = { rootPath: '/' };
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js', {
+          scope: Polymer.rootPath,
         });
-      }
-    </script>
-    <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
-    <link rel="import" href="src/swarm-city.html">
-    <style>
-      @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        letter-spacing: 0;
-        font-style: normal;
-        background-color: #F4F4F4;
-        text-rendering: optimizeLegibility;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        -webkit-font-feature-settings: "liga" on;
-        -moz-font-feature-settings: "liga" on;
-        -ms-font-feature-settings: "liga" on;
-        font-feature-settings: "liga" on;
-        line-height: 1.4;
-        min-height: 100vh;
-        background-image: url("loading.png");
-        background-repeat: no-repeat;
-        background-position: center, center; 
-      }
-    </style>
-  </head>
-  <body>
-    <swarm-city></swarm-city>
-    <noscript>
-      Please enable JavaScript to view this website.
-    </noscript>
-    <!-- Built with love -->
-  </body>
+      });
+    }
+  </script>
+  <script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href="src/swarm-city.html">
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      letter-spacing: 0;
+      font-style: normal;
+      background-color: #F4F4F4;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-font-feature-settings: "liga"on;
+      -moz-font-feature-settings: "liga"on;
+      -ms-font-feature-settings: "liga"on;
+      font-feature-settings: "liga"on;
+      line-height: 1.4;
+      min-height: 100vh;
+      background-image: url("loading.png");
+      background-repeat: no-repeat;
+      background-position: center, center;
+    }
+  </style>
+</head>
+
+<body>
+  <swarm-city></swarm-city>
+  <noscript>
+    Please enable JavaScript to view this website.
+  </noscript>
+  <!-- Built with love -->
+</body>
+
 </html>

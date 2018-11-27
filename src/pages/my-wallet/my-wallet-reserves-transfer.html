@@ -10,8 +10,13 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="./my-wallet-reserves-transfer-choice.html">
 <link rel="import" href="./my-wallet-reserves-transfer-send.html">
+<link rel="import" href="./my-wallet-reserves-transfer-add.html">
 <link rel="import" href="../../displays/display-unlock.html">
 <link rel="import" href="../../data/data-transaction.html">
+<link rel="import" href="../../displays/display-confirm.html">
+<link rel="import" href="../../displays/display-processing.html">
+<link rel="import" href="../../displays/display-success.html">
+<link rel="import" href="../../displays/display-error.html">
 
 <dom-module id="my-wallet-reserves-transfer">
     <template>
@@ -35,7 +40,29 @@ This code may only be used under the license found at https://github.com/swarmci
 
             <template is="dom-if" if="{{_isEqualTo(status, 'send')}}">
                 <my-wallet-reserves-transfer-send language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
-                    on-send="_handleOnSend"></my-wallet-reserves-transfer-send>
+                    on-send="_handleOnConfirmSend"></my-wallet-reserves-transfer-send>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'add')}}">
+                <my-wallet-reserves-transfer-add language="[[language]]" balance="[[balance]]" on-close="_handleOnClose"
+                    on-add="_handleOnConfirmAdd"></my-wallet-reserves-transfer-add>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+                <display-confirm confirm-title="[[confirmTitle]]" confirm-subtitle="[[confirmSubtitle]]" on-reject="_handleOnClose"
+                    on-confirmed="_handleOnConfirmed"></display-confirm>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
+                <display-processing></display-processing>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
+                <display-success success-title="[[successTitle]]" on-close="_handleOnClose"></display-success>
+            </template>
+
+            <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
+                <display-error error-message="[[errorMessage]]" on-close="_handleOnClose"></display-error>
             </template>
 
         </div>
@@ -56,6 +83,11 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         value: 'choice',
                     },
+                    confirmTitle: String,
+                    confirmSubtitle: String,
+                    successTitle: String,
+                    errorMessage: String,
+                    amount: String,
                 }
             }
 
@@ -68,43 +100,110 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _handleOnReceive() {
-                console.log('receive');
+                this.status = 'add';
             }
-            _handleOnSend(e) {
-                console.log('send: ', e.detail);
-                
-                let amount = parseInt(e.detail.amount);
-                this.$.unlock._getPrivateKey()
-                    .then((res) => {
-                        try {
-                            const { privateKey, address, publicKey } = res;
-                            if (!privateKey) {
-                                throw Error('Missing address')
-                            }
-                            const sender = {
-                                address,
-                                privateKey
-                            }
 
-                            const receiverAddress = '0xa90906A394A4Ae934f1A47B04ac64458D56A7273';
-
-                            const tokenContractAddress = '0xb9e7f8568e08d5659f5d29c4997173d84cdf2607';
-
-                            this.$.transaction.tokenMainTx({ sender, receiverAddress, amount, tokenContractAddress })
-                                .then(receipt => {
-                                    console.log('Successfully sent tokens, receipt:', receipt);
-                                })
-                                .catch(err => {
-                                    console.log('Error sending tokens:', err)
-                                });
-                        }
-                        catch (e) {
-                            console.error('Error sending tokens (catch block): ', e.stack)
-                        }
-                    });
+            _handleOnConfirmSend(e) {
+                this.amount = e.detail.amount;
+                this.destination = e.detail.destination;
+                this.status = 'confirm';
+                this.confirmTitle = `Send ${this.amount} SWT to Cash?`;
+                this.confirmSubtitle = 'This can not be undone.'
+                this.disableScroll();
+                window.scrollTo(0, 0);
             }
+            _handleOnConfirmAdd(e) {
+                this.amount = e.detail.amount;
+                this.destination = e.detail.destination;
+                this.status = 'confirm';
+                this.confirmTitle = `Add ${this.amount} SWT to Reserves?`;
+                this.confirmSubtitle = 'This can not be undone.'
+                this.disableScroll();
+                window.scrollTo(0, 0);
+            }
+            _handleOnConfirmed(e) {
+                this.status = 'processing'
+                const { privateKey, address, publicKey } = e.detail;
+                try {
+                    if (!privateKey) {
+                        throw Error('Missing address')
+                    }
+                    const sender = {
+                        address,
+                        privateKey
+                    }
+
+                    const contracts = window.contracts;
+
+                    if (this.destination == 'reserves') {
+                        console.log(`send ${this.amount} to reserves`)
+
+                        const receiverAddress = contracts.bridge.kovan.address;
+                        const tokenContractAddress = contracts.token.kovan.address;
+
+
+                        this.$.transaction.tokenTx({ sender, receiverAddress, amount: this.amount, tokenContractAddress })
+                            .then(receipt => {
+                                console.log('Successfully sent tokens to reserves, receipt:', receipt);
+                                this.successTitle = 'SWT has been sent.'
+                                this.status = 'success'
+                            })
+                            .catch(err => {
+                                this.status = 'error';
+                                this.errorMessage = err.message;
+                                console.log('Error sending tokens to reserves:', err)
+                            });
+
+                    } else if (this.destination == 'cash') {
+                        console.log(`send ${this.amount} to cash`)
+
+                        const receiverAddress = contracts.bridge.mainnet.address;
+                        const tokenContractAddress = contracts.token.mainnet.address;
+
+                        this.$.transaction.tokenMainTx({ sender, receiverAddress, amount: this.amount, tokenContractAddress })
+                            .then(receipt => {
+                                console.log('Successfully sent tokens to cash, receipt:', receipt);
+                                this.successTitle = 'SWT has been sent.'
+                                this.status = 'success'
+                            })
+                            .catch(err => {
+                                this.status = 'error';
+                                this.errorMessage = err.message;
+                                console.log('Error sending tokens to cash:', err)
+                            });
+                    }
+                }
+                catch (e) {
+                    console.error('Error sending tokens (catch block): ', e.stack)
+                }
+            }
+
             _handleOnClose() {
                 this.status = 'choice';
+            }
+            preventDefault(e) {
+                e = e || window.event;
+                if (e.preventDefault)
+                    e.preventDefault();
+                e.returnValue = false;
+            }
+
+            disableScroll() {
+                if (window.addEventListener) // older FF
+                    window.addEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onwheel = this.preventDefault; // modern standard
+                window.onmousewheel = document.onmousewheel = this.preventDefault; // older browsers, IE
+                window.ontouchmove = this.preventDefault; // mobile
+                // document.onkeydown = this.preventDefaultForScrollKeys;
+            }
+
+            enableScroll() {
+                if (window.removeEventListener)
+                    window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onmousewheel = document.onmousewheel = null;
+                window.onwheel = null;
+                window.ontouchmove = null;
+                document.onkeydown = null;
             }
         }
         window.customElements.define(MyWalletReservesTransfer.is, MyWalletReservesTransfer);

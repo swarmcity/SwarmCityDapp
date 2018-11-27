@@ -10,7 +10,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../displays/display-divider.html">
 
-<dom-module id="my-wallet-reserves-transfer-send">
+<dom-module id="my-wallet-reserves-transfer-add">
     <template>
         <style include="shared-styles">
             :host {
@@ -30,6 +30,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start;
                 width: 100%;
             }
+
 
             .horizontal {
                 @apply --layout-horizontal;
@@ -108,13 +109,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --button-active;
             }
 
-            .cash {
-                @apply --body-bold;
-                box-sizing: border-box;
-                padding: 5px 0px;
-
-            }
-
             .agree {
                 @apply --next-blue-normal;
             }
@@ -136,29 +130,28 @@ This code may only be used under the license found at https://github.com/swarmci
                         on-keyup="_checkBalance"></paper-input>
                     <div class="SWT">SWT</div>
                 </div>
-                <span class="notification">To</span>
-                <div class="cash">Cash</div>
+
+            <div class="notification">From Cash</div>
             </div>
             <div>
                 <span id="error">{{error}}</span>
             </div>
-            <div class="notification">You can only send from reserves to cash.<br />It can take a while to complete.</div>
             <div class="buttonbox">
                 <div tabindex="3" class="disagree" on-tap="_close"></div>
-                <div tabindex="4" id="send" class="round-button" on-tap="_send">
+                <div tabindex="4" id="send" class="round-button" on-tap="_add">
                     <div class="agree"></div>
                 </div>
             </div>
         </div>
     </template>
     <script>
-        class MyWalletReservesTransferSend extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyWalletReservesTransferAdd extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'my-wallet-reserves-transfer-send';
+                return 'my-wallet-reserves-transfer-add';
             }
 
             static get properties() {
@@ -171,7 +164,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _checkBalance() {
                 let weiAmount = (parseFloat(this.amount) || 0) * 1e18;
-                if (parseFloat(weiAmount) > this.balance.reserves.wei) {
+                if (parseFloat(weiAmount) > this.balance.cash.wei) {
                     this.error = 'Your balance is too low.';
                     return false;
                 } else if (parseFloat(weiAmount) <= 0) {
@@ -193,18 +186,18 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.amount = '';
                 this.$.send.classList.remove('enabled');
             }
-            _send() {
+            _add() {
                 if (this._checkBalance()) {
-                    this.dispatchEvent(new CustomEvent('send', {
+                    this.dispatchEvent(new CustomEvent('add', {
                         detail: {
                             amount: this.amount,
-                            destination: 'cash',
+                            destination: 'reserves',
                         }
                     }));
                 }
                 this._reset();
             }
         }
-        window.customElements.define(MyWalletReservesTransferSend.is, MyWalletReservesTransferSend);
+        window.customElements.define(MyWalletReservesTransferAdd.is, MyWalletReservesTransferAdd);
     </script>
 </dom-module>
