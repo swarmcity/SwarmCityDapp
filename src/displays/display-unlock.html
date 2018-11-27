@@ -7,6 +7,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../data/data-wallet.html">
 
@@ -46,14 +47,23 @@ The following custom properties and mixins are available for styling:
                 position: absolute;
                 min-width: 100vw;
                 min-height: 100vh;
+                z-index: 99;
             }
 
-            .container[wide-layout] {
-                @apply --layout-vertical;
-                box-sizing: border-box;
+            .blue {
+                background-color: rgba(240, 240, 240, 0.90);
             }
 
-            img {
+            .white {
+                background-color: rgba(34, 160, 254, 0.90);
+
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            iron-image {
                 margin-top: 20vh;
                 width: 90px;
                 height: 90px;
@@ -63,7 +73,7 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-center-justified;
             }
 
-            .container[wide-layout] img {
+            .container[wide-layout] iron-image {
                 margin-top: 30vh;
             }
 
@@ -163,42 +173,42 @@ The following custom properties and mixins are available for styling:
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div id="container" class="container" wide-layout$="{{wide}}">
-            <img src="{{avatar}}">
+
+        <div id="container" class="container hidden" wide-layout$="{{wide}}">
+                <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png"></iron-image>
             <dom-if if="{{blue}}">
                 <template>
-                    <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}" type="password" value="{{password}}"
-                        on-tap="_changeInput" on-keydown="_checkForEnter">
+                    <paper-input tabindex="1" id="input" class="input-blue" label="{{localize('password?')}}" type="password"
+                        value="{{password}}" on-tap="_changeInput">
                     </paper-input>
                 </template>
             </dom-if>
             <dom-if if="{{white}}">
                 <template>
-                    <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}" addAttr="autofocus" type="password"
-                        value="{{password}}" on-tap="_changeInput" on-keydown="_checkForEnter">
+                    <paper-input tabindex="1" id="input" class="input-white" label="{{localize('password?')}}" addAttr="autofocus"
+                        type="password" value="{{password}}" on-tap="_changeInput">
                     </paper-input>
                 </template>
             </dom-if>
             {{error}}
             <div class="buttonbox">
-                <div tabindex="2" class="disagree" on-tap="_disagree" on-keyPress="_disagree"></div>
+                <div tabindex="2" class="disagree" on-tap="_disagree"></div>
                 <dom-if if="{{blue}}">
                     <template>
-                        <div tabindex="3" class="submit submit-blue" on-up="_getPrivKey">
+                        <div tabindex="3" class="submit submit-blue" on-tap="_confirm">
                             <div class="icon-submit-blue"></div>
                         </div>
                     </template>
                 </dom-if>
                 <dom-if if="{{white}}">
                     <template>
-                        <div tabindex="3" class="submit submit-white" on-up="_getPrivKey">
+                        <div tabindex="3" class="submit submit-white" on-tap="_confirm">
                             <div class="icon-submit-white"></div>
                         </div>
                     </template>
                 </dom-if>
             </div>
         </div>
-
     </template>
     <script>
         class MyDisplayUnlock extends new ReduxMixin(Polymer.mixinBehaviors([
@@ -227,15 +237,6 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         value: '[[importPath]]../../images/defaultavatar.png',
                     },
-                    /**
-                    * toggles the unlock display
-                    * @type {Boolean}
-                    */
-                    toggleUnlock: {
-                        type: Boolean,
-                        notify: true,
-                        observer: '_openDisplay',
-                    },
                     /*
                     * toggles the view to show private key
                     * @type {Boolean}
@@ -262,6 +263,14 @@ The following custom properties and mixins are available for styling:
                         type: String,
                         notify: true,
                         reflectToAtribute: true,
+                    },
+                    /**
+                    * Avatar represents the users IPFS to their avatar image
+                    * @type {String}
+                    */
+                    avatarHash: {
+                        type: String,
+                        statePath: AppStore.selectors.avatarHash
                     },
                     /**
                     * toggles the blue style elements
@@ -311,6 +320,12 @@ The following custom properties and mixins are available for styling:
                     color: {
                         type: String,
                     },
+                    getPrivateKeyResolve: {
+                        type: Object,
+                    },
+                    getPrivateKeyReject: {
+                        type: Object,
+                    },
                 };
             }
             /**
@@ -328,24 +343,14 @@ The following custom properties and mixins are available for styling:
             }
 
             /**
-            * Scrolls to show display in full screen
-            */
-            _openDisplay() {
-                window.scrollTo(0, 0);
-                this.error = '';
-                setTimeout(()=>{
-                    this.$$('#input').focus();
-                }, 1);
-            }
-            /**
             * Toggles the visibility of this display
             * @param {Object} event element clicked.
             */
-            _disagree(event) {
-                if (event.keyCode === 13 || event.type == 'tap') {
-                    this.toggleUnlock = !this.toggleUnlock;
-                    this.password = '';
-                }
+            _disagree() {
+                this.password = '';
+                this.$.container.classList.add('hidden');
+                this.enableScroll()
+                this.getPrivateKeyReject()
             }
             /**
             * Resets the error warning
@@ -353,29 +358,41 @@ The following custom properties and mixins are available for styling:
             _changeInput() {
                 this.error = '';
             }
-            /**
-            * Checks for enter key input
-            * @param {Object} e element clicked.
-            */
-            _checkForEnter(e) {
-                if (e.keyCode === 13) {
-                    this._getPrivKey(e);
+            _getPrivateKey() {
+                this.disableScroll();
+                window.scrollTo(0, 0);
+                this.error = '';
+                setTimeout(() => {
+                    this.$$('#input').focus();
+                }, 1);
+                this.$.container.classList.remove('hidden');
+                if (this.blue) {
+                    this.$.container.classList.add('blue');
+                    this.$.container.classList.remove('white');
                 }
+                if (this.white) {
+                    this.$.container.classList.add('white');
+                    this.$.container.classList.remove('blue');
+                }
+                return new Promise((resolve, reject) => {
+                    this.getPrivateKeyResolve = resolve;
+                    this.getPrivateKeyReject = reject;
+                });
             }
             /**
             * Checks for correct password, returns private key and closes this display
             * @param {Object} event element clicked.
             */
-            _getPrivKey(event) {
+            _confirm() {
                 if (this.password) {
                     document.activeElement.blur();
                     let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                     this.keyStore = storage.keyStore;
-                    // check password && if correct populate private key property
                     this.$.wallet.decryptUtcKeystore(this.keyStore, this.password)
-                        .then((privateKey) => {
-                            this.toggleUnlock = !this.toggleUnlock;
-                            this.privateKey = privateKey.toString('hex');
+                        .then(uintArray => uintArray.toString('hex'))
+                        .then(privateKey => {
+                            this.privateKey = privateKey
+                            this.$.container.classList.add('hidden');
                             this.password = '';
                             this.$.wallet.makeQRCode(this.privateKey)
                                 .then((qrCodePrivateKey) => {
@@ -385,12 +402,57 @@ The following custom properties and mixins are available for styling:
                                 .then((qrCodePublicKey) => {
                                     this.qrCodePublicKey = qrCodePublicKey;
                                 });
-                        })
-                        .catch((error) => {
+                            const address = this.publicKey;
+                            this.confirmed = false;
+                            this.$.wallet.derivePublicKey(privateKey)
+                                .then( publicKey => {
+                                    this.enableScroll()
+                                    this.getPrivateKeyResolve({ privateKey, address, publicKey, qrCodePrivateKey: this.qrCodePrivateKey, qrCodePublicKey: this.qrCodePublicKey });
+                                })
+                            })
+                        .catch(() => {
+                            this.password = '';
+                            this.confirmed = false;
                             this.error = 'Wrong Password, try again';
                         });
+
                 }
             }
+            preventDefault(e) {
+                e = e || window.event;
+                if (e.preventDefault)
+                    e.preventDefault();
+                e.returnValue = false;
+            }
+
+            // preventDefaultForScrollKeys(e) {
+            //     // left: 37, up: 38, right: 39, down: 40,
+            //     // spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
+            //     const keys = { 37: 1, 38: 1, 39: 1, 40: 1 };
+            //     if (keys[e.keyCode]) {
+            //         this.preventDefault(e);
+            //         return false;
+            //     }
+            // }
+
+            disableScroll() {
+                if (window.addEventListener) // older FF
+                    window.addEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onwheel = this.preventDefault; // modern standard
+                window.onmousewheel = document.onmousewheel = this.preventDefault; // older browsers, IE
+                window.ontouchmove = this.preventDefault; // mobile
+                // document.onkeydown = this.preventDefaultForScrollKeys;
+            }
+
+            enableScroll() {
+                if (window.removeEventListener)
+                    window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onmousewheel = document.onmousewheel = null;
+                window.onwheel = null;
+                window.ontouchmove = null;
+                document.onkeydown = null;
+            }
+
         }
         window.customElements.define(MyDisplayUnlock.is, MyDisplayUnlock);
     </script>

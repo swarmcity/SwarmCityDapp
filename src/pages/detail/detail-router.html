@@ -1,0 +1,191 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-transaction.html">
+<link rel="import" href="../../data/data-simpledeal.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="./detail-simpledeal.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-simpledeal-title.html">
+
+<dom-module id="page-detail">
+    <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <data-transaction id="transaction"></data-transaction>
+        <app-location route="{{route}}"></app-location>
+        <display-my-info avatarSmall on-wallet="_handleOnWallet" on-profile="_handleOnProfile" path="{{path}}"></display-my-info>
+        <display-simpledeal-title></display-simpledeal-title>
+        <detail-simpledeal status="[[status]]" language="[[language]]" hashtag="[[hashtag]]" item="[[item]]" balance="[[balance]]"
+            username="[[username]]" avatar-hash="[[avatarHash]]" address="[[address]]" chat="[[chat]]" on-new="_handleOnNew"
+            on-status="_handleOnStatus" on-close="_handleOnClose" on-chat="_handleOnChat" on-reputation="_handleOnReputation">
+        </detail-simpledeal>
+    </template>
+    <script>
+        class MyDetailRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-detail';
+            }
+            static get properties() {
+                return {
+                    route: {
+                        type: Object,
+                        observer: '_setStatus',
+                    },
+                    path: {
+                        type: String,
+                        observer: '_path',
+                    },
+                    /**
+                    * hashtag is the currently loaded hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    },
+                    /**
+                    * item is the currently loaded item
+                    * @type {Object}
+                    */
+                    item: {
+                        type: Object,
+                        statePath: AppStore.selectors.item,
+                        observer: '_setStatus',
+                    },
+                    /**
+                     * pageID is an id givven to every page specific
+                     * @type {String}
+                     */
+                    status: {
+                        type: String,
+                        value: 'loading',
+                    },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                    balance: {
+                        type: String,
+                        statePath: AppStore.selectors.balance,
+                    },
+                    username: {
+                        type: String,
+                        statePath: AppStore.selectors.username,
+                    },
+                    avatarHash: {
+                        type: String,
+                        statePath: AppStore.selectors.avatarHash,
+                    },
+                    chat: {
+                        type: Object,
+                        statePath: AppStore.selectors.chat,
+                    },
+                };
+            }
+
+            /**
+            * Fired when the component first loads
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                this.address = storage.keyStore.address;
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnStatus(e) {
+                this.status = e.detail;
+            }
+            _handleOnChat() {
+                this.set('route.path', `chat/${this.hashtag.address}/${this.item.itemHash}`);
+            }
+            _handleOnNew() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'new-here');
+            }
+            _handleOnClose() {
+                this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
+                this.status = 'replies';
+            }
+            _handleOnWallet() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-wallet/');
+            }
+            _handleOnProfile() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', 'my-profile');
+            }
+            _handleOnReputation(e) {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', `reputation/${e.detail.address}/${e.detail.avatarHash}/${e.detail.username}`)
+            }
+            _path() {
+                if (this.path != null) {
+                    this.set('route.path', 'create-account/');
+                }
+                this.path = null;
+            }
+            _setStatus() {
+                if (this.item
+                    && this.item.status
+                    && this.item.description
+                    && this.item.timestamp
+                    && this.item.itemHash
+                    && this.item.itemHash == this.route.path.split('/')[3]) {
+                    switch (this.item.status) {
+                        case ('0'):
+                        case ('selected-pending'):
+                            // Open item
+                            if (this.item
+                                && this.item.providerAddress
+                                && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
+                                && (this.item.providerAddress == this.address ||
+                                    this.item.seekerAddress == this.address)
+                            ) {
+                                this.status = 'selected';
+                            } else if (!(this.status == 'input' || this.status == 'detail')) {
+                                this.status = 'replies';
+                            }
+                            break;
+                        case ('1-pending'):
+                        case ('1'):
+                            // Funded item
+                            this.status = 'funded';
+                            break; m
+                        case ('2-pending'):
+                        case ('2'):
+                            // Item paid out
+                            this.status = 'done';
+                            break;
+                        case ('3-pending'):
+                        case ('3'):
+                            if (this.status != 'input conflict') {
+                                this.status = 'conflict';
+                            }
+                            break;
+                        default:
+                            this.status = 'loading';
+                    }
+                } else {
+                    this.status = 'replies';
+                }
+            }
+        }
+        window.customElements.define(MyDetailRouter.is, MyDetailRouter);
+    </script>
+</dom-module>

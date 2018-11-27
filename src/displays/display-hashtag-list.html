@@ -102,13 +102,19 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <template is="dom-repeat" items="{{hashtags}}" id="domRepeat">
+            <template is="dom-if" if="{{fetching}}">
+                <div class="box">
+                    <h3>Fetching...</h3>
+                </div>
+            </template>
+            <template is="dom-repeat" items="{{hashtagList}}" id="domRepeat">
                 <!-- <template is="dom-if" if="{{item.hashtagShown}}"> -->
                 <div tabindex="3" class="box" on-click="_toHashtag" on-KeyPress="_toHashtag">
                     <div class="flex">
                         <div class="hashtag">
                             <span class="cursor">
-                                <span class="hashtag">#</span>[[_decode(item.hashtagName)]]</span>
+                                <span class="hashtag">#</span>[[_decode(item.hashtagName)]]
+                            </span>
                         </div>
                         <!-- <div class="deals">[[_allDealsCount(item.stats)]] {{localize('deals done')}}</div> -->
                     </div>
@@ -146,13 +152,30 @@ The following custom properties and mixins are available for styling:
                         notify: true,
                         reflectToAttribute: true,
                     },
+                    queryParams: {
+                        type: Object,
+                        notify: true,
+                        reflectToAttribute: true,
+                    },
                     /**
                     * hashtags represents the array of hashtags to display
                     * @type {Array}
                     */
-                    hashtags: {
+                    hashtagList: {
                         type: Array,
-                        statePath: 'hashtags',
+                        statePath: (state) => {
+                            return state.hashtagList
+                        },
+                    },
+                    /**
+                    * Fetching boolean to display while loading
+                    * @type {Boolean}
+                    */
+                    fetching: {
+                        type: Boolean,
+                        statePath: (state) => {
+                            return state.fetching.hashtags
+                        },
                     },
                 };
             }
@@ -167,6 +190,7 @@ The following custom properties and mixins are available for styling:
             */
             _toHashtag(event) {
                 if (event.keyCode === 13 || event.type == 'click') {
+                    
                     this.path = 'hashtag/' + event.model.__data.item.hashtagAddress + '/';
                 }
             }

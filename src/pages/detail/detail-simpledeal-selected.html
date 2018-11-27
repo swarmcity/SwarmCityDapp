@@ -1,0 +1,320 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../displays/display-button-disagree.html">
+<link rel="import" href="../../displays/display-button-confirm.html">
+<dom-module id="detail-simpledeal-selected">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            iron-image {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                min-height: 24px;
+                min-width: 24px;
+                margin-right: 10px;
+            }
+
+            .descriptionbox {
+                @apply --layout-horizontal;
+                margin-top: 25px;
+            }
+
+            .description {
+                @apply --layout-flex;
+                @apply --body-default;
+                color: var(--sc-grey4);
+            }
+
+            .price {
+                @apply --body-bold;
+                text-align: right;
+                color: var(--sc-grey4);
+                white-space: nowrap;
+                margin: 0px 0px 0px 20px;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .date {
+                @apply --smallest-light;
+                color: var(--sc-grey2);
+                margin: 4px 0px 0px 0px;
+            }
+
+            .providerbox {
+                @apply --layout-horizontal;
+                @apply --layout-center;
+                @apply --layout-start-justified;
+                margin-top: 10px;
+            }
+
+            .username {
+                @apply --small-bold;
+                @apply --layout-flex;
+                color: var(--sc-blue);
+            }
+
+            .vertical {
+                @apply --layout-vertical;
+            }
+
+            .replier {
+                @apply --small-bold;
+                @apply --layout-flex;
+                color: var(--sc-grey4);
+            }
+
+            .whitebox {
+                box-sizing: border-box;
+                padding: 20px 25px 15px 25px;
+                background-color: var(--sc-white);
+            }
+
+            .bluebox {
+                @apply --layout-vertical;
+                @apply --layout-center;
+                box-sizing: border-box;
+                padding: 40px 25px;
+                background-color: var(--sc-blue);
+            }
+
+            .disabled {
+                opacity: 0.5;
+            }
+
+            .white-text {
+                @apply --body-bold;
+                color: var(--sc-white);
+                text-align: center;
+            }
+
+            .white-subtext {
+                @apply --small-light;
+                margin-top: 20px;
+                color: var(--sc-white);
+                text-align: center;
+            }
+
+            .choice {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                padding: 30px 0;
+            }
+
+            .button {
+                @apply --text-button-small;
+                @apply --small-bold;
+                margin: 40px 0;
+                color: var(--sc-white);
+            }
+
+            .button:active {
+                @apply --button-active;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: center;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .pending {
+                opacity: 0.5;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="whitebox">
+                <div class="descriptionbox">
+                    <div class="description">[[reply.message]]</div>
+                    <div class="price">for [[_formatValue(item.itemValue)]] SWT</div>
+                </div>
+                <div class="date">
+                    [[_formatDate(reply.timestamp)]]
+                </div>
+                <div class="providerbox" on-tap="_toUserReputation">
+                    <div class="avatar">
+                        <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[reply.avatarHash]]"
+                            placeholder="../images/defaultavatar.png">
+                        </iron-image>
+                    </div>
+                    <template is="dom-if" if="[[!_isReplier(reply.replierAddress, address)]]">
+                        <div class="username">[[reply.username]] · [[reply.providerRep]]
+                            SWR</div>
+                    </template>
+
+                    <template is="dom-if" if="[[_isReplier(reply.replierAddress, address)]]">
+                        <div class="replier">[[reply.username]] · [[reply.providerRep]]
+                            SWR</div>
+                    </template>
+                </div>
+            </div>
+            <div class$="{{_checkPending(item.status)}}">
+            <!-- <div class="bluebox pending"> -->
+                <template is="dom-if" if="[[_isReplier(reply.replierAddress, address)]]">
+                    <div class="white-text">[[item.seekerUsername]] selected you to make a deal. Do you accept?</div>
+                    <template is="dom-if" if="{{showError}}">
+                        <div class="errorcontainer">
+                            <span id="error">{{error}}</span>
+                        </div>
+                    </template>
+                    <div class="choice">
+                        <display-button-disagree></display-button-disagree>
+                        <template is="dom-if" if="{{allowFund}}">
+                            <display-button-confirm on-tap="_fund"></display-button-confirm>
+                        </template>
+                        <template is="dom-if" if="{{!allowFund}}">
+                            <display-button-confirm class="disabled"></display-button-confirm>
+                        </template>
+                    </div>
+                </template>
+                <template is="dom-if" if="[[!_isReplier(reply.replierAddress, address)]]">
+                    <div class="white-text">You selected [[reply.username]] to make a deal.</div>
+                    <div class="white-subtext">Waiting for [[reply.username]] to respond</div>
+                    <!-- <div class="button">
+                        unselect [[reply.username]]
+                    </div> -->
+                </template>
+
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDetailSimpledealSelected extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-selected';
+            }
+            static get properties() {
+                return {
+                    item: {
+                        type: Object,
+                        observer: '_checkBalance',
+                    },
+                    reply: Object,
+                    address: String,
+                    showError: Boolean,
+                    allowFund: Boolean,
+                    balance: {
+                        type: Object,
+                        observer: '_checkBalance',
+                    },
+                    error: {
+                        type: String,
+                        observer: '_showError',
+                    },
+                };
+            }
+            /**
+            * formats the item value
+            * @param {String} value item value in wei
+            * @return {string} value in human readable format
+            */
+            _formatValue(value) {
+                return value / 1e18;
+            }
+            /**
+            * formats epoch
+            * @param {DateTime} timestamp epoch in javascript milliseconds
+            * @return {string} formatted date string
+            */
+            _formatDate(timestamp) {
+                let milliseconds = timestamp * 1000;
+                if (webpack.moment().valueOf() - milliseconds < 86400000) {
+                    return webpack.moment(milliseconds).fromNow();
+                } else {
+                    return webpack.moment(milliseconds).format('DD MMM YYYY - HH:mm');
+                }
+            }
+            /**
+            * Here we check if the request is owned by the current user
+            * @param {Object} replierAddress the selected replier's address
+            * @param {Object} address the user's address
+            * @return {Boolean} true when user owns this request
+            */
+            _isReplier(replierAddress, address) {
+                return replierAddress == address;
+            }
+            /**
+            * takes the user to the selected user reputation page
+            */
+            _toUserReputation() {
+                this.path = `user-reputation/${this.hashtagItem.selectee.address}/${this.hashtagItem.selectee.avatarHash}/${this.hashtagItem.selectee.username}`; // eslint-disable-line
+            }
+
+            /**
+            * Only allow users to send replies
+            */
+            _checkBalance() {
+                if (this.reply && this.balance) {
+                    let totalCost = parseInt(this.item.itemValue) + parseInt(this.item.hashtagFee) / 2;
+                    if (this.balance.cash.wei - totalCost >= 0) {
+                        this.allowFund = true;
+                        this.error = '';
+                    } else {
+                        this.error = 'You have insufficient funds to participate in this deal.';
+                        this.allowFund = false;
+                    }
+                }
+            }
+            /**
+            * Change the route to confirm funding page
+            */
+            _fund() {
+                this.dispatchEvent(new CustomEvent('fund'));
+            }
+            /**
+            * Verifies user balance and displays error message
+            */
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
+            }
+            _checkPending(status) {
+                return status == '0'? "bluebox" : "bluebox pending";
+            }
+        }
+        window.customElements.define(
+            MyDetailSimpledealSelected.is,
+            MyDetailSimpledealSelected
+        );
+    </script>
+</dom-module>

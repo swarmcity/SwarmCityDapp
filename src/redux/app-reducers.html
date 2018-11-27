@@ -1,0 +1,325 @@
+<script src="../../node_modules/redux/dist/redux.min.js"></script>
+<script src="../../node_modules/deepmerge/dist/umd.js"></script>
+
+<script>
+    (function () {
+        //  Fetch local storage
+        let publicKey;
+        let avatarHash;
+        let username;
+        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+
+        if (storage && storage.keyStore && storage.keyStore.address) {
+            publicKey = storage.keyStore.address;
+        } else {
+            publicKey = null;
+        }
+        if (storage && storage.user && storage.user.username) {
+            username = storage.user.username;
+        } else {
+            username = null;
+        }
+        if (storage && storage.user && storage.user.avatarHash) {
+            avatarHash = storage.user.avatarHash;
+        } else {
+            avatarHash = null;
+        }
+
+        const initialState = {
+            username: username,
+            avatarHash: avatarHash,
+            publicKey: publicKey,
+            chats: {},
+            confirmedTx: [],
+            shownTx: [],
+            language: 'en',
+            fx: {
+                priceBtc: 1,
+                priceEur: 1,
+                priceUsd: 1,
+            },
+            balance: {},
+            hashtagList: [],
+            fetching: {},
+            hashtags: {},
+            current: {},
+            reputation: {},
+            txs: {}
+        };
+        /**
+         * safely parse a string to Number. Independent of locale ( , or . )
+         *
+         * @param      {string}  input   The input
+         * @return     {Number}  The floating point value - or 0 if cannot parse
+         */
+        function _parseFloat(input) {
+            if (input && typeof input === 'string') {
+                let parsed = Number.parseFloat(input.replace(',', '.'));
+                if (Number.isNaN(parsed)) {
+                    return 0;
+                }
+                return parsed;
+            } else {
+                return 0;
+            }
+        }
+
+        const reducer = function (state = initialState, action) {
+            // console.log('NEW Top reducer: ', action)
+            switch (action.type) {
+                // Received shortcode, update the state
+                case 'UPDATE_SHORTCODE': {
+                    return {
+                        ...state,
+                        shortCode: action.shortCode
+                    }
+                }
+                // Boolean to track if the shortcode has to be shown
+                // ##### Triggers the request of getting the shortcode
+                //       _usingShortCode()
+                case 'USINGSHORTCODE': {
+                    return {
+                        ...state,
+                        usingShortCode: action.usingShortCode
+                    }
+                }
+                // User balance, fetched from the blockchain
+                case 'UPDATE_BALANCE': {
+                    return deepmerge(state, {
+                        balance: {
+                            [action.chain]: action.balance
+                        }
+                    })
+                }
+                // SWT prices, fetched from some API
+                case 'UPDATE_FX': {
+                    const fx = action.fx;
+                    // convert strings to Float
+                    if (fx.priceBtc) fx.priceBtc = _parseFloat(fx.priceBtc);
+                    if (fx.priceEur) fx.priceEur = _parseFloat(fx.priceEur);
+                    if (fx.priceUsd) fx.priceUsd = _parseFloat(fx.priceUsd);
+                    return {
+                        ...state,
+                        fx,
+                    }
+                }
+                // List of hashtags, fetched from the API
+                case 'UPDATE_HASHTAG_LIST': {
+                    console.log('UPDATING hashtaglist: ', action.hashtagList)
+                    return {
+                        ...state,
+                        hashtagList: action.hashtagList
+                    }
+                }
+                // Language of the site. Change on settings page
+                case 'UPDATE_LANGUAGE': {
+                    return {
+                        ...state,
+                        language: action.language
+                    }
+                }
+                // The address of the user. It is set at > 9 places
+                case 'PUBLICKEY': {
+                    return {
+                        ...state,
+                        publicKey: action.publicKey
+                    }
+                }
+                // Fetched from the blockchain, (API code + fallback value to a rand)
+                // Check what metamask is doing to cimpute the nonce.
+                case 'NONCE': {
+                    return {
+                        ...state,
+                        nonce: action.nonce
+                    }
+                }
+                // This is the shortCode we want a public key for
+                // Set on display-transaction-status.html
+                // ##### Triggers _reqToKey() in socket-redux.html
+                case 'GET_SHORTCODE_DATA': {
+                    return {
+                        ...state,
+                        reqtokey: action.shortCode
+                    }
+                }
+                // This is the translation of the shortCode to a public key
+                case 'UPDATE_SHORTCODE_DATA': {
+                    return {
+                        ...state,
+                        tokey: action.tokey
+                    }
+                }
+                // Sends a sign transaction to the API to be broadcasted
+                // ##### Triggers _broadcast() in socket-redux.html
+                case 'BROADCAST': {
+                    return {
+                        ...state,
+                        broadcast: action.broadcast
+                    }
+                }
+                // This is the txHash of the broadcasted transaction
+                // Set in the socket-redux.html after broadcasting.
+                // It is used on the transaction pages to show success or no
+                case 'TXHASH': {
+                    return {
+                        ...state,
+                        txHash: action.txHash
+                    }
+                }
+                // This is the array containing all past transactions on user's publicKey
+                // Transaction history fetched from the API.
+                // ##### Trigers _confirmedTx() in display-transaction-history.html
+                case 'UPDATE_TXS': {
+                    return deepmerge(state, {
+                        txs: {
+                            [action.chain]: action.txs
+                        }
+                    })
+                    // const confirmedTx = action.confirmedTx || action.txs
+                    // return {
+                    //     ...state,
+                    //     confirmedTx
+                    // }
+                }
+                // Shown transaction merges the pending txs and the past (confirmed) txs
+                // Set internally in the display-transaction-history.html
+                // ##### Should be refactored soon. It is a not necessary use of the state
+                case 'SHOWNTX': {
+                    return {
+                        ...state,
+                        shownTx: action.shownTx
+                    }
+                }
+                // An ipfsHash resolving to the user's base64 avatar
+                // It is needed to createItem, shortCode, etc.
+                case 'UPDATE_AVATARHASH': {
+                    return {
+                        ...state,
+                        avatarHash: action.avatarHash
+                    }
+                }
+                // A string containing the username
+                // Get set in > 9 places, when the user is deleted it gets set to null 
+                case 'USERNAME': {
+                    return {
+                        ...state,
+                        username: action.username
+                    }
+                }
+
+                // A signed tx to send
+                // Called at 5 places
+                // ##### Triggers _sendSignedTx() at socket-redux
+                // Result gets store at TXHASH
+                case 'SENDSIGNEDTX': {
+                    return {
+                        ...state,
+                        sendSignedTx: action.sendSignedTx
+                    }
+                }
+
+                // HashtagItem will set the current hashtag item we're on
+                // ##### DANGEROUS code in display-get-item.html
+                // It does selector work and then dispatches a state change 
+                // so it is reflect on the rest of components
+                case 'HASHTAGITEM': {
+                    return {
+                        ...state,
+                        hashtagItem: action.hashtagItem
+                    }
+                }
+
+                // userReputation is the reputation of a certain user, fetched form the API
+                // ##### Triggers _getUserReputation() in socket-redux, dispatching USERREPUTATION with the data fetched
+                // Called by display-user-reputation.html on _userChanged()
+                case 'USERREPUTATION': {
+                    return {
+                        ...state,
+                        userReputation: action.userReputation
+                    }
+                }
+                // the newChatMessage object contains a new chat message for a chat subscription
+                // ##### Triggers _newChatMessage() in socket-redux
+                case 'NEWCHATMESSAGE': {
+                    return {
+                        ...state,
+                        newChatMessage: action.newChatMessage
+                    }
+                }
+                // To display 'loading' icons while fetching data
+                case 'UPDATE_FETCHING': {
+                    return {
+                        ...state,
+                        fetching: {
+                            ...state.fetching,
+                            [action.topic]: action.fetching
+                        }
+                    }
+                }
+                case 'UPDATE_ITEMS': {
+                    return deepmerge(state, {
+                        hashtags: {
+                            [action.hashtagAddress]: {
+                                items: action.items
+                            }
+                        }
+                    })
+                }
+                case 'UPDATE_ITEM': {
+                    return deepmerge(state, {
+                        hashtags: {
+                            [action.hashtagAddress]: {
+                                items: {
+                                    [action.itemHash]: action.data
+                                }
+                            }
+                        }
+                    })
+                }
+                case 'UPDATE_NEWHASHTAG': {
+                    return deepmerge(state, {
+                        hashtags: {
+                            [action.hashtagAddress]: action.data
+                        }
+                    })
+                }
+                case 'CURRENT_HASHTAG': {
+                    return deepmerge(state, {
+                        current: {
+                            hashtag: action.hashtag
+                        }
+                    })
+                }
+                case 'CURRENT_ITEM': {
+                    return deepmerge(state, {
+                        current: {
+                            item: action.item
+                        }
+                    })
+                }
+                case 'UPDATE_REPUTATION': {
+                    return deepmerge(state, {
+                        reputation: {
+                            [action.address]: action.reputationsObj
+                        }
+                    })
+                }
+                case 'UPDATE_CHAT': {
+                    return {
+                        ...state,
+                        chats: {
+                            ...state.chats,
+                            [action.itemHash]: action.chatObject
+                        }
+                    }
+                }
+                default: {
+                    return state
+                }
+
+            }
+        };
+        if (!window.AppStore) window.AppStore = {}
+        window.AppStore.rootReducer = reducer
+    }());
+</script>

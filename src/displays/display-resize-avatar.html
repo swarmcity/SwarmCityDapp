@@ -114,7 +114,6 @@
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
-                .close,
                 .container .rotate-icon,
                 .container .confirmers>div:nth-child(1),
                 .container .confirmers>div:nth-child(2)>div:nth-child(1) {
@@ -128,17 +127,8 @@
 
                 <div class="rotate-icon" on-click="_rotate"></div>
                 <input type="file" name="file" id="file" class="file" on-change="_fileSelected" accept=".jpg, .jpeg, .png, .gif" />
-                <canvas
-                    id="canvas"
-                    class="canvas"
-                    width="{{canvasWidth}}"
-                    height="{{canvasHeight}}"
-                    on-mousedown="_panStart"
-                    on-mouseup="_panEnd"
-                    on-mousemove="_panMove"
-                    on-touchstart="_panStart"
-                    on-touchend="_panEnd"
-                    on-touchmove="_panMove">
+                <canvas id="canvas" class="canvas" width="{{canvasWidth}}" height="{{canvasHeight}}" on-mousedown="_panStart" on-mouseup="_panEnd"
+                    on-mousemove="_panMove" on-touchstart="_panStart" on-touchend="_panEnd" on-touchmove="_panMove">
                     Your browser does not support HTML5 Canvas.
                 </canvas>
                 <paper-slider id="slider" step="0.01" value="{{scale}}" min="{{minImageScale}}" max="1.0" on-immediate-value-change="_getScale"></paper-slider>
@@ -209,7 +199,6 @@
                     */
                     avatar: {
                         type: String,
-                        statePath: 'avatar',
                     },
                     /**
                     * The image
@@ -303,21 +292,10 @@
                         value: 0,
                         observer: '_drawFile',
                     },
-                };
-            }
-            /**
-            * Redux action for setting avatar
-            * @param {String} avatar
-            */
-            static get actions() {
-                return Object.assign({
-                    AVATAR: function(avatar) {
-                        return {
-                            type: 'AVATAR',
-                            avatar: avatar,
-                        };
+                    avatarHash: {
+                        type: String,
                     },
-                });
+                };
             }
             /**
             * Fired when the component is connected
@@ -379,9 +357,9 @@
             */
             _drawFile(stroke) {
                 if (this.image && this.canvasWidth && this.canvasHeight && this.scale && this.context) {
-                    let myscale = (this.canvasHeight/this.image.height)*this.scale;
-                    let px = 2*this.endX / (myscale);
-                    let py = 2*this.endY / (myscale);
+                    let myscale = (this.canvasHeight / this.image.height) * this.scale;
+                    let px = 2 * this.endX / (myscale);
+                    let py = 2 * this.endY / (myscale);
                     let rad = this.angle * Math.PI / 180;
                     let nx = px * Math.cos(-rad) - py * Math.sin(-rad);
                     let ny = px * Math.sin(-rad) + py * Math.cos(-rad);
@@ -393,7 +371,7 @@
                     ctx.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
                     ctx.scale(myscale, myscale);
                     ctx.rotate(this.angle * Math.PI / 180);
-                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5*(this.image.height - ny));
+                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5 * (this.image.height - ny));
                     ctx.restore();
                     ctx.globalAlpha = 0.5;
                     ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -405,12 +383,12 @@
                     ctx.translate(this.canvasWidth * 0.5, this.canvasHeight * 0.5);
                     ctx.scale(myscale, myscale);
                     ctx.rotate(this.angle * Math.PI / 180);
-                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5*(this.image.height - ny));
+                    ctx.drawImage(this.image, - 0.5 * (this.image.width - nx), - 0.5 * (this.image.height - ny));
                     ctx.restore();
                     ctx.save();
                     ctx.globalAlpha = 1;
                     ctx.arc(this.canvasWidth * 0.5,
-                    this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
+                        this.canvasHeight * 0.5, 50, 0, 2 * Math.PI, false);
                     let blueStroke = true;
                     if (stroke == false) {
                         blueStroke = false;
@@ -445,12 +423,12 @@
             _panStart(event) {
                 event.preventDefault();
                 this.mouseDown = true;
-                if (event.clientX===undefined) {
-                        this.startX = event.touches[0].clientX - this.endX;
-                        this.startY = event.touches[0].clientY - this.endY;
+                if (event.clientX === undefined) {
+                    this.startX = event.touches[0].clientX - this.endX;
+                    this.startY = event.touches[0].clientY - this.endY;
                 } else {
-                        this.startX = event.clientX - this.endX;
-                        this.startY = event.clientY - this.endY;
+                    this.startX = event.clientX - this.endX;
+                    this.startY = event.clientY - this.endY;
                 }
             }
             /**
@@ -466,7 +444,7 @@
             */
             _panMove(event) {
                 if (this.mouseDown) {
-                    if (event.clientX===undefined) {
+                    if (event.clientX === undefined) {
                         this.endX = event.touches[0].clientX - this.startX;
                         this.endY = event.touches[0].clientY - this.startY;
                     } else {
@@ -474,10 +452,6 @@
                         this.endY = event.clientY - this.startY;
                     }
                 }
-            }
-
-            _loadEntryAnimations() {
-                this._firstLoad();
             }
 
             /**
@@ -499,11 +473,21 @@
                 ctx.scale(2.15, 2.15);
                 ctx.drawImage(this.$.canvas, -77, -77);
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                const ipfs = window.ipfs
                 storage.user.avatar = newCanvas.toDataURL('image/jpeg');
-                localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                let avatarUrl = newCanvas.toDataURL('image/png');
-                this.dispatch('AVATAR', avatarUrl);
-                window.history.back();
+                ipfs.add(storage.user.avatar)
+                .then( hash => {
+                    storage.user.avatarHash = hash.hash;
+                    this.dispatch({
+                        type: 'UPDATE_AVATARHASH',
+                        avatarHash: storage.user.avatarHash
+                    });
+                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                    window.history.back();
+                })
+                .catch(err => {
+                    console.error('error resolving ipfs hash for avatar', err)
+                })
             }
         } window.customElements.define(DisplayResizeAvatar.is, DisplayResizeAvatar);
     </script>

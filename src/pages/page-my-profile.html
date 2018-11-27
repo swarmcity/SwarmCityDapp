@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
@@ -16,6 +17,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../displays/display-profile-reputation.html">
 <link rel="import" href="../displays/display-unlock.html">
 <link rel="import" href="../displays/display-show-keys.html">
+<link rel="import" href="../displays/display-reputation-balances.html">
 
 <dom-module id="page-my-profile">
     <template>
@@ -78,7 +80,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --button-active;
             }
 
-            img {
+            iron-image {
                 width: 90px;
                 height: 90px;
                 cursor: pointer;
@@ -148,7 +150,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .username {
-                width:100%;
+                width: 100%;
             }
 
             paper-input {
@@ -261,9 +263,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 max-width: 100%;
             }
 
-            display-profile-reputation {
+            display-reputation-balances {
+                box-sizing: border-box;
                 background-image: var(--sc-bg);
                 width: 100%;
+            }
+
+            .container[wide-layout] display-reputation-balances {
+                box-sizing: border-box;
+
             }
 
             .buttonbox {
@@ -339,7 +347,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-click="_close"></div>
                 <div class="avatarcontainer">
                     <div class="avatar">
-                        <img id="avatarimg" src="{{avatar}}" on-click="_toResizeAvatar">
+                        <iron-image id="avatarimg" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" on-click="_toResizeAvatar" placeholder="../images/defaultavatar.png"></iron-image>
                         <div id="arrowcontainer" class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
@@ -349,12 +357,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="username">
                         <paper-input label="{{localize('Username')}}" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
                     </div>
-                    <display-show-keys
-                        toggle-unlock="{{toggleUnlock}}"
-                        toggle-private-key="{{togglePrivateKey}}" 
-                        private-key="{{privateKey}}"
-                        route="{{route}}"
-                    ></display-show-keys>
+                    <display-show-keys toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
+                        route="{{route}}"></display-show-keys>
 
                 </div>
                 <div class="topright" id="notifications">
@@ -362,7 +366,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
             <div class="divider" id="divider1"></div>
-            <!-- <display-profile-reputation user-address="{{publicKey}}"></display-profile-reputation> -->
+            <display-reputation-balances reputation="[[reputationArray]]"></display-reputation-balances>
             <div class="divider" id="divider2"></div>
             <div class="buttonbox" id="buttonBox">
                 <div class="backup" on-click="_backup">{{localize('backup this user')}}</div>
@@ -371,13 +375,8 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
-                <display-unlock 
-                    blue
-                    toggle-unlock="{{toggleUnlock}}"
-                    toggle-private-key="{{togglePrivateKey}}" 
-                    private-key="{{privateKey}}" 
-                    qr-code-private-key="{{qrCodePrivateKey}}"
-                    qr-code-public-key="{{qrCodePublicKey}}">
+                <display-unlock blue toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
+                    qr-code-private-key="{{qrCodePrivateKey}}" qr-code-public-key="{{qrCodePublicKey}}">
                 </display-unlock>
             </template>
         </dom-if>
@@ -426,9 +425,9 @@ This code may only be used under the license found at https://github.com/swarmci
                     * Avatar represents the users IPFS to their avatar image
                     * @type {String}
                     */
-                    avatar: {
+                    avatarHash: {
                         type: String,
-                        statePath: 'avatar',
+                        statePath: AppStore.selectors.avatarHash
                     },
                     /**
                     * Error is a string message being shown when passwords don't match
@@ -471,6 +470,16 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         statePath: 'publicKey',
                     },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                    reputation: {
+                        type: String,
+                        statePath: AppStore.selectors.reputation,
+                        observer: '_toArray',
+                    },
+                    reputationArray: Array,
                 };
             }
             /**
@@ -479,7 +488,7 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             static get actions() {
                 return Object.assign({
-                    USERNAME: function(username) {
+                    USERNAME: function (username) {
                         return {
                             type: 'USERNAME',
                             username: username,
@@ -582,10 +591,25 @@ This code may only be used under the license found at https://github.com/swarmci
             * save username
             */
             _saveUsername() {
-                this.dispatch('USERNAME', this.username);
+                this.dispatch({ type: 'USERNAME', username: this.username });
                 let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                 storage.user.username = this.username;
                 localStorage.setItem('SwarmCity', JSON.stringify(storage));
+            }
+
+            _toArray() {
+                if (this.reputation[this.address]) {
+                    let array = [];
+                    for (let key in this.reputation[this.address]) {
+                        if (this.reputation[this.address].hasOwnProperty(key)) {
+                            array.push(this.reputation[this.address][key]);
+                        }
+                    }
+                    this.set('reputationArray', array);
+                } else {
+                    console.log('Get reputation for: ', this.address);
+                    this.dispatch({ type: 'GET_REPUTATION', address: this.address })
+                }
             }
         }
         window.customElements.define(MyProfile.is, MyProfile);

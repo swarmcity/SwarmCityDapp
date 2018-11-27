@@ -1,0 +1,242 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-simpledeal.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="./new-request-create.html">
+<link rel="import" href="./new-request-confirm.html">
+<link rel="import" href="../../displays/display-error.html">
+<link rel="import" href="./new-request-success.html">
+<link rel="import" href="../../displays/display-processing.html">
+<link rel="import" href="../../displays/display-unlock.html">
+<link rel="import" href="../../displays/display-location.html">
+
+<dom-module id="page-new-request">
+    <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <app-location route="{{route}}"></app-location>
+        <display-unlock id="unlock" white></display-unlock>
+
+        <!-- CREATE REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
+            <new-request-create chosen-value="{{range}}" on-create="_handleOnCreate" on-close="_handleOnClose"
+                on-location="_handleOnLocation"></new-request-create>
+        </template>
+
+        <!-- ALLOWING LOCATION -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'location')}}">
+            <display-location on-location-accept="_handleOnLocationAccept" on-location-reject="_handleOnLocationReject"></display-location>
+        </template>
+
+        <!-- CONFIRM REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+            <new-request-confirm on-reject="_handleOnReject" on-confirm="_handleOnConfirm" total-sum="[[totalSum]]"
+                hashtag-fee="[[hashtagFee]]"></new-request-confirm>
+        </template>
+
+        <!-- PROCESSING REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
+            <display-processing></display-processing>
+        </template>
+
+        <!-- SUCCESSFUL REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
+            <new-request-success on-close="_handleOnClose"></new-request-success>
+        </template>
+
+        <!-- ERROR ON REQUEST -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
+            <display-error error-message="[[errorMessage]]" on-close="_handleOnClose"></display-error>
+        </template>
+
+    </template>
+
+    <script>
+        class MyNewRequestRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-new-request';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Hashtags contains all hashtag objects
+                    * @type {Object}
+                    */
+                    hashtags: {
+                        type: Object,
+                        statePath: 'hashtags',
+                    },
+                    /**
+                    * Route represents the current route
+                    * @type {Object}
+                    */
+                    route: {
+                        type: Object,
+                        observer: '_routeChanged'
+                    },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                    },
+                    status: {
+                        type: String,
+                        value: 'new-request',
+                    },
+                    errorMessage: {
+                        type: String,
+                        value: '',
+                    },
+                    totalSum: {
+                        type: String,
+                        value: 0,
+                    },
+                    hashtagFee: {
+                        type: String,
+                        value: 0,
+                    },
+                    username: {
+                        type: String,
+                        statePath: 'username',
+                    },
+                    avatar: {
+                        type: String,
+                        statePath: 'avatar',
+                    },
+                    itemRequest: {
+                        type: Object,
+                        value: {},
+                    },
+                    range: {
+                        type: Number,
+                    }
+                };
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _routeChanged() {
+                this.status = 'new-request';
+            }
+            _handleOnCreate(e) {
+                this.status = 'confirm'
+                const { itemBudget, itemDescription, itemGeohash } = e.detail
+                // Construct item object
+                this.itemRequest = { itemBudget, itemDescription, itemGeohash };
+                if (!this.hashtag) {
+                    console.error('hashtag property is not defined')
+                } else {
+                    this.totalSum = parseFloat(itemBudget) + parseFloat(this.hashtag.hashtagFee / 2e18);
+                    this.hashtagFee = parseInt(this.hashtag.hashtagFee) / 2e18;
+                }
+            }
+            _handleOnReject() {
+                this.status = 'new-request';
+            }
+            _handleOnLocation() {
+                this.status = 'location';
+            }
+            _handleOnLocationAccept() {
+                this.status = 'new-request';
+            }
+            _handleOnLocationReject() {
+                this.status = 'new-request';
+                this.range = 8;
+            }
+            _handleOnClose() {
+                this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
+            }
+            _handleOnConfirm() {
+                this.$.unlock._getPrivateKey()
+                    .then((res) => {
+                        try {
+                            const { privateKey, address, publicKey } = res;
+                            this.status = 'processing'
+
+                            if (!privateKey) {
+                                throw Error('Missing private key')
+                            }
+                            const { itemBudget, itemDescription, itemGeohash } = this.itemRequest
+                            console.log(this.itemRequest);
+                            const item = {
+                                budget: itemBudget,
+                                description: itemDescription,
+                                location: itemGeohash,
+                            }
+                            const seeker = {
+                                username: this.username,
+                                address,
+                                privateKey,
+                                publicKey
+                            }
+
+                            const hashtag = {
+                                address: this.hashtag.address,
+                                fee: this.hashtag.hashtagFee,
+                                tokenAddress: '0xf69ca736d959519a79f9075021444a8a0ee384d3'
+                            }
+
+                            console.log('About to post item: ', { seeker, item, hashtag });
+
+                            this.$.simpledeal.createNewItem({ seeker, item, hashtag })
+                                .then(res => {
+                                    const { txHash, itemHash } = res;
+                                    console.log('Successfully transacted item, receipt:', txHash)
+                                    this.status = 'success';
+                                    const storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                                    this.dispatch({
+                                        type: 'UPDATE_ITEM', hashtagAddress: this.hashtag.address, itemHash, data: {
+                                            hashtagFee: this.hashtag.hashtagFee,
+                                            itemValue: itemBudget * 1e18,
+                                            seekerUsername: this.username,
+                                            seekerAvatarHash: storage.user.avatarHash,
+                                            seekerAddress: address,
+                                            timestamp: 'pending',
+                                            status: 0,
+                                            blockNumber: 999999999,
+                                            description: itemDescription
+                                        }
+                                    })
+                                })
+                                .catch(err => {
+                                    this.errorMessage = err.message
+                                    console.log('Error posting item:', err)
+                                    this.status = 'error'
+                                })
+
+                            /*
+                            * Create item and send it to IPFS
+                            */
+
+                        } catch (e) {
+                            this.errorMessage = e.message
+                            console.error('Error posting item (catch block): ', e.stack)
+                            this.status = 'error'
+                        }
+                    });
+            }
+        }
+        window.customElements.define(MyNewRequestRouter.is, MyNewRequestRouter);
+    </script>
+</dom-module>

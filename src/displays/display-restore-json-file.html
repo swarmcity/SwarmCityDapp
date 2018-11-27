@@ -85,7 +85,7 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-grey4);
             }
 
-            .container[wide-layout] .uploadedfile{
+            .container[wide-layout] .uploadedfile {
                 width: 100%;
                 @apply --layout-horizontal;
                 @apply --layout-center;
@@ -160,7 +160,6 @@ The following custom properties and mixins are available for styling:
                 color: var(--sc-red2);
                 margin-top: 30px;
             }
-
         </style>
         <data-wallet id="wallet"></data-wallet>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -168,10 +167,10 @@ The following custom properties and mixins are available for styling:
             <template is="dom-if" if="{{!askPassword}}">
                 <div class="flex"></div>
                 <form method="post" enctype="multipart/form-data"></form>
-                    <input type="file" name="file" id="file" class="inputfile" on-change="_getFile" accept='application/json'/>
-                    <label id="button" tabindex="1" for="file" onclick="">
-                        <div class="select">{{localize('select file')}}</div>
-                    </label>
+                <input type="file" name="file" id="file" class="inputfile" on-change="_getFile" accept='application/json' />
+                <label id="button" tabindex="1" for="file" onclick="">
+                    <div class="select">{{localize('select file')}}</div>
+                </label>
                 </form>
                 <div class="error">{{error}}</div>
             </template>
@@ -181,16 +180,12 @@ The following custom properties and mixins are available for styling:
                     <div>{{filename}}</div>
                     <div class="cancel" on-click="_cancel"></div>
                 </div>
-                <paper-input 
-                    id="password" 
-                    label="{{localize('password?')}}" 
-                    type="password" 
-                    value="{{password}}"
+                <paper-input id="password" label="{{localize('password?')}}" type="password" value="{{password}}"
                     on-keydown="_checkForEnter"></paper-input>
-                    <div class="error">{{error}}</div>
-                    <div class="btn">
-                        <div class="confirm" on-click="_decrypt"></div>
-                    </div>
+                <div class="error">{{error}}</div>
+                <div class="btn">
+                    <div class="confirm" on-click="_decrypt"></div>
+                </div>
             </template>
         </div>
     </template>
@@ -259,10 +254,10 @@ The following custom properties and mixins are available for styling:
                     filename: {
                         type: String,
                     },
-                                        /**
-                    * the password the user enters
-                    * @type {Boolean}
-                    */
+                    /**
+* the password the user enters
+* @type {Boolean}
+*/
                     password: {
                         type: String,
                     },
@@ -282,25 +277,25 @@ The following custom properties and mixins are available for styling:
             */
             static get actions() {
                 return Object.assign({
-                    PUBLICKEY: function(publicKey) {
+                    PUBLICKEY: function (publicKey) {
                         return {
                             type: 'PUBLICKEY',
                             publicKey: publicKey,
                         };
                     },
-                    AVATAR: function(avatar) {
+                    AVATAR: function (avatar) {
                         return {
                             type: 'AVATAR',
                             avatar: avatar,
                         };
                     },
-                    USERNAME: function(username) {
+                    USERNAME: function (username) {
                         return {
                             type: 'USERNAME',
                             username: username,
                         };
                     },
-                    REQIPFS: function(reqipfs) {
+                    REQIPFS: function (reqipfs) {
                         return {
                             type: 'REQIPFS',
                             reqipfs: reqipfs,
@@ -322,7 +317,7 @@ The following custom properties and mixins are available for styling:
             */
             _checkForEnter(e) {
                 if (e.keyCode === 13) {
-                        this._decrypt();
+                    this._decrypt();
                 }
             }
             /**
@@ -352,60 +347,71 @@ The following custom properties and mixins are available for styling:
             */
             _decrypt() {
                 if (this.wallet.Crypto) {
-                    // check password before dooing any of this
+                    // check password before doing any of this
                     this.$.wallet.decryptUtcKeystore(this.wallet, this.password)
-                    .then((privateKey) => {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.keyStore = this.wallet;
-                        if (!this.wallet.avatar) {
-                            storage.user.avatar = '[[importHref]]../../images/defaultavatar.png';
-                        } else {
-                            storage.user.avatar = this.wallet.avatar;
-                        }
-                        storage.user.username = this.wallet.username;
-                        delete storage.keyStore.username;
-                        delete storage.keyStore.avatar;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                        this.dispatch('PUBLICKEY', storage.keyStore.address);
-                        this.dispatch('AVATAR', storage.user.avatar);
-                        this.dispatch('USERNAME', storage.user.username);
+                        .then(() => {
+                            let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                            storage.keyStore = this.wallet;
+                            if (!this.wallet.avatar) {
+                                storage.user.avatar = '[[importHref]]../../images/defaultavatar.png';
+                            } else {
+                                storage.user.avatar = this.wallet.avatar;
+                            }
+                            const ipfs = window.ipfs
+                            ipfs.add(storage.user.avatar)
+                                .then(hash => {
+                                    storage.user.avatarHash = hash.hash;
+                                    storage.user.username = this.wallet.username;
+                                    delete storage.keyStore.username;
+                                    delete storage.keyStore.avatar;
+                                    delete storage.keyStore.avatarHash;
+                                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                    this.dispatch({ type: 'UPDATE_AVATARHASH', avatarHash: storage.user.avatarHash });
+                                    this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
+                                    this.dispatch({ type: 'USERNAME', username: storage.user.username });
 
-                        if (sessionStorage.getItem('origin')) {
-                            this.path = sessionStorage.getItem('origin');
-                            sessionStorage.removeItem('origin');
-                        }
-                        else {
-                            this.set('route.path', 'hashtag-list');
-                        }
-                    })
-                    .catch((error) => {
-                        this.error = 'wrong password';
-                    });
+                                    if (sessionStorage.getItem('origin')) {
+                                        this.path = sessionStorage.getItem('origin');
+                                        sessionStorage.removeItem('origin');
+                                    }
+                                    else {
+                                        this.set('route.path', 'hashtag-list');
+                                    }
+
+
+                                })
+                                .catch(err => {
+                                    console.error('error resolving ipfs hash for avatar', err)
+                                })
+                        })
+                        .catch(() => {
+                            this.error = 'wrong password';
+                        });
                 } else {
                     const keystore = lightwallet.keystore.deserialize(this.wallet.keystore || this.wallet);
                     keystore.keyFromPassword(this.password, (err, pwDerivedKey) => {
                         if (!err) {
                             const privatekey = keystore.exportPrivateKey('0x' + keystore.getAddresses()[0],
-                            pwDerivedKey);
+                                pwDerivedKey);
                             this.$.wallet.restoreKey(privatekey, this.password)
-                            .then((KeyStore) => {
-                                let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                                storage.keyStore = KeyStore.utcKeystore;
-                                storage.user.username = this.wallet.identity.username;
-                                localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                                if (this.wallet.identity.avatarhash) {
-                                    this.dispatch('REQIPFS', this.wallet.identity.avatarhash);
-                                }
-                                this.dispatch('PUBLICKEY', storage.keyStore.address);
-                                this.dispatch('USERNAME', storage.user.username);
-                                if (sessionStorage.getItem('origin')) {
-                                    this.path = sessionStorage.getItem('origin');
-                                    sessionStorage.removeItem('origin');
-                                }
-                                else {
-                                    this.set('route.path', 'hashtag-list');
-                                }
-                            });
+                                .then((KeyStore) => {
+                                    let storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                                    storage.keyStore = KeyStore.utcKeystore;
+                                    storage.user.username = this.wallet.identity.username;
+                                    localStorage.setItem('SwarmCity', JSON.stringify(storage));
+                                    if (this.wallet.identity.avatarhash) {
+                                        this.dispatch({ type: 'UPDATE_AVATARHASH', avatarHash: this.wallet.identity.avatarhash });
+                                    }
+                                    this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
+                                    this.dispatch({ type: 'USERNAME', username: storage.user.username });
+                                    if (sessionStorage.getItem('origin')) {
+                                        this.path = sessionStorage.getItem('origin');
+                                        sessionStorage.removeItem('origin');
+                                    }
+                                    else {
+                                        this.set('route.path', 'hashtag-list');
+                                    }
+                                });
                         }
                     });
                 }

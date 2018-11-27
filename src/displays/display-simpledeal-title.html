@@ -1,127 +1,210 @@
 <!--
-@license
-Copyright (c) 2018 Swarm City
-This code may only be used under the license found at https://github.com/swarmcity/license
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link rel="import" href="../../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
-<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html">
-<link rel="import" href="../../bower_components/app-route/app-location.html">
-<link rel="import" href="../redux-state.html">
+<link rel="import" href="../../bower_components/polymer/polymer-element.html" />
+<link
+  rel="import"
+  href="../../bower_components/iron-media-query/iron-media-query.html"
+/>
+<!-- Displays and shared styles only -->
+<link rel="import" href="./display-simpledeal-about.html" />
 
 <dom-module id="display-simpledeal-title">
-    <template>
-        <style include="shared-styles">
-            :host {
-                display: block;
-            }
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
 
-            .container {
-                width: 100%;
-                box-sizing: border-box;
-                padding: 0px 40px 15px 40px;
-                background-image: url('../../images/bg-header3.png');
-                @apply --layout-horizontal;
-                @apply --layout-end;
-            }
+      .container {
+        position: fixed;
+        top: 107px;
+        z-index: 33;
+        width: 100vw;
+        box-sizing: border-box;
+        padding: 0px 40px 15px 40px;
+        background-image: url("../../images/bg-header3.png");
+        @apply --layout-horizontal;
+        @apply --layout-end;
+        min-height: 52px;
+      }
 
-            .container[wide-layout] {
-                padding: 0px 10vw 15px 10vw;
-            }
-            
-            .hashtagloading {
-                height: 16px;
-                width: 140px;
-                background-color: var(--sc-grey2);
-                border-radius: 8px;
-                margin: 10px 0px 0px 0px;
-                opacity: 0.5;
-            }
+      .container[wide-layout] {
+        padding: 0px 10vw 15px 10vw;
+      }
 
-            .container[wide-layout] .hashtagloading {
-                margin: 12px 0px 0px 0px;
-            }
+      .hashtagloading {
+        height: 16px;
+        width: 140px;
+        background-color: var(--sc-grey2);
+        border-radius: 8px;
+        margin: 10px 0px 0px 0px;
+        opacity: 0.5;
+      }
 
-            .namebox {
-                @apply --main-title2;
-                font-size: 30px;
-                color: var(--sc-grey4);
-            }
+      .container[wide-layout] .hashtagloading {
+        margin: 12px 0px 0px 0px;
+      }
 
-            .hashtagsymbol {
-                font-weight: 800;
-                font-size: 27px;
-                margin-right: 2px;
-            }
+      .namebox {
+        @apply --main-title2;
+        overflow-x: auto;
+        font-size: 30px;
+        color: var(--sc-grey4);
+      }
 
-            .info-toggle {
-                @apply --small-bold;
-                @apply --layout-center;
-                color: var(--sc-blue);
-                border-bottom: 2px dotted var(--sc-blue);
-                margin: 0px 0px 8px 10px;
-                box-sizing: border-box;
-                padding: 1px 3px;
-                cursor: pointer;
-            }
-        </style>
-        <app-location route="{{route}}"></app-location>
-        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <div class="container" wide-layout$="{{wide}}">
-            <dom-if if="{{loadingHashtag}}">
-                <template>
-                    <div class="hashtagloading"></div>
-                </template>
-            </dom-if>
-            <dom-if if="{{!loadingHashtag}}">
-                <template>
-                    <div class="namebox">
-                        <span class="hashtagsymbol">#</span>{{hashtag.hashtagName}}
-                    </div>
-                    <div id="infolink" class="info-toggle">i</div>
+      .hashtagsymbol {
+        font-weight: 800;
+        font-size: 27px;
+        margin-right: 2px;
+      }
 
-                </template>
-            </dom-if>
-        </div>
-    </template>
-    <script>
-        class MySimpledealTitle extends new ReduxMixin(Polymer.mixinBehaviors([
-            Polymer.AppLocalizeBehavior,
-        ],
-            Polymer.Element
-        )) {
-            static get is() {
-                return 'display-simpledeal-title';
-            }
-            static get properties() {
-                return {
-                    /**
-                    * Hashtag is the hashtag we're one
-                    * @type {Object}
-                    */
-                    hashtag: {
-                        type: Object,
-                        statePath: 'hashtag',
-                        observer: '_load',
-                    },
-                    /**
-                    * loadingHashtag is the currently loaded hashtag object
-                    * @type {Object}
-                    */
-                    loadingHashtag: {
-                        type: Boolean,
-                        value: true,
-                    },
-                };
-            }
-            /**
-            * Toggles betweeen loading & loaded state
-            */
-            _load() {
-                this.loadingHashtag = this.hashtag.hashtagAddress ? false : true;
-            }
+      #togglebox {
+        @apply --small-bold;
+        @apply --layout-center;
+        box-sizing: border-box;
+        margin: 0px 0px 8px 10px;
+        padding: 1px 3px;
+        cursor: pointer;
+      }
+
+      .blue {
+        background-color: var(--sc-blue);
+      }
+
+      .toggle {
+        padding: 1px 3px;
+      }
+
+      .untoggled {
+        border-bottom: 2px dotted var(--sc-blue);
+        color: var(--sc-blue);
+      }
+
+      .toggled {
+        border-bottom: 2px dotted var(--sc-white);
+        color: var(--sc-white);
+      }
+      display-simpledeal-about {
+        margin-top: -100vh;
+        position: fixed;
+        z-index: 32;
+      }
+    </style>
+    <iron-media-query
+      query="(min-width: 600px)"
+      query-matches="{{wide}}"
+    ></iron-media-query>
+    <display-simpledeal-about
+      id="about"
+      language="[[language]]"
+      hashtag="[[hashtag]]"
+      on-close="_close"
+    ></display-simpledeal-about>
+    <div class="container" wide-layout$="{{wide}}">
+      <dom-if if="{{!hashtag.hashtagName}}">
+        <template>
+          <div class="hashtagloading"></div>
+        </template>
+      </dom-if>
+      <dom-if if="{{hashtag.hashtagName}}">
+        <template>
+          <div class="namebox">
+            <span class="hashtagsymbol">#</span>{{ hashtag.hashtagName }}
+          </div>
+          <div id="togglebox">
+            <div id="infolink" class="toggle untoggled" on-tap="_toggle">
+              i
+            </div>
+          </div>
+        </template>
+      </dom-if>
+    </div>
+  </template>
+  <script>
+    class MySimpledealTitle extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "display-simpledeal-title";
+      }
+      static get properties() {
+        return {
+          /**
+           * Hashtag is the hashtag we're one
+           * @type {Object}
+           */
+          hashtag: {
+            type: Object,
+            statePath: AppStore.selectors.hashtag
+          },
+          /**
+           * loadingHashtag is the currently loaded hashtag object
+           * @type {Object}
+           */
+          loadingHashtag: {
+            type: Boolean,
+            value: true
+          },
+          showDetails: {
+            type: Boolean,
+            value: false
+          }
+        };
+      }
+      _close() {
+        this._toggle();
+      }
+      _toggle() {
+        this.showDetails = !this.showDetails;
+        if (this.showDetails) {
+          this.shadowRoot.querySelector("#infolink").classList.add("toggled");
+          this.shadowRoot.querySelector("#togglebox").classList.add("blue");
+          this.shadowRoot
+            .querySelector("#infolink")
+            .classList.remove("untoggled");
+
+          this.shadowRoot
+            .querySelector("#about")
+            .animate(
+              [
+                { transform: "translateY(0)" },
+                { transform: "translateY(100vh)" }
+              ],
+              {
+                fill: "both",
+                duration: 250,
+                direction: "normal",
+                easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
+              }
+            );
+        } else {
+          this.shadowRoot.querySelector("#infolink").classList.add("untoggled");
+          this.shadowRoot.querySelector("#togglebox").classList.remove("blue");
+          this.shadowRoot
+            .querySelector("#infolink")
+            .classList.remove("toggled");
+
+          this.shadowRoot
+            .querySelector("#about")
+            .animate(
+              [
+                { transform: "translateY(100vh)" },
+                { transform: "translateY(0)" }
+              ],
+              {
+                fill: "both",
+                duration: 250,
+                direction: "normal",
+                easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
+              }
+            );
         }
+      }
+    }
 
-        window.customElements.define(MySimpledealTitle.is, MySimpledealTitle);
-    </script>
+    window.customElements.define(MySimpledealTitle.is, MySimpledealTitle);
+  </script>
 </dom-module>

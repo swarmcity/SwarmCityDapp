@@ -1,0 +1,83 @@
+<script>
+    (function () {
+        const selectors = {
+            balance: (state) => {
+                if (state && state.balance && state.balance.kovan && state.balance.mainnet) {
+                    let balance = {}
+                    balance.cash = {
+                        wei: state.balance.kovan.swt ? state.balance.kovan.swt : 0,
+                        hr: state.balance.kovan.swt ? (state.balance.kovan.swt / 1e18).toFixed(2) : '...',
+                        usd: state.balance.kovan.swt ? (state.balance.kovan.swt / 1e18).toFixed(2) * 0.1 : '...',
+                    }
+                    balance.reserves = {
+                        wei: state.balance.mainnet.swt ? state.balance.mainnet.swt : 0,
+                        hr: state.balance.mainnet.swt ? (state.balance.mainnet.swt / 1e18).toFixed(2) : '...',
+                        usd: state.balance.mainnet.swt ? (state.balance.mainnet.swt / 1e18).toFixed(2) * 0.1 : '...',
+                    }
+                    return balance;
+                } else {
+                    return {
+                        cash: {
+                            wei: 0,
+                            hr: 'Fetching...',
+                            usd: '0'
+                        },
+                        reserves: {
+                            wei: 0,
+                            hr: 'Fetching...',
+                            usd: '0'
+                        }
+                    }
+                }
+
+            },
+            // when returning object literal, wrap it in parentheses 
+            // parser will then treat it as expression, not block statement
+            // effectively returning the wrapped object
+            hashtag: (state) => {
+                let hashtag = {
+                    ...state.hashtags[state.current.hashtag],
+                    address: state.current.hashtag
+                }
+                if (hashtag.items) {
+                    let item;
+                    for (item in hashtag.items) {
+                        if (hashtag.hasOwnProperty(item)
+                            && hashtag[item].providerAddress
+                            && hashtag[item].replies
+                            && hashtag[item].providerAddress != '0x0000000000000000000000000000000000000000') {
+                            hashtag[item].providerUsername = hashtag[item].replies[hashtag[item].providerAddress].username || 'No provider username';
+                            hashtag[item].providerAvatarHash = hashtag[item].replies[hashtag[item].providerAddress].avatarHash;
+                        }
+                    }
+                }
+                return hashtag;
+            },
+            confirmedTx: (state) => state.confirmedTx,
+            hashtagList: (state) => state.hashtagList,
+            address: (state) => state.publicKey,
+            username: (state) => state.username,
+            language: (state) => state.language,
+            avatarHash: (state) => state.avatarHash,
+            avatar: (state) => state.avatarHash,
+            item: (state) => {
+                if (state.hashtags[state.current.hashtag]
+                    && state.hashtags[state.current.hashtag].items) {
+                    return {
+                        ...state.hashtags[state.current.hashtag].items[state.current.item],
+                        itemHash: state.current.item
+                    };
+                }
+            },
+            chats: (state) => state.chats,
+            reputation: (state) => state.reputation,
+            chat: (state) => {
+                if (state.chats[state.current.item]) return state.chats[state.current.item]
+            },
+        }
+
+        // Export
+        if (!window.AppStore) window.AppStore = {}
+        window.AppStore.selectors = selectors;
+    }());
+</script>

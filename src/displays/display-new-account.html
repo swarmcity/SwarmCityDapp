@@ -121,8 +121,8 @@ The following custom properties and mixins are available for styling:
             <paper-input id="password" label="{{localize('password?')}}" type="password" on-input="_checkInput" value="{{password}}"
                 autofocus on-keydown="_checkForEnter">
             </paper-input>
-            <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput"
-                value="{{confirmPassword}}" on-keydown="_checkForEnter">
+            <paper-input id="repeat" label="{{localize('Confirm password')}}" type="password" on-input="_checkInput" value="{{confirmPassword}}"
+                on-keydown="_checkForEnter">
             </paper-input>
             <div class="errorcontainer">
                 <span id="error">{{error}}</span>
@@ -200,20 +200,7 @@ The following custom properties and mixins are available for styling:
                     },
                 };
             }
-            /**
-            * Redux action for setting publicKey
-            * @param {String} publicKey
-            */
-            static get actions() {
-                return Object.assign({
-                    PUBLICKEY: function(publicKey) {
-                        return {
-                            type: 'PUBLICKEY',
-                            publicKey: publicKey,
-                        };
-                    },
-                });
-            }
+
             connectedCallback() {
                 super.connectedCallback();
                 this.loadResources(this.resolveUrl('../text-translations.json'));
@@ -247,7 +234,7 @@ The following custom properties and mixins are available for styling:
                         .then((keyStore) => {
                             let storage = JSON.parse(localStorage.getItem('SwarmCity'));
                             storage.keyStore = keyStore.utcKeystore;
-                            this.dispatch('PUBLICKEY', storage.keyStore.address);
+                            this.dispatch({ type: 'PUBLICKEY', publicKey: storage.keyStore.address });
                             localStorage.setItem('SwarmCity', JSON.stringify(storage));
                             this.path = 'account-complete/';
                         });

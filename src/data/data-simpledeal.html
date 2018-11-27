@@ -2,157 +2,333 @@
 
 <dom-module id="data-simpledeal">
     <script>
+
+        // Import libraries
+        const Tx = webpack.EthereumTx
+        const Buffer = webpack.Buffer.Buffer
+        const _web3 = window.web3Local
+        const sha3 = webpack.sha3
+        const ipfs = window.ipfs
+        const hdWallet = window.hdWallet
+
+        const {
+            kovSwtToken,
+            hashtagList,
+            simpleDeal
+        } = contractsData;
+
+        async function createNewItemAsync({ seeker, item, hashtag }) {
+            // 0. Upload to IPFS
+            const storage = JSON.parse(localStorage.getItem('SwarmCity'));
+            const metadataHash = await ipfs.add(JSON.stringify({
+                username: seeker.username,
+                avatarHash: storage.user.avatarHash,
+                description: item.description,
+                location: item.location,
+                publicKeySeeker: seeker.publicKey
+            }))
+            console.log('item metadata: ', metadataHash)
+            // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
+            const itemBudgetWei = item.budget * 1e18;
+            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);   
+
+            // generate the itemHash
+            const itemHash = hdWallet.createItem(seeker.privateKey);
+
+            // 1. Encode the newItem method to be sent through transferAndCall
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            const rawNewItem = simpleDealContract.methods.newItem(
+                itemHash,
+                itemBudgetWei,
+                metadataHash.bytes32
+            ).encodeABI();
+            const tokenContract = new _web3.eth.Contract(kovSwtToken.abi, hashtag.tokenAddress);
+            const rawTransferAndCall = tokenContract.methods.transferAndCall(
+                hashtag.address, // spender
+                totalSum, // totalSum
+                rawNewItem, // next call data
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address)
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtag.tokenAddress,
+                data: rawTransferAndCall,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const txHash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return { txHash, itemHash }
+        }
+
+        async function createNewReplyAsync({ replier, reply, hashtag }) {
+
+            // const hashArray = hdWallet.util.toUint8Array(reply.itemHash);
+            
+            
+            // Add the accessKey
+            const accessKey = hdWallet.requestAccess(replier.privateKey, reply.itemHash);
+            const storage = JSON.parse(localStorage.getItem('SwarmCity'));
+            // 0. Upload to IPFS
+            const metadataHash = await ipfs.add(JSON.stringify({
+                username: replier.username,
+                avatarHash: storage.user.avatarHash,
+                replierAddress: replier.address,
+                message: reply.message,
+                accessKey: accessKey,
+            }))
+
+            // 1. Encode the raw replyItem
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            const rawReplyItem = simpleDealContract.methods.replyItem(
+                reply.itemHash,
+                metadataHash.bytes32
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(replier.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: replier.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtag.address,
+                data: rawReplyItem,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(replier.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
+        async function selectReplierAsync({ seeker, provider, item }) {
+            // Seeker gives Chat access to the provider
+            // await hdWallet.giveAccess(seeker.privateKey, item.itemHash, provider.accessKey);
+
+            // 1. Encode the raw selectReplier
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, item.hashtag);
+            const rawSelectReplier = simpleDealContract.methods.selectReplier(
+                item.itemHash,
+                provider.address
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: item.hashtag,
+                data: rawSelectReplier,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+
+        }
+
+        async function fundItemAsync({ provider, item, hashtag }) {
+            // 0. Calculate the total swt cost
+            const totalSum = parseInt(item.value) + parseInt(hashtag.fee / 2);
+            // 1. Encode the raw fundItem
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtag.address);
+            const rawFundItem = simpleDealContract.methods.fundItem(
+                item.hash
+            ).encodeABI();
+            const tokenContract = new _web3.eth.Contract(kovSwtToken.abi, hashtag.tokenAddress);
+            const rawTransferAndCall = tokenContract.methods.transferAndCall(
+                hashtag.address, // spender
+                totalSum, // totalSum
+                rawFundItem, // next call data
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(provider.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: provider.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtag.tokenContractAddress,
+                data: rawTransferAndCall,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(provider.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
+        async function payoutItemAsync({ seeker, itemHash, hashtagAddress }) {
+            // 1. Encode the raw payoutItem
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
+            const rawPayoutItem = simpleDealContract.methods.payoutItem(
+                itemHash,
+            ).encodeABI();
+            
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtagAddress,
+                data: rawPayoutItem,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
+        async function disputeItemAsync({ disputer, itemHash, hashtagAddress }) {
+            // 1. Encode the raw disputeItem
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
+            const rawDisputeItem = simpleDealContract.methods.disputeItem(
+                itemHash,
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(disputer.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: disputer.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtagAddress,
+                data: rawDisputeItem,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(disputer.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
+        function _toHex(dec) {
+            let hex = Number(dec).toString(16);
+            let result = '000000'.substr(0, 6 - hex.length) + hex;
+            return '0x' + result;
+        }
+
+        function sendSignedTransaction(tx) {
+            return new Promise((resolve, reject) => {
+                let _hash;
+                _web3.eth.sendSignedTransaction(tx)
+                    .once('transactionHash', (hash) => {
+                        resolve(hash)
+                        _hash = hash
+                    })
+                    .on('receipt', (receipt) => {
+                        console.log('received receipt for txHash: ' + hash, receipt);
+                    })
+                    .on('error', (err, receipt) => {
+                        if (err.message &&
+                            err.message.startsWith('Failed to check for transaction receipt')
+                        ) {
+                            console.log('Another complaint about the receipt ignored.');
+                        } else {
+                            if (receipt) {
+                                console.error('We might be out of Gas: %j', receipt);
+                            } else {
+                                console.error(err);
+                            }
+                            reject(new Error('Transaction error: ' + err));
+                        }
+                    });
+            })
+        }
+
         class DataSimpledeal extends Polymer.Element {
             static get is() {
                 return 'data-simpledeal';
             }
 
             /**
-            * Create a new hashtag item
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {Number} weiAmount - The item value in wei
-            * @param {String} ipfsHash - The item's metadata ipfs hash
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw new item tx data
-            */
-            rawNewItem(itemHash, weiAmount, ipfsHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawNewItem = simpleDealContract.methods.newItem(
-                        itemHash,
-                        weiAmount,
-                        ipfsHash
-                    ).encodeABI();
-                    resolve(rawNewItem);
-                });
+             * Create a new hashtag item
+             */
+            createNewItem(args) {
+                return createNewItemAsync(args)
             }
 
             /**
-            * Reply to an item
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {String} ipfsHash - The reply data ipfs hash
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw reply tx data
-            */
-            rawReplyItem(itemHash, ipfsHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawReplyItem = simpleDealContract.methods.replyItem(
-                        itemHash,
-                        ipfsHash
-                    ).encodeABI();
-                    resolve(rawReplyItem);
-                });
+             * Create a new item reply
+             */
+            createNewReply(args) {
+                return createNewReplyAsync(args)
             }
 
             /**
-            * As seeker, select a replier to your item as potential provider
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {String} replierAddress - The replier's address
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw reply tx data
-            */
-            rawSelectReplier(itemHash, replierAddress, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawSelectReplier = simpleDealContract.methods.selectReplier(
-                        itemHash,
-                        replierAddress
-                    ).encodeABI();
-                    resolve(rawSelectReplier);
-                });
+             * Select a replier
+             */
+            selectReplier(args) {
+                return selectReplierAsync(args)
             }
 
             /**
-            * Fund a hashtag item
-            * @param {String} itemHash - The itemHash of the item
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw new item tx data
-            */
-            rawFundItem(itemHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
-                    const simpleDealContract = new webpack.Contract(
-                        abi,
-                        contractAddress
-                    );
-                    let rawFundItem = simpleDealContract.methods.fundItem(
-                        itemHash
-                    ).encodeABI();
-                    resolve(rawFundItem);
-                });
+             * Fund an item
+             */
+            fundItem(args) {
+                return fundItemAsync(args)
             }
 
             /**
-            * Pay the provider the full sum
-            * @param {String} itemHash - The itemHash in Hex (with prefix)
-            * @param {String} contractAddress - The hashtag's address
-            * @param {Object} abi - The hashtag contract's abi
-            * @return {Object} - The Raw payout item tx data
-            */
-            rawPayoutItem(itemHash, contractAddress, abi) {
-                return new Promise((resolve, reject) => {
-                    const simpleDealContract = new webpack.Contract(abi, contractAddress);
-                    let rawPayoutItem = simpleDealContract.methods.payoutItem(itemHash).encodeABI();
-                    resolve(rawPayoutItem);
-                });
+             * Payout
+             */
+            payoutItem(args) {
+                return payoutItemAsync(args)
             }
 
             /**
-            * Filter the hashtag object to return a formatted list of items the user is involved in
-            * @return {items} The array with items the user is involved in
-            * @argument {object} hashtag the current hashtag
-            * @argument {String} userAddress the user's address
-            * @argument {String} involved if true, return the items the user is involved with
-            */
-            getHashtagItems(hashtag, userAddress, involved) {
-                return new Promise((resolve, reject) => {
-                    let items = Object.values(hashtag.items)
-                        .filter((item) => {
-                            let isInvolved = false;
-                            if (!item.itemHash) return false;
-                            if (item.replies && item.replies[userAddress]) {
-                                isInvolved = true;
-                            }
-                            if (item.seeker.address == userAddress) {
-                                isInvolved = true;
-                            }
-                            // Don't add completed deals to items involved
-                            if (item.status && item.status == 2) isInvolved = false;
-                            if (involved) {
-                                // only return items the user is involved with
-                                return isInvolved;
-                            } else if (item.status != 1) {
-                                // only return items the user is not involved with
-                                return !isInvolved;
-                            }
-                        })
-                        .map((item) => {
-                            // If missing seeker username, use address
-                            item.seeker.username = item.seeker.username || item.seeker.address;
-                            // If missing description, use default
-                            item.description = item.description || 'Missing description';
-                            return item;
-                        })
-                        .sort((a, b) => {
-                            // sort the array by date, newest first
-                            return parseInt(b.dateTime) - parseInt(a.dateTime);
-                        });
-                    resolve(items);
-                });
+             * Dispute
+             */
+            disputeItem(args) {
+                return disputeItemAsync(args)
             }
-        } window.customElements.define(DataSimpledeal.is, DataSimpledeal);
+        }
+        window.customElements.define(DataSimpledeal.is, DataSimpledeal);
+
     </script>
 </dom-module>

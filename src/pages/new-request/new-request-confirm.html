@@ -1,0 +1,190 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../shared-styles.html">
+<!--
+
+Example:
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--new-request-confirm` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="new-request-confirm">
+    <template>
+        <style include="shared-styles">
+            :host {
+                background-color: var(--sc-blue);
+                height: 100vh;
+                width: 100vw;
+                display: block;
+            }
+
+            .container {
+                background-color: var(--sc-blue);
+                @apply --titlepage-closed-container;
+            }
+
+            .container .top {
+                @apply --titlepage-closed-container-top;
+            }
+
+            .container .bottom {
+                @apply --titlepage-closed-container-bottom;
+            }
+
+            .container .title {
+                @apply --titlepage-title;
+                color: var(--sc-white);
+            }
+
+            .container .subtitle {
+                @apply --titlepage-subtitle;
+                color: var(--sc-white);
+            }
+
+            .container[wide-layout] {
+                @apply --titlepage-closed-wide-container;
+            }
+
+            .container[wide-layout] .top {
+                @apply --titlepage-closed-wide-container-top;
+            }
+
+            .container[wide-layout] .bottom {
+                @apply --titlepage-closed-wide-container-bottom;
+            }
+
+            .container[wide-layout] .title {
+                @apply --titlepage-title-wide;
+            }
+
+            .container[wide-layout] .subtitle {
+                @apply --titlepage-subtitle-wide;
+            }
+
+            .container .confirmers {
+                @apply --titlepage-confirmers;
+            }
+
+            .container[wide-layout] .confirmers {
+                @apply --titlepage-confirmers-wide;
+            }
+
+            .container .confirmers>div:nth-child(1) {
+                @apply --confirmers-x;
+                @apply --xmark-grey4-normal;
+            }
+
+            .container .confirmers>div:nth-child(1):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2) {
+                @apply --icon-button-big;
+            }
+
+            .container .confirmers>div:nth-child(2):active {
+                @apply --button-active;
+            }
+
+            .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                @apply --vmark-blue-normal;
+            }
+
+            .flexer {
+                @apply --titlepage-flexer;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+
+                .container .confirmers>div:nth-child(1),
+                .container .confirmers>div:nth-child(2)>div:nth-child(1) {
+                    @apply --retina
+                }
+            }
+        </style>
+        <div id="container" class="container" wide-layout$="{{wide}}">
+            <div class="top">
+                <div class="title" id="title">{{localize('Post this request for')}} [[totalSum]] SWT?</div>
+                <div class="subtitle" id="subtitle">{{localize('This can not be undone.')}} [[hashtagFee]] SWT
+                    {{localize('hashtagfee is included')}}.</div>
+            </div>
+            <div class="flexer">
+            </div>
+            <div class="bottom">
+                <div class="confirmers" id="buttons">
+                    <div on-click="_reject"></div>
+                    <div on-click="_confirm">
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyNewRequestConfirm extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'new-request-confirm';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    totalSum: {
+                        type: String,
+                    },
+                    hashtagFee: {
+                        type: String,
+                    },
+                    unlock: {
+                        type: Boolean,
+                        value: false,
+                    }
+                };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+            /**
+            * Takes the user to the previous page
+            */
+            _reject() {
+                this.dispatchEvent(new CustomEvent('reject'));
+            }
+            /**
+            * Takes the user to the previous page
+            */
+            _confirm() {
+                this.dispatchEvent(new CustomEvent('confirm'));
+            }
+
+
+        } window.customElements.define(MyNewRequestConfirm.is, MyNewRequestConfirm);
+    </script>
+</dom-module>

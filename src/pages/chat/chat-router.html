@@ -1,0 +1,234 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+<link rel="import" href="../../../bower_components/app-route/app-location.html" />
+<link rel="import" href="../../redux-state.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../displays/display-unlock.html" />
+<link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="./chat-top.html" />
+<link rel="import" href="./chat-messages.html" />
+<link rel="import" href="./chat-new.html" />
+
+<dom-module id="page-chat">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply --layout-vertical;
+        @apply --layout-end-justified;
+        background-image: var(--sc-bg);
+        height: 100vh;
+      }
+    </style>
+    <display-unlock id="unlock" blue></display-unlock>
+    <socket-redux id="socket"></socket-redux>
+    <app-location route="{{route}}"></app-location>
+    <chat-top item="[[item]]" hashtag="[[hashtag]]" on-close="_handleOnClose"></chat-top>
+    <div class="container">
+      <chat-messages address="[[address]]" messages="[[messages]]" avatars="[[avatars]]"></chat-messages>
+      <chat-new address="[[address]]" avatars="[[avatars]]" on-send="_handleOnSend"></chat-new>
+    </div>
+  </template>
+  <script>
+    class MyChatRouter extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "page-chat";
+      }
+      static get properties() {
+        return {
+          route: {
+            type: Object,
+            observer: "_getSecret"
+          },
+          hashtag: {
+            type: Object,
+            statePath: AppStore.selectors.hashtag
+          },
+          item: {
+            type: Object,
+            statePath: AppStore.selectors.item,
+            observer: "_getAvatars"
+          },
+          chat: {
+            type: Object,
+            statePath: AppStore.selectors.chat,
+            observer: "_getSecret"
+          },
+          address: {
+            type: String,
+            statePath: AppStore.selectors.address
+          },
+          avatars: {
+            type: Object,
+            value: {}
+          },
+          secret: {
+            type: Object,
+            value: {}
+          },
+          messages: {
+            object: Array,
+            value: []
+          }
+        };
+      }
+      _handleOnClose() {
+        this.set(
+          "route.path",
+          `detail/${this.hashtag.address}/${this.item.itemHash}`
+        );
+      }
+      _handleOnSend(e) {
+        const message = {
+          sender: this.address,
+          time: Math.floor(Date.now() / 1000),
+          message: e.detail,
+          type: "message"
+        };
+        webpack
+          .encryptWithPublicKey(this.secret.encryptKey, message.message)
+          .then(encrypted => {
+            message.message = encrypted;
+            this.$.socket
+              ._sendChatMessage({
+                itemHash: this.item.itemHash,
+                message
+              })
+              .then(() => {
+                console.log("Successfully sent chat message");
+              })
+              .catch(err => {
+                console.log("Error sending chat message: ", err);
+              });
+          })
+          .catch(err => {
+            console.error("Error encrypting chat message: ", err);
+          });
+      }
+
+      _getSecret() {
+        if (!this.chat) {
+          this.dispatchEvent(new CustomEvent('openChat', {
+            detail: { itemHash: this.item.itemHash, yourAddress: this.address },
+            bubbles: true,
+            composed: true
+          }));
+        }
+        if (this.route.path.split("/")[1] == "chat") {
+          if (
+            !(this.secret && this.secret.chat) ||
+            (this.secret &&
+              this.secret.chat &&
+              this.chat &&
+              this.chat.itemHash &&
+              this.secret.chat != this.chat.itemHash)
+          ) {
+            // If there is no secret, or if secret stored is not the correct one (check by itemHash), start the decryption phase.
+            this.set('messages', []);
+            this.$.unlock
+              ._getPrivateKey()
+              .then(res => {
+                try {
+                  if (!this.chat) throw Error("Not a participant in this chat");
+                  const { privateKey, address, publicKey } = res;
+                  this.chat.accessKeys.forEach(accessKey => {
+                    console.log(accessKey);
+                    try {
+                      //decrypt accessKey
+                      webpack
+                        .decryptWithPrivateKey(privateKey, accessKey)
+                        .then(res => {
+                          const decrypted = JSON.parse(res);
+                          this.secret.decryptKey = decrypted.privateKey;
+                          this.secret.encryptKey = decrypted.publicKey;
+                          this.secret.chat = this.chat.itemHash;
+                          this._decryptMessages();
+                        })
+                        .catch(err => {
+                          console.error(err.message);
+                        });
+                    } catch (e) {
+                      console.error(e.message);
+                    }
+                  });
+                } catch (e) {
+                  console.error(
+                    "Error unlocking wallet (catch block): ",
+                    e.stack
+                  );
+                  this._handleOnClose();
+                }
+              })
+              .catch(() => {
+                this._handleOnClose();
+              });
+          } else {
+            // There is a secret, and the secret corresponds to the current item chat --> decrypt messages
+            this._decryptMessages();
+          }
+        }
+      }
+
+      _getAvatars() {
+        let avatars = {};
+        if (this.item && this.item.replies) {
+          if (this.item.seekerAvatarHash)
+            avatars[this.item.seekerAddress] = this.item.seekerAvatarHash;
+          if (this.item.providerAddress)
+            avatars[this.item.providerAddress] = this.item.replies[
+              this.item.providerAddress
+            ].avatarHash;
+        }
+        if (this.hashtag && this.hashtag.metadata && this.hashtag.metadata.maintainer
+          && this.hashtag.metadata.maintainer.address && this.hashtag.metadata.maintainer.avatar) {
+          avatars[this.hashtag.metadata.maintainer.address] = this.hashtag.metadata.maintainer.avatar;
+        }
+        this.set("avatars", avatars);
+      }
+
+      _decryptMessages() {
+        let decryptedMessages = [];
+        let plainMessages = []
+        for (let i = 0; i < this.chat.messages.length; i++) {
+          if (this.chat.messages[i].message && this.chat.messages[i].message.iv) {
+            decryptedMessages.push(this._decryptMessage(this.chat.messages[i]));
+          } else {
+            plainMessages.push(this.chat.messages[i])
+          }
+        }
+        Promise.all(decryptedMessages)
+          .then(decryptedMessages => {
+            this.set('messages', plainMessages
+              .concat(decryptedMessages)
+              .sort((a, b) => a.time - b.time)
+            )
+          });
+      }
+      _decryptMessage(msg) {
+        return new Promise((resolve) => {
+          webpack.decryptWithPrivateKey(this.secret.decryptKey, msg.message)
+            .then(decryptedMessage => {
+              // JSON parse & string is a hack to have a real copy for msg,
+              // otherwise we add decrypted msg.message within redux chat.messages
+              let copyByValue = JSON.parse(JSON.stringify(msg));
+              copyByValue.message = decryptedMessage;
+              resolve(copyByValue);
+            })
+        })
+
+      }
+    }
+    window.customElements.define(MyChatRouter.is, MyChatRouter);
+  </script>
+</dom-module>

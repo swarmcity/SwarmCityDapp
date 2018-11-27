@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../redux-state.html">
+<script src="../redux/sagas/HdWallet.min.js"></script>
 <dom-module id="socket-redux">
 
     <script>
@@ -18,330 +19,157 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Object,
                     },
                     /**
-                    * balance represnts the users balance
-                    * @type {Array}
-                    */
+                     * balance represnts the users balance
+                     * @type {Array}
+                     */
                     balance: {
                         type: Object,
                     },
                     /**
-                    * Username represents the users username
-                    * @type {String}
-                    */
+                     * Username represents the users username
+                     * @type {String}
+                     */
                     username: {
                         type: String,
                         statePath: 'username',
                     },
                     /**
-                    * Avatar represents the user's base64 of their avatar image
-                    * @type {String}
-                    */
-                    avatar: {
-                        type: String,
-                        statePath: 'avatar',
-                        observer: '_avatarChanged',
-                    },
-                    /**
-                    * fx is the SWT exchange rates
-                    * @type {Object}
-                    */
+                     * fx is the SWT exchange rates
+                     * @type {Object}
+                     */
                     fx: {
                         type: Object,
                     },
                     /**
-                    * publickey is the wallet pubkey
-                    * @type {String}
-                    */
+                     * publickey is the wallet pubkey
+                     * @type {String}
+                     */
                     publicKey: {
                         type: String,
                         statePath: 'publicKey',
                         observer: '_publickeyChanged',
                     },
                     /**
-                    * nonce is the current nonce for the wallet's pubkey
-                    * as given by the ETH network
-                    * @type {Number}
-                    */
+                     * nonce is the current nonce for the wallet's pubkey
+                     * as given by the ETH network
+                     * @type {Number}
+                     */
                     nonce: {
                         type: Number,
                     },
                     /**
-                    * This is the shortCode we want a public key for
-                    * as given by the ETH network
-                    * @type {Number}
-                    */
+                     * This is the shortCode we want a public key for
+                     * as given by the ETH network
+                     * @type {Number}
+                     */
                     reqtokey: {
                         type: Number,
                         statePath: 'reqtokey',
                         observer: '_reqToKey',
                     },
                     /**
-                    * This is the signed transaction to be broadcast
-                    * @type {String}
-                    */
-                    broadcast: {
-                        type: String,
-                        statePath: 'broadcast',
-                        observer: '_broadcast',
-                    },
-                    /**
-                    * This is a generated shortCode
-                    * @type {String}
-                    */
-                    shortCode: {
-                        type: String,
-                        statePath: 'shortCode',
-                    },
-                    /**
-                    * Historic transactions for publickey
-                    * @type {Array}
-                    */
+                     * Historic transactions for publickey
+                     * @type {Array}
+                     */
                     transactions: {
                         type: Array,
                         statePath: 'transactions',
                     },
                     /**
-                    * Get base 64 image from IPFS hash
-                    * @type {Array}
-                    */
+                     * Get base 64 image from IPFS hash
+                     * @type {Array}
+                     */
                     reqipfs: {
                         type: String,
                         statePath: 'reqipfs',
                         observer: '_reqipfs',
                     },
                     /**
-                    * An ipfs hash we want to resolve over the API
-                    * @type {Array}
-                    */
+                     * An ipfs hash we want to resolve over the API
+                     * @type {Array}
+                     */
                     ipfsHash: {
                         type: String,
                         statePath: 'ipfsHash',
                         observer: '_ipfsHashResolve',
                     },
                     /**
-                    * Send new request metadata to IPFS
-                    * @type {Object}
-                    */
+                     * Send new request metadata to IPFS
+                     * @type {Object}
+                     */
                     itemToIpfs: {
                         type: Object,
                         statePath: 'itemToIpfs',
                         observer: '_itemToIpfs',
                     },
                     /**
-                    * Send new reply metadata to IPFS
-                    * @type {Object}
-                    */
-                    replyToIpfs: {
-                        type: Object,
-                        statePath: 'replyToIpfs',
-                        observer: '_replyToIpfs',
-                    },
-                    /**
-                    * Send new signed tx to the blockchain
-                    * @type {Object}
-                    */
+                     * Send new signed tx to the blockchain
+                     * @type {Object}
+                     */
                     signedTx: {
                         type: Object,
                         statePath: 'sendSignedTx',
                         observer: '_sendSignedTx',
                     },
                     /**
-                    * usingShortCode will maintain a subscription while true
-                    * @type {Boolean}
-                    */
-                    usingShortCode: {
-                        type: Boolean,
-                        statePath: 'usingShortCode',
-                        observer: '_usingShortCode',
-                    },
-                    /**
-                    * An array containing the transaction history for this public key
-                    * @type {Array}
-                    */
+                     * An array containing the transaction history for this public key
+                     * @type {Array}
+                     */
                     confirmedTx: {
                         type: Array,
                         statePath: 'confirmedTx',
                     },
                     /**
-                    * An Object containing the data for a hashtag
-                    * @type {Object}
-                    */
-                    hashtag: {
-                        type: Object,
-                        statePath: 'hashtag',
-                        observer: '_getHashtag',
-                    },
-                    /**
-                    * An Object containing the data for a hashtagItem
-                    * @type {Object}
-                    */
+                     * An Object containing the data for a hashtagItem
+                     * @type {Object}
+                     */
                     hashtagItem: {
                         type: Object,
                         statePath: 'hashtagItem',
                     },
                     /**
-                    * The selected user's reputation balance
-                    * @type {Object}
-                    */
+                     * The selected user's reputation balance
+                     * @type {Object}
+                     */
                     userReputation: {
                         type: Object,
                         statePath: 'userReputation',
                         observer: '_getUserReputation',
                     },
-                    /**
-                    * The selected user's reputation balance
-                    * @type {Object}
-                    */
-                    myReputation: {
+                    chats: {
                         type: Object,
-                        statePath: 'myReputation',
-                        observer: '_getMyReputation',
-                    },
-                    /**
-                    * The current subscriptionId string to a hashtag
-                    * @type {String}
-                    */
-                    hashtagSubscription: {
-                        type: String,
-                    },
-                    /**
-                    * the chat history object to instantiate or subscribe to
-                    * @type {Object}
-                    */
-                    chatHistory: {
-                        type: Object,
-                        statePath: 'chatHistory',
-                        observer: '_chatHistory',
-                    },
-                    /**
-                    * the newChatMessage object contains a new chat message for a chat subscription
-                    * @type {Object}
-                    */
-                    newChatMessage: {
-                        type: Object,
-                        statePath: 'newChatMessage',
-                        observer: '_newChatMessage',
+                        statePath: AppStore.selectors.chats,
                     },
                 };
             }
             /**
-            * Redux action for setting property values
-            * @param {String} publicKey
-            */
+             * Redux action for setting property values
+             * @param {String} publicKey
+             */
             static get actions() {
                 return Object.assign({
-                    BALANCE: function(balance) {
+                    BALANCE: function (balance) {
                         return {
                             type: 'BALANCE',
                             balance: balance,
                         };
                     },
-                    FX: function(fx) {
+                    FX: function (fx) {
                         return {
                             type: 'FX',
                             fx: fx,
                         };
                     },
-                    NONCE: function(nonce) {
-                        return {
-                            type: 'NONCE',
-                            nonce: nonce,
-                        };
-                    },
-                    TOKEY: function(tokey) {
-                        return {
-                            type: 'TOKEY',
-                            tokey: tokey,
-                        };
-                    },
-                    SHORTCODE: function(shortCode) {
-                        return {
-                            type: 'SHORTCODE',
-                            shortCode: shortCode,
-                        };
-                    },
-                    AVATAR: function(avatar) {
-                        return {
-                            type: 'AVATAR',
-                            avatar: avatar,
-                        };
-                    },
-                    AVATARHASH: function(avatarHash) {
-                        return {
-                            type: 'AVATARHASH',
-                            avatarHash: avatarHash,
-                        };
-                    },
-                    TXHASH: function(txHash) {
+                    TXHASH: function (txHash) {
                         return {
                             type: 'TXHASH',
                             txHash: txHash,
                         };
                     },
-                    TXHASHITEM: function(txHashItem) {
-                        return {
-                            type: 'TXHASHITEM',
-                            txHashItem: txHashItem,
-                        };
-                    },
-                    CONFIRMEDTX: function(confirmedTx) {
+                    CONFIRMEDTX: function (confirmedTx) {
                         return {
                             type: 'CONFIRMEDTX',
                             confirmedTx: confirmedTx,
-                        };
-                    },
-                    ITEMDATAHASH: function(itemDataHash) {
-                        return {
-                            type: 'ITEMDATAHASH',
-                            itemDataHash: itemDataHash,
-                        };
-                    },
-                    REPLYDATAHASH: function(replyDataHash) {
-                        return {
-                            type: 'REPLYDATAHASH',
-                            replyDataHash: replyDataHash,
-                        };
-                    },
-                    HASHTAG: function(hashtag) {
-                        return {
-                            type: 'HASHTAG',
-                            hashtag: hashtag,
-                        };
-                    },
-                    IPFSHASH: function(ipfsHash) {
-                        return {
-                            type: 'IPFSHASH',
-                            ipfsHash: ipfsHash,
-                        };
-                    },
-                    USERREPUTATION: function(userReputation) {
-                        return {
-                            type: 'USERREPUTATION',
-                            userReputation: userReputation,
-                        };
-                    },
-                    MYREPUTATION: function(myReputation) {
-                        return {
-                            type: 'MYREPUTATION',
-                            myReputation: myReputation,
-                        };
-                    },
-                    HASHTAGS: function(hashtags) {
-                        return {
-                            type: 'HASHTAGS',
-                            hashtags: hashtags,
-                        };
-                    },
-                    CHATHISTORY: function(chatHistory) {
-                        return {
-                            type: 'CHATHISTORY',
-                            chatHistory: chatHistory,
-                        };
-                    },
-                    NEWCHATMESSAGE: function(newChatMessage) {
-                        return {
-                            type: 'NEWCHATMESSAGE',
-                            newChatMessage: newChatMessage,
                         };
                     },
                 });
@@ -350,7 +178,7 @@ This code may only be used under the license found at https://github.com/swarmci
             constructor() {
                 super();
                 // Create websocket
-                this.socket = io('https://dev.swarm.city', // eslint-disable-line
+                this.socket = io('https://scapiweb3-c.swarm.city', // eslint-disable-line
                     {
                         query: 'apiUser=swarmCity',
                         path: '/api',
@@ -367,233 +195,57 @@ This code may only be used under the license found at https://github.com/swarmci
                             autoConnect: true,
                         });
                 };
+
+                // Initialize hdWallet
+                window.hdWallet = new HdWallet({
+                    transport: this.socket,
+                    name: this.username,
+                })
             }
 
             ready() {
                 super.ready();
-                // Get push updates of the user's balance
-                this.socket.on('balanceChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.balance = reply.data;
-                        this.dispatch('BALANCE', this.balance);
-                    }
-                });
-                // Listen for changes in the exchange rates
-                this.socket.on('fxChanged', (reply) => {
-                    this.fx = reply;
-                    this.dispatch('FX', this.fx);
-                });
-                // Get push updates of the user's nonce
-                this.socket.on('nonceChanged', (reply) => {
-                    this.nonce = reply.data.nonce;
-                    this.dispatch('NONCE', this.nonce);
-                });
-
-                // Get the list of hashtags
-                this.socket.emit('subscribeToHashtags');
-                this.socket.on('hashtagsChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.hashtags = reply.data;
-                        this.dispatch('HASHTAGS', this.hashtags);
-                    }
-                });
-
-                // Update the list of items on the current hashtag subscription
-                this.socket.on('hashtagItemsChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this._updateHashtag(reply.data);
-                    }
-                });
-
                 // All handlers attached - please connect..
                 this.socket.connect();
-            }
-
-            _chatHistory() {
-                if (this.chatHistory) {
-                    if (this.chatHistory.instantiate) {
-                        this.socket.emit('subscribeToChat', {
-                            emitterAddress: this.publicKey.toLowerCase(),
-                            members: this.chatHistory.instantiate,
-                            itemHash: this.hashtagItem.itemHash.toLowerCase(),
-                        });
-                    }
-                    if (this.chatHistory.subscribe) {
-                        this.socket.emit('subscribeToChat', {
-                            emitterAddress: this.publicKey.toLowerCase(),
-                            itemHash: this.chatHistory.subscribe.toLowerCase(),
-                        });
-                    }
-                    this.socket.on('chatChanged', (reply) => {
-                        this.dispatch('CHATHISTORY', reply);
-                    }
-                    );
-                }
-            }
-
-            _newChatMessage() {
-                if (this.newChatMessage) {
-                    this.socket.emit('newChatMessage', {
-                        itemHash: this.newChatMessage.itemHash.toLowerCase(),
-                        payload: {
-                            message: this.newChatMessage.message,
-                            avatarHash: this.avatarHash,
-                            username: this.username,
-                            sender: this.publicKey.toLowerCase(),
-                        },
+                // Listen for changes in the exchange rates
+                this.socket.on('fxChanged', (reply) => {
+                    this.dispatch({
+                        type: 'UPDATE_FX',
+                        fx: reply
                     });
-                }
-            }
-
-            _getHashtag() {
-                if (this.hashtag.request) {
-                    this.socket.emit('subscribeToHashtag', {
-                        hashtag: this.hashtag.request.toLowerCase(),
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            this._updateHashtag(reply.data);
-                        }
+                });
+                // Listen for changes in the chat channels
+                this.socket.on('chatChanged', (chatObject) => {
+                    if (!('itemHash' in chatObject)) {
+                        console.error('chat object doesn\'t contain an itemHash: ', chatObject);
+                        return
+                    }
+                    this.dispatch({ type: 'UPDATE_CHAT', chatObject, itemHash: chatObject.itemHash })
+                });
+                window.addEventListener('openChat', function (e) {
+                    const { itemHash, yourAddress } = e.detail;
+                    this._subscribeToChat({
+                        itemHash,
+                    })
+                    .then(() => {
+                        console.log('Successfully joined chat channel for item: ', itemHash)
+                    })
+                    .catch(err => {
+                        console.log('Error instantiating chat channel:', err)
                     });
-                }
-            }
-
-            _updateHashtag(hashtag) {
-                this.hashtag.items = this.hashtag.items || [];
-                if (hashtag.hashtagAddress) {
-                    delete this.hashtag.request;
-                    Object.assign(this.hashtag, hashtag);
-                } else {
-                    // If the update is an item array
-                    // prepare an empty array for the items that have to be added (not overwritten)
-                    let newItems = [];
-
-                    // if no items loaded yet, set them all
-                    if (this.hashtag.items.length == 0) {
-                        newItems = hashtag;
-                    }
-                    else {
-                        // if there are already items loaded, check for update item if it needs to be added or
-                        // if it needs to overwrite an existing one
-                        for (let i = 0; i < hashtag.length; i++) {
-                            let found = false;
-                            for (let j = 0; j < this.hashtag.items.length; j++) {
-                                if (hashtag[i].itemHash == this.hashtag.items[j].itemHash) {
-                                    this.hashtag.items[j] = hashtag[i];
-                                    found = true;
-                                }
-                            }
-                            if (!found) {
-                                newItems.push(hashtag[i]);
-                            }
-                        }
-                    }
-
-                    // Add the new items
-                    this.hashtag.items = this.hashtag.items.concat(newItems);
-                }
-                let temp = this.hashtag;
-                this.dispatch('HASHTAG', {});
-                this.dispatch('HASHTAG', temp);
-            }
-
-            /**
-            * Send an IPFS hash of a base64 avatar
-            * Get the corresponding bas64 back and store it as the user's avatar
-            */
-            _reqipfs() {
-                this.socket.emit('ipfscat', {
-                    hash: this.reqipfs,
-                    format: 'base64',
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        let storage = JSON.parse(localStorage.getItem('SwarmCity'));
-                        storage.user.avatar = 'data:image/jpg;base64,' + reply.data;
-                        localStorage.setItem('SwarmCity', JSON.stringify(storage));
-                        this.dispatch('AVATAR', 'data:image/jpg;base64,' + reply.data);
-                    }
-                });
-            }
-
-            _ipfsHashResolve() {
-                let store = JSON.parse(localStorage.getItem('IPFS'));
-                if (!(this.ipfsHash in store) && typeof (this.ipfsHash) == 'string') {
-                    this.socket.emit('ipfscat', {
-                        hash: this.ipfsHash,
-                    }, (reply) => {
-                        if (reply.response == 200) {
-                            store[this.ipfsHash] = reply.data;
-                            let resolved = {};
-                            resolved[this.ipfsHash] = reply.data;
-                            this.dispatch('IPFSHASH', resolved);
-                            localStorage.setItem('IPFS', JSON.stringify(store));
-                        }
-                    });
-                }
-            }
-
-            _sendSignedTx() {
-                // Send a signed tx and get the txHash back
-                this.socket.emit('sendSignedTx', {
-                    tx: this.signedTx,
-                }, (reply) => {
-                    let newNonce = Number(this.nonce) + 1;
-                    this.dispatch('NONCE', newNonce);
-                    this.txHash = reply;
-                    setTimeout(() => {
-                        this.dispatch('TXHASH', this.txHash);
-                    }, 2000);
-                });
-            }
-
-            _avatarChanged() {
-                // Send the user's base64 image and get the ipfsHash back
-                this.socket.emit('ipfsAdd', {
-                    payload: this.avatar,
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.avatarHash = reply.data;
-                        this.dispatch('AVATARHASH', this.avatarHash);
-                        localStorage.setItem('avatarHash', this.avatarHash);
-                    }
-                });
-            }
-
-            _itemToIpfs() {
-                this.socket.emit('ipfsAdd', {
-                    payload: this.itemToIpfs,
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.itemDataHash = reply;
-                        this.dispatch('ITEMDATAHASH', this.itemDataHash);
-                    }
-                });
-            }
-
-            _replyToIpfs() {
-                this.socket.emit('ipfsAdd', {
-                    payload: this.replyToIpfs,
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.replyDataHash = reply.data;
-                        this.dispatch('REPLYDATAHASH', this.replyDataHash);
-                    }
-                });
+                }.bind(this), false);
             }
 
             _publickeyChanged() {
                 // subscribe to updates of the balance of this publickey
-                this.socket.emit('subscribe', {
-                    channel: 'balance',
-                    args: {
-                        address: this.publicKey,
-                    },
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.balance = reply.data;
-                        this.dispatch('BALANCE', this.balance);
-                    }
+                this.dispatch({
+                    type: 'GET_BALANCE',
+                    address: this.publicKey
                 });
-                // subscribe to updates of the nonce of this publickey
+                this.dispatch({
+                    type: 'GET_TXS',
+                    address: this.publicKey
+                });
                 this.socket.emit('subscribe', {
                     channel: 'nonce',
                     args: {
@@ -601,120 +253,140 @@ This code may only be used under the license found at https://github.com/swarmci
                     },
                 }, (reply) => {
                     if (reply.response == 200) {
-                        this.nonce = reply.data.nonce;
-                        this.dispatch('NONCE', this.nonce);
+                        this.dispatch({
+                            type: 'UPDATE_NONCE',
+                            nonce: reply.data.nonce
+                        });
                     }
                 });
 
                 // Fired when the users nonce changes
                 this.socket.on('nonceChanged', (reply) => {
                     if (reply.response == 200) {
-                        this.nonce = reply.data.nonce;
-                        this.dispatch('NONCE', this.nonce);
-                    }
-                });
-
-                // subscribe to updates of the tx history
-                this.socket.emit('subscribe', {
-                    channel: 'txHistory',
-                    args: {
-                        address: this.publicKey,
-                    },
-                }, (reply) => {
-                    if (reply.response == 200) {
-                        this.confirmedTx = reply.data;
-                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
-                    }
-                });
-                this.socket.on('txHistoryChanged', (reply) => {
-                    if (reply.response == 200) {
-                        this.confirmedTx = reply.data;
-                        this.dispatch('CONFIRMEDTX', this.confirmedTx);
+                        this.dispatch({
+                            type: 'UPDATE_NONCE',
+                            nonce: reply.data.nonce
+                        });
                     }
                 });
             }
 
-            _reqToKey() {
-                this.socket.emit('readShortCode', {
-                    shortCode: this.reqtokey,
-                }, (reply) => {
-                    if (reply.response === 200) {
-                        this.tokey = reply;
-                        this.tokey.found = true;
-                        this.dispatch('TOKEY', this.tokey);
-                    }
-                    if (reply.response === 400) {
-                        this.tokey = reply;
-                        this.tokey.found = false;
-                        this.dispatch('TOKEY', this.tokey);
-                    }
-                });
-            }
-            _broadcast() {
-                if (this.reqtokey != null) {
-                    this.socket.emit('replyShortCode', {
-                        shortCode: this.reqtokey,
-                        tx: this.broadcast,
-                    }, (reply) => {
-                        this.txHash = reply;
-                        setTimeout(() => {
-                            this.dispatch('TXHASH', this.txHash);
-                        }, 1000);
-                    });
-                }
-            }
 
+            /**
+            * const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            */
+            sendSignedTransaction(tx) {
+                return new Promise((resolve, reject) => {
+                    let _hash;
+                    _web3.eth.sendSignedTransaction(tx)
+                        .once('transactionHash', (hash) => {
+                            resolve(hash)
+                            _hash = hash
+                        })
+                        .on('receipt', (receipt) => {
+                            console.log('received receipt for txHash: ' + hash, receipt);
+                        })
+                        .on('error', (err, receipt) => {
+                            if (err.message &&
+                                err.message.startsWith('Failed to check for transaction receipt')
+                            ) {
+                                console.log('Another complaint about the receipt ignored.');
+                            } else {
+                                if (receipt) {
+                                    console.error('We might be out of Gas: %j', receipt);
+                                } else {
+                                    console.error(err);
+                                }
+                                reject(new Error('Transaction error: ' + err));
+                            }
+                        });
+                })
+            }
             // Get a certain user's reputation balance by address
             _getUserReputation() {
                 if (this.userReputation.request) {
                     this.socket.emit('getReputation', {
                         address: this.userReputation.request,
                     }, (reply) => {
-                        this.dispatch('USERREPUTATION', reply.data);
+                        this.dispatch({
+                            type: 'USERREPUTATION',
+                            userReputation: reply.data
+                        });
                     });
                 }
             }
 
-
-            // Get a the current user's reputation balance
-            _getMyReputation() {
-                if (this.myReputation && this.myReputation.request) {
-                    this.socket.emit('getReputation', {
-                        address: this.myReputation.request,
-                    }, (reply) => {
-                        this.dispatch('MYREPUTATION', reply.data);
-                    });
-                }
-            }
-            // fired when entering needing a shortCode
-            _usingShortCode() {
-                if (this.usingShortCode) {
-                    this.socket.emit('subscribe', {
-                        channel: 'createShortCode',
-                        args: {
-                            address: this.publicKey,
-                            userName: this.username,
-                            avatar: this.avatar,
-                        },
+            _subscribeToChat({ accessKeys, itemHash}) {
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('subscribeToChat', {
+                        accessKeys, 
+                        itemHash
                     }, (reply) => {
                         if (reply.response == 200) {
-                            this.shortCode = reply;
-                            this.shortCode.received = (new Date).getTime();
-                            this.dispatch('SHORTCODE', this.shortCode);
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Chat channel subscription error: ' + reply.data));
                         }
                     });
-                } else {
-                    if (this.shortCode != null) {
-                        this.socket.emit('unsubscribe', {
-                            subscriptionId: this.shortCode.subscriptionId,
-                        }, (reply) => {
+                });
+            }
+
+            _sendChatMessage({ itemHash, message }) {
+                return new Promise((resolve, reject) => {
+                    this.socket.emit('newChatMessage', {
+                        itemHash,
+                        message,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Error sending chat message: ' + reply.data));
+                        }
+                    });
+                });
+            }
+
+            _getShortcode(address, username, avatarHash) {
+                return new Promise((resolve, reject) => {
+                    const sec = 10;
+                    setTimeout(() => {
+                        reject(new Error('Shortcode error: ' + sec + ' seconds passed without response'));
+                    }, sec * 1000);
+                    this.socket.emit('idToShortcode', {
+                        address,
+                        username,
+                        avatar: avatarHash,
+                    }, (reply) => {
+                        if (reply.response == 200) {
+                            resolve(reply.data);
+                        }
+                        else {
+                            reject(new Error('Shortcode creation error: ' + reply.data));
+                        }
+                    });
+                });
+            }
+
+            _resolveShortcode(shortcode) {
+                return new Promise((resolve, reject) => {
+                    const sec = 10;
+                    setTimeout(() => {
+                        reject(new Error('Shortcode error: ' + sec + ' seconds passed without response'));
+                    }, sec * 1000);
+                    this.socket.emit('shortcodeToId',
+                        shortcode,
+                        (reply) => {
                             if (reply.response == 200) {
-                                this.dispatch('SHORTCODE', null);
+                                resolve(reply.data);
+                            } else {
+                                reject(new Error(reply.message));
                             }
                         });
-                    }
-                }
+                });
             }
-        } window.customElements.define(SocketRedux.is, SocketRedux);
+        }
+        window.customElements.define(SocketRedux.is, SocketRedux);
     </script>
 </dom-module>
