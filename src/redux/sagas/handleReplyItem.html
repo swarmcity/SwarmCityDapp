@@ -30,7 +30,8 @@
                 // Step 1. Store the reply info
                 console.log('Handling ReplyEvent', event)
                 const { itemHash, replyMetadataHash, provider: providerAddress } = event.returnValues
-                const { address: hashtagAddress } = event
+                // Protection against calling toLowerCase() on undefined variables
+                const hashtagAddress = event.address ? event.address.toLowerCase() : event.address
                 const reply = {
                     blockNumber: event.blockNumber,
                     providerAddress,

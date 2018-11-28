@@ -41,7 +41,7 @@
             const path = window.location.pathname
             //     [0 /  [1]  /    [2]   /   [3]
             // path = /hashtag/0xCeb...fE/0x2342tds
-            const [, pageName, hashtag, item] = path.split('/')
+            let [, pageName, hashtag, item] = path.split('/')
 
             const params = parseSearch()
 
@@ -71,6 +71,9 @@
                 || pageName === 'new-request'
             ) {
                 if (hashtag && hashtag !== _hashtag) {
+                    // Prevent inconsistencies with address with/without checksum case
+                    // This parameter is entered by the user 
+                    hashtag = hashtag.toLowerCase()
                     yield put({ type: 'GET_HASHTAG', hashtag })
                     yield put({ type: 'CURRENT_HASHTAG', hashtag })
                     _hashtag = hashtag;
