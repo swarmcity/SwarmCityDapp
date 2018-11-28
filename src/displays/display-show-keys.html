@@ -167,6 +167,7 @@ Example:
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
+
                 .close,
                 .keybox[wide-layout] .close {
                     @apply --retina;
@@ -181,10 +182,10 @@ Example:
                 <template>
                     <div class="greylink" on-click="_togglePublicKey">{{localize('show my keys')}}</div>
                 </template>
-    </dom-if>
+            </dom-if>
 
-    <dom-if if="{{!toggleKeys}}">
-        <template>
+            <dom-if if="{{!toggleKeys}}">
+                <template>
                     <div class="txtbox">
                         <div class="subtitle">{{localize('Your address')}}</div>
                         <div class="key">{{publicKey}}</div>
@@ -195,25 +196,25 @@ Example:
                             <div class="privbtn" on-click="_togglePrivateKey">{{localize('show private key')}}</div>
                         </template>
 
-        <dom-if if="{{togglePrivateKey}}">
-            <template>
+                        <dom-if if="{{togglePrivateKey}}">
+                            <template>
                                 <div class="subtitle extramargin">{{localize('Your private key')}}</div>
                                 <div class="key">{{privateKey}}</div>
                                 <div class="copiedpriv" id="copiedpriv">{{localize('copied')}}</div>
                                 <div class="bluelink" on-click="_copyPrivateKey">{{localize('copy private key')}}</div>
                             </template>
-        </dom-if>
+                        </dom-if>
 
+                    </div>
+                    <div class="close" on-click="_close"></div>
+                </template>
+            </dom-if>
         </div>
-        <div class="close" on-click="_close"></div>
-        </template>
-    </dom-if>
-    </div>
     </template>
     <script>
         class DisplayShowKeys extends new ReduxMixin(Polymer.mixinBehaviors([
-                Polymer.AppLocalizeBehavior,
-            ],
+            Polymer.AppLocalizeBehavior,
+        ],
             Polymer.Element
         )) {
             static get is() {
@@ -287,13 +288,13 @@ Example:
                 };
             }
             connectedCallback() {
-                    super.connectedCallback();
-                    this.loadResources(this.resolveUrl('../text-translations.json'));
-                    this._loadAnimations();
-                }
-                /**
-                 * All animations this page needs
-                 */
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../text-translations.json'));
+                this._loadAnimations();
+            }
+            /**
+             * All animations this page needs
+             */
             _loadAnimations() {
                 this.anim = {
                     moveUp: {
@@ -305,26 +306,27 @@ Example:
                             direction: 'normal',
                             easing: 'cubic-bezier(0.42, 0, 0.177, 0.751)',
                         },
-                    };
+                    }
                 }
-                /**
-                 * copies the public key to the clipboard
-                 */
+            }
+            /**
+             * copies the public key to the clipboard
+             */
             _copyPublicKey() {
-                    this._copyToClipboard(this.publicKey);
-                    let copied = this.shadowRoot.querySelector('#copied');
-                    copied.classList.add('showcopied');
-                    copied.animate(
-                        this.anim.moveUp.arr,
-                        this.anim.moveUp.obj
-                    );
-                    setTimeout(() => {
-                        copied.classList.remove('showcopied');
-                    }, 500);
-                }
-                /**
-                 * copies the private key to the clipboard
-                 */
+                this._copyToClipboard(this.publicKey);
+                let copied = this.shadowRoot.querySelector('#copied');
+                copied.classList.add('showcopied');
+                copied.animate(
+                    this.anim.moveUp.arr,
+                    this.anim.moveUp.obj
+                );
+                setTimeout(() => {
+                    copied.classList.remove('showcopied');
+                }, 500);
+            }
+            /**
+             * copies the private key to the clipboard
+             */
             _copyPrivateKey() {
                 this._copyToClipboard(this.privateKey);
                 let copiedpriv = this.shadowRoot.querySelector('#copiedpriv');
@@ -357,53 +359,53 @@ Example:
             }
 
             _copyToClipboard(textToCopy) {
-                    if (!navigator.clipboard) {
-                        this._fallbackCopyTextToClipboard(textToCopy);
-                        return;
-                    }
-                    navigator.clipboard.writeText(textToCopy);
+                if (!navigator.clipboard) {
+                    this._fallbackCopyTextToClipboard(textToCopy);
+                    return;
                 }
-                /**
-                 * Toggles the visibility of the full Public Key
-                 */
+                navigator.clipboard.writeText(textToCopy);
+            }
+            /**
+             * Toggles the visibility of the full Public Key
+             */
             _togglePublicKey() {
+                this.$.keyBox.classList.toggle('opened');
+                this.toggleKeys = !this.toggleKeys;
+            }
+            /**
+             * toggles the keybox visibility
+             */
+            _close() {
+                if (!this.toggleKeys) {
                     this.$.keyBox.classList.toggle('opened');
                     this.toggleKeys = !this.toggleKeys;
-                }
-                /**
-                 * toggles the keybox visibility
-                 */
-            _close() {
-                    if (!this.toggleKeys) {
-                        this.$.keyBox.classList.toggle('opened');
-                        this.toggleKeys = !this.toggleKeys;
-                        this.privateKey = null;
-                    }
-                }
-                /**
-                 * resets the private key visibility when keybox closes
-                 */
-            _toggleKeys() {
-                    this.togglePrivateKey = false;
                     this.privateKey = null;
                 }
-                /**
-                 * Toggles the visibility of the full Private Key
-                 */
+            }
+            /**
+             * resets the private key visibility when keybox closes
+             */
+            _toggleKeys() {
+                this.togglePrivateKey = false;
+                this.privateKey = null;
+            }
+            /**
+             * Toggles the visibility of the full Private Key
+             */
             _togglePrivateKey() {
                 this.$.unlock._getPrivateKey()
-                .then(res => {
-                try {
-                    const { privateKey, address, publicKey } = res;
-                        if (!privateKey) {
-                        throw Error("Missing address");
+                    .then(res => {
+                        try {
+                            const { privateKey, address, publicKey } = res;
+                            if (!privateKey) {
+                                throw Error("Missing address");
+                            }
+                            this.privateKey = privateKey;
+                        } catch (e) {
+                            console.error("Error showing keys (catch block): ", e.stack);
                         }
-                        this.privateKey = privateKey;
-                    }   catch (e) {
-                        console.error("Error showing keys (catch block): ", e.stack);
-                    }
-                })
-                .catch(e)
+                    })
+                    .catch(e)
             }
             /**
             * Scrolls to show keys in viewport

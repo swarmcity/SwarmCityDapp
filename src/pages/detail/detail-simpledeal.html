@@ -16,6 +16,7 @@
 <link rel="import" href="./detail-button-reply.html" />
 <link rel="import" href="./detail-button-conflict.html" />
 <link rel="import" href="./detail-button-payout.html" />
+<link rel="import" href="./detail-button-cancel.html" />
 <link rel="import" href="./detail-simpledeal-loading.html" />
 <link rel="import" href="./detail-simpledeal-main.html" />
 <link rel="import" href="./detail-simpledeal-replies.html" />
@@ -42,7 +43,6 @@
         background-image: var(--sc-bg);
         @apply --layout-vertical;
         margin-top: 159px;
-        min-height: calc(100vh - 159px);
         box-sizing: border-box;
         padding: 0px 10px 25px 10px;
         height: 100%;
@@ -54,7 +54,6 @@
       }
 
       .itemcontainer {
-        background-color: var(--sc-white);
         width: 100%;
         margin: 0px 10px 25px 0px;
       }
@@ -132,15 +131,20 @@
             <detail-simpledeal-conflict address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
               maintainer="[[hashtag.metadata.maintainer]]" on-chat="_handleOnChat"></detail-simpledeal-conflict>
           </template>
+
+          <template is="dom-if" if="{{_showConflictButton(item)}}">
+            <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
+          </template>
+
+          <template is="dom-if" if="{{_showPayoutButton(status, address)}}">
+            <detail-button-payout on-payout="_handleOnPayout"></detail-button-payout>
+          </template>
+
+          <template is="dom-if" if="{{_showCancelButton()}}">
+            <detail-button-cancel on-cancel="_handleOnCancel"></detail-button-cancel>
+          </template>
+
         </div>
-
-        <template is="dom-if" if="{{_showConflictButton(item)}}">
-          <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
-        </template>
-
-        <template is="dom-if" if="{{_showPayoutButton(status, address)}}">
-          <detail-button-payout on-tap="_handleOnPayout"></detail-button-payout>
-        </template>
       </template>
     </div>
   </template>
@@ -278,7 +282,12 @@
         });
       }
       _showPayoutButton(status, userAddress) {
-        return false; // (status == 'conflict' && userAddress == this.item.seekerAddress)
+        // currently don't show button, until hashtag contract allows payout even in status 'conflict'
+        // return (this.status == 'conflict'
+        // && this.item
+        // && this.item.seekerAddress
+        // && this.item.seekerAddress == userAddress);
+        return false;
       }
       _isEqualTo(string1, string2) {
         return string1 == string2;
@@ -292,6 +301,18 @@
         } else {
           return true;
         }
+      }
+
+      _showCancelButton(status, userAddress) {
+        return true
+        //  (
+        //   this.item
+        //   && this.item.status == '0'
+        //   && this.item.providerAddress
+        //   && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
+        //   && this.item.seekerAddress
+        //   && this.item.seekerAddress == userAddress
+        // )
       }
 
       _showConflictButton(item) {
@@ -474,6 +495,41 @@
           }
         });
       }
+      _handleOnCancel() {
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const seeker = {
+              address,
+              privateKey
+            };
+            const itemHash = this.item.itemHash;
+            const hashtagAddress = this.hashtag.address;
+            this.$.simpledeal
+              .cancelItem({ seeker, itemHash, hashtagAddress })
+              .then(receipt => {
+                console.log("Successfully cancelled item, receipt:", receipt);
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress,
+                  itemHash,
+                  data: {
+                    status: "5-pending"
+                  }
+                });
+              })
+              .catch(err => {
+                console.log("Error cancelling item:", err);
+              });
+          } catch (e) {
+            console.error("Error cancelling item (catch block): ", e.stack);
+          }
+        });
+
+      }
       _handleOnConflict(e) {
         let motivation = e.detail;
         this.$.unlock._getPrivateKey().then(res => {
@@ -527,7 +583,7 @@
                         console.log(
                           "Successfully sent conflict motivation message"
                         );
-                        this._addToChat(this.chat.accessKeys, privateKey, this.hashtag.metadata.maintainer.publicKey)
+                        this._addToChat(this.chat.accessKeys, privateKey, this.hashtag.metadata.maintainer.publicKey || {})
                       })
                       .catch(err => {
                         console.log("Error sending conflict message: ", err);
