@@ -6,6 +6,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
 
 <!--
     Displays and shared styles only
@@ -202,6 +203,13 @@ This code may only be used under the license found at https://github.com/swarmci
                 visibility: visible;
             }
 
+            .force-select {  
+                -webkit-user-select: all;  /* Chrome 49+ */
+                -moz-user-select: all;     /* Firefox 43+ */
+                -ms-user-select: all;      /* No support yet */
+                user-select: all;          /* Likely future */   
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -213,6 +221,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <iron-ajax id="ajax"></iron-ajax>
         <div class="container" wide-layout$="{{wide}}">
             <div class="closebox">
                 <div class="close" on-tap="_close" tabindex="1"></div>
@@ -251,7 +260,7 @@ This code may only be used under the license found at https://github.com/swarmci
             </div>
             <div class="linkbox">
                 <div class="copied" id="copied">copied</div>
-                <span on-tap="_copyUrl" class="link">shareable link</span>
+                <span id="shareplace" on-tap="_copyUrl" class="link">shareable link</span>
                 <div class="copied" id="copied">copied</div>
             </div>
         </div>
@@ -331,22 +340,27 @@ This code may only be used under the license found at https://github.com/swarmci
             _isSeeker(item) {
                 return (item && item.seekerAddress && this.address && item.seekerAddress == this.address);
             }
+
+            makeRequest (method, url, done) {
+                var xhr = new XMLHttpRequest();
+                xhr.open(method, url);
+                xhr.onload = function () {
+                    done(null, xhr.response);
+                };
+                xhr.onerror = function () {
+                    done(xhr.response);
+                };
+                xhr.send();
+            }
+
             _copyUrl() {
-                let textArea = document.createElement('textarea');
-                textArea.value = window.location.href;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                let copied = this.shadowRoot.querySelector('#copied');
-                copied.classList.add('showcopied');
-                copied.animate(
-                    this.anim.moveUp.arr,
-                    this.anim.moveUp.obj
-                );
-                setTimeout(() => {
-                    copied.classList.remove('showcopied');
-                }, 500);
+                if(this.$.shareplace.innerHTML == 'shareable link') {
+                    var urltoShort = encodeURIComponent(window.location.href);
+                    var shareUrl = this.makeRequest("GET", "https://i.swarm.city/s/" + urltoShort, (err, res) => {
+                        this.$.shareplace.innerHTML = res;
+                        this.$.shareplace.classList.add('force-select');
+                    }); 
+                }         
             }
         }
         window.customElements.define(MyDetailSimpledealMain.is, MyDetailSimpledealMain);
