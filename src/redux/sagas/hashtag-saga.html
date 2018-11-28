@@ -78,7 +78,8 @@
                 hashtagMetadataHash: await hashtagContract.methods.hashtagMetadataHash().call(),
                 hashtagFee: parseInt(await hashtagContract.methods.hashtagFee().call()),
                 deployBlock: deployBlock || 8149489,
-                address: hashtagContract._address
+                address: hashtagContract._address,
+                hashtagAddress: hashtagContract._address
             }
         }
 
@@ -157,6 +158,7 @@
                 //   - deployBlock() -> deployBlock
                 const hashtagContractData = yield call(getHashtagContractData, hashtagContract)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagContractData });
+                yield put({ type: 'ADD_VISITED_HASHTAG', hashtag: hashtagContractData })
 
                 // Step 2A. Resolve hashtagMetadata with IPFS
                 //   - ipfs.cat(hashtagMetadata) -> description
