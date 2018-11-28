@@ -30,7 +30,7 @@
             console.log('item metadata: ', metadataHash)
             // const itemBudgetWei = _web3.utils.toWei(String(item.budget), 'ether')
             const itemBudgetWei = item.budget * 1e18;
-            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);   
+            const totalSum = parseInt(itemBudgetWei) + parseInt(hashtag.fee / 2);
 
             // generate the itemHash
             const itemHash = hdWallet.createItem(seeker.privateKey);
@@ -74,8 +74,8 @@
         async function createNewReplyAsync({ replier, reply, hashtag }) {
 
             // const hashArray = hdWallet.util.toUint8Array(reply.itemHash);
-            
-            
+
+
             // Add the accessKey
             const accessKey = hdWallet.requestAccess(replier.privateKey, reply.itemHash);
             const storage = JSON.parse(localStorage.getItem('SwarmCity'));
@@ -195,7 +195,7 @@
             const rawPayoutItem = simpleDealContract.methods.payoutItem(
                 itemHash,
             ).encodeABI();
-            
+
             // 2. Get user's nonce
             const nonce = await _web3.eth.getTransactionCount(seeker.address);
 
@@ -247,12 +247,40 @@
             return hash
         }
 
+        async function cancelItemAsync({ seeker, itemHash, hashtagAddress }) {
+            // 1. Encode the raw cancelItem
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
+            const rawCancelItem = simpleDealContract.methods.cancelItem(
+                itemHash,
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(seeker.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: seeker.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtagAddress,
+                data: rawCancelItem,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(seeker.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
         function _toHex(dec) {
             let hex = Number(dec).toString(16);
             let result = '000000'.substr(0, 6 - hex.length) + hex;
             return '0x' + result;
         }
-
         function sendSignedTransaction(tx) {
             return new Promise((resolve, reject) => {
                 let _hash;
@@ -326,6 +354,13 @@
              */
             disputeItem(args) {
                 return disputeItemAsync(args)
+            }
+
+            /**
+             * Cancel
+             */
+            cancelItem(args) {
+                return cancelItemAsync(args)
             }
         }
         window.customElements.define(DataSimpledeal.is, DataSimpledeal);
