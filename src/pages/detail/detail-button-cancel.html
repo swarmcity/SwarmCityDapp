@@ -10,7 +10,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
 Example:
 ```
-<detail-button-payout></detail-button-payout>
+<detail-button-cancel></detail-button-cancel>
 ```
 
 ### Styling
@@ -21,9 +21,9 @@ The following custom properties and mixins are available for styling:
 
 | Custom property | Description | Default |
 | --- | --- | --- |
-| `--detail-button-payout` | Mixin applied to the deal button | `{}` |
+| `--detail-button-cancel` | Mixin applied to the deal button | `{}` |
 -->
-<dom-module id="detail-button-payout">
+<dom-module id="detail-button-cancel">
     <template>
         <style include="shared-styles">
             :host {
@@ -38,7 +38,7 @@ The following custom properties and mixins are available for styling:
 
             .button {
                 @apply --text-button-small;
-                color: var(--sc-grey4);
+                color: var(--sc-red);
                 cursor: pointer;
                 box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
                 -webkit-box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.35);
@@ -59,25 +59,26 @@ The following custom properties and mixins are available for styling:
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class="container" wide-layout$="{{wide}}">
-            <div class="button" on-tap="_payout">
-                payout
+            <div class="button" on-tap="_cancel">
+                cancel this request
             </div>
         </div>
 
     </template>
     <script>
-        class MyDetailButtonPayout extends new ReduxMixin(Polymer.mixinBehaviors([
+        class MyDetailButtonCancel extends new ReduxMixin(Polymer.mixinBehaviors([
             Polymer.AppLocalizeBehavior,
         ],
             Polymer.Element
         )) {
             static get is() {
-                return 'detail-button-payout';
+                return 'detail-button-cancel';
             }
-            _payout() {
-                this.dispatchEvent(new CustomEvent('payout'));
+            _cancel() {
+                this.dispatchEvent(new CustomEvent('cancel'));
             }
+
         }
-        window.customElements.define(MyDetailButtonPayout.is, MyDetailButtonPayout);
+        window.customElements.define(MyDetailButtonCancel.is, MyDetailButtonCancel);
     </script>
 </dom-module>

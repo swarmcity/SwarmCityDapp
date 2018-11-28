@@ -56,7 +56,18 @@
                 if (!hashtagList.length) {
                     hashtagList = yield call(getHashtagList)
                 }
-                const reputationsObj = yield call(getReputationFromHashtags, hashtagList, address)
+
+                // Append the visited hashtags and remove duplicates
+                // visitedHashtags is an object
+                const visitedHashtags = yield select(selectors.visitedHashtags)
+                const uniqueHashtags = visitedHashtags
+                hashtagList.forEach(hashtag => {
+                    uniqueHashtags[hashtag.hashtagAddress] = hashtag
+                })
+                const uniqueHashtagList = Object.values(uniqueHashtags)
+
+                // Get reputation for all hashtags in the list
+                const reputationsObj = yield call(getReputationFromHashtags, uniqueHashtagList, address)
                 yield put({ type: 'UPDATE_REPUTATION', address, reputationsObj });
             } catch (e) {
                 console.error(`Error fetching user's reputation`, e)
