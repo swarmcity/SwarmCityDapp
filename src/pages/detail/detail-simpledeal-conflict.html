@@ -104,6 +104,8 @@ The following custom properties and mixins are available for styling:
             }
 
             .conflictbox {
+                @apply --layout-vertical;
+                @apply --layout-center;
                 box-sizing: border-box;
                 padding: 40px 25px 20px 25px;
                 background-color: var(--sc-white);
@@ -181,9 +183,11 @@ The following custom properties and mixins are available for styling:
                 @apply --text-button-big;
                 @apply --body-bold;
                 margin: 20px 0 0 0;
-                color: var(--sc-white);
+                color: var(--sc-grey4);
                 width: 250px;
             }
+
+            
 
             .button:active {
                 @apply --button-active;
@@ -243,16 +247,24 @@ The following custom properties and mixins are available for styling:
                     <div class="chat-icon"></div>
                 </div>
                 <div class="center bold">This deal is <span class="red">in conflict</span>.</div>
-                <div class="center subtitle">The hashtagmaintainer is added to the chat</div>
-                <div class="maintainerbox">
-                    <div class="avatar">
-                        <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[maintainer.avatar]]"
-                            placeholder="../images/defaultavatar.png">
-                        </iron-image>
+                <template is="dom-if" if="[[_isMaintainer(maintainer.address, address)]]">
+                    <div class="center subtitle">You were added to the chat</div>
+                    <div class="button" on-tap="_resolve">
+                        resolve
                     </div>
+                </template>
+                <template is="dom-if" if="[[!_isMaintainer(maintainer.address, address)]]">
+                    <div class="center subtitle">The hashtagmaintainer is added to the chat</div>
+                    <div class="maintainerbox">
+                        <div class="avatar">
+                            <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[maintainer.avatar]]"
+                                placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </div>
 
-                    <div class$="{{_isMaintainer(maintainer.address, address)}}">[[maintainer.username]]</div>
-                </div>
+                        <div class="replier">[[maintainer.username]]</div>
+                    </div>
+                </template>
             </div>
         </div>
     </template>
@@ -362,7 +374,7 @@ The following custom properties and mixins are available for styling:
                 return status == '3' ? "conflictbox" : "conflictbox pending";
             }
             _isMaintainer(maintainerAddress, userAddress) {
-                return maintainerAddress == userAddress ? "replier" : "username";
+                return maintainerAddress == userAddress;
             }
         }
         window.customElements.define(
