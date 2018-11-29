@@ -88,21 +88,24 @@
         color: var(--sc-white);
       }
       display-simpledeal-about {
-        margin-top: -100vh;
         position: fixed;
         z-index: 32;
       }
+
     </style>
     <iron-media-query
       query="(min-width: 600px)"
       query-matches="{{wide}}"
     ></iron-media-query>
-    <display-simpledeal-about
-      id="about"
-      language="[[language]]"
-      hashtag="[[hashtag]]"
-      on-close="_close"
-    ></display-simpledeal-about>
+
+    <template is="dom-if" if="{{showDetails}}">
+      <display-simpledeal-about
+        id="about"
+        language="[[language]]"
+        hashtag="[[hashtag]]"
+        on-close="_close"
+      ></display-simpledeal-about>
+    </template>
     <div class="container" wide-layout$="{{wide}}">
       <dom-if if="{{!hashtag.hashtagName}}">
         <template>
@@ -166,20 +169,20 @@
             .querySelector("#infolink")
             .classList.remove("untoggled");
 
-          this.shadowRoot
-            .querySelector("#about")
-            .animate(
-              [
-                { transform: "translateY(0)" },
-                { transform: "translateY(100vh)" }
-              ],
-              {
-                fill: "both",
-                duration: 250,
-                direction: "normal",
-                easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
-              }
-            );
+          // this.shadowRoot
+          //   .querySelector("#about")
+          //   .animate(
+          //     [
+          //       { transform: "translateY(0)" },
+          //       { transform: "translateY(100vh)" }
+          //     ],
+          //     {
+          //       fill: "both",
+          //       duration: 250,
+          //       direction: "normal",
+          //       easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
+          //     }
+          //   );
         } else {
           this.shadowRoot.querySelector("#infolink").classList.add("untoggled");
           this.shadowRoot.querySelector("#togglebox").classList.remove("blue");
@@ -187,20 +190,21 @@
             .querySelector("#infolink")
             .classList.remove("toggled");
 
-          this.shadowRoot
-            .querySelector("#about")
-            .animate(
-              [
-                { transform: "translateY(100vh)" },
-                { transform: "translateY(0)" }
-              ],
-              {
-                fill: "both",
-                duration: 250,
-                direction: "normal",
-                easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
-              }
-            );
+
+          // this.shadowRoot
+          //   .querySelector("#about")
+          //   .animate(
+          //     [
+          //       { transform: "translateY(100vh)" },
+          //       { transform: "translateY(0)" }
+          //     ],
+          //     {
+          //       fill: "both",
+          //       duration: 250,
+          //       direction: "normal",
+          //       easing: "cubic-bezier(0.42, 0, 0.177, 0.751)"
+          //     }
+          //   );
         }
       }
     }

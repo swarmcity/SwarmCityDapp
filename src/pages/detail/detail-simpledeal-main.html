@@ -203,12 +203,32 @@ This code may only be used under the license found at https://github.com/swarmci
                 visibility: visible;
             }
 
-            .force-select {  
+            .force-select {
                 -webkit-user-select: text;
                 -moz-user-select: text;
                 -ms-user-select: text;
-                user-select: text;  
+                user-select: text;
                 cursor: auto !important;
+            }
+
+            .dont-break-out {
+
+                /* These are technically the same, but use both */
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+
+                -ms-word-break: break-all;
+                /* This is the dangerous one in WebKit, as it breaks things wherever */
+                word-break: break-all;
+                /* Instead use this non-standard one: */
+                word-break: break-word;
+
+                /* Adds a hyphen where the word breaks, if supported (No Blink) */
+                -ms-hyphens: auto;
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -228,7 +248,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-tap="_close" tabindex="1"></div>
             </div>
             <div class="spacer"></div>
-            <div class="description">
+            <div class="description dont-break-out">
                 [[item.description]]
             </div>
             <div class="date">
@@ -343,7 +363,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 return (item && item.seekerAddress && this.address && item.seekerAddress == this.address);
             }
 
-            makeRequest (method, url, done) {
+            makeRequest(method, url, done) {
                 var xhr = new XMLHttpRequest();
                 xhr.open(method, url);
                 xhr.onload = function () {
@@ -356,17 +376,17 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _copyUrl() {
-                if(this.$.shareplace.innerHTML == 'shareable link') {
+                if (this.$.shareplace.innerHTML == 'shareable link') {
                     var urltoShort = encodeURIComponent(window.location.href);
                     var shareUrl = this.makeRequest("GET", "https://i.swarm.city/s/" + urltoShort, (err, res) => {
                         this.$.shareplace.innerHTML = res;
                         this.$.shareplace.classList.add('force-select');
-                    }); 
-                }         
+                    });
+                }
             }
 
             _resetShare() {
-                this.$.shareplace.innerHTML ='shareable link';
+                this.$.shareplace.innerHTML = 'shareable link';
                 this.$.shareplace.classList.remove('force-select');
             }
         }

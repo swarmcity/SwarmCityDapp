@@ -138,6 +138,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --body-default;
                 color: var(--sc-grey4);
                 padding-right: 10px;
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
             }
 
             img {
@@ -183,6 +187,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 width: 24px;
             }
 
+            .dont-break-out {
+
+                /* These are technically the same, but use both */
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+
+                -ms-word-break: break-all;
+                /* This is the dangerous one in WebKit, as it breaks things wherever */
+                word-break: break-all;
+                /* Instead use this non-standard one: */
+                word-break: break-word;
+
+                /* Adds a hyphen where the word breaks, if supported (No Blink) */
+                -ms-hyphens: auto;
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -197,7 +221,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class$="{{_checkPending(item)}}" wide-layout$="{{wide}}" on-tap="_toItem">
             <div class="top">
                 <div class="datedescript">
-                    <div class="description">[[item.description]]</div>
+                    <div class="description dont-break-out">[[item.description]]</div>
                     <div class="date">
                         [[_formatDate(item)]]
                     </div>
