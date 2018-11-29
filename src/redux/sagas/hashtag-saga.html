@@ -65,12 +65,13 @@
         /**
          * Gets hashtag from the blockchain
          */
-        async function getHashtagContractData(hashtagContract) {
+        async function getHashtagContractData(hashtagAddress) {
+            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             let deployBlock;
             try {
                 deployBlock = parseInt(await hashtagContract.methods.deployBlock().call())
             } catch (e) {
-                console.log('Error retrieving deployBlock from ' + hashtagContract._address, e, e.stack)
+                console.log('Error retrieving deployBlock from ' + hashtagAddress, e, e.stack)
             }
             return {
                 mantainerAddress: await hashtagContract.methods.payoutAddress().call(),
@@ -78,12 +79,13 @@
                 hashtagMetadataHash: await hashtagContract.methods.hashtagMetadataHash().call(),
                 hashtagFee: parseInt(await hashtagContract.methods.hashtagFee().call()),
                 deployBlock: deployBlock || 8149489,
-                address: hashtagContract._address,
-                hashtagAddress: hashtagContract._address
+                address: hashtagAddress,
+                hashtagAddress
             }
         }
 
-        async function getPastItems(hashtagContract, fromBlock) {
+        async function getPastItems(hashtagAddress, fromBlock) {
+            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             const events = await hashtagContract.getPastEvents('NewItem', {
                 fromBlock,
                 toBlock: 'latest',
@@ -145,18 +147,13 @@
             console.log('GET HASHTAG req', hashtagAddress)
             try {
                 // Entrypoint, hashtagAddress
-                const hashtagContract = new web3Local.eth.Contract(
-                    simpleDeal.abi,
-                    hashtagAddress
-                );
-
-                yield fork(hashtagSubscription, hashtagContract)
+                yield fork(hashtagSubscription, hashtagAddress)
 
                 // Step 1. Call contract state: 
                 //   - hashtagName() -> hashtagName
                 //   - hashtagMetadata() -> hashtagMetadata
                 //   - deployBlock() -> deployBlock
-                const hashtagContractData = yield call(getHashtagContractData, hashtagContract)
+                const hashtagContractData = yield call(getHashtagContractData, hashtagAddress)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagContractData });
                 yield put({ type: 'ADD_VISITED_HASHTAG', hashtag: hashtagContractData })
 
@@ -173,8 +170,7 @@
 
                 // Step 2B. Get hashtag items from past events
                 //   - getPastEvents('NewItem') -> itemHash, itemMetadataHash, itemValue, seekerAddr, seekerRep, blockNumber
-                console.log('deployblock: ', hashtagContractData.deployBlock)
-                const items = yield call(getPastItems, hashtagContract, hashtagContractData.deployBlock)
+                const items = yield call(getPastItems, hashtagAddress, hashtagContractData.deployBlock)
                 yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: { items } });
 
                 const itemsTimestamp = yield call(multipleGetBlockTime, items)
@@ -186,10 +182,13 @@
                 // 
                 // Step 3C. Resolve itemMetadataHash
                 //   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
+
+                // Pass the contract object to avoid many concurrent initializations
+                const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
                 yield all(Object.values(items).map(item => all([
-                    call(getItemState, item, hashtagContract),
+                    call(getItemState, item, hashtagAddress, hashtagContract),
                     call(getItemMetadata, item, hashtagAddress),
-                    call(getItemRepliers, item, hashtagContract)
+                    call(getItemRepliers, item, hashtagAddress, hashtagContract)
                 ])))
 
                 console.log('Finished fetching items!!')
@@ -203,9 +202,8 @@
             return hashtagContract.methods.readItemData(itemHash).call();
         }
 
-        function* getItemState(item, hashtagContract) {
+        function* getItemState(item, hashtagAddress, hashtagContract) {
             const { itemHash } = item;
-            const hashtagAddress = hashtagContract._address;
             try {
                 const res = yield call(readItemData, itemHash, hashtagContract)
                 yield put({
@@ -247,9 +245,8 @@
             return hashtagContract.methods.getItemRepliers(itemHash).call();
         }
 
-        function* getItemRepliers(item, hashtagContract) {
+        function* getItemRepliers(item, hashtagAddress, hashtagContract) {
             const { itemHash } = item;
-            const hashtagAddress = hashtagContract._address;
             try {
                 const res = yield call(callGetItemRepliers, itemHash, hashtagContract)
                 yield put({
@@ -308,7 +305,8 @@
         */
 
 
-        function createHashtagSubscriptionChannel(hashtagContract) {
+        function createHashtagSubscriptionChannel(hashtagAddress) {
+            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             return eventChannel(emitter => {
                 // Unique place to subscribe to all hashtag relevant events
                 //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
@@ -322,7 +320,7 @@
                             else emitter(event)
                         })
                     } catch (e) {
-                        console.error('Error creating subscription to NewItem in ' + hashtagContract._address)
+                        console.error('Error creating subscription to NewItem in ' + hashtagAddress)
                     }
                 })
 
@@ -371,26 +369,24 @@
             yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: { timestamp } });
         }
 
-        function* handleItemChange(event) {
+        function* handleItemChange(event, hashtagAddress) {
             // ItemChange(indexed itemHash, newstatus, providerAddress)
             // Step 1. Store the item info
             console.log('Handling ItemChange', event)
             const { itemHash, newstatus, providerAddress } = event.returnValues
-            const { address: hashtagAddress } = event
             yield put({
                 type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
                     status: newstatus,
                     providerAddress,
                 }
             });
-            yield call(openChat, { itemHash, itemStatus: newstatus, providerAddress })
+            yield call(openChat, { hashtagAddress, itemHash, itemStatus: newstatus, providerAddress })
         }
 
 
-        function* hashtagSubscription(hashtagContract) {
-            const hashtagSubscriptionChannel = yield call(createHashtagSubscriptionChannel, hashtagContract)
-            const hashtagAddress = hashtagContract._address
+        function* hashtagSubscription(hashtagAddress) {
             try {
+                const hashtagSubscriptionChannel = yield call(createHashtagSubscriptionChannel, hashtagAddress)
                 while (true) {
                     // take(END) will cause the saga to terminate by jumping to the finally block
                     let event = yield take(hashtagSubscriptionChannel)
@@ -403,7 +399,7 @@
                             yield fork(handleNewItem, event, hashtagAddress, true)
                             break;
                         case 'ItemChange':
-                            yield fork(handleItemChange, event)
+                            yield fork(handleItemChange, event, hashtagAddress)
                             break;
                         case 'ReplyItem':
                             yield fork(handleReplyItem, event, true)

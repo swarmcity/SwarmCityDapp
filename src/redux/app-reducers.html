@@ -65,6 +65,10 @@
             }
         }
 
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
+
         const reducer = function (state = initialState, action) {
             // console.log('NEW Top reducer: ', action)
             switch (action.type) {
@@ -260,7 +264,7 @@
                 case 'UPDATE_ITEMS': {
                     return deepmerge(state, {
                         hashtags: {
-                            [action.hashtagAddress]: {
+                            [toLowerCaseSafe(action.hashtagAddress)]: {
                                 items: action.items
                             }
                         }
@@ -269,7 +273,7 @@
                 case 'UPDATE_ITEM': {
                     return deepmerge(state, {
                         hashtags: {
-                            [action.hashtagAddress]: {
+                            [toLowerCaseSafe(action.hashtagAddress)]: {
                                 items: {
                                     [action.itemHash]: action.data
                                 }
@@ -280,7 +284,7 @@
                 case 'UPDATE_NEWHASHTAG': {
                     return deepmerge(state, {
                         hashtags: {
-                            [action.hashtagAddress]: action.data
+                            [toLowerCaseSafe(action.hashtagAddress)]: action.data
                         }
                     })
                 }
@@ -301,7 +305,7 @@
                 case 'UPDATE_REPUTATION': {
                     return deepmerge(state, {
                         reputation: {
-                            [action.address]: action.reputationsObj
+                            [toLowerCaseSafe(action.address)]: action.reputationsObj
                         }
                     })
                 }
@@ -317,7 +321,7 @@
                 case 'ADD_VISITED_HASHTAG': {
                     return deepmerge(state, {
                         visitedHashtags: {
-                            [action.hashtag.hashtagAddress]: action.hashtag
+                            [toLowerCaseSafe(action.hashtag.hashtagAddress)]: action.hashtag
                         }
                     })
                 }
