@@ -1,0 +1,214 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../../bower_components/paper-slider/paper-slider.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../displays/display-button-disagree.html">
+<link rel="import" href="../../displays/display-button-confirm.html">
+<!--
+
+Example:
+```
+<detail-simpledeal-conflict-resolving></detail-simpledeal-conflict-resolving>
+```
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+The following custom properties and mixins are available for styling:
+
+| Custom property | Description | Default |
+| --- | --- | --- |
+| `--detail-simpledeal-conflict-resolving` | Mixin applied to the deal button | `{}` |
+-->
+<dom-module id="detail-simpledeal-conflict-resolving">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            .container {
+                width: 100%;
+            }
+
+            iron-image {
+                height: 40px;
+                width: 40px;
+                border-radius: 50%;
+                min-height: 24px;
+                min-width: 24px;
+            }
+
+            .proportionbox {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                box-sizing: border-box;
+                margin: 30px 0;
+            }
+
+            .userbox {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                box-sizing: border-box;
+                text-align: center
+            }
+
+            .flex {
+                @apply --layout-flex;
+            }
+
+            .percentage {
+                color: var(--sc-green);
+                @apply --body-bold;
+            }
+
+            .amount {
+                color: var(--sc-yellow);
+                @apply --body-bold;
+
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                width: 100%;
+            }
+
+            .sliderbox {
+                @apply --layout-start
+            }
+
+            paper-slider {
+                --paper-slider-knob-color: var(--sc-green);
+                --paper-slider-knob-start-color:  var(--sc-green);
+                --paper-slider-knob-start-border-color:  var(--sc-green);
+                --paper-slider-active-color: rgba(189, 189, 189, 1);
+                width: 100%;
+                margin-top: 5px;
+                box-sizing: border-box;
+            }
+
+            .name {
+                color: var(--sc-blue);
+                @apply --small-bold;
+                margin-top: 5px;
+            }
+
+            .reputation {
+                color: var(--sc-blue);
+                @apply --small-bold;
+            }
+
+            .choice {
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                padding: 20px 0 30px 0 ;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .chat-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="horizontal">
+                <div class="proportionbox">
+                    <div class="percentage">
+                        [[_showPerc(percSeeker)]]%</div>
+                    <div class="amount">
+                        [[_calcAmount(percSeeker)]] SWT
+                    </div>
+                </div>
+                <div class="flex"></div>
+                <div class="proportionbox">
+                    <div class="percentage">
+                        [[_showPerc(percProvider)]]%
+                    </div>
+                    <div class="amount">
+                        [[_calcAmount(percProvider)]] SWT
+                    </div>
+                </div>
+            </div>
+            <div class="sliderbox horizontal">
+                <div class="userbox">
+                    <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[item.seekerAvatarHash]]"
+                        placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                    <div class="name">[[item.seekerUsername]]</div>
+                    <div class="reputation">[[item.seekerRep]] SWR</div>
+                </div>
+                <paper-slider min="0" max="1" step="0.01" value="{{percProvider}}" immediate-value="{{percProvider}}" expand></paper-slider>
+                <div class="userbox">
+                    <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[reply.avatarHash]]"
+                        placeholder="../images/defaultavatar.png">
+                    </iron-image>
+                    <div class="name">[[reply.username]]</div>
+                    <div class="reputation">[[reply.providerRep]] SWR</div>
+                </div>
+            </div>
+            <div class="choice">
+                <display-button-disagree on-tap="_disagree"></display-button-disagree>
+                <display-button-confirm on-tap="_agree"></display-button-confirm>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyDetailSimpledealConflictResolving extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'detail-simpledeal-conflict-resolving';
+            }
+            static get properties() {
+                return {
+                    item: Object,
+                    reply: Object,
+                    percSeeker: {
+                        type: Number,
+                        computed: '_computePerc(percProvider)',
+                    },
+                    percProvider: {
+                        type: Number,
+                        value: '0.5',
+                    }
+                };
+            }
+            _computePerc(perc) {
+                return 1 - perc;
+            }
+            _showPerc(fraction) {
+                return (fraction * 100).toFixed(0);
+            }
+            _calcAmount(perc) {
+                return ((this.item.itemValue * perc) / 1e18).toFixed(2);
+            }
+            _agree() {
+                console.log('resolving! Seeker gets: ' + (this.percSeeker * this.item.itemValue) / 1e18
+                    + ' SWT (' + this.percSeeker * 100 + '%) and provider gets: ' + (this.percProvider * this.item.itemValue) / 1e18 + ' SWT (' + this.percProvider * 100 + '%)')
+            }
+            _disagree() {
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+        }
+        window.customElements.define(
+            MyDetailSimpledealConflictResolving.is,
+            MyDetailSimpledealConflictResolving
+        );
+    </script>
+</dom-module>
