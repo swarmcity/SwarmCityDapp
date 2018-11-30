@@ -1,0 +1,641 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../data/data-location.html">
+
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="../../shared-styles.html">
+<link rel="import" href="../../displays/display-my-info.html">
+<link rel="import" href="../../displays/display-simpledeal-title.html">
+
+<dom-module id="new-hashtag-create">
+    <template>
+        <!--
+    Page specific styles, if the style is used on more than one page, moveit to shared styles.
+        -->
+        <style include="shared-styles">
+            .container {
+                background-image: var(--sc-bg);
+                @apply --layout-vertical;
+                min-height: 100vh;
+                margin-top: 159px;
+                height: 100%;
+                width: 100%;
+            }
+
+            .requestcontainer {
+                background-color: var(--sc-white);
+                margin: 0px 10px 50px 10px;
+            }
+
+            .container[wide-layout] .requestcontainer {
+                max-width: 68vw;
+                margin: 0px 10vw 150px 10vw;
+            }
+
+            .closebox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                box-sizing: border-box;
+                padding: 10px 10px 0 0;
+            }
+
+            .close {
+                @apply --xmark-grey2-small;
+                cursor: pointer;
+            }
+
+            .close:active {
+                @apply --button-active;
+            }
+
+            .inputs {
+                box-sizing: border-box;
+                padding: 0px 35px 40px 35px;
+                margin-top: -10px;
+            }
+
+            .container[wide-layout] .inputs {
+                padding: 0px 40px 40px 40px;
+            }
+
+            .container .errorcontainer {
+                @apply --error-container;
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                @apply --layout-start-justified;
+            }
+
+            .container[wide-layout] .errorcontainer {
+                @apply --error-container-wide;
+            }
+
+            #error {
+                @apply --error-msg;
+                text-align: left;
+                margin: 30px 0px 0px 0px;
+            }
+
+            .container[wide-layout] #error {
+                @apply --error-msg-wide;
+                margin: 30px 0px 0px 0px;
+            }
+
+            paper-textarea {
+                text-indent: 1px;
+                box-sizing: border-box;
+                padding: 0 2px;
+                text-align: left;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                }
+                --paper-input-container-input: {
+                    @apply --body-detail;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+            }
+
+            .container[wide-layout] paper-textarea {
+                width: inherit;
+                max-width: 60vw;
+            }
+
+            paper-input {
+                text-indent: 1px;
+                width: 100%;
+                text-align: left;
+                @apply --sc-paper-input;
+                --paper-input-container-label: {
+                    @apply --body-default;
+                    margin-top: 5px;
+                }
+                --paper-input-container-input: {
+                    color: var(--sc-yellow);
+                    @apply --body-bold;
+                    font-size: 22px;
+                    margin-top: 5px;
+                }
+                --paper-input-error: {
+                    @apply --body-bold;
+                }
+                --paper-input-prefix: {
+                    @apply --body-default;
+                }
+                --paper-input-suffix: {
+                    @apply --body-default;
+                }
+                --paper-input-container-focus-color: var(--sc-yellow);
+            }
+
+            .budget {
+                @apply --layout-flex;
+                max-width: 160px;
+            }
+
+            .container[wide-layout] .budget {
+                max-width: 250px;
+            }
+
+            .horizontal {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .currency {
+                margin: 0 0 4px 15px;
+                @apply --body-bold;
+                color: var(--sc-yellow);
+            }
+
+            .infobox {
+                @apply --small-light;
+                border-top: 1px dotted var(--sc-grey2);
+                box-sizing: border-box;
+                padding: 20px 30px 18px 30px;
+                text-align: right;
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+            }
+
+            .container[wide-layout] .infobox {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
+            }
+
+            .cost {
+                @apply --body-default;
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                @apply --layout-start;
+            }
+
+
+            .costwords {
+                margin: 3px 6px 0px 0px;
+                color: var(--sc-grey3);
+            }
+
+            .costbold {
+                @apply --main-title4;
+            }
+
+            .container[wide-layout] .costwords {
+                margin: 6px 10px 0px 0px;
+            }
+
+            .fee {
+                color: var(--sc-grey3);
+                @apply --small-light;
+                margin: 4px 0px 0px 0px;
+            }
+
+            .buttonbox {
+                margin: 20px 5px -35px 0px;
+            }
+
+            .container[wide-layout] .buttonbox {
+                margin: 5px 0px -40px 20px;
+            }
+
+            .disagree {
+                @apply --xmark-grey4-small;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .disagree:active {
+                @apply --button-active;
+            }
+
+            .round-button {
+                @apply --icon-button-big;
+                background-color: var(--sc-blue);
+            }
+
+            .active:active {
+                @apply --button-active;
+            }
+
+            .agree {
+                @apply --next-white-normal;
+                opacity: 0.2;
+            }
+
+            .enabled {
+                opacity: 1;
+            }
+
+            .smallgrey {
+                @apply --small-light;
+                margin-top: 25px;
+                color: var(--sc-grey3);
+            }
+
+            .location-box {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+            }
+
+            .range-description {
+                @apply --body-default;
+                margin-top: 5px;
+            }
+
+            .sliderbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 800px;
+            }
+
+            paper-slider {
+                @apply --layout-flex;
+                --paper-slider-knob-color: var(--sc-yellow);
+                --paper-slider-active-color: var(--sc-yellow);
+            }
+
+            .container[wide-layout] paper-slider {
+                max-width: 40vw;
+            }
+
+            .pin-icon {
+                @apply --locationmarker-grey4-small;
+                margin-right: -15px;
+            }
+
+            .globe-icon {
+                @apply --globe-grey4-small;
+            }
+
+
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .close,
+                .agree,
+                .pin-icon,
+                .globe-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+
+        <data-location id="location"></data-location>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <div class="container" id="container" wide-layout$="{{wide}}">
+            <display-my-info avatarSmall path="{{path}}" route="[[route]]">
+            </display-my-info>
+            <div class="requestcontainer">
+                <div class="closebox">
+                    <div class="close" on-tap="_close" tabindex="1"></div>
+                </div>
+                <div class="inputs">
+                    <paper-textarea id="request" label="What is the hashtag's title ?" type="txt" value="{{title}}"
+                        on-input="_toggleButton" autofocus></paper-textarea>
+                    <paper-textarea id="request" label="What is the description?" type="txt" value="{{description}}"
+                        on-input="_toggleButton" autofocus></paper-textarea>
+                    <div class="horizontal">
+                        <paper-input id="budget" type="Number" class="budget" label="What is the fee?"
+                            allowed-pattern="[0-9\.\,]" on-input="_checkBudget" value="{{budget}}"></paper-input>
+                        <div class="currency">SWT</div>
+                    </div>
+                    <template is="dom-if" if="{{showError}}">
+                        <div class="errorcontainer">
+                            <span id="error">{{error}}</span>
+                        </div>
+                    </template>
+
+                </div>
+                <div class="infobox">
+                    <template is="dom-if" if="{{showSum}}">
+                        <div class="cost">
+                            <div class="costwords">{{localize('Total cost:')}}</div>
+                            <div class="costbold">{{totalcost}} SWT</div>
+                        </div>
+                    </template>
+                    <div class="buttonbox">
+                        <div id="button" class="round-button" on-click="_create" on-keypress="_create" tabindex="1">
+                            <div id="agree" class="agree"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </template>
+    <script>
+        class MyNewHashtagCreate extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'new-hashtag-create';
+            }
+            static get properties() {
+                return {
+                    /**
+                    * Language is the user selected language
+                    * @type {String}
+                    */
+                    language: {
+                        type: String,
+                        statePath: 'language',
+                    },
+                    /**
+                    * Balance is the users current balance
+                    * @type {Number}
+                    */
+                    balance: {
+                        type: Number,
+                        statePath: AppStore.selectors.balance,  // eslint-disable-line
+                    },
+                    /**
+                    * ItemGeohash is the item's geohash
+                    * @type {Object}
+                    */
+                    itemGeohash: {
+                        type: Object,
+                    },
+                    /**
+                    * Error
+                    * @type {String}
+                    */
+                    error: {
+                        type: String,
+                        observer: '_showError',
+                    },
+                    /**
+                    * Value is the value of the slider
+                    * @type {Number}
+                    */
+                    choosingValue: {
+                        type: Number,
+                        observer: '_setRangeDescription',
+                    },
+                    /**
+                    * chosenValue changes after we moved the slider
+                    * this is when we check for location sharing permission
+                    * @type {Number}
+                    */
+                    chosenValue: {
+                        type: Number,
+                        observer: '_checkPermissions',
+                        value: 8,
+                        notify: true,
+                    },
+                    /**
+                    * rangeDescription is the description of the range
+                    * @type {String}
+                    */
+                    rangeDescription: {
+                        type: String,
+                    },
+                    /**
+                    * the selected hashtag
+                    * @type {Object}
+                    */
+                    hashtag: {
+                        type: Object,
+                        statePath: AppStore.selectors.hashtag,
+                        observer: '_setHashtagValues',
+                    },
+                    /**
+                    * the hashtag fee of selected hashtag
+                    * @type {String}
+                    */
+                    hashtagFee: {
+                        type: String,
+                        value: '0',
+                    },
+                    title: String,
+                    description: String,
+                };
+            }
+            /**
+            * Fired when the component is connected
+            */
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl('../../text-translations.json'));
+            }
+
+            /**
+            * takes the user to confirm page
+            */
+            _create() {
+                if (this._toggleButton()) {
+                    this.dispatchEvent(new CustomEvent('create', {
+                        detail: {
+                            itemBudget: this.budget,
+                            itemDescription: this.request,
+                            itemGeohash: this.itemGeohash,
+                        }
+                    }));
+                    this._reset();
+                }
+            }
+            /**
+            * Verifies user input and displays error message
+            */
+            _showError() {
+                if (this.error) {
+                    this.showError = true;
+                } else {
+                    this.showError = false;
+                }
+            }
+            /**
+            * Verifies user input and displays total cost
+            */
+            _checkBudget() {
+                this._toggleButton();
+                this.totalcost = (parseFloat(this.budget) + parseFloat(this.hashtagFee));
+                if (this.budget) {
+                    this.showSum = true;
+                    if (this.balance.cash.wei >= this.totalcost) {
+                        this.error = '';
+                        if (this.budget) {
+                            this.showSum = true;
+                        } else {
+                            this.showSum = false;
+                        }
+                    } else {
+                        this.error = this.localize('You have insufficient funds for an offer that size.');
+                        this.$.agree.classList.remove('enabled');
+                        this.$.button.classList.remove('active');
+                    }
+                } else {
+                    this.showSum = false;
+                    this.error = '';
+                }
+            }
+            /**
+            * Verifies user input and enables button
+             * @return {boolean} if input is valid or not
+            */
+            _toggleButton() {
+                if (
+                    this.request &&
+                    this.request.length > 0 &&
+                    this.budget &&
+                    this.budget.length > 0 &&
+                    this.balance.cash.wei >= parseFloat(this.budget) + this.hashtagFee
+                ) {
+                    this.$.agree.classList.add('enabled');
+                    this.$.button.classList.add('active');
+                    return true;
+                } else {
+                    this.$.agree.classList.remove('enabled');
+                    this.$.button.classList.remove('active');
+                    return false;
+                }
+            }
+            /**
+            * Takes the user's geohash and slider value to generate an item geohash
+            */
+            _getItemGeohash(geohash, range) {
+                switch (range) {
+                    case (1):
+                        this.itemGeohash = geohash;
+                        break;
+                    case (2):
+                        this.itemGeohash = geohash.slice(0, 6);
+                        break;
+                    case (3):
+                        this.itemGeohash = geohash.slice(0, 5);
+                        break;
+                    case (4):
+                        this.itemGeohash = geohash.slice(0, 4);
+                        break;
+                    case (5):
+                        this.itemGeohash = geohash.slice(0, 3);
+                        break;
+                    case (6):
+                        this.itemGeohash = geohash.slice(0, 2);
+                        break;
+                    case (7):
+                        this.itemGeohash = geohash.slice(0, 1);
+                        break;
+                    case (8):
+                        this.itemGeohash = null;
+                        break;
+                }
+            }
+            /**
+            * takes the user to originating page
+            */
+            _close() {
+                this._reset();
+                this.dispatchEvent(new CustomEvent('close'));
+            }
+            /**
+            * When hashtag property is filled, set correct values
+            */
+            _setHashtagValues() {
+                if (this.hashtag) {
+                    this.hashtagFee = this.hashtag.hashtagFee / 2e18;
+                }
+            }
+            /**
+            * empties all input fields if not coming confirm-new-request page
+            */
+            _reset() {
+                this.request = '';
+                this.budget = '';
+                this.totalcost = 0;
+                this.showSum = false;
+                this.chosenValue = 8;
+                this.itemGeohash = null;
+            }
+            /**
+            * After a range has been chosen, check for permissions
+            * If correct permissions, get the user's current geohash
+            */
+            _checkPermissions() {
+                this._setRangeDescription();
+                if (this.chosenValue != 8) {
+                    const range = this.chosenValue;
+                    navigator.permissions.query({ 'name': 'geolocation' })
+                        .then((permission) => {
+                            if (permission.state != 'granted') {
+                                this.dispatchEvent(new CustomEvent('location'));
+                            } else {
+                                this.$.location.getLocation()
+                                    .then(({ latitude, longitude }) => this.$.location.toGeohash(latitude, longitude))
+                                    .then((geohash) => this._getItemGeohash(geohash, range));
+                            }
+                        });
+                }
+            }
+
+            /**
+            * Instantly update the slider with correct range description
+            */
+            _setRangeDescription() {
+                switch (this.choosingValue) {
+                    case (1):
+                        this.rangeDescription =
+                            'within 25m from your location';
+                        break;
+                    case (2):
+                        this.rangeDescription =
+                            'within 1 km from your location';
+                        break;
+                    case (3):
+                        this.rangeDescription =
+                            'within 5 km from your location';
+                        break;
+                    case (4):
+                        this.rangeDescription =
+                            'within 30 km from your location';
+                        break;
+                    case (5):
+                        this.rangeDescription =
+                            'within 200 km from your location';
+                        break;
+                    case (6):
+                        this.rangeDescription =
+                            'within 1000 km from your location';
+                        break;
+                    case (7):
+                        this.rangeDescription =
+                            'within 10 000 km from your location';
+                        break;
+                    case (8):
+                        this.rangeDescription =
+                            'Worldwide';
+                        break;
+                }
+            }
+        }
+        window.customElements.define(MyNewHashtagCreate.is, MyNewHashtagCreate);
+    </script>
+</dom-module>
