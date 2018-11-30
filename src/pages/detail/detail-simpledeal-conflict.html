@@ -262,7 +262,8 @@ The following custom properties and mixins are available for styling:
                         </div>
                     </template>
                     <template is="dom-if" if="[[resolving]]">
-                        <detail-simpledeal-conflict-resolving item="[[item]]" reply="[[reply]]" on-close="_resolve"></detail-simpledeal-conflict-resolving>
+                        <detail-simpledeal-conflict-resolving item="[[item]]" reply="[[reply]]" on-close="_resolve"
+                            on-resolve="_handleOnResolve"></detail-simpledeal-conflict-resolving>
                     </template>
                 </template>
                 <template is="dom-if" if="[[!_isMaintainer(maintainer.address, address)]]">
@@ -394,6 +395,9 @@ The following custom properties and mixins are available for styling:
             }
             _resolve() {
                 this.resolving = !this.resolving;
+            }
+            _handleOnResolve(e) {
+                this.dispatchEvent(new CustomEvent("resolve", { detail: e.detail }));
             }
         }
         window.customElements.define(

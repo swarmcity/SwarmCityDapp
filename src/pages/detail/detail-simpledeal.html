@@ -130,7 +130,7 @@
 
           <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
             <detail-simpledeal-conflict address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
-              maintainer="[[hashtag.metadata.maintainer]]" on-chat="_handleOnChat"></detail-simpledeal-conflict>
+              maintainer="[[hashtag.metadata.maintainer]]" on-chat="_handleOnChat" on-resolve="_handleOnresolve"></detail-simpledeal-conflict>
           </template>
 
           <template is="dom-if" if="{{_showConflictButton(item, status)}}">
@@ -498,6 +498,46 @@
           }
         });
       }
+      _handleOnresolve(e) {
+        const seekerPercentage = e.detail;
+        console.log(seekerPercentage)
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const maintainer = {
+              address,
+              privateKey
+            };
+
+            const item = {
+              hash: this.item.itemHash,
+              value: this.item.itemValue,
+            };
+            const hashtagAddress = this.hashtag.address;
+            this.$.simpledeal
+              .resolveItem({ maintainer, item, hashtagAddress,  seekerPercentage})
+              .then(receipt => {
+                console.log("Successfully resolved item, receipt:", receipt);
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress,
+                  itemHash: this.item.itemHash,
+                  data: {
+                    status: "4-pending"
+                  }
+                });
+              })
+              .catch(err => {
+                console.log("Error resolving item:", err);
+              });
+          } catch (e) {
+            console.error("Error resolving item (catch block): ", e.stack);
+          }
+        });
+      }
       _handleOnCancel() {
         this.$.unlock._getPrivateKey().then(res => {
           try {
@@ -653,7 +693,6 @@
         })
       }
       _handleOnReputation(e) {
-        console.log('rep')
         this.dispatchEvent(
           new CustomEvent("reputation", {
             detail: e.detail

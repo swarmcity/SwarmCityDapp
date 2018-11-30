@@ -247,6 +247,39 @@
             return hash
         }
 
+        async function resolveItemAsync({ maintainer, item, hashtagAddress, seekerPercentage }) {
+            const seekerFraction = item.value * seekerPercentage;
+            console.log(seekerFraction);
+
+            // 1. Encode the raw resolveItem
+            const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
+            const rawResolveItem = simpleDealContract.methods.resolveItem(
+                item.hash,
+                seekerFraction,
+            ).encodeABI();
+
+            // 2. Get user's nonce
+            const nonce = await _web3.eth.getTransactionCount(maintainer.address);
+
+            // 3. Generate tx object, sign and serialize
+            const tx = new Tx({
+                nonce: _web3.utils.toHex(nonce),
+                from: maintainer.address,
+                gasPrice: 1000000000,
+                gasLimit: 3000000,
+                to: hashtagAddress,
+                data: rawResolveItem,
+                chainId: 42,
+            });
+            tx.sign(new Buffer(maintainer.privateKey, 'hex'));
+            const serializedTx = tx.serialize();
+
+            // 4. Send transaction, await receipt. 
+            // Extra line for clarity
+            const hash = await sendSignedTransaction('0x' + serializedTx.toString('hex'))
+            return hash
+        }
+
         async function cancelItemAsync({ seeker, itemHash, hashtagAddress }) {
             // 1. Encode the raw cancelItem
             const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi, hashtagAddress);
@@ -354,6 +387,13 @@
              */
             disputeItem(args) {
                 return disputeItemAsync(args)
+            }
+
+            /**
+             * Resolve
+             */
+            resolveItem(args) {
+                return resolveItemAsync(args)
             }
 
             /**
