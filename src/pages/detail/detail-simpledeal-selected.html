@@ -38,6 +38,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-flex;
                 @apply --body-default;
                 color: var(--sc-grey4);
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
             }
 
             .price {
@@ -149,6 +153,26 @@ This code may only be used under the license found at https://github.com/swarmci
                 opacity: 0.5;
             }
 
+            .dont-break-out {
+
+                /* These are technically the same, but use both */
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+
+                -ms-word-break: break-all;
+                /* This is the dangerous one in WebKit, as it breaks things wherever */
+                word-break: break-all;
+                /* Instead use this non-standard one: */
+                word-break: break-word;
+
+                /* Adds a hyphen where the word breaks, if supported (No Blink) */
+                -ms-hyphens: auto;
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+
+            }
+
             .container[wide-layout] #error {
                 @apply --error-msg-wide;
                 margin: 30px 0px 0px 0px;
@@ -158,7 +182,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <div class="container" wide-layout$="{{wide}}">
             <div class="whitebox">
                 <div class="descriptionbox">
-                    <div class="description">[[reply.message]]</div>
+                    <div class="description dont-break-out">[[reply.message]]</div>
                     <div class="price">for [[_formatValue(item.itemValue)]] SWT</div>
                 </div>
                 <div class="date">
@@ -182,7 +206,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </div>
             </div>
             <div class$="{{_checkPending(item.status)}}">
-            <!-- <div class="bluebox pending"> -->
+                <!-- <div class="bluebox pending"> -->
                 <template is="dom-if" if="[[_isReplier(reply.replierAddress, address)]]">
                     <div class="white-text">[[item.seekerUsername]] selected you to make a deal. Do you accept?</div>
                     <template is="dom-if" if="{{showError}}">
@@ -309,7 +333,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             _checkPending(status) {
-                return status == '0'? "bluebox" : "bluebox pending";
+                return status == '0' ? "bluebox" : "bluebox pending";
             }
         }
         window.customElements.define(
