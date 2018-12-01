@@ -26,6 +26,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-vertical;
                 @apply --layout-start-justified;
                 @apply --layout-center;
+                position: relative;
                 box-sizing: border-box;
                 background-color: var(--sc-white);
                 padding: 40px 15px;
@@ -45,9 +46,39 @@ This code may only be used under the license found at https://github.com/swarmci
             .pending {
                 opacity: 0.5;
             }
+
+            .chat-button {
+                @apply --icon-button-big;
+                position: absolute;
+                top: -40px;
+                right: 0;
+                z-index: 99;
+                right: 30px;
+            }
+
+            .chat-button:active {
+                @apply --button-active;
+            }
+
+            .chat-icon {
+                @apply --chat-blue-normal;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+                .chat-icon {
+                    @apply --retina;
+                }
+            }
         </style>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
         <div class$="{{_checkPending(item.status)}}" wide-layout$="{{wide}}">
+            <template is="dom-if" if="[[_showChatButton(item, address, hashtag)]]">
+                <div class="chat-button" on-tap="_toChat">
+                    <div class="chat-icon"></div>
+                </div>
+            </template>
             <div class="time">[[_formatDate(item.timestamp)]]</div>
             <div class="text">This deal has been completed.</div>
         </div>
@@ -64,6 +95,8 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     item: Object,
+                    address: Object,
+                    hashtag: Object,
                 };
             }
             /**
@@ -82,6 +115,36 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _checkPending(status) {
                 return (status == '2' || status == '4') ? "container" : "container pending";
+            }
+            _showChatButton(item, address, hashtag) {
+                return (
+                    (
+                        item
+                        && item.status
+                        && item.status == '2'
+                        && (item.seekerAddress
+                            && item.seekerAddress == address)
+                        || (item.providerAddress
+                            && item.providerAddress == address
+
+                        )
+                    )
+                    ||
+                    (
+                        item
+                        && item.status
+                        && item.status == '4'
+                        && hashtag
+                        && hashtag.maintainerAddress
+                        && address
+                        && address == hashtag.maintainerAddress)
+                )
+            }
+            /**
+            * Change the route to the chat view
+            */
+            _toChat() {
+                this.dispatchEvent(new CustomEvent('chat'));
             }
         }
         window.customElements.define(
