@@ -22,6 +22,8 @@
         const getFirebaseApp = (state) => state.firebaseApp;
         const getUser = (state) => state.user;
 
+        let faucetCalled = false;
+
         /*
          * redux-saga worker functions
          */
@@ -197,11 +199,12 @@
             if (address && chain == 'kovan') {
                 const ethBalance = await web3s[chain].eth.getBalance(address);
 
-                if (ethBalance < 100000000000000000) {
+                if (ethBalance < 100000000000000000 && !faucetCalled) {
                     console.log('Asking faucet for a refill, ethbalance: ', ethBalance)
                     var xhr = new XMLHttpRequest();
                     xhr.open('GET', 'https://scapiweb3-c.swarm.city/faucet/' + address);
                     xhr.send(null);
+                    faucetCalled = true;
                 }
             }
 

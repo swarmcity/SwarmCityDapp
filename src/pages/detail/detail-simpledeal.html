@@ -121,7 +121,7 @@
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
-            <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
+            <detail-simpledeal-done item="[[item]]" address="[[address]]" hashtag="[[hashtag]]" on-chat="_handleOnChat"></detail-simpledeal-done>
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'input conflict')}}">
@@ -130,10 +130,10 @@
 
           <template is="dom-if" if="{{_isEqualTo(status, 'conflict')}}">
             <detail-simpledeal-conflict address="[[address]]" item="[[item]]" reply="[[_getProviderReply(item)]]"
-              maintainer="[[hashtag.metadata.maintainer]]" on-chat="_handleOnChat"></detail-simpledeal-conflict>
+              maintainer="[[hashtag.metadata.maintainer]]" hashtag="[[hashtag]]" on-chat="_handleOnChat" on-resolve="_handleOnresolve"></detail-simpledeal-conflict>
           </template>
 
-          <template is="dom-if" if="{{_showConflictButton(item)}}">
+          <template is="dom-if" if="{{_showConflictButton(item, status)}}">
             <detail-button-conflict on-tap="_conflict"></detail-button-conflict>
           </template>
 
@@ -317,9 +317,10 @@
         // )
       }
 
-      _showConflictButton(item) {
+      _showConflictButton(item, status) {
         if (
           (item && item.status && item.status == '1') &&
+          status != 'input conflict' &&
           ((item && item.seekerAddress && item.seekerAddress == this.address) || (
             item && item.providerAddress && item.providerAddress == this.address
           ))) {
@@ -338,8 +339,8 @@
               this.hashtag &&
               this.hashtag.metadata &&
               this.hashtag.metadata.maintainer &&
-              this.hashtag.metadata.maintainer.address &&
-              this.hashtag.metadata.maintainer.address == this.address
+              this.hashtag.maintainerAddress &&
+              this.hashtag.maintainerAddress == this.address
             )
           )
         )
@@ -494,6 +495,67 @@
               });
           } catch (e) {
             console.error("Error paying out item (catch block): ", e.stack);
+          }
+        });
+      }
+      _handleOnresolve(e) {
+        const seekerPercentage = e.detail;
+        console.log(seekerPercentage)
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const maintainer = {
+              address,
+              privateKey
+            };
+
+            const item = {
+              hash: this.item.itemHash,
+              value: this.item.itemValue,
+            };
+            const hashtagAddress = this.hashtag.address;
+
+            this.$.simpledeal
+              .resolveItem({ maintainer, item, hashtagAddress, seekerPercentage })
+              .then(receipt => {
+                console.log("Successfully resolved item, receipt:", receipt);
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress,
+                  itemHash: this.item.itemHash,
+                  data: {
+                    status: "4-pending"
+                  }
+                });
+                console.log('sending resolve message')
+                this.$.socket
+                  ._sendChatMessage({
+                    itemHash: this.item.itemHash,
+                    message: {
+                      sender: maintainer.address,
+                      time: Math.floor(Date.now() / 1000),
+                      seekerPercentage,
+                      type: "conflict-resolve",
+                    }
+                  })
+                  .then(() => {
+
+                    console.log(
+                      "Successfully sent resolve message"
+                    );
+                  })
+                  .catch(err => {
+                    console.log("Error sending resolve message:", err);
+                  });
+              })
+              .catch(err => {
+                console.log("Error resolving item:", err);
+              });
+          } catch (e) {
+            console.error("Error resolving item (catch block): ", e.stack);
           }
         });
       }
@@ -652,7 +714,6 @@
         })
       }
       _handleOnReputation(e) {
-        console.log('rep')
         this.dispatchEvent(
           new CustomEvent("reputation", {
             detail: e.detail

@@ -13,6 +13,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../displays/display-button-disagree.html">
 <link rel="import" href="../../displays/display-button-confirm.html">
+<link rel="import" href="./detail-simpledeal-conflict-resolving.html">
 <!--
 
 Example:
@@ -104,11 +105,17 @@ The following custom properties and mixins are available for styling:
             }
 
             .conflictbox {
+                @apply --layout-vertical;
+                @apply --layout-center;
                 box-sizing: border-box;
                 padding: 40px 25px 20px 25px;
                 background-color: var(--sc-white);
                 border-bottom: 4px solid var(--sc-red);
                 position: relative;
+            }
+            .container[wide-layout] .conflictbox {
+
+                @apply --layout-start;
             }
 
             .maintainerbox {
@@ -180,10 +187,12 @@ The following custom properties and mixins are available for styling:
             .button {
                 @apply --text-button-big;
                 @apply --body-bold;
-                margin: 20px 0 0 0;
-                color: var(--sc-white);
+                margin: 50px 0 20px 0;
+                color: var(--sc-grey4);
                 width: 250px;
             }
+
+
 
             .button:active {
                 @apply --button-active;
@@ -203,6 +212,11 @@ The following custom properties and mixins are available for styling:
 
             .pending {
                 opacity: 0.5;
+            }
+
+            detail-simpledeal-conflict-resolving {
+                width: 100%;
+                box-sizing: border-box;
             }
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
@@ -243,16 +257,31 @@ The following custom properties and mixins are available for styling:
                     <div class="chat-icon"></div>
                 </div>
                 <div class="center bold">This deal is <span class="red">in conflict</span>.</div>
-                <div class="center subtitle">The hashtagmaintainer is added to the chat</div>
-                <div class="maintainerbox">
-                    <div class="avatar">
-                        <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[maintainer.avatar]]"
-                            placeholder="../images/defaultavatar.png">
-                        </iron-image>
-                    </div>
+                <template is="dom-if" if="[[_isMaintainer(hashtag.maintainerAddress, address)]]">
+                    <div class="center subtitle">You were added to the chat</div>
 
-                    <div class$="{{_isMaintainer(maintainer.address, address)}}">[[maintainer.username]]</div>
-                </div>
+                    <template is="dom-if" if="[[!resolving]]">
+                        <div class="button" on-tap="_resolve">
+                            resolve
+                        </div>
+                    </template>
+                    <template is="dom-if" if="[[resolving]]">
+                        <detail-simpledeal-conflict-resolving item="[[item]]" reply="[[reply]]" on-close="_resolve"
+                            on-resolve="_handleOnResolve"></detail-simpledeal-conflict-resolving>
+                    </template>
+                </template>
+                <template is="dom-if" if="[[!_isMaintainer(hashtag.maintainerAddress, address)]]">
+                    <div class="center subtitle">The hashtagmaintainer is added to the chat</div>
+                    <div class="maintainerbox">
+                        <div class="avatar">
+                            <iron-image sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[maintainer.avatar]]"
+                                placeholder="../images/defaultavatar.png">
+                            </iron-image>
+                        </div>
+
+                        <div class="replier">[[maintainer.username]]</div>
+                    </div>
+                </template>
             </div>
         </div>
     </template>
@@ -271,6 +300,11 @@ The following custom properties and mixins are available for styling:
                     reply: Object,
                     address: String,
                     maintainer: Object,
+                    hashtag: Object,
+                    resolving: {
+                        type: Boolean,
+                        value: false,
+                    },
                 };
             }
             /**
@@ -362,7 +396,13 @@ The following custom properties and mixins are available for styling:
                 return status == '3' ? "conflictbox" : "conflictbox pending";
             }
             _isMaintainer(maintainerAddress, userAddress) {
-                return maintainerAddress == userAddress ? "replier" : "username";
+                return maintainerAddress == userAddress;
+            }
+            _resolve() {
+                this.resolving = !this.resolving;
+            }
+            _handleOnResolve(e) {
+                this.dispatchEvent(new CustomEvent("resolve", { detail: e.detail }));
             }
         }
         window.customElements.define(

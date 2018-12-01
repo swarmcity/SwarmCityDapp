@@ -8,7 +8,7 @@
 <!-- Displays and shared styles only -->
 <link rel="import" href="../../shared-styles.html" />
 
-<dom-module id="chat-conflict-start">
+<dom-module id="chat-conflict-resolve">
   <template>
     <style include="shared-styles">
       :host {
@@ -16,7 +16,7 @@
       }
 
       .container {
-        margin-top: 50px;
+        margin-top: 20px;
       }
 
       .date {
@@ -29,10 +29,11 @@
       .text {
         @apply --layout-horizontal;
         @apply --layout-center-justified;
-        @apply --small-bold;
-        margin-top: 5px;
-        padding: 10px 0;
+        @apply --small-light;
+        margin: 5px 0 10px 0;
+        padding: 10px 20px;
         box-sizing: border-box;
+        text-align: center;
         background-color: var(--sc-grey1b);
       }
 
@@ -43,20 +44,23 @@
     <div class="container">
       <div class="date">[[_formatDate(message.time)]]</div>
       <div class="text">
-        This deal is now&nbsp;<span class="red">in conflict.</span>
+        The conflict is resolved by the hashtag maintainer.
+        [[item.seekerUsername]] has been paid [[_seekerPayout(item.itemValue, message)]] SWT
+        and [[_getProviderUsername(item)]] has been paid [[_providerPayout(item.itemValue, message)]] SWT.
       </div>
     </div>
   </template>
   <script>
-    class MyChatConflictStart extends (new ReduxMixin(
+    class MyChatConflictResolve extends (new ReduxMixin(
       Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
     )) {
       static get is() {
-        return "chat-conflict-start";
+        return "chat-conflict-resolve";
       }
       static get properties() {
         return {
           message: Object,
+          item: Object,
         };
       }
 
@@ -73,7 +77,23 @@
           return webpack.moment(milliseconds).format("DD MMM YYYY - HH:mm");
         }
       }
+      _seekerPayout(wei, message) {
+        if (message && message.seekerPercentage) return ((wei * message.seekerPercentage) / 1e18).toFixed(2);
+        if (message && message.message.seekerPercentage) return ((wei * message.seekerPercentage) / 1e18).toFixed(2);
+
+      }
+
+      _providerPayout(wei, message) {
+        if (message && message.seekerPercentage) return ((wei - (wei * message.seekerPercentage)) / 1e18).toFixed(2);
+        if (message && message.message.seekerPercentage) return ((wei - (wei * message.seekerPercentage)) / 1e18).toFixed(2);
+
+      }
+      _getProviderUsername(item) {
+        if (item && item.replies) {
+          return item.replies[item.providerAddress].username
+        }
+      }
     }
-    window.customElements.define(MyChatConflictStart.is, MyChatConflictStart);
+    window.customElements.define(MyChatConflictResolve.is, MyChatConflictResolve);
   </script>
 </dom-module>

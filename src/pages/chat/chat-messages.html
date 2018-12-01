@@ -16,6 +16,7 @@
 <link rel="import" href="./chat-message.html" />
 <link rel="import" href="./chat-my-message.html" />
 <link rel="import" href="./chat-conflict-start.html" />
+<link rel="import" href="./chat-conflict-resolve.html" />
 <link rel="import" href="./chat-member-added.html" />
 
 <dom-module id="chat-messages">
@@ -36,27 +37,30 @@
       }
     </style>
     <div id="container" class="container">
-      <template is="dom-repeat" items="[[messages]]">
-        <template is="dom-if" if="[[!_statusMessage(item)]]">
-          <template is="dom-if" if="[[_myMessage(item)]]">
+      <template is="dom-repeat" items="[[messages]]" as="message">
+        <template is="dom-if" if="[[!_statusMessage(message)]]">
+          <template is="dom-if" if="[[_myMessage(message)]]">
             <chat-my-message
               avatars="[[avatars]]"
-              item="[[item]]"
+              message="[[message]]"
             ></chat-my-message>
           </template>
-          <template is="dom-if" if="[[!_myMessage(item)]]">
+          <template is="dom-if" if="[[!_myMessage(message)]]">
             <chat-message
               avatars="[[avatars]]" 
-              item="[[item]]"></chat-message>
+              message="[[message]]"></chat-message>
           </template>
         </template>
-        <template is="dom-if" if="[[_statusMessage(item)]]">
-            <template is="dom-if" if="[[_conflictStart(item)]]">
-              <chat-conflict-start item="[[item]]"></chat-conflict-start>
+        <template is="dom-if" if="[[_statusMessage(message)]]">
+            <template is="dom-if" if="[[_conflictStart(message)]]">
+              <chat-conflict-start message="[[message]]"></chat-conflict-start>
             </template>
-            <template is="dom-if" if="[[_memberAdded(item)]]">
-                <chat-member-added item="[[item]]"></chat-member-added>
+            <template is="dom-if" if="[[_memberAdded(message)]]">
+                <chat-member-added message="[[message]]"></chat-member-added>
             </template>
+            <template is="dom-if" if="[[_conflictResolve(message)]]">
+              <chat-conflict-resolve message="[[message]]" item="[[item]]"></chat-conflict-resolve>
+          </template>
         </template>
       </template>
     </div>
@@ -76,6 +80,7 @@
           },
           address: String,
           avatars: Object,
+          item: Object,
           secret: Object,
           initialScroll: {
             type: Boolean,
@@ -83,33 +88,36 @@
           }
         };
       }
-      _statusMessage(item) {
-        return (item && item.type && item.type != 'message');
+      _statusMessage(message) {
+        return (message && message.type && message.type != 'message');
       }
-      _conflictStart(item) {
-        return item && item.type && item.type == 'conflict-start';
+      _conflictStart(message) {
+        return message && message.type && message.type == 'conflict-start';
       }
-      _memberAdded(item) {
-        return item && item.type && item.type == 'member-added';
+      _memberAdded(message) {
+        return message && message.type && message.type == 'member-added';
       }
-      _myMessage(item) {
-        return (item && item.sender && item.sender == this.address);
+      _conflictResolve(message) {
+        return message && message.type && message.type == 'conflict-resolve';
+      }
+      _myMessage(message) {
+        return (message && message.sender && message.sender == this.address);
       }
       /**
        * scrolls the messages box down to newest message if not scrolled up yet
        */
       _scrollToBottom() {
-        if (
-          this.$.container.scrollHeight - this.$.container.scrollTop <=
-          this.$.container.clientHeight + 100
-        ) {
+        // if (
+        //   this.$.container.scrollHeight - this.$.container.scrollTop <=
+        //   this.$.container.clientHeight + 100
+        // ) {
           this.$.container.scrollTop = this.$.container.scrollHeight;
-        }
+        // }
         // scroll down on initial load of the messages
-        if (!this.initialScroll && this.$.container.scrollHeight > 501) {
-          this.$.container.scrollTop = this.$.container.scrollHeight;
-          this.initialScroll = true;
-        }
+        // if (!this.initialScroll && this.$.container.scrollHeight > 501) {
+        //   this.$.container.scrollTop = this.$.container.scrollHeight;
+        //   this.initialScroll = true;
+        // }
       }
     }
     window.customElements.define(MyChatMessages.is, MyChatMessages);
