@@ -374,12 +374,23 @@
             // Step 1. Store the item info
             console.log('Handling ItemChange', event)
             const { itemHash, newstatus, providerAddress } = event.returnValues
-            yield put({
-                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    status: newstatus,
-                    providerAddress,
-                }
-            });
+
+            if (newstatus == '5') {
+                yield put({
+                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                        status: newstatus,
+                        providerAddress,
+                    }
+                });
+            } else {
+                yield put({
+                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
+                        status: newstatus,
+                        providerAddress,
+                    }
+                });
+
+            }
             yield call(openChat, { hashtagAddress, itemHash, itemStatus: newstatus, providerAddress })
         }
 
