@@ -121,7 +121,7 @@
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'done')}}">
-            <detail-simpledeal-done item="[[item]]"></detail-simpledeal-done>
+            <detail-simpledeal-done item="[[item]]" address="[[address]]" hashtag="[[hashtag]]" on-chat="_handleOnChat"></detail-simpledeal-done>
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'input conflict')}}">
@@ -517,8 +517,9 @@
               value: this.item.itemValue,
             };
             const hashtagAddress = this.hashtag.address;
+
             this.$.simpledeal
-              .resolveItem({ maintainer, item, hashtagAddress,  seekerPercentage})
+              .resolveItem({ maintainer, item, hashtagAddress, seekerPercentage })
               .then(receipt => {
                 console.log("Successfully resolved item, receipt:", receipt);
                 this.dispatch({
@@ -529,6 +530,26 @@
                     status: "4-pending"
                   }
                 });
+                console.log('sending resolve message')
+                this.$.socket
+                  ._sendChatMessage({
+                    itemHash: this.item.itemHash,
+                    message: {
+                      sender: maintainer.address,
+                      time: Math.floor(Date.now() / 1000),
+                      seekerPercentage,
+                      type: "conflict-resolve",
+                    }
+                  })
+                  .then(() => {
+
+                    console.log(
+                      "Successfully sent resolve message"
+                    );
+                  })
+                  .catch(err => {
+                    console.log("Error sending resolve message:", err);
+                  });
               })
               .catch(err => {
                 console.log("Error resolving item:", err);
