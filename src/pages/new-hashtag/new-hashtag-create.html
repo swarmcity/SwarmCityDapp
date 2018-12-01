@@ -11,15 +11,12 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../redux-state.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
-<link rel="import" href="../../../bower_components/paper-slider/paper-slider.html">
-<link rel="import" href="../../data/data-location.html">
 
 <!--
     Displays and shared styles only
 -->
 <link rel="import" href="../../shared-styles.html">
 <link rel="import" href="../../displays/display-my-info.html">
-<link rel="import" href="../../displays/display-simpledeal-title.html">
 
 <dom-module id="new-hashtag-create">
     <template>
@@ -31,11 +28,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-image: var(--sc-bg);
                 @apply --layout-vertical;
                 min-height: 100vh;
-                margin-top: 159px;
+                margin-top: 106px;
                 height: 100%;
                 width: 100%;
             }
 
+            .container[wide-layout] {
+                margin-top: 126px;
+
+            }
             .requestcontainer {
                 background-color: var(--sc-white);
                 margin: 0px 10px 50px 10px;
@@ -256,54 +257,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 color: var(--sc-grey3);
             }
 
-            .location-box {
-                @apply --layout-vertical;
-                @apply --layout-start-justified;
-                @apply --layout-start;
-            }
-
-            .range-description {
-                @apply --body-default;
-                margin-top: 5px;
-            }
-
-            .sliderbox {
-                @apply --layout-horizontal;
-                @apply --layout-start-justified;
-                @apply --layout-end;
-                margin-top: 20px;
-                width: 100%;
-                max-width: 800px;
-            }
-
-            paper-slider {
-                @apply --layout-flex;
-                --paper-slider-knob-color: var(--sc-yellow);
-                --paper-slider-active-color: var(--sc-yellow);
-            }
-
-            .container[wide-layout] paper-slider {
-                max-width: 40vw;
-            }
-
-            .pin-icon {
-                @apply --locationmarker-grey4-small;
-                margin-right: -15px;
-            }
-
-            .globe-icon {
-                @apply --globe-grey4-small;
-            }
-
-
 
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
                 .close,
-                .agree,
-                .pin-icon,
-                .globe-icon {
+                .agree, {
                     @apply --retina;
                 }
             }
@@ -319,13 +278,13 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="close" on-tap="_close" tabindex="1"></div>
                 </div>
                 <div class="inputs">
-                    <paper-textarea id="request" label="What is the hashtag's title ?" type="txt" value="{{title}}"
+                    <paper-textarea id="request" label="What is the hashtag's name?" type="txt" value="{{name}}"
                         on-input="_toggleButton" autofocus></paper-textarea>
                     <paper-textarea id="request" label="What is the description?" type="txt" value="{{description}}"
                         on-input="_toggleButton" autofocus></paper-textarea>
                     <div class="horizontal">
-                        <paper-input id="budget" type="Number" class="budget" label="What is the fee?"
-                            allowed-pattern="[0-9\.\,]" on-input="_checkBudget" value="{{budget}}"></paper-input>
+                        <paper-input id="budget" type="Number" class="budget" label="What is the fee?" allowed-pattern="[0-9\.\,]"
+                            on-input="_toggleButton" value="{{fee}}"></paper-input>
                         <div class="currency">SWT</div>
                     </div>
                     <template is="dom-if" if="{{showError}}">
@@ -336,12 +295,6 @@ This code may only be used under the license found at https://github.com/swarmci
 
                 </div>
                 <div class="infobox">
-                    <template is="dom-if" if="{{showSum}}">
-                        <div class="cost">
-                            <div class="costwords">{{localize('Total cost:')}}</div>
-                            <div class="costbold">{{totalcost}} SWT</div>
-                        </div>
-                    </template>
                     <div class="buttonbox">
                         <div id="button" class="round-button" on-click="_create" on-keypress="_create" tabindex="1">
                             <div id="agree" class="agree"></div>
@@ -362,29 +315,6 @@ This code may only be used under the license found at https://github.com/swarmci
             static get properties() {
                 return {
                     /**
-                    * Language is the user selected language
-                    * @type {String}
-                    */
-                    language: {
-                        type: String,
-                        statePath: 'language',
-                    },
-                    /**
-                    * Balance is the users current balance
-                    * @type {Number}
-                    */
-                    balance: {
-                        type: Number,
-                        statePath: AppStore.selectors.balance,  // eslint-disable-line
-                    },
-                    /**
-                    * ItemGeohash is the item's geohash
-                    * @type {Object}
-                    */
-                    itemGeohash: {
-                        type: Object,
-                    },
-                    /**
                     * Error
                     * @type {String}
                     */
@@ -392,61 +322,14 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: String,
                         observer: '_showError',
                     },
-                    /**
-                    * Value is the value of the slider
-                    * @type {Number}
-                    */
-                    choosingValue: {
-                        type: Number,
-                        observer: '_setRangeDescription',
-                    },
-                    /**
-                    * chosenValue changes after we moved the slider
-                    * this is when we check for location sharing permission
-                    * @type {Number}
-                    */
-                    chosenValue: {
-                        type: Number,
-                        observer: '_checkPermissions',
-                        value: 8,
-                        notify: true,
-                    },
-                    /**
-                    * rangeDescription is the description of the range
-                    * @type {String}
-                    */
-                    rangeDescription: {
-                        type: String,
-                    },
-                    /**
-                    * the selected hashtag
-                    * @type {Object}
-                    */
-                    hashtag: {
-                        type: Object,
-                        statePath: AppStore.selectors.hashtag,
-                        observer: '_setHashtagValues',
-                    },
-                    /**
-                    * the hashtag fee of selected hashtag
-                    * @type {String}
-                    */
-                    hashtagFee: {
-                        type: String,
-                        value: '0',
-                    },
-                    title: String,
+                    name: String,
                     description: String,
+                    fee: {
+                        type: Number,
+                        value: 0.01,
+                    },
                 };
             }
-            /**
-            * Fired when the component is connected
-            */
-            connectedCallback() {
-                super.connectedCallback();
-                this.loadResources(this.resolveUrl('../../text-translations.json'));
-            }
-
             /**
             * takes the user to confirm page
             */
@@ -454,9 +337,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this._toggleButton()) {
                     this.dispatchEvent(new CustomEvent('create', {
                         detail: {
-                            itemBudget: this.budget,
-                            itemDescription: this.request,
-                            itemGeohash: this.itemGeohash,
+                            name: this.name,
+                            description: this.description,
+                            fee: this.fee,
                         }
                     }));
                     this._reset();
@@ -473,41 +356,17 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * Verifies user input and displays total cost
-            */
-            _checkBudget() {
-                this._toggleButton();
-                this.totalcost = (parseFloat(this.budget) + parseFloat(this.hashtagFee));
-                if (this.budget) {
-                    this.showSum = true;
-                    if (this.balance.cash.wei >= this.totalcost) {
-                        this.error = '';
-                        if (this.budget) {
-                            this.showSum = true;
-                        } else {
-                            this.showSum = false;
-                        }
-                    } else {
-                        this.error = this.localize('You have insufficient funds for an offer that size.');
-                        this.$.agree.classList.remove('enabled');
-                        this.$.button.classList.remove('active');
-                    }
-                } else {
-                    this.showSum = false;
-                    this.error = '';
-                }
-            }
-            /**
             * Verifies user input and enables button
              * @return {boolean} if input is valid or not
             */
             _toggleButton() {
                 if (
-                    this.request &&
-                    this.request.length > 0 &&
-                    this.budget &&
-                    this.budget.length > 0 &&
-                    this.balance.cash.wei >= parseFloat(this.budget) + this.hashtagFee
+                    this.name &&
+                    this.name.length > 0 &&
+                    this.description &&
+                    this.description.length > 0 &&
+                    this.fee &&
+                    this.fee > 0
                 ) {
                     this.$.agree.classList.add('enabled');
                     this.$.button.classList.add('active');
@@ -519,37 +378,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * Takes the user's geohash and slider value to generate an item geohash
-            */
-            _getItemGeohash(geohash, range) {
-                switch (range) {
-                    case (1):
-                        this.itemGeohash = geohash;
-                        break;
-                    case (2):
-                        this.itemGeohash = geohash.slice(0, 6);
-                        break;
-                    case (3):
-                        this.itemGeohash = geohash.slice(0, 5);
-                        break;
-                    case (4):
-                        this.itemGeohash = geohash.slice(0, 4);
-                        break;
-                    case (5):
-                        this.itemGeohash = geohash.slice(0, 3);
-                        break;
-                    case (6):
-                        this.itemGeohash = geohash.slice(0, 2);
-                        break;
-                    case (7):
-                        this.itemGeohash = geohash.slice(0, 1);
-                        break;
-                    case (8):
-                        this.itemGeohash = null;
-                        break;
-                }
-            }
-            /**
             * takes the user to originating page
             */
             _close() {
@@ -557,83 +385,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.dispatchEvent(new CustomEvent('close'));
             }
             /**
-            * When hashtag property is filled, set correct values
-            */
-            _setHashtagValues() {
-                if (this.hashtag) {
-                    this.hashtagFee = this.hashtag.hashtagFee / 2e18;
-                }
-            }
-            /**
             * empties all input fields if not coming confirm-new-request page
             */
             _reset() {
-                this.request = '';
-                this.budget = '';
-                this.totalcost = 0;
-                this.showSum = false;
-                this.chosenValue = 8;
-                this.itemGeohash = null;
-            }
-            /**
-            * After a range has been chosen, check for permissions
-            * If correct permissions, get the user's current geohash
-            */
-            _checkPermissions() {
-                this._setRangeDescription();
-                if (this.chosenValue != 8) {
-                    const range = this.chosenValue;
-                    navigator.permissions.query({ 'name': 'geolocation' })
-                        .then((permission) => {
-                            if (permission.state != 'granted') {
-                                this.dispatchEvent(new CustomEvent('location'));
-                            } else {
-                                this.$.location.getLocation()
-                                    .then(({ latitude, longitude }) => this.$.location.toGeohash(latitude, longitude))
-                                    .then((geohash) => this._getItemGeohash(geohash, range));
-                            }
-                        });
-                }
-            }
-
-            /**
-            * Instantly update the slider with correct range description
-            */
-            _setRangeDescription() {
-                switch (this.choosingValue) {
-                    case (1):
-                        this.rangeDescription =
-                            'within 25m from your location';
-                        break;
-                    case (2):
-                        this.rangeDescription =
-                            'within 1 km from your location';
-                        break;
-                    case (3):
-                        this.rangeDescription =
-                            'within 5 km from your location';
-                        break;
-                    case (4):
-                        this.rangeDescription =
-                            'within 30 km from your location';
-                        break;
-                    case (5):
-                        this.rangeDescription =
-                            'within 200 km from your location';
-                        break;
-                    case (6):
-                        this.rangeDescription =
-                            'within 1000 km from your location';
-                        break;
-                    case (7):
-                        this.rangeDescription =
-                            'within 10 000 km from your location';
-                        break;
-                    case (8):
-                        this.rangeDescription =
-                            'Worldwide';
-                        break;
-                }
+                this.name = '';
+                this.description = '';
+                this.fee = 0.01;
             }
         }
         window.customElements.define(MyNewHashtagCreate.is, MyNewHashtagCreate);
