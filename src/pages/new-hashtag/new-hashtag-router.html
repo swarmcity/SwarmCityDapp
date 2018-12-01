@@ -20,6 +20,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
 <dom-module id="page-new-hashtag">
     <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
         <display-unlock id="unlock" white></display-unlock>
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-hashtag')}}">
@@ -104,13 +105,14 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnConfirm(e) {
                 try {
                     const { privateKey, address, publicKey } = e.detail;
+                    const fee = parseFloat(this.fee) * 1e18;
                     this.status = 'processing'
 
                     if (!privateKey) {
                         throw Error('Missing private key')
                     }
                     const hashtag = {
-                        fee: this.fee,
+                        fee,
                         description: this.description,
                         name: this.name,
                     }
@@ -124,7 +126,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
                     console.log('About to create hashtag: ', { hashtag, maintainer });
 
-                    this._createHashtag({ hashtag, maintainer })
+                    this.$.simpledeal.createHashtag({ hashtag, maintainer })
                         .then(txHash => {
                             console.log('Successfully created hashtag, receipt:', txHash)
                             this.status = 'success';
@@ -142,36 +144,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
 
-            _createHashtag({ hashtag, maintainer }) {
-                return new Promise((resolve) => {
-                    const fee = parseFloat(hashtag.fee) * 1e18;
-
-                    // 1. post metadata to IPFS
-                    const ipfs = window.ipfs
-
-                    const metadataHash = ipfs.add(JSON.stringify({
-                        hashtagName: hashtag.name,
-                        hashtagFee: fee,
-                        description: hashtag.description,
-                        maintainer: {
-                            publicKey: maintainer.publicKey,
-                            avatar: maintainer.avatar,
-                            username: maintainer.username
-                        }
-                    })).then(res => {
-                        const { hash, bytes32 } = res;
-                        const _web3 = window.web3Local;
-                        const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
-                        const simpleDealContract = new _web3.eth.Contract(simpleDeal.abi);
-
-
-
-                    })
-                        .catch(err => {
-                            console.error('error resolving ipfs hash for hashtag metadata', err)
-                        })
-                })
-            }
 
 
             preventDefault(e) {
