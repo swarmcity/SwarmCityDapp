@@ -55,6 +55,10 @@ The following custom properties and mixins are available for styling:
                 @apply --layout-flex;
                 @apply --body-default;
                 color: var(--sc-grey4);
+                -webkit-user-select: text;
+                -moz-user-select: text;
+                -ms-user-select: text;
+                user-select: text;
             }
 
             .price {
@@ -162,6 +166,27 @@ The following custom properties and mixins are available for styling:
                 opacity: 0.5;
             }
 
+
+            .dont-break-out {
+
+                /* These are technically the same, but use both */
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+
+                -ms-word-break: break-all;
+                /* This is the dangerous one in WebKit, as it breaks things wherever */
+                word-break: break-all;
+                /* Instead use this non-standard one: */
+                word-break: break-word;
+
+                /* Adds a hyphen where the word breaks, if supported (No Blink) */
+                -ms-hyphens: auto;
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -175,7 +200,7 @@ The following custom properties and mixins are available for styling:
             <template is="dom-if" if="[[_isInvolved(item.seekerAddress, reply.providerAddress, address)]]">
                 <div class="whitebox">
                     <div class="descriptionbox">
-                        <div class="description">[[reply.message]]</div>
+                        <div class="description dont-break-out">[[reply.message]]</div>
                         <div class="price">for [[_formatValue(item.itemValue)]] SWT</div>
                     </div>
                     <div class="date">
@@ -323,7 +348,7 @@ The following custom properties and mixins are available for styling:
             }
 
             _checkPending(status) {
-                return status == '1'? "greenbox" : "greenbox pending";
+                return status == '1' ? "greenbox" : "greenbox pending";
             }
         }
         window.customElements.define(

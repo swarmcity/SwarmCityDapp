@@ -98,8 +98,30 @@ This code may only be used under the license found at https://github.com/swarmci
                 background-color: var(--sc-blue);
             }
 
+            .container[wide-layout] .bluebox {
+                @apply --layout-horizontal;
+                @apply --layout-start;
+                padding: 40px;
+            }
+
             .disabled {
                 opacity: 0.5;
+            }
+
+            .container[wide-layout] .flex {
+                @apply --layout-flex;
+            }
+
+            .container[wide-layout] .white-text {
+                margin-top: 20px;
+                text-align: left;
+
+            }
+
+            .container[wide-layout] .white-subtext {
+                margin-top: 5px;
+                text-align: left;
+
             }
 
             .white-text {
@@ -122,10 +144,16 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .button {
-                @apply --text-button-small;
-                @apply --small-bold;
+                @apply --text-button-big;
+                @apply --body-bold;
                 margin: 40px 0;
                 color: var(--sc-white);
+                width: 250px;
+            }
+
+            .container[wide-layout] .button {
+                margin: 0;
+
             }
 
             .button:active {
@@ -225,11 +253,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     </div>
                 </template>
                 <template is="dom-if" if="[[!_isReplier(reply.replierAddress, address)]]">
-                    <div class="white-text">You selected [[reply.username]] to make a deal.</div>
-                    <div class="white-subtext">Waiting for [[reply.username]] to respond</div>
-                    <!-- <div class="button">
-                        unselect [[reply.username]]
-                    </div> -->
+                    <div class="text">
+                        <div class="white-text">You selected [[reply.username]] to make a deal.</div>
+                        <div class="white-subtext">Waiting for [[reply.username]] to respond</div>
+                    </div>
+                    <div class="flex"></div>
+                    <div class="button" on-tap="_deselect">
+                        deselect [[reply.username]]
+                    </div>
                 </template>
 
             </div>
@@ -321,6 +352,9 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _fund() {
                 this.dispatchEvent(new CustomEvent('fund'));
+            }
+            _deselect() {
+                this.dispatchEvent(new CustomEvent('deselect'));
             }
             /**
             * Verifies user balance and displays error message
