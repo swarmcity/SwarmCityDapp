@@ -112,7 +112,7 @@
 
           <template is="dom-if" if="{{_isEqualTo(status, 'selected')}}">
             <detail-simpledeal-selected address="[[address]]" item="[[item]]" balance="[[balance]]" reply="[[_getProviderReply(item)]]"
-              on-status="_handleOnStatus" on-fund="_handleOnFund"></detail-simpledeal-selected>
+              on-status="_handleOnStatus" on-fund="_handleOnFund" on-deselect="_handleOnDeselect"></detail-simpledeal-selected>
           </template>
 
           <template is="dom-if" if="{{_isEqualTo(status, 'funded')}}">
@@ -141,7 +141,7 @@
             <detail-button-payout on-payout="_handleOnPayout"></detail-button-payout>
           </template>
 
-          <template is="dom-if" if="{{_showCancelButton()}}">
+          <template is="dom-if" if="{{_showCancelButton(item, address)}}">
             <detail-button-cancel on-cancel="_handleOnCancel"></detail-button-cancel>
           </template>
 
@@ -304,17 +304,16 @@
         }
       }
 
-      _showCancelButton(status, userAddress) {
-        // needs fix on simpledeal contract first -- see hackmd
-        return false
-        //  (
-        //   this.item
-        //   && this.item.status == '0'
-        //   && this.item.providerAddress
-        //   && this.item.providerAddress != '0x0000000000000000000000000000000000000000'
-        //   && this.item.seekerAddress
-        //   && this.item.seekerAddress == userAddress
-        // )
+      _showCancelButton(item, userAddress) {
+        return (
+          item
+          && item.status
+          && item.status == '0'
+          && item.providerAddress
+          && item.providerAddress == '0x0000000000000000000000000000000000000000'
+          && item.seekerAddress
+          && item.seekerAddress == userAddress
+        )
       }
 
       _showConflictButton(item, status) {
@@ -559,6 +558,54 @@
           }
         });
       }
+
+      _handleOnDeselect() {
+        this.$.unlock._getPrivateKey().then(res => {
+          try {
+            const { privateKey, address, publicKey } = res;
+            if (!privateKey) {
+              throw Error("Missing address");
+            }
+            const seeker = {
+              address,
+              privateKey
+            };
+
+            const provider = {
+              address: '0x0000000000000000000000000000000000000000',
+            };
+
+            const item = {
+              itemHash: this.item.itemHash,
+              hashtag: this.hashtag.address
+            };
+
+            this.$.simpledeal
+              .selectReplier({ seeker, provider, item })
+              .then(receipt => {
+                console.log(
+                  "Successfully deselected replier, receipt:",
+                  receipt
+                );
+                this.dispatch({
+                  type: "UPDATE_ITEM",
+                  hashtagAddress: item.hashtag,
+                  itemHash: item.itemHash,
+                  data: {
+                    providerAddress: provider.address,
+                    status: "selected-pending"
+                  }
+                });
+              })
+              .catch(err => {
+                console.log("Error deselecting replier:", err);
+              });
+          } catch (e) {
+            console.error("Error deselecting replier (catch block): ", e.stack);
+          }
+        });
+
+      }
       _handleOnCancel() {
         this.$.unlock._getPrivateKey().then(res => {
           try {
@@ -576,6 +623,7 @@
               .cancelItem({ seeker, itemHash, hashtagAddress })
               .then(receipt => {
                 console.log("Successfully cancelled item, receipt:", receipt);
+                this._handleOnClose();
                 this.dispatch({
                   type: "UPDATE_ITEM",
                   hashtagAddress,
