@@ -63,7 +63,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 <hashtag-list-item item="[[item]]" on-hashtag="_handleOnHashtag"></hashtag-list-item>
                 <display-divider></display-divider>
             </template>
-            <display-hashtagadd-btn on-tap="_newHashtag">
+            <display-hashtagadd-btn on-down="_newHashtagDown" on-up="_newHashtagUp">
             </display-hashtagadd-btn>
         </div>
     </template>
@@ -88,7 +88,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
-                    }
+                    },
+                    timeout: Object,
                 };
             }
             _handleOnBack() {
@@ -96,6 +97,21 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _newHashtag() {
                 this.set('route.path', 'new-hashtag');
+            }
+
+            _newHashtagOld() {
+                this.set('route.path', 'new-hashtag-old');
+            }
+
+            _newHashtagDown() {
+                this.timeout = setTimeout(() => {
+                    this._newHashtag();
+                }, 1000)
+            }
+
+            _newHashtagUp() {
+                clearTimeout(this.timeout);
+                this._newHashtagOld();
             }
             _showHashtag(hashtag) {
                 return hashtag.hashtagShown;
