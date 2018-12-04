@@ -394,7 +394,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     * ItemGeohash is the item's geohash
                     * @type {Object}
                     */
-                    itemGeohash: {
+                    itemGeohashes: {
                         type: Object,
                     },
                     /**
@@ -467,7 +467,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         detail: {
                             itemBudget: this.budget,
                             itemDescription: this.request,
-                            itemGeohash: this.itemGeohash,
+                            itemGeohashes: this.itemGeohashes,
                         }
                     }));
                     this._reset();
@@ -530,37 +530,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             /**
-            * Takes the user's geohash and slider value to generate an item geohash
-            */
-            _getItemGeohash(geohash, range) {
-                switch (range) {
-                    case (1):
-                        this.itemGeohash = geohash;
-                        break;
-                    case (2):
-                        this.itemGeohash = geohash.slice(0, 6);
-                        break;
-                    case (3):
-                        this.itemGeohash = geohash.slice(0, 5);
-                        break;
-                    case (4):
-                        this.itemGeohash = geohash.slice(0, 4);
-                        break;
-                    case (5):
-                        this.itemGeohash = geohash.slice(0, 3);
-                        break;
-                    case (6):
-                        this.itemGeohash = geohash.slice(0, 2);
-                        break;
-                    case (7):
-                        this.itemGeohash = geohash.slice(0, 1);
-                        break;
-                    case (8):
-                        this.itemGeohash = null;
-                        break;
-                }
-            }
-            /**
             * takes the user to originating page
             */
             _close() {
@@ -584,7 +553,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.totalcost = 0;
                 this.showSum = false;
                 this.chosenValue = 8;
-                this.itemGeohash = null;
+                this.itemGeohashes = null;
             }
             /**
             * After a range has been chosen, check for permissions
@@ -593,17 +562,44 @@ This code may only be used under the license found at https://github.com/swarmci
             _checkPermissions() {
                 this._setRangeDescription();
                 if (this.chosenValue != 8) {
-                    const range = this.chosenValue;
+                    let resolution;
+                    switch (this.choosingValue) {
+                        case (7):
+                            resolution = 1;
+                            break;
+                        case (6):
+                            resolution = 2;
+                            break;
+                        case (5):
+                            resolution = 3;
+                            break;
+                        case (4):
+                            resolution = 4;
+                            break;
+                        case (3):
+                            resolution = 5;
+                            break;
+                        case (2):
+                            resolution = 6;
+                            break;
+                        case (1):
+                            resolution = 7;
+                            break;
+                    }
                     navigator.permissions.query({ 'name': 'geolocation' })
                         .then((permission) => {
                             if (permission.state != 'granted') {
                                 this.dispatchEvent(new CustomEvent('location'));
                             } else {
                                 this.$.location.getLocation()
-                                    .then(({ latitude, longitude }) => this.$.location.toGeohash(latitude, longitude))
-                                    .then((geohash) => this._getItemGeohash(geohash, range));
+                                    .then(({ latitude, longitude }) => {
+                                        this.itemGeohashes = webpack.locationToGeohashes({ lat: latitude, lon: longitude }, resolution)
+                                        console.log(this.itemGeohashes);
+                                    });
                             }
                         });
+                } else {
+                    this.itemGeohashes = null;
                 }
             }
 
@@ -614,31 +610,31 @@ This code may only be used under the license found at https://github.com/swarmci
                 switch (this.choosingValue) {
                     case (1):
                         this.rangeDescription =
-                            'within 25m from your location';
+                            'Option 7';
                         break;
                     case (2):
                         this.rangeDescription =
-                            'within 1 km from your location';
+                            'Option 6';
                         break;
                     case (3):
                         this.rangeDescription =
-                            'within 5 km from your location';
+                            'Option 5';
                         break;
                     case (4):
                         this.rangeDescription =
-                            'within 30 km from your location';
+                            'Option 4';
                         break;
                     case (5):
                         this.rangeDescription =
-                            'within 200 km from your location';
+                            'Option 3';
                         break;
                     case (6):
                         this.rangeDescription =
-                            'within 1000 km from your location';
+                            'Option 2: within 700km';
                         break;
                     case (7):
                         this.rangeDescription =
-                            'within 10 000 km from your location';
+                            'Option 1: within 3500km';
                         break;
                     case (8):
                         this.rangeDescription =
