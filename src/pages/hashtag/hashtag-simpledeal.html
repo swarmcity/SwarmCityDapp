@@ -13,6 +13,8 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./hashtag-simpledeal-loading.html">
 <link rel="import" href="./hashtag-simpledeal-item.html">
 <link rel="import" href="./hashtag-simpledeal-create.html">
+<link rel="import" href="./hashtag-filter.html">
+<link rel="import" href="../../data/data-location.html">
 
 <dom-module id="hashtag-simpledeal">
     <template>
@@ -53,17 +55,26 @@ This code may only be used under the license found at https://github.com/swarmci
             .container[wide-layout] .middle {
                 max-width: 68vw;
             }
+
             .filterbox {
                 @apply --small-bold;
                 @apply --layout-vertical;
                 @apply --layout-center-justified;
                 height: 25px;
-                color: var(--sc-grey3);
                 cursor: pointer;
-                background-color: rgba(0, 0, 0, 0.035);
                 border-radius: 3px;
                 box-sizing: border-box;
                 padding: 0px 10px;
+            }
+
+            .filterbox-toggled {
+                background-color: rgba(38, 38, 38, 1);
+                color: var(--sc-white);
+            }
+
+            .filterbox-untoggled {
+                background-color: rgba(0, 0, 0, 0.035);
+                color: var(--sc-grey3);
             }
 
             .flex {
@@ -86,8 +97,18 @@ This code may only be used under the license found at https://github.com/swarmci
             .icon-scroll {
                 @apply --arrowup-blue-small;
             }
+
+            hashtag-filter {
+                margin: 35px 10px;
+                position: fixed;
+                z-index: 31;
+            }
         </style>
+        <data-location id="location"></data-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <template is="dom-if" if="{{showFilter}}">
+            <hashtag-filter on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
+        </template>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="[[!_hasHashtag(hashtag)]]">
                 <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
@@ -100,7 +121,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 </template>
 
                 <div class="middle">
-                    <div class="filterbox">filter deals</div>
+                    <div id="filterbox" class="filterbox filterbox-untoggled" on-tap="_showFilter">filter requests</div>
                     <div class="flex"></div>
                     <template is="dom-if" if="{{showCounter}}">
                         <div class="counterbox" on-tap="_backToTop">[[count]] active
@@ -130,6 +151,19 @@ This code may only be used under the license found at https://github.com/swarmci
                     items: Array,
                     count: Number,
                     showCounter: Boolean,
+                    showFilter: {
+                        type: Boolean,
+                        value: false,
+                    },
+                    userLocation: {
+                        type: Array,
+                        value: [],
+                    },
+                    range: {
+                        type: Number,
+                        value: 0,
+                        observer: '_getItems',
+                    },
                     hashtag: {
                         type: Object,
                         observer: '_getItems',
@@ -145,7 +179,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.count = 0;
                 this.set('items', Object.values(this.hashtag.items || {})
                     .sort((a, b) => b.blockNumber - a.blockNumber));
-                this.items.forEach(item => { 
+                this.items.forEach(item => {
                     if (this._isInvolved(item)) {
                         this.count += 1
                         if (this.count > 0) {
@@ -155,28 +189,58 @@ This code may only be used under the license found at https://github.com/swarmci
                 })
 
             }
+
+            _filter(item) {
+                // Per item, check if any geohash of the item starts with any geohash of the user
+                // Only user geohashes can englobe smaller geohash items, not the other way:
+                // if (item && item.location && item.location != null) {
+                //     console.log('itemlocation: ', item.location)
+                //     console.log('userlocation: ', this.userLocation)
+                // }
+                if (item && item.location && this.userLocation && this.userLocation.length == 7 && this.range && this.range < 8) {
+                    // De huidige item heeft location.
+                    // In deze functie tonen we, van de items die een location hebben, enkel die items waarvan hun locatie overlapt met onze range.
+
+                    // ef
+                    // wf
+                    // ew
+                    // fe
+                    // fw
+                    // f
+                    // ef
+                    // ew
+
+
+                    console.log('itemlocation: ', item.location)
+                    console.log('userlocation: ', this.userLocation)
+
+                }
+                return true
+
+            }
+
             _isInvolved(item) {
                 let involved = false;
                 if (this.address) {
                     if (item.seekerAddress == this.address) involved = true;
                     if (item.providerAddress == this.address) involved = true;
                     // If you're maintainer && item is in conflict
-                    if ((this.hashtag && 
-                    this.hashtag.metadata && 
-                    this.hashtag.metadata.maintainer &&
-                    this.hashtag.maintainerAddress && 
-                    this.hashtag.maintainerAddress == this.address) && (
-                        item.status &&
-                        item.status == '3'
-                    )) involved = true;
+                    if ((this.hashtag &&
+                        this.hashtag.metadata &&
+                        this.hashtag.metadata.maintainer &&
+                        this.hashtag.maintainerAddress &&
+                        this.hashtag.maintainerAddress == this.address) && (
+                            item.status &&
+                            item.status == '3'
+                        )) involved = true;
                 }
-                if (item.status && (item.status == '2' || item.status == '4'|| item.status == '5' || item.status == '5-pending')) involved = false
+                if (item.status && (item.status == '2' || item.status == '4' || item.status == '5' || item.status == '5-pending')) involved = false
                 return involved;
             }
 
             _isNotInvolved(item) {
                 return (
-                    !this._isInvolved(item) && (item.status || {}) != '1' && (item.status || {}) != '3' && (item.status || {}) != '5' && (item.status || {}) != '5-pending' && (item.seekerAddress || {}) != '0x0000000000000000000000000000000000000000');
+                    !this._isInvolved(item) && this._filter(item) && (item.status || {}) != '1' && (item.status || {}) != '3' && (item.status || {}) != '5' && (item.status || {}) != '5-pending' && (item.seekerAddress || {}) != '0x0000000000000000000000000000000000000000');
             }
 
             _handleOnDetail(e) {
@@ -197,6 +261,31 @@ This code may only be used under the license found at https://github.com/swarmci
                 } else {
                     this.showCounter = true
                 }
+            }
+            handleOnfilter(e) {
+                console.log('filtering! ', e.detail);
+                this.range = e.detail;
+            }
+            _showFilter() {
+                navigator.permissions.query({ 'name': 'geolocation' })
+                    .then((permission) => {
+                        if (permission.state != 'granted') {
+                            this.dispatchEvent(new CustomEvent('location'));
+                        } else {
+                            this.$.location.getLocation()
+                                .then(({ latitude, longitude }) => {
+                                    this.userLocation = webpack.locationToGeohashes({ lat: latitude, lon: longitude }, 7)
+                                });
+                            this.showFilter = !this.showFilter;
+                            if (this.showFilter) {
+                                this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-toggled");
+                                this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-untoggled");
+                            } else {
+                                this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-toggled");
+                                this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-untoggled");
+                            }
+                        }
+                    });
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
