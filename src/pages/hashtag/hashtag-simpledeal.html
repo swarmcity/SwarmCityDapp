@@ -99,16 +99,13 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             hashtag-filter {
-                margin: 35px 10px;
-                position: fixed;
+                margin-top: 232px;
+                position: absolute;
                 z-index: 31;
             }
         </style>
         <data-location id="location"></data-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <template is="dom-if" if="{{showFilter}}">
-            <hashtag-filter on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
-        </template>
         <div id="container" class="container" wide-layout$="{{wide}}">
             <template is="dom-if" if="[[!_hasHashtag(hashtag)]]">
                 <hashtag-simpledeal-loading></hashtag-simpledeal-loading>
@@ -127,6 +124,9 @@ This code may only be used under the license found at https://github.com/swarmci
                         <div class="counterbox" on-tap="_backToTop">[[count]] active
                             <div class="icon-scroll"></div>
                         </div>
+                    </template>
+                    <template is="dom-if" if="{{showFilter}}">
+                        <hashtag-filter on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
                     </template>
                 </div>
 
@@ -190,29 +190,32 @@ This code may only be used under the license found at https://github.com/swarmci
 
             }
 
-            _filter(item) {
-                // Per item, check if any geohash of the item starts with any geohash of the user
-                // Only user geohashes can englobe smaller geohash items, not the other way:
-                // if (item && item.location && item.location != null) {
-                //     console.log('itemlocation: ', item.location)
-                //     console.log('userlocation: ', this.userLocation)
-                // }
-                if (item && item.location && this.userLocation && this.userLocation.length == 7 && this.range && this.range < 8) {
-                    // De huidige item heeft location.
-                    // In deze functie tonen we, van de items die een location hebben, enkel die items waarvan hun locatie overlapt met onze range.
-
-                    // ef
-                    // wf
-                    // ew
-                    // fe
-                    // fw
-                    // f
-                    // ef
-                    // ew
-
-
+            _filterByRange(item) {
+                if (item
+                    && item.location
+                    && this.userLocation
+                    && this.userLocation.length >= 1
+                    && this.range
+                    && this.range < 8
+                ) {
+                    let withinRange = false;
+                    for (let itemGeohash of item.location) {
+                        if (itemGeohash.length < this.range) {
+                            for (let userGeohash of this.userLocation) {
+                                if (userGeohash.startsWith(itemGeohash)) withinRange = true;
+                            }
+                        } else if (itemGeohash.length >= this.range) {
+                            for (let userGeohash of this.userLocation) {
+                                if (userGeohash.startsWith(itemGeohash)) withinRange = true;
+                            }
+                        }
+                    }
                     console.log('itemlocation: ', item.location)
                     console.log('userlocation: ', this.userLocation)
+                    console.log('passed filter: ', withinRange);
+                    return withinRange
+
+
 
                 }
                 return true
@@ -240,7 +243,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _isNotInvolved(item) {
                 return (
-                    !this._isInvolved(item) && this._filter(item) && (item.status || {}) != '1' && (item.status || {}) != '3' && (item.status || {}) != '5' && (item.status || {}) != '5-pending' && (item.seekerAddress || {}) != '0x0000000000000000000000000000000000000000');
+                    !this._isInvolved(item) && this._filterByRange(item) && (item.status || {}) != '1' && (item.status || {}) != '3' && (item.status || {}) != '5' && (item.status || {}) != '5-pending' && (item.seekerAddress || {}) != '0x0000000000000000000000000000000000000000');
             }
 
             _handleOnDetail(e) {
