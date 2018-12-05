@@ -196,25 +196,18 @@ This code may only be used under the license found at https://github.com/swarmci
 
             _filterByRange(item) {
                 if (item
-                    && item.location
                     && this.userLocation
                     && this.userLocation.length >= 1
                     && this.range
                     && this.range < 8
                 ) {
+                    if (!item.location || item.location == null) return false
                     let withinRange = false;
                     for (let itemGeohash of item.location) {
-                        if (itemGeohash.length < this.range) {
-                            for (let userGeohash of this.userLocation) {
-                                if (userGeohash.startsWith(itemGeohash)) withinRange = true;
-                            }
-                        } else if (itemGeohash.length >= this.range) {
-                            for (let userGeohash of this.userLocation) {
-                                if (userGeohash.startsWith(itemGeohash.substring(0, this.range))) withinRange = true;
-                            }
+                        for (let userGeohash of this.userLocation) {
+                            if (itemGeohash.startsWith(userGeohash)) return true;
                         }
                     }
-                    return withinRange
                 }
                 return true
             }
