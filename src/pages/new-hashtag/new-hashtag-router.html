@@ -1,0 +1,179 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../bower_components/app-route/app-location.html">
+<link rel="import" href="../../redux-state.html">
+<link rel="import" href="../../data/data-simpledeal.html">
+<!--
+    Displays and shared styles only
+-->
+<link rel="import" href="./new-hashtag-create.html">
+<link rel="import" href="../../displays/display-confirm.html">
+<link rel="import" href="../../displays/display-processing.html">
+<link rel="import" href="../../displays/display-success.html">
+<link rel="import" href="../../displays/display-error.html">
+<link rel="import" href="../../displays/display-unlock.html">
+
+<dom-module id="page-new-hashtag">
+    <template>
+        <data-simpledeal id="simpledeal"></data-simpledeal>
+        <display-unlock id="unlock" white></display-unlock>
+        <app-location route="{{route}}"></app-location>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'new-hashtag')}}">
+            <new-hashtag-create on-create="_handleOnCreate" on-close="_handleOnClose"></new-hashtag-create>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'confirm')}}">
+            <display-confirm confirm-title="[[confirmTitle]]" confirm-subtitle="[[confirmSubtitle]]" on-reject="_handleOnReject"
+                on-confirmed="_handleOnConfirm"></display-confirm>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'processing')}}">
+            <display-processing></display-processing>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'success')}}">
+            <display-success success-title="[[successTitle]]" success-tx-hash="[[successTxHash]]"on-close="_handleOnClose"></display-success>
+        </template>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'error')}}">
+            <display-error error-message="[[errorMessage]]" on-close="_handleOnClose"></display-error>
+        </template>
+
+    </template>
+
+    <script>
+        class MyNewHashtagRouter extends new ReduxMixin(Polymer.mixinBehaviors([
+            Polymer.AppLocalizeBehavior,
+        ],
+            Polymer.Element
+        )) {
+            static get is() {
+                return 'page-new-hashtag';
+            }
+            static get properties() {
+                return {
+                    status: {
+                        type: String,
+                        value: 'new-hashtag',
+                    },
+                    address: {
+                        type: String,
+                        statePath: AppStore.selectors.address,
+                    },
+                    username: {
+                        type: String,
+                        statePath: AppStore.selectors.username,
+                    },
+                    avatarHash: {
+                        type: String,
+                        statePath: AppStore.selectors.avatarHash,
+                    },
+                    confirmTitle: String,
+                    confirmSubtitle: String,
+                    successTitle: String,
+                    errorMessage: String,
+                    name: String,
+                    description: String,
+                    fee: Number,
+                };
+            }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnCreate(e) {
+                this.status = 'confirm'
+                const { name, description, fee } = e.detail
+                this.name = name,
+                    this.description = description,
+                    this.fee = fee;
+                this.confirmTitle = `Create #${this.name}?`;
+                this.confirmSubtitle = `${this.description} Hashtagfee: ${this.fee} SWT `
+                this.disableScroll();
+                window.scrollTo(0, 0);
+            }
+            _handleOnReject() {
+                this.status = 'new-hashtag';
+            }
+            _handleOnClose() {
+                this.set('route.path', 'hashtag-list');
+            }
+            _handleOnConfirm(e) {
+                try {
+                    const { privateKey, address, publicKey } = e.detail;
+                    const fee = parseFloat(this.fee) * 1e18;
+                    this.status = 'processing'
+
+                    if (!privateKey) {
+                        throw Error('Missing private key')
+                    }
+                    const hashtag = {
+                        fee,
+                        description: this.description,
+                        name: this.name,
+                    }
+                    const maintainer = {
+                        username: this.username,
+                        avatar: this.avatarHash,
+                        address,
+                        privateKey,
+                        publicKey
+                    }
+
+                    console.log('About to create hashtag: ', { hashtag, maintainer });
+
+                    this.$.simpledeal.createHashtag({ hashtag, maintainer })
+                        .then(txHash => {
+                            console.log('Successfully created hashtag, receipt:', txHash);
+                            this.successTitle = 'Hashtag created!'
+                            this.successTxHash = txHash;
+                            this.status = 'success';
+                        })
+                        .catch(err => {
+                            this.errorMessage = err.message
+                            console.log('Error creating hashtag:', err)
+                            this.status = 'error'
+                        })
+
+                } catch (e) {
+                    this.errorMessage = e.message
+                    console.error('Error creating hashtag (catch block): ', e.stack)
+                    this.status = 'error'
+                }
+            }
+
+
+
+            preventDefault(e) {
+                e = e || window.event;
+                if (e.preventDefault)
+                    e.preventDefault();
+                e.returnValue = false;
+            }
+
+            disableScroll() {
+                if (window.addEventListener) // older FF
+                    window.addEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onwheel = this.preventDefault; // modern standard
+                window.onmousewheel = document.onmousewheel = this.preventDefault; // older browsers, IE
+                window.ontouchmove = this.preventDefault; // mobile
+                // document.onkeydown = this.preventDefaultForScrollKeys;
+            }
+
+            enableScroll() {
+                if (window.removeEventListener)
+                    window.removeEventListener('DOMMouseScroll', this.preventDefault, false);
+                window.onmousewheel = document.onmousewheel = null;
+                window.onwheel = null;
+                window.ontouchmove = null;
+                document.onkeydown = null;
+            }
+        }
+        window.customElements.define(MyNewHashtagRouter.is, MyNewHashtagRouter);
+    </script>
+</dom-module>
