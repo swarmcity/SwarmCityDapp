@@ -103,6 +103,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 position: absolute;
                 z-index: 31;
             }
+
+            .container[wide-layout] hashtag-filter {
+                left: 0;
+            }
         </style>
         <data-location id="location"></data-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -206,20 +210,13 @@ This code may only be used under the license found at https://github.com/swarmci
                             }
                         } else if (itemGeohash.length >= this.range) {
                             for (let userGeohash of this.userLocation) {
-                                if (userGeohash.startsWith(itemGeohash)) withinRange = true;
+                                if (userGeohash.startsWith(itemGeohash.substring(0, this.range))) withinRange = true;
                             }
                         }
                     }
-                    console.log('itemlocation: ', item.location)
-                    console.log('userlocation: ', this.userLocation)
-                    console.log('passed filter: ', withinRange);
                     return withinRange
-
-
-
                 }
                 return true
-
             }
 
             _isInvolved(item) {
