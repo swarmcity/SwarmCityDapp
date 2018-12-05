@@ -4,6 +4,7 @@ Copyright (c) 2018 Swarm City
 This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../bower_components/iron-image/iron-image.html">
 
 <dom-module id="hashtag-list-item">
@@ -23,6 +24,8 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             .flex {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
                 @apply --layout-flex;
             }
 
@@ -31,7 +34,6 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-start-justified;
                 @apply --layout-end;
             }
-
 
             .container:hover {
                 background-color: var(--sc-white);
@@ -69,6 +71,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --next-grey4-small;
             }
 
+            .info {
+                @apply --small-detail;
+                color: var(--sc-grey3)
+            }
+
+            .container[wide-layout] .info {
+                margin: 0 0 5px 20px;
+            }
+
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
@@ -86,6 +97,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         <span class="hashtag">#</span>[[_decode(item.hashtagName)]]
                     </span>
                 </div>
+                <div class="info">[[_countCompleted(item.hashtagReputation)]] deals completed</div>
             </div>
             <div class="right"></div>
         </div>
@@ -122,6 +134,9 @@ This code may only be used under the license found at https://github.com/swarmci
             */
             _decode(name) {
                 return decodeURI(name);
+            }
+            _countCompleted(reputation) {
+                return reputation ? reputation / 5 : 0;
             }
         }
 
