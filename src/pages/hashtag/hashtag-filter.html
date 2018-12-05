@@ -1,0 +1,216 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-media-query/iron-media-query.html" />
+<link rel="import" href="../../../bower_components/app-localize-behavior/app-localize-behavior.html" />
+<link rel="import" href="../../../bower_components/paper-slider/paper-slider.html">
+
+<dom-module id="hashtag-filter">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+
+            .container {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                background-color: var(--sc-white);
+                margin: 0px 10px 4px 10px;
+                box-sizing: border-box;
+                padding: 50px 40px 10px 40px;
+                border-bottom: 2px solid rgba(104, 104, 104, 1);
+                color: var(--sc-grey4);
+                width: calc(100vw - 20px);
+            }
+
+            .container[wide-layout] {
+                margin: 0;
+                max-width: 68vw;
+            }
+
+            .title {
+                @apply --body-default;
+                color: var(--sc-grey3);
+            }
+
+            .arrowup {
+                @apply --layout-horizontal;
+                @apply --layout-end-justified;
+                width: 100%;
+            }
+
+            .arrowup-icon {
+                margin-top: 20px;
+                @apply --arrowup-grey4-small;
+                cursor: pointer;
+            }
+
+
+            .location-box {
+                @apply --layout-vertical;
+                @apply --layout-start-justified;
+                @apply --layout-start;
+                width: 100%;
+            }
+
+            .range-description {
+                @apply --body-default;
+                margin-top: 5px;
+                width: 100%;
+                overflow-x: auto;
+                word-break: keep-all;
+            }
+
+            .sliderbox {
+                @apply --layout-horizontal;
+                @apply --layout-start-justified;
+                @apply --layout-end;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 800px;
+            }
+
+            paper-slider {
+                @apply --layout-flex;
+                --paper-slider-knob-color: var(--sc-yellow);
+                --paper-slider-active-color: var(--sc-yellow);
+            }
+
+            .container[wide-layout] paper-slider {
+                max-width: 40vw;
+            }
+
+            .pin-icon {
+                @apply --locationmarker-grey4-small;
+                margin-right: -15px;
+            }
+
+            .globe-icon {
+                @apply --globe-grey4-small;
+            }
+
+            @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+            only screen and (min--moz-device-pixel-ratio: 1.5),
+            only screen and (min-resolution: 240dpi) {
+
+                .close,
+                .agree,
+                .pin-icon,
+                .globe-icon,
+                .arrowup-icon {
+                    @apply --retina;
+                }
+            }
+        </style>
+        <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
+        <display-language language="{{language}}"></display-language>
+        <div class="container" wide-layout$="{{wide}}">
+            <div class="title">Looking for requests...</div>
+            <div class="location-box">
+                <div class="range-description">[[rangeDescription]]</div>
+                <div class="sliderbox">
+                    <div class="pin-icon"></div>
+                    <paper-slider .class="slider" min="1" max="8" value="{{chosenValue}}" immediate-value="{{choosingValue}}"></paper-slider>
+                    <div class="globe-icon"></div>
+                </div>
+            </div>
+            <div class="arrowup">
+                <div class="arrowup-icon" on-click="_close"></div>
+            </div>
+        </div>
+    </template>
+    <script>
+        class MyHashtagFilter extends (new ReduxMixin(
+            Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+        )) {
+            static get is() {
+                return "hashtag-filter";
+            }
+            static get properties() {
+                return {
+                    rangeDescription: String,
+                    /**
+                    * Value is the value of the slider
+                    * @type {Number}
+                    */
+                    choosingValue: {
+                        type: Number,
+                        observer: '_setRangeDescription',
+                    },
+                    /**
+                    * chosenValue changes after we moved the slider
+                    * this is when we check for location sharing permission
+                    * @type {Number}
+                    */
+                    chosenValue: {
+                        type: Number,
+                        observer: '_filter',
+                        value: 8,
+                        notify: true,
+                    },
+                };
+            }
+            connectedCallback() {
+                super.connectedCallback();
+                this.loadResources(this.resolveUrl("../../text-translations.json"));
+            }
+            /**
+             * Closes the infobox
+             */
+            _close() {
+                this.dispatchEvent(new CustomEvent("close"));
+            }
+            _filter() {
+                this.dispatchEvent(new CustomEvent("filter", { detail: Math.abs(this.chosenValue - 8) }));
+            }
+
+            /**
+            * Instantly update the slider with correct range description
+            */
+            _setRangeDescription() {
+                switch (this.choosingValue) {
+                    case (1):
+                        this.rangeDescription =
+                            'within 100m from your location';
+                        break;
+                    case (2):
+                        this.rangeDescription =
+                            'within 1 km from your location';
+                        break;
+                    case (3):
+                        this.rangeDescription =
+                            'within 5 km from your location';
+                        break;
+                    case (4):
+                        this.rangeDescription =
+                            'within 30 km from your location';
+                        break;
+                    case (5):
+                        this.rangeDescription =
+                            'within 100 km from your location';
+                        break;
+                    case (6):
+                        this.rangeDescription =
+                            'within 1000 km from your location';
+                        break;
+                    case (7):
+                        this.rangeDescription =
+                            'within 5000 km from your location';
+                        break;
+                    case (8):
+                        this.rangeDescription =
+                            'Worldwide';
+                        break;
+                }
+            }
+        }
+        window.customElements.define(
+            MyHashtagFilter.is,
+            MyHashtagFilter
+        );
+    </script>
+</dom-module>
