@@ -195,26 +195,22 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _filterByRange(item) {
+                if ((!item.location || item.location == null || item.location == undefined) && this.range == 0) {
+                    return true
+                } else if (this.userLatLon && item.location && this.range > 0) {
+                    const userGeoHashes = webpack.locationToGeohashes(this.userLatLon, 7);
+                    for (let itemGeohash of item.location) {
+                        for (let userGeohash of userGeoHashes) {
+                            if (userGeohash.startsWith(itemGeohash)
+                                && itemGeohash.length >= this.range) {
+                                return true
+                            }
+                        }
+                    }
+                } else {
+                    return false;
+                }
 
-                // if (item
-                //     && this.userLatLon
-                //     && this.range
-                // ) {
-                //     let userGeoHashes = [];
-                //     if (this.range < 8) {
-                //         userGeoHashes = webpack.locationToGeohashes(this.userLatLon, this.range)
-                //     } 
-
-                //     if (!item.location || item.location == null && userGeoHashes.length == 0) return true
-                //     for (let itemGeohash of item.location) {
-                //         for (let userGeohash of userGeoHashes) {
-                //             if (itemGeohash.startsWith(userGeohash)) {
-                //                 return true
-                //             }
-                //         }
-                //     }
-                // }
-                return true
             }
 
             _isInvolved(item) {
