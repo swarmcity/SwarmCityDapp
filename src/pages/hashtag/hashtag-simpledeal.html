@@ -162,10 +162,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
-                    userLocation: {
-                        type: Array,
-                        value: [],
-                    },
+                    userLocation: Object,
                     range: {
                         type: Number,
                         value: 0,
@@ -198,21 +195,25 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             _filterByRange(item) {
+
                 if (item
-                    && this.userLocation
-                    && this.userLocation.length >= 1
+                    && this.userLatLon
                     && this.range
-                    && this.range < 8
                 ) {
-                    if (!item.location || item.location == null) return false
-                    let withinRange = false;
+                    let userGeoHashes = [];
+                    if (this.range < 8) {
+                        userGeoHashes = webpack.locationToGeohashes(this.userLatLon, this.range)
+                    } 
+
+                    if (!item.location || item.location == null && userGeoHashes.length == 0) return true
                     for (let itemGeohash of item.location) {
-                        for (let userGeohash of this.userLocation) {
-                            if (itemGeohash.startsWith(userGeohash)) return true;
+                        for (let userGeohash of userGeoHashes) {
+                            if (itemGeohash.startsWith(userGeohash)) {
+                                return true
+                            }
                         }
                     }
                 }
-                return true
             }
 
             _isInvolved(item) {
@@ -269,7 +270,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         } else {
                             this.$.location.getLocation()
                                 .then(({ latitude, longitude }) => {
-                                    this.userLocation = webpack.locationToGeohashes({ lat: latitude, lon: longitude }, 7)
+                                    this.userLatLon = { lat: latitude, lon: longitude };
                                 });
                             this.showFilter = !this.showFilter;
                             if (this.showFilter) {
