@@ -10,6 +10,8 @@
 
 <!-- Displays and shared styles only -->
 <link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="../../displays/display-icon-close.html" />
+<link rel="import" href="./notifications-messages.html" />
 
 <dom-module id="page-notifications">
   <template>
@@ -17,18 +19,10 @@
       :host {
         display: block;
       }
-
-      .container {
-        @apply --layout-vertical;
-        @apply --layout-end-justified;
-        background-image: var(--sc-bg);
-        height: 100vh;
-      }
     </style>
     <app-location route="{{route}}"></app-location>
-    <div class="container">
-      HIER KOMEN DE NOTIFICATIONS
-    </div>
+    <display-icon-close on-close="_handleOnClose"></display-icon-close>
+    <notifications-messages messages="[[notifications.messages]]"></notifications-messages>
   </template>
   <script>
     class MyNotificationsRouter extends (new ReduxMixin(
@@ -39,10 +33,38 @@
       }
       static get properties() {
         return {
-          route: {
+          route: Object,
+          notifications: {
             type: Object,
-          },
+            value: {
+              itemHash: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+              accessKeys: [],
+              messages: [
+                {
+                  time: 1543364765,
+                  type: 'A-1',
+                  avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
+                  username: 'Xardas'
+                }, {
+                  time: 1543364865,
+                  type: 'A-2',
+                  avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
+                  username: 'Xardas'
+                },
+
+              ]
+            }
+          }
         };
+      }
+      _handleOnClose() {
+        if (sessionStorage.getItem('origin')) {
+          this.set('route.path', sessionStorage.getItem('origin'));
+          sessionStorage.removeItem('origin');
+        }
+        else {
+          this.set('route.path', 'hashtag-list');
+        }
       }
 
     }

@@ -1,0 +1,69 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="./notifications-account-created.html" />
+<link rel="import" href="./notifications-account-restored.html" />
+<link rel="import" href="../../displays/display-divider.html" />
+
+<dom-module id="notifications-messages">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply --layout-vertical;
+        background-image: var(--sc-bg);
+        height: 100%;
+        min-height: 100vh;
+        box-sizing: border-box;
+        padding-top: 150px;
+      }
+
+      .message {
+        box-sizing: border-box;
+        padding: 0 55px 0 40px;
+      }
+
+      display-divider {
+        margin: 20px 0;
+      }
+    </style>
+    <div id="container" class="container">
+      <template is="dom-repeat" items="[[messages]]" as="message">
+        <template is="dom-if" if="[[_equalsType(message.type, 'A-1')]]">
+          <notifications-account-created class="message" message="[[message]]"></notifications-account-created>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'A-2')]]">
+          <notifications-account-restored class="message" message="[[message]]"></notifications-account-restored>
+        </template>
+        <display-divider></display-divider>
+      </template>
+    </div>
+  </template>
+  <script>
+    class MyNotificationsMessages extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "notifications-messages";
+      }
+      static get properties() {
+        return {
+          messages: Array,
+        };
+      }
+      _equalsType(a, b) {
+        return a == b;
+      }
+    }
+    window.customElements.define(MyNotificationsMessages.is, MyNotificationsMessages);
+  </script>
+</dom-module>
