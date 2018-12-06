@@ -15,6 +15,7 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="../../displays/display-my-info.html">
 <link rel="import" href="../../displays/display-simpledeal-title.html">
 <link rel="import" href="../../displays/display-icon-back.html">
+<link rel="import" href="../../displays/display-location.html">
 <link rel="import" href="./hashtag-simpledeal.html">
 
 <dom-module id="page-hashtag">
@@ -23,10 +24,21 @@ This code may only be used under the license found at https://github.com/swarmci
         </style>
         <app-location route="{{route}}"></app-location>
         <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
-        <display-icon-back on-back="_handleOnBack"></display-icon-back>
-        <display-my-info avatarSmall path="{{path}}" on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
-        <display-simpledeal-title></display-simpledeal-title>
-        <hashtag-simpledeal address="[[address]]" hashtag="[[hashtag]]" on-create="_handleOnCreate" on-new="_handleOnNew" on-detail="_handleOnDetail"></hashtag-simpledeal>
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'hashtag')}}">
+            <display-icon-back on-back="_handleOnBack"></display-icon-back>
+            <display-my-info avatarSmall path="{{path}}" on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
+            <display-simpledeal-title></display-simpledeal-title>
+            <hashtag-simpledeal address="[[address]]" hashtag="[[hashtag]]" on-create="_handleOnCreate" on-new="_handleOnNew"
+                on-detail="_handleOnDetail" on-location="_handleOnLocation"></hashtag-simpledeal>
+        </template>
+
+        <!-- ALLOWING LOCATION -->
+
+        <template is="dom-if" if="{{_isEqualTo(status, 'location')}}">
+            <display-location on-location-accept="_handleOnLocationAccept" on-location-reject="_handleOnLocationReject"></display-location>
+        </template>
+
     </template>
 
     <script>
@@ -54,11 +66,29 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
-                    }
+                    },
+                    status: {
+                        type: String,
+                        value: 'hashtag',
+                    },
                 };
             }
+            _isEqualTo(string1, string2) {
+                return string1 == string2;
+            }
+            _handleOnLocation() {
+                this.status = 'location'
+            }
+            _handleOnLocationAccept() {
+                console.log('location accepted');
+                this.status = 'hashtag';
+            }
+            _handleOnLocationReject() {
+                console.log('location denied');
+                this.status = 'hashtag';
+            }
             _handleOnDetail(e) {
-                this.set('route.path', `/detail/${this.hashtag.address}/${e.detail}`,);
+                this.set('route.path', `/detail/${this.hashtag.address}/${e.detail}`);
             }
             _handleOnBack() {
                 this.set('route.path', 'hashtag-list/');
