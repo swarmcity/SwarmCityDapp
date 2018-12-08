@@ -9,6 +9,16 @@
 <!-- Displays and shared styles only -->
 <link rel="import" href="./notifications-account-created.html" />
 <link rel="import" href="./notifications-account-restored.html" />
+<link rel="import" href="./notifications-balance-received.html" />
+<link rel="import" href="./notifications-item-replied.html" />
+<link rel="import" href="./notifications-item-selected.html" />
+<link rel="import" href="./notifications-item-declined.html" />
+<link rel="import" href="./notifications-item-funded.html" />
+<link rel="import" href="./notifications-item-completed.html" />
+<link rel="import" href="./notifications-item-disputed.html" />
+<link rel="import" href="./notifications-item-cancelled.html" />
+<link rel="import" href="./notifications-chat-message.html" />
+<link rel="import" href="./notifications-chat-member.html" />
 <link rel="import" href="../../displays/display-divider.html" />
 
 <dom-module id="notifications-messages">
@@ -24,16 +34,17 @@
         height: 100%;
         min-height: 100vh;
         box-sizing: border-box;
-        padding-top: 150px;
+        padding-top: 100px;
       }
 
       .message {
         box-sizing: border-box;
-        padding: 0 55px 0 40px;
+        padding: 20px 55px 20px 40px;
       }
 
-      display-divider {
-        margin: 20px 0;
+      .message:hover {
+        background-color: var(--sc-white);
+        cursor: pointer;
       }
     </style>
     <div id="container" class="container">
@@ -43,6 +54,36 @@
         </template>
         <template is="dom-if" if="[[_equalsType(message.type, 'A-2')]]">
           <notifications-account-restored class="message" message="[[message]]"></notifications-account-restored>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'B-1')]]">
+          <notifications-balance-received class="message" message="[[message]]"></notifications-balance-received>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-1')]]">
+          <notifications-item-replied class="message" message="[[message]]"></notifications-item-replied>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-2')]]">
+          <notifications-item-selected class="message" message="[[message]]"></notifications-item-selected>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-3')]]">
+          <notifications-item-declined class="message" message="[[message]]"></notifications-item-declined>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-4')]]">
+          <notifications-item-funded class="message" message="[[message]]"></notifications-item-funded>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-5')]]">
+          <notifications-item-completed class="message" message="[[message]]"></notifications-item-completed>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-6')]]">
+          <notifications-item-disputed class="message" message="[[message]]"></notifications-item-disputed>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'D-7')]]">
+          <notifications-item-cancelled class="message" message="[[message]]"></notifications-item-cancelled>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'C-1')]]">
+          <notifications-chat-message class="message" message="[[message]]"></notifications-chat-message>
+        </template>
+        <template is="dom-if" if="[[_equalsType(message.type, 'C-2')]]">
+          <notifications-chat-member class="message" message="[[message]]"></notifications-chat-member>
         </template>
         <display-divider></display-divider>
       </template>
@@ -61,7 +102,7 @@
         };
       }
       _equalsType(a, b) {
-        return a == b;
+        return a === b;
       }
     }
     window.customElements.define(MyNotificationsMessages.is, MyNotificationsMessages);

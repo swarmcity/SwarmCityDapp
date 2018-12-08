@@ -22,7 +22,7 @@
     </style>
     <app-location route="{{route}}"></app-location>
     <display-icon-close on-close="_handleOnClose"></display-icon-close>
-    <notifications-messages messages="[[notifications.messages]]"></notifications-messages>
+    <notifications-messages messages="[[messagesArray]]"></notifications-messages>
   </template>
   <script>
     class MyNotificationsRouter extends (new ReduxMixin(
@@ -37,25 +37,105 @@
           notifications: {
             type: Object,
             value: {
-              itemHash: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
-              accessKeys: [],
-              messages: [
-                {
-                  time: 1543364765,
+              userAddress: '0x42004cae3169A3CDa36c0fb32CAB78B1bb4CE87F',
+              messages: {
+                '1544214026153': {
+                  read: false,
                   type: 'A-1',
                   avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
-                  username: 'Xardas'
-                }, {
-                  time: 1543364865,
+                  username: 'Xardas',
+                },
+                '1544218037253': {
+                  read: false,
                   type: 'A-2',
                   avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
-                  username: 'Xardas'
+                  username: 'Xardas',
                 },
-
-              ]
-            }
-          }
+                '1544208037253': {
+                  read: false,
+                  type: 'B-1',
+                  avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                  username: 'Crystal',
+                  amount: '25',
+                },
+                '1544202037253': {
+                  read: false,
+                  type: 'D-1',
+                  avatarHash: 'QmQfvtF2NnDPT1zkYJXE9ekKYcRKifVMjNzzmpvU1u8JbY',
+                  username: 'Tom',
+                },
+                '1543208037253': {
+                  read: false,
+                  type: 'D-2',
+                  avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
+                  username: 'Brenda',
+                  description: 'A ride to the coffee shop on 3rd and Grand Av',
+                },
+                '1544222037253': {
+                  read: false,
+                  type: 'D-3',
+                  avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                  username: 'Crystal',
+                },
+                '1544106037223': {
+                  read: false,
+                  type: 'D-4',
+                  avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                  username: 'Crystal',
+                  description: 'A good joke to tell my mom',
+                },
+                '1544208037213': {
+                  read: false,
+                  type: 'D-5',
+                  avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                  username: 'Crystal',
+                  description: 'A good joke to tell my mom',
+                },
+                '1544208037133': {
+                  read: false,
+                  type: 'D-6',
+                  avatarHash: 'QmQfvtF2NnDPT1zkYJXE9ekKYcRKifVMjNzzmpvU1u8JbY',
+                  username: 'Tom',
+                  description: 'Drive me from point A to point B',
+                },
+                '1544208037113': {
+                  read: false,
+                  type: 'D-7',
+                  avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
+                  username: 'Brenda',
+                  description: 'Elect me as president of the USA',
+                },
+                '1544208026253': {
+                  read: false,
+                  type: 'C-1',
+                  avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
+                  username: 'Brenda',
+                  description: 'Elect me as president of the USA',
+                },
+                '1544208015253': {
+                  read: false,
+                  type: 'C-2',
+                  avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                  username: 'Crystal',
+                },
+              }
+            },
+          },
+          messagesArray: {
+            computed: '_toArray(notifications.messages)'
+          },
         };
+      }
+      _toArray(obj) {
+        let array = [];
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            obj[key].time = key;
+            array.push(obj[key]);
+          }
+        }
+        array.sort((a, b) => b.time - a.time)
+        return array;
       }
       _handleOnClose() {
         if (sessionStorage.getItem('origin')) {
