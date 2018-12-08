@@ -162,10 +162,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Boolean,
                         value: false,
                     },
-                    userLocation: {
-                        type: Array,
-                        value: [],
-                    },
+                    userLocation: Object,
                     range: {
                         type: Number,
                         value: 0,
@@ -197,22 +194,28 @@ This code may only be used under the license found at https://github.com/swarmci
 
             }
 
+
             _filterByRange(item) {
-                if (item
-                    && this.userLocation
-                    && this.userLocation.length >= 1
-                    && this.range
-                    && this.range < 8
-                ) {
-                    if (!item.location || item.location == null) return false
-                    let withinRange = false;
+                if ((!item.location || item.location == null || item.location == undefined) && this.range == 0) {
+                    // We only see worldwide items if the filter is set to worldwide
+                    return true
+                } else if (this.userLatLon && item.location && this.range > 0) {
+                    const userGeoHashes = webpack.locationToGeohashes(this.userLatLon, 7);
                     for (let itemGeohash of item.location) {
-                        for (let userGeohash of this.userLocation) {
-                            if (itemGeohash.startsWith(userGeohash)) return true;
+                        for (let userGeohash of userGeoHashes) {
+                            if (
+                                // We are within the item's range
+                                userGeohash.startsWith(itemGeohash)
+                                // The item's range is within our filter's resolution
+                                && itemGeohash.length >= this.range) {
+                                return true
+                            }
                         }
                     }
+                } else {
+                    return false;
                 }
-                return true
+
             }
 
             _isInvolved(item) {
@@ -269,7 +272,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         } else {
                             this.$.location.getLocation()
                                 .then(({ latitude, longitude }) => {
-                                    this.userLocation = webpack.locationToGeohashes({ lat: latitude, lon: longitude }, 7)
+                                    this.userLatLon = { lat: latitude, lon: longitude };
                                 });
                             this.showFilter = !this.showFilter;
                             if (this.showFilter) {
