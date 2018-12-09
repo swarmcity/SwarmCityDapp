@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../data/data-location.html">
 
 <!--
     Displays and shared styles only
@@ -14,7 +15,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./hashtag-simpledeal-item.html">
 <link rel="import" href="./hashtag-simpledeal-create.html">
 <link rel="import" href="./hashtag-filter.html">
-<link rel="import" href="../../data/data-location.html">
 
 <dom-module id="hashtag-simpledeal">
     <template>
@@ -28,8 +28,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-image: var(--sc-bg);
-                min-height: calc(100vh - 159px);
-                margin-top: 159px;
+                min-height: calc(100vh - 152px);
+                margin-top: 152px;
                 max-width: 100vw;
             }
 
@@ -41,7 +41,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 z-index: 11;
                 position: sticky;
                 position: -webkit-sticky;
-                top: 158px;
+                top: 151px;
                 width: 100%;
                 box-sizing: border-box;
                 padding: 0px 36px 15px 36px;
@@ -102,7 +102,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             hashtag-filter {
-                margin-top: 232px;
+                margin-top: 255px;
                 position: absolute;
                 z-index: 31;
             }
@@ -133,7 +133,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </template>
                     <template is="dom-if" if="{{showFilter}}">
-                        <hashtag-filter on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
+                        <hashtag-filter chosen-value="{{chosenValue}}" on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
                     </template>
                 </div>
 
@@ -158,6 +158,7 @@ This code may only be used under the license found at https://github.com/swarmci
                     items: Array,
                     count: Number,
                     showCounter: Boolean,
+                    chosenValue: Number,
                     showFilter: {
                         type: Boolean,
                         value: false,
@@ -262,28 +263,27 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             handleOnfilter(e) {
-                this.range = e.detail;
+                const range = e.detail
+                this.$.location.getLocation()
+                    .then(({ latitude, longitude }) => {
+                        this.range = range;
+                        this.userLatLon = { lat: latitude, lon: longitude };
+                    })
+                    .catch(err => {
+                        console.error('No geolocation permissions')
+                        this.chosenValue = 8;
+                    })
+
             }
             _showFilter() {
-                navigator.permissions.query({ 'name': 'geolocation' })
-                    .then((permission) => {
-                        if (permission.state != 'granted') {
-                            this.dispatchEvent(new CustomEvent('location'));
-                        } else {
-                            this.$.location.getLocation()
-                                .then(({ latitude, longitude }) => {
-                                    this.userLatLon = { lat: latitude, lon: longitude };
-                                });
-                            this.showFilter = !this.showFilter;
-                            if (this.showFilter) {
-                                this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-toggled");
-                                this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-untoggled");
-                            } else {
-                                this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-toggled");
-                                this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-untoggled");
-                            }
-                        }
-                    });
+                this.showFilter = !this.showFilter;
+                if (this.showFilter) {
+                    this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-toggled");
+                    this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-untoggled");
+                } else {
+                    this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-toggled");
+                    this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-untoggled");
+                }
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
