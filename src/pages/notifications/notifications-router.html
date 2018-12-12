@@ -11,7 +11,7 @@
 <!-- Displays and shared styles only -->
 <link rel="import" href="../../shared-styles.html" />
 <link rel="import" href="../../displays/display-icon-close.html" />
-<link rel="import" href="./notifications-messages.html" />
+<link rel="import" href="./notifications-repeater.html" />
 
 <dom-module id="page-notifications">
   <template>
@@ -22,7 +22,7 @@
     </style>
     <app-location route="{{route}}"></app-location>
     <display-icon-close on-close="_handleOnClose"></display-icon-close>
-    <notifications-messages messages="[[messagesArray]]"></notifications-messages>
+    <notifications-repeater notifications="[[notifications]]"></notifications-repeater>
   </template>
   <script>
     class MyNotificationsRouter extends (new ReduxMixin(
@@ -38,21 +38,7 @@
             type: Object,
             statePath: AppStore.selectors.notifications,
           },
-          messagesArray: {
-            computed: '_toArray(notifications.messages)'
-          },
         };
-      }
-      _toArray(obj) {
-        let array = [];
-        for (let key in obj) {
-          if (obj.hasOwnProperty(key)) {
-            obj[key].time = key;
-            array.push(obj[key]);
-          }
-        }
-        array.sort((a, b) => b.time - a.time)
-        return array;
       }
       _handleOnClose() {
         if (sessionStorage.getItem('origin')) {

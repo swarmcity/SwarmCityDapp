@@ -9,7 +9,7 @@
 
 <!-- Displays and shared styles only -->
 
-<dom-module id="notifications-chat-message">
+<dom-module id="notifications-notification">
   <template>
     <style include="shared-styles">
       :host {
@@ -45,8 +45,8 @@
         @apply --layout-horizontal;
         @apply --layout-start-justified;
         @apply --small-light;
-        color: var(--sc-grey4);
         cursor: pointer;
+        color: var(--sc-grey4);
         overflow-x: scroll;
         width: 90%;
       }
@@ -59,53 +59,48 @@
       }
 
       .dot {
-        background-color: var(--sc-blue);
         margin-top: 18px;
         min-width: 8px;
         width: 8px;
         height: 8px;
         border-radius: 50%;
       }
+
+      .dot-read {
+        background-color: var(--sc-grey2);
+      }
+
+      .dot-unread {
+        background-color: var(--sc-blue);
+      }
     </style>
     <div id="container" class="container">
-      <iron-image class="avatar" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[message.avatarHash]]"
+      <iron-image class="avatar" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]"
         placeholder="../images/defaultavatar.png">
       </iron-image>
       <div class="vertical">
-        <div class="date">[[_formatDate(message.time)]]</div>
-        <div class="text">New chat message for "[[message.description]]".
+        <div class="date">[[date]]</div>
+        <div class="text">[[message]]
         </div>
       </div>
       <div class="dot"></div>
     </div>
   </template>
   <script>
-    class MyNotificationsChatMessage extends (new ReduxMixin(
+    class MyNotificationsNotification extends (new ReduxMixin(
       Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
     )) {
       static get is() {
-        return "notifications-chat-message";
+        return "notifications-notification";
       }
       static get properties() {
         return {
-          messages: Object,
+          date: String,
+          message: String,
+          avatarHash: String,
         };
       }
-
-      /**
-       * formats epoch
-       * @param {DateTime} dateTime epoch in javascript milliseconds
-       * @return {string} formatted date string
-       */
-      _formatDate(dateTime) {
-        let milliseconds = parseInt(dateTime);
-        if (webpack.moment().valueOf() - milliseconds < 86400000) {
-          return webpack.moment(milliseconds).fromNow();
-        } else {
-          return webpack.moment(milliseconds).format("DD MMM YYYY - HH:mm");
-        }
-      }
     }
-    window.customElements.define(MyNotificationsChatMessage.is, MyNotificationsChatMessage);
+    window.customElements.define(MyNotificationsNotification.is, MyNotificationsNotification);
   </script>
 </dom-module>

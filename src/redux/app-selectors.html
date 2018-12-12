@@ -59,8 +59,8 @@
             address: (state) => state.publicKey,
             username: (state) => state.username,
             language: (state) => state.language,
-            txsKovan: (state) => toArray(state.txs.kovan || {}) ,
-            txsMainnet: (state) => toArray(state.txs.mainnet || {}) ,
+            txsKovan: (state) => toArray(state.txs.kovan || {}),
+            txsMainnet: (state) => toArray(state.txs.mainnet || {}),
             avatarHash: (state) => state.avatarHash,
             avatar: (state) => state.avatarHash,
             item: (state) => {
@@ -78,19 +78,109 @@
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
             },
             notifications: (state) => {
-                if (state.chats[state.publicKey]) return state.chats[state.publicKey]
-            },
+                let temp = {
+                    '1544214026153': {
+                        read: false,
+                        type: 'account-created',
+                        avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
+                        timestamp: '1544214026153'
+                    },
+                    '1544218037253': {
+                        read: false,
+                        type: 'account-restored',
+                        avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
+                        timestamp: '1544218037253',
+                    },
+                    '1544208037253': {
+                        read: false,
+                        type: 'balance-received',
+                        avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                        username: 'Crystal',
+                        amount: '25',
+                        timestamp: '1544208037253'
+                    },
+                    '1544202037253': {
+                        read: false,
+                        type: 'item-replied',
+                        avatarHash: 'QmQfvtF2NnDPT1zkYJXE9ekKYcRKifVMjNzzmpvU1u8JbY',
+                        username: 'Tom',
+                        description: 'A ride to the hospital, quick!',
+                        timestamp: '1544202037253'
+                    },
+                    '1543208037253': {
+                        read: false,
+                        type: 'item-selected',
+                        avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
+                        username: 'Brenda',
+                        description: 'A ride to the coffee shop on 3rd and Grand Av',
+                        timestamp: '1543208037253'
+                    },
+                    '1544222037253': {
+                        read: false,
+                        type: 'item-funded',
+                        avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                        username: 'Crystal',
+                        description: 'A good joke to tell my mom',
+                        timestamp: '1544222037253'
+                    },
+                    '1544106037223': {
+                        read: false,
+                        type: 'item-paid',
+                        avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                        username: 'Crystal',
+                        description: 'A good joke to tell my dad',
+                        timestamp: '1544106037223'
+                    },
+                    '1544208037213': {
+                        read: false,
+                        type: 'item-conflict',
+                        avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                        username: 'Crystal',
+                        description: 'A good joke to tell my neighbor',
+                        timestamp: '1544208037213'
+                    },
+                    '1544208037133': {
+                        read: false,
+                        type: 'item-declined',
+                        avatarHash: 'QmQfvtF2NnDPT1zkYJXE9ekKYcRKifVMjNzzmpvU1u8JbY',
+                        username: 'Tom',
+                        description: 'Drive me from point A to point B',
+                        timestamp: '1544208037133'
+                    },
+                    '1544208037113': {
+                        read: false,
+                        type: 'item-cancelled',
+                        avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
+                        username: 'Brenda',
+                        description: 'Elect me as president of the USA',
+                        timestamp: '1544208037113'
+                    },
+                    '1544208026253': {
+                        read: false,
+                        type: 'chat-message',
+                        avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
+                        username: 'Brenda',
+                        description: 'Elect me as president of the USA',
+                        timestamp: '1544208026253'
+                    },
+                    '1544208015253': {
+                        read: false,
+                        type: 'chat-member',
+                        avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
+                        username: 'Crystal',
+                        description: 'Elect me as president of the USA',
+                        timestamp: '1544208015253'
+                    }
+                }
+                return toArray(temp)
+
+            }
         }
 
         function toArray(obj) {
             let array = [];
-            for (let key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    array.push(obj[key]);
-                }
-            }
+            for (let key in obj) if (obj.hasOwnProperty(key)) array.push(obj[key]);
             return array;
-
         }
         // Export
         if (!window.AppStore) window.AppStore = {}
