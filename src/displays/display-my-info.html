@@ -136,6 +136,20 @@
         background-color: var(--sc-yellow);
         opacity: 0.6;
       }
+      .notificationsCount {
+        color: var(--sc-white);
+        border-radius: 50%;
+        @apply --small-bold;
+        @apply --layout-vertical;
+        @apply --layout-center-center;
+        text-align: center;
+        height: 24px;
+        width: 24px;
+        min-width: 24px;
+        background-color: var(--sc-grey4);
+        margin: 18px 0 0 -8px;
+        z-index: 99;
+      }
     </style>
 
     <app-location route="{{route}}"></app-location>
@@ -154,6 +168,7 @@
       <dom-if if="{{publicKey}}">
         <template>
           <iron-image id="image" sizing="cover" on-click="_toProfile" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png"></iron-image>
+          <div class="notificationsCount">[[notificationsCount]]</div>
           <div class="totalbox">
             <div id="username" on-click="_toProfile">{{ username }}</div>
             <div id="balance" on-click="_toWallet">
@@ -211,6 +226,14 @@
           avatarHash: {
             type: String,
             statePath: AppStore.selectors.avatarHash
+          },
+          /**
+           * Avatar represents the user's base64 of their avatar image
+           * @type {String}
+           */
+          notificationsCount: {
+            type: String,
+            statePath: AppStore.selectors.notificationsCount
           },
           /**
            * Balance represents the users SWT balance
