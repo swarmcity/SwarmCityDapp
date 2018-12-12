@@ -136,6 +136,7 @@
         background-color: var(--sc-yellow);
         opacity: 0.6;
       }
+
       .notificationsCount {
         color: var(--sc-white);
         border-radius: 50%;
@@ -167,8 +168,11 @@
 
       <dom-if if="{{publicKey}}">
         <template>
-          <iron-image id="image" sizing="cover" on-click="_toProfile" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" placeholder="../images/defaultavatar.png"></iron-image>
-          <div class="notificationsCount">[[notificationsCount]]</div>
+          <iron-image id="image" sizing="cover" on-click="_toProfile" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]"
+            placeholder="../images/defaultavatar.png"></iron-image>
+          <template is="dom-if" if="{{_showNotificationsCounter(notificationsCount)}}">
+            <div class="notificationsCount" on-tap="_toNotifications">[[notificationsCount]]</div>
+          </template>
           <div class="totalbox">
             <div id="username" on-click="_toProfile">{{ username }}</div>
             <div id="balance" on-click="_toWallet">
@@ -277,6 +281,10 @@
         super.connectedCallback();
         this.loadResources(this.resolveUrl("../text-translations.json"));
       }
+
+      _showNotificationsCounter(count) {
+        return (count && count > 0)
+      }
       /**
        * takes the user to the my-profile page
        */
@@ -292,6 +300,10 @@
           sessionStorage.setItem("origin", this.route.path);
           this.path = "create-account/";
         }
+      }
+
+      _toNotifications() {
+        this.dispatchEvent(new CustomEvent("notifications"));        
       }
 
       /**
