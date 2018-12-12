@@ -59,6 +59,8 @@
             address: (state) => state.publicKey,
             username: (state) => state.username,
             language: (state) => state.language,
+            txsKovan: (state) => toArray(state.txs.kovan || {}) ,
+            txsMainnet: (state) => toArray(state.txs.mainnet || {}) ,
             avatarHash: (state) => state.avatarHash,
             avatar: (state) => state.avatarHash,
             item: (state) => {
@@ -80,6 +82,16 @@
             },
         }
 
+        function toArray(obj) {
+            let array = [];
+            for (let key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    array.push(obj[key]);
+                }
+            }
+            return array;
+
+        }
         // Export
         if (!window.AppStore) window.AppStore = {}
         window.AppStore.selectors = selectors;
