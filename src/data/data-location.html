@@ -12,8 +12,8 @@
              * @return {object} object represents an error or a location object
              */
             getLocation() {
-                return new Promise((resolve) => {
-                    if (navigator.geolocation) {
+                return new Promise((resolve, reject) => {
+                    if ("geolocation" in navigator) {
                         const options = {
                             enableHighAccuracy: true,
                             timeout: 7000,
@@ -27,10 +27,10 @@
                                 });
                             },
                             (err) => {
-                                resolve(Error(err));
+                                reject(Error(err));
                             },
                             options);
-                    }
+                    } 
                 });
             }
 
