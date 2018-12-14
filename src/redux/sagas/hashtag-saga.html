@@ -123,6 +123,9 @@
         }
 
         async function getPastItems(hashtagAddress, fromBlock) {
+
+            console.log('about to post new even for new item')
+            window.dispatchEvent(new CustomEvent('newItem'));
             const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             const events = await hashtagContract.getPastEvents('NewItem', {
                 fromBlock,
@@ -396,6 +399,7 @@
                 status: 0,
             }
             const { itemHash, itemMetadataHash } = event.returnValues
+
             yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
 
             // Step 2. Resolve its metadata

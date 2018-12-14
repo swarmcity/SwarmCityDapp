@@ -58,7 +58,7 @@ This code may only be used under the license found at https://github.com/swarmci
         <app-location route="{{route}}"></app-location>
         <display-icon-back logout on-back="_handleOnBack"></display-icon-back>
         <div class="container" wide-layout$="{{wide}}">
-            <display-my-info avatarSmall path="{{path}}" on-wallet="_handleOnWallet" on-profile="_handleOnProfile"></display-my-info>
+            <display-my-info avatarSmall path="{{path}}" on-wallet="_handleOnWallet" on-notifications="_handleOnNotifications" on-profile="_handleOnProfile"></display-my-info>
             <template is="dom-repeat" items="[[hashtagList]]" filter="_showHashtag">
                 <hashtag-list-item item="[[item]]" on-hashtag="_handleOnHashtag"></hashtag-list-item>
                 <display-divider></display-divider>
@@ -84,6 +84,10 @@ This code may only be used under the license found at https://github.com/swarmci
                     hashtagList: {
                         type: Object,
                         statePath: AppStore.selectors.hashtagList,
+                    },
+                    address: {
+                        type: Object,
+                        statePath: AppStore.selectors.address,
                     },
                     path: {
                         type: String,
@@ -123,6 +127,10 @@ This code may only be used under the license found at https://github.com/swarmci
             _handleOnWallet() {
                 sessionStorage.setItem('origin', this.route.path);
                 this.set('route.path', 'my-wallet');
+            }
+            _handleOnNotifications() {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', `notifications/${this.address}`);
             }
             _handleOnProfile() {
                 sessionStorage.setItem('origin', this.route.path);

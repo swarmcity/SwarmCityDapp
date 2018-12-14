@@ -74,9 +74,11 @@
                 // visitedHashtags is an object
                 const visitedHashtags = yield select(selectors.visitedHashtags)
                 const uniqueHashtags = visitedHashtags
-                hashtagList.forEach(hashtag => {
-                    uniqueHashtags[hashtag.hashtagAddress] = hashtag
-                })
+                hashtagList
+                    .filter(hashtag => hashtag.hashtagShown)
+                    .forEach(hashtag => {
+                        uniqueHashtags[hashtag.hashtagAddress] = hashtag
+                    })
                 const uniqueHashtagList = Object.values(uniqueHashtags)
 
                 // Get reputation for all hashtags in the list

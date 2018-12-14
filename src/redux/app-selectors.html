@@ -59,6 +59,8 @@
             address: (state) => state.publicKey,
             username: (state) => state.username,
             language: (state) => state.language,
+            txsKovan: (state) => toArray(state.txs.kovan || {}),
+            txsMainnet: (state) => toArray(state.txs.mainnet || {}),
             avatarHash: (state) => state.avatarHash,
             avatar: (state) => state.avatarHash,
             item: (state) => {
@@ -72,11 +74,18 @@
             },
             chats: (state) => state.chats,
             reputation: (state) => state.reputation,
+            notificationsCount: (state) => toArray(state.notifications).length,
             chat: (state) => {
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
             },
+            notifications: (state) => toArray(state.notifications)
         }
 
+        function toArray(obj) {
+            let array = [];
+            for (let key in obj) if (obj.hasOwnProperty(key)) array.push(obj[key]);
+            return array;
+        }
         // Export
         if (!window.AppStore) window.AppStore = {}
         window.AppStore.selectors = selectors;

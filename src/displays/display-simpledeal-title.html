@@ -4,10 +4,7 @@
   This code may only be used under the license found at https://github.com/swarmcity/license
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html" />
-<link
-  rel="import"
-  href="../../bower_components/iron-media-query/iron-media-query.html"
-/>
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html" />
 <!-- Displays and shared styles only -->
 <link rel="import" href="./display-simpledeal-about.html" />
 
@@ -20,7 +17,7 @@
 
       .container {
         position: fixed;
-        top: 107px;
+        top: 100px;
         z-index: 33;
         width: 100vw;
         box-sizing: border-box;
@@ -88,25 +85,18 @@
         border-bottom: 2px dotted var(--sc-white);
         color: var(--sc-white);
       }
+
       display-simpledeal-about {
         margin-top: -2px;
         position: fixed;
         z-index: 32;
       }
-
     </style>
-    <iron-media-query
-      query="(min-width: 600px)"
-      query-matches="{{wide}}"
-    ></iron-media-query>
+    <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
 
     <template is="dom-if" if="{{showDetails}}">
-      <display-simpledeal-about
-        id="about"
-        language="[[language]]"
-        hashtag="[[hashtag]]"
-        on-close="_close"
-      ></display-simpledeal-about>
+      <display-simpledeal-about id="about" language="[[language]]" hashtag="[[hashtag]]" on-close="_close"
+        on-reputation="_handleOnReputation"></display-simpledeal-about>
     </template>
     <div class="container" wide-layout$="{{wide}}">
       <dom-if if="{{!hashtag.hashtagName}}">
@@ -161,6 +151,16 @@
       }
       _close() {
         this._toggle();
+      }
+      _handleOnReputation() {
+
+        this.dispatchEvent(new CustomEvent("reputation", {
+          detail: {
+            address: this.hashtag.maintainerAddress,
+            avatarHash: this.hashtag.metadata.maintainer.avatar,
+            username: this.hashtag.metadata.maintainer.username,
+          }
+        }));
       }
       _toggle() {
         this.showDetails = !this.showDetails;
