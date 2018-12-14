@@ -54,12 +54,50 @@
          *   - After receiving: resolve itemMetadataHash
          * - ItemChange(indexed itemHash, newstatus, providerAddress)
          *   - Emitted on: selectReplier, fundItem, payoutItem, cancelItem, disputeItem, resolveItem
-         *   - After receiving: -
+         *   - After receiving: n/a
          * - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
          *   - Emitted on: replyItem
          *   - After receiving: resolve replyMetadataHash
          * 
         */
+
+        /**
+         * NOTIFICATIONS:
+         * Notify a change in state. There are two types of changes
+         * - Previously store state => new state on startup
+         * - Current state in execution => new incoming state change
+         *
+         * POSSIBLE FLOW:
+         * 0. The notifications section will involve extra subscriptions, which will only trigger notifications
+         *    The actual data will be fetched on the regular sagas.
+         * 1. Receive state change
+         * 2. Run the state change through logic to decide if you are concerned on it or not
+         * 3. If you are concerned and it changed, push notification
+         * INVOLVED RULES:
+         * - If you are owner, you are always intersted
+         * - If you are provider you are interested until the item is finished
+         * - If you are replier, it's complicated:
+         *   - Once you replier: Item becames involved
+         *   - If some else is selected: Item is not involved
+         *   - If the item is unselected: Item becames of interest again
+         *   - If the item is funded by some else: Item will never be involved again
+         *
+         * B) WALLET-notification:
+         * - Balance changed, received funds only: (transfer event _to: yourAddress)
+         *
+         * C) DEALS-notifications (only applicable to items you care about):
+         * - New reply on request: (number of replies increase)
+         * - Replier selected: (providerAddress changes)
+         * - Replier declined: (providerAddress changes)
+         * - Replier funds: (item state changes)
+         * - Deal payout: (item state changes)
+         * - Deal conflict: (item state changes)
+         * - Deal cancelled: (item state changes)
+         *
+         * D) CHAT-notifications:
+         * - Incoming chat message
+         * - Chat member added (hashtagmaintainer in case of conflict)
+         */
 
 
         /**
@@ -71,7 +109,7 @@
             try {
                 deployBlock = parseInt(await hashtagContract.methods.deployBlock().call())
             } catch (e) {
-                console.log('Error retrieving deployBlock from ' + hashtagAddress, e, e.stack)
+                console.warn('Error retrieving deployBlock from ' + hashtagAddress, e, e.stack)
             }
             return {
                 maintainerAddress: await hashtagContract.methods.payoutAddress().call(),
@@ -101,6 +139,7 @@
                     itemValue: event.returnValues.itemValue,
                     seekerAddress: event.returnValues.owner, // owner => seeker
                     seekerRep: event.returnValues.seekerRep,
+                    hashtagAddress, // MUST be here, needed for subsequent fetches
                 }
             }
             return items;
@@ -161,8 +200,6 @@
                 //   - ipfs.cat(hashtagMetadata) -> description
                 try {
                     const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
-                    //const res = yield call(catIpfsMetadata, hashtagContractData.hashtagMetadataHash)
-                    //console.log('flurkello res: ', hashtagContractData.hashtagMetadataHash);
                     yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
                 } catch (e) {
                     console.error('Error fetching hashtag metadata of ' + hashtagAddress, e);
@@ -183,14 +220,7 @@
                 // Step 3C. Resolve itemMetadataHash
                 //   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
 
-                // Pass the contract object to avoid many concurrent initializations
-                const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
-                yield all(Object.values(items).map(item => all([
-                    call(getItemState, item, hashtagAddress, hashtagContract),
-                    call(getItemMetadata, item, hashtagAddress),
-                    call(getItemRepliers, item, hashtagAddress, hashtagContract)
-                ])))
-
+                yield all(Object.values(items).map(item => call(getItem, item)))
                 console.log('Finished fetching items!!')
 
             } catch (e) {
@@ -198,80 +228,88 @@
             }
         }
 
-        function readItemData(itemHash, hashtagContract) {
-            return hashtagContract.methods.readItemData(itemHash).call();
-        }
-
-        function* getItemState(item, hashtagAddress, hashtagContract) {
-            const { itemHash } = item;
-            try {
-                const res = yield call(readItemData, itemHash, hashtagContract)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        numberOfReplies: res.numberOfReplies,
-                        providerAddress: res.providerAddress,
-                        providerRep: res.providerRep,
-                        status: res.status,
+        function* getItem(item) {
+            const fetchGenerators = [
+                {
+                    name: 'getItemState',
+                    fetchFunction: async (item) => {
+                        const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, item.hashtagAddress);
+                        const res = await hashtagContract.methods.readItemData(item.itemHash).call()
+                        return {
+                            numberOfReplies: res.numberOfReplies,
+                            providerAddress: res.providerAddress,
+                            providerRep: res.providerRep,
+                            status: res.status,
+                        }
                     }
-                });
-                yield call(openChat, { hashtagAddress, itemHash, itemStatus: res.status, providerAddress: res.providerAddress, seekerAddress: item.seekerAddress })
-            } catch (e) {
-                console.log('Error calling readItem() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
+                },
+                {
+                    name: 'getItemMetadata',
+                    fetchFunction: async (item) => {
+                        const res = await ipfs.cat(item.itemMetadataHash).then(JSON.parse)
+                        return {
+                            description: res.description,
+                            location: res.location,
+                            seekerAvatarHash: res.avatar || res.avatarHash,
+                            seekerPublicKey: res.publicKeySeeker,
+                            seekerUsername: res.username,
+                        }
+                    }
+                },
+                {
+                    name: 'getItemRepliers',
+                    fetchFunction: async (item) => {
+                        const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, item.hashtagAddress);
+                        const res = await hashtagContract.methods.getItemRepliers(item.itemHash).call();
+                        return {
+                            repliers: res
+                        }
+                    }
+                },
+                {
+                    name: 'getTimestamp',
+                    fetchFunction: async (item) => {
+                        const block = await web3Local.eth.getBlock(item.blockNumber);
+                        return {
+                            timestamp: (block || {}).timestamp ? parseInt(block.timestamp) : 'error'
+                        }
+                    }
+                }
+            ]
+            const { hashtagAddress, itemHash } = item
+            yield all(fetchGenerators.map(({ name, fetchFunction }) => call(function* () {
+                try {
+                    const data = yield call(fetchFunction, item)
+                    yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data });
+                } catch (e) {
+                    console.warn(`Error calling ${name} for item: ${itemHash} in hashtag: ${hashtagAddress}`, e);
+                }
+            })))
+            // At this point all the item info is checked.
+            item = yield select(state => ((state.hashtags[hashtagAddress] || {}).items[itemHash]))
+            yield call(openChat, item)
+            const yourAddress = yield select(selectors.address)
+            if (item.providerAddress === yourAddress
+                || item.seekerAddress === yourAddress
+                || (item.repliers || []).includes(yourAddress)
+            ) {
+                yield put({ type: 'CHECK_INVOLVED_ITEM', newItem: item });
             }
         }
 
-        function catIpfsMetadata(hash) {
-            return ipfs.cat(hash).then(JSON.parse)
-        }
-
-        function* getItemMetadata(item, hashtagAddress) {
-            try {
-                const { itemMetadataHash: hash, itemHash } = item;
-                const res = yield call(catIpfsMetadata, hash)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        seekerAvatarHash: res.avatar || res.avatarHash,
-                        description: res.description,
-                        seekerPublicKey: res.publicKeySeeker,
-                        seekerUsername: res.username,
-                        location: res.location
-                    }
-                });
-            } catch (e) {
-                console.log('Error getting IPFS metadata for item: ' + item.itemHash + ' in hashtag: ' + hashtagAddress, e);
-            }
-        }
-
-        function callGetItemRepliers(itemHash, hashtagContract) {
-            return hashtagContract.methods.getItemRepliers(itemHash).call();
-        }
-
-        function* getItemRepliers(item, hashtagAddress, hashtagContract) {
-            const { itemHash } = item;
-            try {
-                const res = yield call(callGetItemRepliers, itemHash, hashtagContract)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        repliers: res,
-                    }
-                });
-            } catch (e) {
-                console.log('Error calling getItemRepliers() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
-            }
-        }
-
-        function* openChat({ hashtagAddress, itemHash, itemStatus, providerAddress, seekerAddress }) {
+        function* openChat({ hashtagAddress, itemHash, status, itemStatus, providerAddress, seekerAddress }) {
+            if (isNaN(itemStatus)) itemStatus = status
             // ##### 
             // Check if the item may contain a conversation that you are interested in
             // First, the item must be in Funded or Disputed state.
-            const getHashtag = (state) => state.hashtags[hashtagAddress] || {}
-            const getItem = (state) => ((getHashtag(state)).items || {})[itemHash] || {}
+            const getHashtagSelector = (state) => state.hashtags[hashtagAddress] || {}
+            const getItemSelector = (state) => ((getHashtagSelector(state)).items || {})[itemHash] || {}
 
             if (itemStatus == 1 || itemStatus == 3) {
                 // If the seeker or the provider are not provided, fetch them from the current state
-                if (!seekerAddress) seekerAddress = yield select(getItem).seekerAddress
-                if (!providerAddress) providerAddress = yield select(getItem).providerAddress
-                const maintainerAddress = yield select(getHashtag).maintainerAddress
+                if (!seekerAddress) seekerAddress = yield select(getItemSelector).seekerAddress
+                if (!providerAddress) providerAddress = yield select(getItemSelector).providerAddress
+                const maintainerAddress = yield select(getHashtagSelector).maintainerAddress
                 const yourAddress = yield select(selectors.address)
                 if (!yourAddress) {
                     console.warn('Warning, yourAddress is not defined at the moment of checking if you belong in a chat. Possible race condition.')

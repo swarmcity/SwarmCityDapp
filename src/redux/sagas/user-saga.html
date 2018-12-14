@@ -7,14 +7,18 @@
             ipfs,
             ReduxSaga,
             contractsData,
-            contracts
+            contracts,
+            AppStore
         } = window;
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
-        const { call, fork, take, put, takeEvery, all } = effects;
+        const { call, fork, take, put, takeEvery, all, select } = effects;
 
         // Import contract data:
         const { swtToken, hashtagList, simpleDeal } = contractsData;
+
+        // Import actions:
+        const actions = AppStore.actions
 
         /*
          * Selector functions
@@ -219,6 +223,14 @@
                         eth: ethBalance
                     }
                 });
+                // PUSH NOTIFICATION. B) WALLET-notification: Balance changed
+                // Check if the balance has actually changed
+                const oldEthBalance = yield select(state => ((state.balance[chain] || {}).balance || {}).eth)
+                if (oldEthBalance && ethBalance && ethBalance !== oldEthBalance) {
+                    yield put(actions.pushNotification({
+                        type: 'balance-update',
+                    }))
+                }
             } catch (e) {
                 console.error(e);
             }
@@ -232,12 +244,20 @@
                         swt: tokenBalance
                     }
                 });
+                // PUSH NOTIFICATION. B) WALLET-notification: Balance changed
+                // Check if the balance has actually changed
+                const oldTokenBalance = yield select(state => ((state.balance[chain] || {}).balance || {}).swt)
+                if (oldTokenBalance && tokenBalance && tokenBalance !== oldTokenBalance) {
+                    yield put(actions.pushNotification({
+                        type: 'balance-update',
+                    }))
+                }
             } catch (e) {
                 console.error(e);
             }
         }
 
-        function* getBalanceWrap({ address, chain }) {  
+        function* getBalanceWrap({ address, chain }) {
             if (!address || !address.length) {
                 console.warn('Aborting GET_BALANCE request because address is missing or is \"\"')
                 return

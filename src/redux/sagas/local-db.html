@@ -1,0 +1,102 @@
+<script>
+    (function () {
+
+        // DB methods
+        function getInvolvedItemKey(hashtagAddress, itemHash) {
+            return `involvedItem-${hashtagAddress}-${itemHash}`
+        }
+        function getAllItems() {
+            const involvedItems = []
+            Object.keys(localStorage)
+                .filter(key => key.startsWith('involvedItem-'))
+                .map(key => {
+                    try {
+                        involvedItems.push(JSON.parse(localStorage.getItem(key)))
+                    } catch (e) {
+                        console.warn(`Error reading involved item with key ${key}: ${e.message}`)
+                    }
+                })
+            return involvedItems
+        }
+        function setItem(item) {
+            const key = getInvolvedItemKey(item.hashtagAddress, item.itemHash)
+            localStorage.setItem(key, JSON.stringify(item));
+        }
+        function getItem(hashtagAddress, itemHash) {
+            const key = getInvolvedItemKey(hashtagAddress, itemHash)
+            const item = localStorage.getItem(key);
+            return JSON.parse(item)
+        }
+        function hasItem(hashtagAddress, itemHash) {
+            const key = getInvolvedItemKey(hashtagAddress, itemHash)
+            return key in localStorage
+        }
+
+        function getNotificationKey(id) {
+            return `notification-${id}`
+        }
+        function getAllNotifications() {
+            const notifications = []
+            Object.keys(localStorage)
+                .filter(key => key.startsWith('notification-'))
+                .map(key => {
+                    try {
+                        notifications.push(JSON.parse(localStorage.getItem(key)))
+                    } catch (e) {
+                        console.warn(`Error reading notification with key ${key}: ${e.message}`)
+                    }
+                })
+            return notifications
+        }
+        function setNotification(notification) {
+            const key = getNotificationKey(notification.id)
+            localStorage.setItem(key, JSON.stringify(notification));
+        }
+        function getNotification(id) {
+            const key = getNotificationKey(id)
+            const notification = localStorage.getItem(key);
+            return JSON.parse(notification)
+        }
+
+        // For testing
+        window.removeAllInvolvedItems = (confirmation) => {
+            if (confirmation !== 'I am sure') {
+                return console.warn(`Running this function will erase all involved item notifications. If you know what you are doing run the function again with: \n removeAllNotifications('I am sure')`)
+            }
+            Object.keys(localStorage)
+                .filter(key => key.startsWith('involvedItem'))
+                .forEach(key => localStorage.removeItem(key))
+            return "Removed all involved items"
+        }
+
+        // For testing
+        window.localStorageSpace = () => {
+            var maxSpace = 5000000
+            var _lsTotal = 0;
+            var _xLen;
+            var _x;
+            for (_x in localStorage) {
+                _xLen = ((localStorage[_x].length + _x.length) * 2);
+                if (!isNaN(_xLen)) _lsTotal += _xLen;
+                console.log(_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
+            };
+            console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB (" + (100 * _lsTotal / maxSpace).toFixed(2) + "%)");
+        }
+
+
+        window.localDb = {
+            item: {
+                get: getItem,
+                set: setItem,
+                has: hasItem,
+                getAll: getAllItems,
+            },
+            notification: {
+                get: getNotification,
+                set: setNotification,
+                getAll: getAllNotifications
+            }
+        };
+
+    }());
+</script>
