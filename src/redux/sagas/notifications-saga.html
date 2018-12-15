@@ -41,21 +41,6 @@
         // Supports "0x0000000000000000000000000000000000000000" and "0x0"
         const isZeroAddress = (address) => parseInt(address) === 0
 
-        const demoItem = {
-            description: 'This is a demo item',
-            hashtagAddress: '0x3b0ba8f4eeda91c75e30f867995010c7167881ce',
-            itemHash: '0xf19773b036767820fa78ca41f3915ab7a049987f1c702be2d0d0bcf0033d9b29',
-            numberOfReplies: 0,
-            providerAddress: null,
-            status: 0,
-        }
-        localDb.item.set(demoItem);
-
-        setTimeout(() => {
-            console.log('called startNotifications')
-            store.dispatch({ type: 'START_NOTIFICATIONS' })
-        }, 500)
-
         // Crawl missing notifications
         // - Reference by blockNumber to signal the 24 hours, 
 
@@ -263,25 +248,29 @@
         ]
 
         function* startNotifications({ } = {}) {
-            // Step 1. Load previous state of items involved from local storage:
-            // involvedItemKeys = ['involvedItem-0x1234-0xabcd', 'involvedItem-0x2345-0xbcde']
-            const involvedItems = localDb.item.getAll()
-            console.log(`Fetching new notifications of ${involvedItems.length} involved items`, { involvedItems })
-            const notificationsArray = yield all(involvedItems.map(item => call(function* () {
-                try {
-                    return yield call(checkInvolvedItem, { item })
-                } catch (e) {
-                    console.error(`Error checking involved item ${item.hashtagAddress}/${item.itemHash}: ${e.stack}`)
-                }
-            })))
-            // notificationsArray is an array of arrays. Spread them to show all new notifications in the terminal
-            const notifications = notificationsArray.reduce((a, c) => [...a, ...c], [])
-            console.log(`Fetched new notifications of involvedItemKeys`, notifications)
+            try {
+                // Step 1. Load previous state of items involved from local storage:
+                // involvedItemKeys = ['involvedItem-0x1234-0xabcd', 'involvedItem-0x2345-0xbcde']
+                const involvedItems = localDb.item.getAll()
+                console.log(`Fetching new notifications of ${involvedItems.length} involved items`, { involvedItems })
+                const notificationsArray = yield all(involvedItems.map(item => call(function* () {
+                    try {
+                        return yield call(checkInvolvedItem, { item })
+                    } catch (e) {
+                        console.error(`Error checking involved item ${item.hashtagAddress}/${item.itemHash}: ${e.stack}`)
+                    }
+                })))
+                // notificationsArray is an array of arrays. Spread them to show all new notifications in the terminal
+                const notifications = notificationsArray.reduce((a, c) => [...a, ...c], [])
+                console.log(`Fetched new notifications of involvedItemKeys`, notifications)
 
-            // Step 2. For each item, call its contract to check the current state
-            //   - readItemData() -> status, providerAddress, numberOfReplies
+                // Step 2. For each item, call its contract to check the current state
+                //   - readItemData() -> status, providerAddress, numberOfReplies
 
-            // Step 3. If the state has changed, fire a notification and update the state
+                // Step 3. If the state has changed, fire a notification and update the state
+            } catch (e) {
+                console.error(`Error on startNotifications: ${e.message}`, e)
+            }
         }
 
         /**
@@ -545,17 +534,56 @@
             }
         }
 
+        /**
+         * @param {Object} notification 
+         * @returns {String} deterministic unique ID. Hash of the notification object
+         */
+        function generateNotificationId(notification) {
+            let stringifiedNotification = JSON.stringify(notification)
+            if (!stringifiedNotification) {
+                console.warn('WARNING! notification is not defined and the id will be created at random')
+                stringifiedNotification = String(Math.random()).slice(2)
+            }
+            // 0x01140bad952a1572504ca99f2e53451fa864b36d7f2e7a258076bbf4055f4e6e
+            const hashHexString = web3Local.utils.sha3(stringifiedNotification)
+            // The WindowOrWorkerGlobalScope.btoa() method creates a base-64 encoded ASCII string 
+            // from a String object in which each character in the string is treated as a byte of binary data.
+            // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/btoa
+            // > The purpose of btoa is to reduce the size of the ID 4 times keeping the same info (localStore size limit)
+            const base64Encoded = btoa(parseInt(hashHexString, 16))
+            return base64Encoded
+        }
+
         // Intercept pushNotification to store it in redux and in localStorage
         function* pushNotification({ notification }) {
             if (!notification) {
                 return console.warn("Attempting to push an undefined notification, aborting.")
             }
-            const id = web3Local.utils.sha3(JSON.stringify(notification))
+            const id = generateNotificationId(notification)
             notification.id = id;
             notification.read = false;
             notification.timestamp = Date.now();
-            yield put(actions.pushNotificationToStore(notification, id))
+            yield put(actions.pushNotificationToStore(notification))
             localDb.notification.set(notification, id)
+        }
+
+        // Loads notifications from local storage into redux state
+        function* loadNotifications() {
+            try {
+                const notificationsArray = localDb.notification.getAll()
+                const notifications = {}
+                if (Array.isArray(notificationsArray)) {
+                    notificationsArray.forEach(notification => {
+                        notifications[notification.id] = notification
+                    })
+                } else {
+                    throw Error(`notificationsArray must be an array. notificationsArray: ${JSON.stringify(notificationsArray)}`)
+                }
+                yield put(actions.pushNotificationsToStore(notifications))
+                console.log(`Loaded ${Object.keys(notifications).length} notifications from localStorage`, { notifications })
+            } catch (e) {
+                console.error(`Error on load notifications: ${e.message}`, e)
+            }
         }
 
         /*
@@ -563,9 +591,10 @@
          */
         function* rootSaga() {
             yield all([
-                yield takeEvery('START_NOTIFICATIONS', startNotifications),
-                yield takeEvery('CHECK_INVOLVED_ITEM', checkInvolvedItem),
-                yield takeEvery('PUSH_NOTIFICATION', pushNotification)
+                takeEvery('CHECK_INVOLVED_ITEM', checkInvolvedItem),
+                takeEvery('PUSH_NOTIFICATION', pushNotification),
+                fork(loadNotifications),
+                fork(startNotifications)
             ]);
         }
 
