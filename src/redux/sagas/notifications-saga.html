@@ -150,7 +150,8 @@
             {
                 type: 'item-replied',
                 condition: (item, newItem, yourAddress) =>
-                    changedItem.numberOfReplies(item, newItem),
+                    changedItem.numberOfReplies(item, newItem)
+                    && youAre.seeker(newItem, yourAddress),
                 notificationData: async (item, newItem) => {
                     const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, newItem.hashtagAddress);
                     const newReplies = await hashtagContract.methods.getItemReplies(newItem.itemHash).call()
