@@ -27,7 +27,7 @@
         const changedItem = {
             status: (item, newItem) => newItem.status !== item.status,
             providerAddress: (item, newItem) => newItem.providerAddress !== item.providerAddress,
-            numberOfReplies: (item, newItem) => newItem.numberOfReplies !== item.numberOfReplies
+            numberOfReplies: (item, newItem) => newItem.numberOfReplies !== item.numberOfReplies,
         }
 
         const youAre = {
@@ -135,7 +135,8 @@
             {
                 type: 'item-replied',
                 condition: (item, newItem, yourAddress) =>
-                    changedItem.numberOfReplies(item, newItem)
+                    newItem.numberOfReplies > 0
+                    && changedItem.numberOfReplies(item, newItem)
                     && youAre.seeker(newItem, yourAddress),
                 notificationData: async (item, newItem) => {
                     const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, newItem.hashtagAddress);
@@ -239,7 +240,7 @@
                 condition: (item, newItem, yourAddress) =>
                     changedItem.status(item, newItem)
                     && itemStatusIs.cancelled(newItem)
-                    && youAre.provider(newItem, yourAddress),
+                    && youAre.providerOrSeeker(newItem, yourAddress),
                 notificationData: async (item, newItem) => {
                     // avatarHash and username of the seeker
                     return getSeekerUserInfo(newItem)

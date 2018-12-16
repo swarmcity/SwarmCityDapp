@@ -46,9 +46,16 @@
         @apply --layout-start-justified;
         @apply --small-light;
         cursor: pointer;
-        color: var(--sc-grey4);
         overflow-x: scroll;
         width: 90%;
+      }
+
+      .text-unread {
+        color: var(--sc-grey4);
+      }
+
+      .text-read {
+        color: var(--sc-grey3b);
       }
 
       .avatar {
@@ -80,10 +87,10 @@
       </iron-image>
       <div class="vertical">
         <div class="date">[[date]]</div>
-        <div class="text">[[message]]
+        <div id="text" class="text text-unread">[[message]]
         </div>
       </div>
-      <div class="dot"></div>
+      <div id="dot" class="dot dot-unread"></div>
     </div>
   </template>
   <script>
@@ -98,7 +105,25 @@
           date: String,
           message: String,
           avatarHash: String,
+          read: {
+            type: Boolean,
+            observer: '_read',
+          },
         };
+      }
+
+      _read() {
+        if (this.read) {
+          this.$.dot.classList.remove('dot-unread')
+          this.$.dot.classList.add('dot-read')
+          this.$.text.classList.remove('text-unread')
+          this.$.text.classList.add('text-read')
+        } else {
+          this.$.dot.classList.add('dot-unread')
+          this.$.dot.classList.remove('dot-read')
+          this.$.text.classList.add('text-unread')
+          this.$.text.classList.remove('text-read')
+        }
       }
     }
     window.customElements.define(MyNotificationsNotification.is, MyNotificationsNotification);

@@ -22,7 +22,7 @@
     </style>
     <app-location route="{{route}}"></app-location>
     <display-icon-close on-close="_handleOnClose"></display-icon-close>
-    <notifications-repeater notifications="[[notifications]]"></notifications-repeater>
+    <notifications-repeater notifications="[[notifications]]" on-detail="_handleOnDetail" on-chat="_handleOnChat" on-profile="_handleOnProfile" on-wallet="_handleOnWallet"></notifications-repeater>
   </template>
   <script>
     class MyNotificationsRouter extends (new ReduxMixin(
@@ -39,6 +39,18 @@
             statePath: AppStore.selectors.notifications,
           },
         };
+      }
+      _handleOnDetail(e) {
+        this.set('route.path', `/detail/${e.detail.hashtagAddress}/${e.detail.itemHash}`);
+      }
+      _handleOnChat(e) {
+        this.set('route.path', `/chat/${e.detail.hashtagAddress}/${e.detail.itemHash}`);
+      }
+      _handleOnProfile(e) {
+        this.set('route.path', '/my-profile/');
+      }
+      _handleOnWallet(e) {
+        this.set('route.path', '/my-wallet/');
       }
       _handleOnClose() {
         if (sessionStorage.getItem('origin')) {
