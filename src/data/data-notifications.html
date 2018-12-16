@@ -1,0 +1,45 @@
+<!--
+@license
+Copyright (c) 2018 Swarm City
+This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="./socket-redux.html" />
+<link rel="import" href="../redux-state.html">
+
+<!-- This component will catch all events that send out notifications and act on those events  -->
+
+<dom-module id="data-notifications">
+
+    <template>
+        <socket-redux id="socket"></socket-redux>
+    </template>
+    <script>
+        class DataNotifications extends new ReduxMixin(Polymer.Element) {
+            static get is() {
+                return 'data-notifications';
+            }
+            static get properties() {
+                return {
+                    notifications: {
+                        type: Object,
+                        statePath: AppStore.selectors.notifications,
+                    },
+                };
+            }
+
+
+            ready() {
+                super.ready();
+                window.addEventListener('newItem', function () {
+
+                    console.log('new item noticed in data-notifications')
+
+                }.bind(this), false);
+            }
+
+
+        }
+        window.customElements.define(DataNotifications.is, DataNotifications);
+    </script>
+</dom-module>

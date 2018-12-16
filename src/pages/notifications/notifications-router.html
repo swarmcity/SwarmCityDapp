@@ -1,0 +1,68 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+<link rel="import" href="../../../bower_components/app-route/app-location.html" />
+<link rel="import" href="../../redux-state.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="../../displays/display-icon-close.html" />
+<link rel="import" href="./notifications-repeater.html" />
+
+<dom-module id="page-notifications">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+    </style>
+    <app-location route="{{route}}"></app-location>
+    <display-icon-close on-close="_handleOnClose"></display-icon-close>
+    <notifications-repeater notifications="[[notifications]]" on-detail="_handleOnDetail" on-chat="_handleOnChat" on-profile="_handleOnProfile" on-wallet="_handleOnWallet"></notifications-repeater>
+  </template>
+  <script>
+    class MyNotificationsRouter extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "page-notifications";
+      }
+      static get properties() {
+        return {
+          route: Object,
+          notifications: {
+            type: Object,
+            statePath: AppStore.selectors.notifications,
+          },
+        };
+      }
+      _handleOnDetail(e) {
+        this.set('route.path', `/detail/${e.detail.hashtagAddress}/${e.detail.itemHash}`);
+      }
+      _handleOnChat(e) {
+        this.set('route.path', `/chat/${e.detail.hashtagAddress}/${e.detail.itemHash}`);
+      }
+      _handleOnProfile(e) {
+        this.set('route.path', '/my-profile/');
+      }
+      _handleOnWallet(e) {
+        this.set('route.path', '/my-wallet/');
+      }
+      _handleOnClose() {
+        if (sessionStorage.getItem('origin')) {
+          this.set('route.path', sessionStorage.getItem('origin'));
+          sessionStorage.removeItem('origin');
+        }
+        else {
+          this.set('route.path', 'hashtag-list');
+        }
+      }
+
+    }
+    window.customElements.define(MyNotificationsRouter.is, MyNotificationsRouter);
+  </script>
+</dom-module>

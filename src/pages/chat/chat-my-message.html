@@ -3,14 +3,9 @@
   Copyright (c) 2018 Swarm City
   This code may only be used under the license found at https://github.com/swarmcity/license
 -->
-<link
-  rel="import"
-  href="../../../bower_components/polymer/polymer-element.html"
-/>
-<link
-  rel="import"
-  href="../../../bower_components/iron-image/iron-image.html"
-/>
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html" />
+<link rel="import" href="../../../bower_components/iron-image/iron-image.html">
 
 <!-- Displays and shared styles only -->
 <link rel="import" href="../../shared-styles.html" />
@@ -21,6 +16,7 @@
       :host {
         display: block;
       }
+
       .container {
         @apply --layout-horizontal;
         @apply --layout-start-justified;
@@ -52,6 +48,26 @@
         font-weight: 300;
         max-width: 65vw;
         overflow-x: scroll;
+        overflow-x: auto;
+        /* These are technically the same, but use both */
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+
+        -ms-word-break: break-all;
+        /* This is the dangerous one in WebKit, as it breaks things wherever */
+        word-break: break-all;
+        /* Instead use this non-standard one: */
+        word-break: break-word;
+
+        /* Adds a hyphen where the word breaks, if supported (No Blink) */
+        -ms-hyphens: auto;
+        -moz-hyphens: auto;
+        -webkit-hyphens: auto;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+        hyphens: auto;
       }
 
       .avatar-chat {
@@ -62,13 +78,8 @@
       }
     </style>
     <div class="container">
-      <iron-image
-        class="avatar-chat"
-        sizing="cover"
-        preload
-        src="https://scapiweb3-c.swarm.city/img/[[_getAvatar(message, avatars)]]"
-        placeholder="../images/defaultavatar.png"
-      >
+      <iron-image class="avatar-chat" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[_getAvatar(message, avatars)]]"
+        placeholder="../images/defaultavatar.png">
       </iron-image>
       <div class="vertical">
         <div class="message-date">[[_formatDate(message.time)]]</div>

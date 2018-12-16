@@ -299,7 +299,12 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             _replycount(item) {
-                return item && item.numberOfReplies ? item.numberOfReplies : 0;
+                if (!item) return 0
+                let count = 0;
+                if (item.replies) count = Object.keys(item.replies).length
+                if (item.repliers && Object.keys(item.repliers).length > count) count = Object.keys(item.repliers).length;
+                if (item.numberOfReplies > count) return item.numberOfReplies;
+                return count;
             }
             /**
              * routes to the corresponding item detail page

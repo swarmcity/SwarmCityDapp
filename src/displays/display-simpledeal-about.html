@@ -5,14 +5,8 @@
 -->
 <link rel="import" href="../../bower_components/polymer/polymer-element.html" />
 <link rel="import" href="../../bower_components/iron-image/iron-image.html" />
-<link
-  rel="import"
-  href="../../bower_components/iron-media-query/iron-media-query.html"
-/>
-<link
-  rel="import"
-  href="../../bower_components/app-localize-behavior/app-localize-behavior.html"
-/>
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html" />
+<link rel="import" href="../../bower_components/app-localize-behavior/app-localize-behavior.html" />
 
 <dom-module id="display-simpledeal-about">
   <template>
@@ -88,17 +82,14 @@
       }
 
       @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-        only screen and (min--moz-device-pixel-ratio: 1.5),
-        only screen and (min-resolution: 240dpi) {
+      only screen and (min--moz-device-pixel-ratio: 1.5),
+      only screen and (min-resolution: 240dpi) {
         .arrowup-icon {
           @apply --retina;
         }
       }
     </style>
-    <iron-media-query
-      query="(min-width: 600px)"
-      query-matches="{{wide}}"
-    ></iron-media-query>
+    <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
     <display-language language="{{language}}"></display-language>
     <div class="container" wide-layout$="{{wide}}">
       <div class="box">
@@ -112,18 +103,12 @@
       <div class="box">
         <div class="title">Maintained by</div>
         <div class="maintainer">
-          <iron-image
-            class="avatar"
-            sizing="cover"
-            preload
-            fade
-            src="https://scapiweb3-c.swarm.city/img/[[hashtag.metadata.maintainer.avatar]]"
-            placeholder="../../images/defaultavatar.png"
-          >
+          <iron-image on-tap="_toReputation" class="avatar" sizing="cover" preload fade src="https://scapiweb3-c.swarm.city/img/[[hashtag.metadata.maintainer.avatar]]"
+            placeholder="../../images/defaultavatar.png">
           </iron-image>
-          <span class="username">{{
+          <span class="username" on-tap="_toReputation">{{
             hashtag.metadata.maintainer.username
-          }}</span>
+            }}</span>
         </div>
       </div>
       <div class="arrowup">
@@ -153,6 +138,9 @@
        */
       _closeInfo() {
         this.dispatchEvent(new CustomEvent("close"));
+      }
+      _toReputation() {
+        this.dispatchEvent(new CustomEvent("reputation"));
       }
       /**
        * converts the fee from gwei to swt amount

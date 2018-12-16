@@ -1,0 +1,143 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="./notifications-notification.html" />
+<link rel="import" href="../../displays/display-divider.html" />
+
+<dom-module id="notifications-repeater">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply --layout-vertical;
+        background-image: var(--sc-bg);
+        height: 100%;
+        min-height: 100vh;
+        box-sizing: border-box;
+        padding-top: 100px;
+      }
+
+      .notification {
+        box-sizing: border-box;
+        padding: 20px 55px 20px 40px;
+      }
+
+      .notification:hover {
+        background-color: var(--sc-white);
+        cursor: pointer;
+      }
+    </style>
+    <div id="container" class="container">
+      <template is="dom-repeat" items="[[notifications]]" as="notification">
+        <notifications-notification class="notification" date="[[_formatDate(notification.timestamp)]]" message="[[_formatMessage(notification)]]"
+          avatar-hash="[[notification.avatarHash]]" read="[[notification.read]]" on-tap="_route"></notifications-notification>
+        <display-divider></display-divider>
+      </template>
+    </div>
+  </template>
+  <script>
+    class MyNotificationsRepeater extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "notifications-repeater";
+      }
+      static get properties() {
+        return {
+          notifications: Array,
+        };
+      }
+      _formatMessage(notification) {
+        switch (notification.type) {
+          case 'account-created':
+            return 'You have successfully created an account.';
+            break;
+          case 'account-restored':
+            return 'You have successfully restored your account.';
+            break;
+          case 'balance-received':
+            return `You received ${notification.amount} SWT from ${notification.username}`
+            break;
+          case 'item-replied':
+            return `${notification.repliers.length == 1 ? notification.username : notification.repliers.length + ' different people'} replied to your request "${notification.description}".`
+            break;
+          case 'item-selected':
+            return `You were selected by ${notification.username} for "${notification.description}".`
+            break;
+          case 'item-funded':
+            return `${notification.username} accepted and funded "${notification.description}". You are now in a deal.`
+            break;
+          case 'item-paid':
+            return `You have been paid for "${notification.description}".`
+            break;
+          case 'item-conflict':
+            return `"${notification.description}" was put into conflict.`
+            break;
+          case 'item-declined':
+            return `${notification.username} declined your deal "${notification.description}".`
+            break;
+          case 'item-cancelled':
+            return `"${notification.description}" was cancelled.`
+            break;
+          case 'chat-message':
+            return `New chat message for "${notification.description}".`
+            break;
+          case 'chat-member':
+            return `${notification.username} was added to the chat.`;
+            break;
+        }
+      }
+      _route(e) {
+        switch (e.model.__data.notification.type) {
+          case 'account-created':
+          case 'account-restored':
+            this.dispatchEvent(new CustomEvent('profile'));
+            break;
+          case 'chat-message':
+          case 'chat-member':
+            this.dispatchEvent(new CustomEvent('chat', {
+              detail: {
+                hashtagAddress: e.model.__data.notification.hashtagAddress,
+                itemHash: e.model.__data.notification.itemHash,
+              }
+            }));
+            break;
+          case 'balance-received':
+            this.dispatchEvent(new CustomEvent('wallet'));
+            break;
+          default:
+            this.dispatchEvent(new CustomEvent('detail', {
+              detail: {
+                hashtagAddress: e.model.__data.notification.hashtagAddress,
+                itemHash: e.model.__data.notification.itemHash,
+              }
+            }));
+            break;
+        }
+      }
+      /**
+       * formats epoch
+       * @param {DateTime} dateTime epoch in javascript milliseconds
+       * @return {string} formatted date string
+       */
+      _formatDate(dateTime) {
+        let milliseconds = parseInt(dateTime);
+        if (webpack.moment().valueOf() - milliseconds < 86400000) {
+          return webpack.moment(milliseconds).fromNow();
+        } else {
+          return webpack.moment(milliseconds).format("DD MMM YYYY - HH:mm");
+        }
+      }
+    }
+    window.customElements.define(MyNotificationsRepeater.is, MyNotificationsRepeater);
+  </script>
+</dom-module>

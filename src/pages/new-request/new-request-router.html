@@ -29,7 +29,7 @@ This code may only be used under the license found at https://github.com/swarmci
 
         <template is="dom-if" if="{{_isEqualTo(status, 'new-request')}}">
             <new-request-create chosen-value="{{range}}" on-create="_handleOnCreate" on-close="_handleOnClose"
-                on-location="_handleOnLocation"></new-request-create>
+                on-location="_handleOnLocation" on-reputation="_handleOnReputation"></new-request-create>
         </template>
 
         <!-- ALLOWING LOCATION -->
@@ -166,6 +166,10 @@ This code may only be used under the license found at https://github.com/swarmci
             }
             _handleOnClose() {
                 this.set('route.path', `hashtag/${this.route.path.split('/')[2]}`);
+            }
+            _handleOnReputation(e) {
+                sessionStorage.setItem('origin', this.route.path);
+                this.set('route.path', `reputation/${e.detail.address}/${e.detail.avatarHash}/${e.detail.username}`)
             }
             _handleOnConfirm() {
                 this.$.unlock._getPrivateKey()
