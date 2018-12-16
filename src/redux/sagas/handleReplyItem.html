@@ -74,9 +74,36 @@
                         }
                     })
                 ])
+
+                // Notifications
+                // At this point all the item info is checked.
+                item = yield select(state => (state.hashtags[hashtagAddress] || {}).items[itemHash]);
+                // 1. Check if you are involved
+                if (yield call(youAreInvolvedInThisItem, item)) {
+                    yield put({ type: "CHECK_INVOLVED_ITEM", newItem: item });
+                }
             } catch (e) {
                 console.error(`Error handling reply of itemHash: ${itemHash}`, e)
             }
+        }
+
+        /**
+         * @param {Object} item must be an object with this properites: {
+         *    numberOfReplies,
+         *    providerAddress,
+         *    status,
+         *    seekerAddress,
+         *    description,
+         * }
+         * @returns {Bool} true if you are involved in this item
+         */
+        function* youAreInvolvedInThisItem(item) {
+            const yourAddress = yield select(selectors.address);
+            return (
+                item.providerAddress === yourAddress ||
+                item.seekerAddress === yourAddress ||
+                (item.repliers || []).includes(yourAddress)
+            )
         }
 
         function catIpfsMetadata(hash) {

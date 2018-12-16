@@ -341,18 +341,32 @@
                 )
             );
             // At this point all the item info is checked.
-            item = yield select(
-                state => (state.hashtags[hashtagAddress] || {}).items[itemHash]
-            );
+            item = yield select(state => (state.hashtags[hashtagAddress] || {}).items[itemHash]);
+            // 1. Check if a chat should be openned
             yield call(openChat, item);
+            // 2. Check if you are involved
+            if (yield call(youAreInvolvedInThisItem, item)) {
+                yield put({ type: "CHECK_INVOLVED_ITEM", newItem: item });
+            }
+        }
+
+        /**
+         * @param {Object} item must be an object with this properites: {
+         *    numberOfReplies,
+         *    providerAddress,
+         *    status,
+         *    seekerAddress,
+         *    description,
+         * }
+         * @returns {Bool} true if you are involved in this item
+         */
+        function* youAreInvolvedInThisItem(item) {
             const yourAddress = yield select(selectors.address);
-            if (
+            return (
                 item.providerAddress === yourAddress ||
                 item.seekerAddress === yourAddress ||
                 (item.repliers || []).includes(yourAddress)
-            ) {
-                yield put({ type: "CHECK_INVOLVED_ITEM", newItem: item });
-            }
+            )
         }
 
         function* openChat({
@@ -467,7 +481,7 @@
             // NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
             // Step 1. Store the item info
             console.log("Handling NewItem", event);
-            const item = {
+            let item = {
                 blockNumber: event.blockNumber,
                 hashtagFee: event.returnValues.hashtagFee,
                 itemMetadataHash: event.returnValues.itemMetadataHash,
@@ -481,10 +495,7 @@
 
             yield put({ type: "UPDATE_ITEM", hashtagAddress, itemHash, data: item });
 
-            // Step 2. Resolve its metadata
-            yield fork(getItemMetadata, item, hashtagAddress);
-
-            // Step 3. Get the timestamp
+            // Step 2. Get the timestamp
             const timestamp = newEvent
                 ? Math.floor(Date.now() / 1000)
                 : yield call(getBlockTime, event.blockNumber);
@@ -494,6 +505,17 @@
                 itemHash,
                 data: { timestamp }
             });
+
+            // Step 3. Resolve its metadata
+            yield call(getItemMetadata, item, hashtagAddress);
+
+            // Step 4. Notifications
+            // At this point all the item info is checked.
+            item = yield select(state => (state.hashtags[hashtagAddress] || {}).items[itemHash]);
+            // 1. Check if you are involved
+            if (yield call(youAreInvolvedInThisItem, item)) {
+                yield put({ type: "CHECK_INVOLVED_ITEM", newItem: item });
+            }
         }
 
         function catIpfsMetadata(hash) {
@@ -548,6 +570,13 @@
                 itemStatus: newstatus,
                 providerAddress
             });
+
+            // At this point all the item info is checked.
+            item = yield select(state => (state.hashtags[hashtagAddress] || {}).items[itemHash]);
+            // 1. Check if you are involved
+            if (yield call(youAreInvolvedInThisItem, item)) {
+                yield put({ type: "CHECK_INVOLVED_ITEM", newItem: item });
+            }
         }
 
         function* hashtagSubscription(hashtagAddress) {
