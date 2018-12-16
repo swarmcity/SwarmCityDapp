@@ -151,6 +151,10 @@
         margin: 18px 0 0 -8px;
         z-index: 99;
       }
+
+      .container[wide-layout] .notificationsCount {
+        margin: 25px 0 0 -8px;
+      }
     </style>
 
     <app-location route="{{route}}"></app-location>
@@ -170,9 +174,7 @@
         <template>
           <iron-image id="image" sizing="cover" on-click="_toProfile" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]"
             placeholder="../images/defaultavatar.png"></iron-image>
-          <template is="dom-if" if="{{_showNotificationsCounter(notificationsCount)}}">
-            <div class="notificationsCount" on-tap="_toNotifications">[[notificationsCount]]</div>
-          </template>
+          <div class="notificationsCount" on-tap="_toNotifications">[[notificationsCount]]</div>
           <div class="totalbox">
             <div id="username" on-click="_toProfile">{{ username }}</div>
             <div id="balance" on-click="_toWallet">
@@ -281,10 +283,6 @@
         super.connectedCallback();
         this.loadResources(this.resolveUrl("../text-translations.json"));
       }
-
-      _showNotificationsCounter(count) {
-        return (count && count > 0)
-      }
       /**
        * takes the user to the my-profile page
        */
@@ -303,7 +301,7 @@
       }
 
       _toNotifications() {
-        this.dispatchEvent(new CustomEvent("notifications"));        
+        this.dispatchEvent(new CustomEvent("notifications"));
       }
 
       /**
