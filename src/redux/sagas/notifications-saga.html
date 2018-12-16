@@ -518,7 +518,7 @@
             notification.read = false;
             notification.timestamp = Date.now();
             yield put(actions.pushNotificationToStore(notification))
-            localDb.notification.set(notification, id)
+            localDb.notification.set(notification)
         }
 
         // Loads notifications from local storage into redux state
@@ -540,6 +540,18 @@
             }
         }
 
+        function* readNotifications() {
+            try {
+                const notificationsArray = localDb.notification.getAll()
+                notificationsArray.forEach(notification => {
+                    notification.read = true
+                })
+                localDb.notification.set(notification)
+            } catch (e) {
+                console.error(`Error on read notifications: ${e.message}`, e)
+            }
+        }
+
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
@@ -547,6 +559,7 @@
             yield all([
                 takeEvery('CHECK_INVOLVED_ITEM', checkInvolvedItem),
                 takeEvery('PUSH_NOTIFICATION', pushNotification),
+                takeEvery('READ_NOTIFICATIONS', readNotifications),
                 fork(loadNotifications),
                 fork(startNotifications)
             ]);

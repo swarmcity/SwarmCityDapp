@@ -435,12 +435,28 @@
                         notifications: action.notifications
                     })
                 }
+                case 'READ_NOTIFICATIONS': {
+                    return {
+                        ...state,
+                        // Clone object before manipulating it
+                        notifications: viewNotifications({ ...state.notifications })
+                    };
+                }
                 default: {
                     return state
                 }
 
             }
         };
+
+        // Turns all notifications to read = true
+        function viewNotifications(notifications) {
+            Object.keys(notifications).forEach(id => {
+                notifications[id].read = true
+            })
+            return notifications
+        }
+
         if (!window.AppStore) window.AppStore = {}
         window.AppStore.rootReducer = reducer
     }());
