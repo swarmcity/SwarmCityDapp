@@ -435,12 +435,26 @@
                         notifications: action.notifications
                     })
                 }
-                case 'READ_NOTIFICATIONS': {
+                case 'READ_ALL_NOTIFICATIONS': {
                     return {
                         ...state,
                         // Clone object before manipulating it
                         notifications: viewNotifications({ ...state.notifications })
                     };
+                }
+                case 'READ_NOTIFICATION': {
+                    if (state.notifications[action.id]) {
+                        return deepmerge(state, {
+                            notifications: {
+                                [action.id]: {
+                                    read: true
+                                }
+                            }
+                        })
+                        // If the notification does not exist, do not modify state
+                    } else {
+                        return state
+                    }
                 }
                 default: {
                     return state

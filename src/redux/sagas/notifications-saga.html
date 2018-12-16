@@ -540,7 +540,7 @@
             }
         }
 
-        function* readNotifications() {
+        function* readAllNotifications() {
             try {
                 const notificationsArray = localDb.notification.getAll()
                 notificationsArray.forEach(notification => {
@@ -548,7 +548,20 @@
                     localDb.notification.set(notification)
                 })
             } catch (e) {
-                console.error(`Error on read notifications: ${e.message}`, e)
+                console.error(`Error on read all notifications: ${e.message}`, e)
+            }
+        }
+
+        function* readNotification({ id }) {
+            try {
+                const notification = localDb.notification.get(id)
+                if (!notification) {
+                    return console.warn(`Notification id ${id} not found`)
+                }
+                notification.read = true
+                localDb.notification.set(notification)
+            } catch (e) {
+                console.error(`Error on read notification id ${id}: ${e.message}`, e)
             }
         }
 
@@ -559,7 +572,8 @@
             yield all([
                 takeEvery('CHECK_INVOLVED_ITEM', checkInvolvedItem),
                 takeEvery('PUSH_NOTIFICATION', pushNotification),
-                takeEvery('READ_NOTIFICATIONS', readNotifications),
+                takeEvery('READ_ALL_NOTIFICATIONS', readAllNotifications),
+                takeEvery('READ_NOTIFICATION', readNotification),
                 fork(loadNotifications),
                 fork(startNotifications)
             ]);
