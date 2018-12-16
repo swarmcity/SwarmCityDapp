@@ -461,6 +461,8 @@
 
         function* itemSubscription(hashtagAddress, itemHash) {
             try {
+                if (!hashtagAddress) throw Error('hashtagAddress must be defined to start an item subscription')
+                if (!itemHash) throw Error('itemHash must be defined to start an item subscription')
                 const itemSubscriptionChannel = yield call(createItemSubscriptionChannel, hashtagAddress, itemHash)
                 while (true) {
                     // take(END) will cause the saga to terminate by jumping to the finally block
@@ -483,6 +485,8 @@
                             console.error('Received unknown event ' + event.event, event)
                     }
                 }
+            } catch (e) {
+                console.error(`Error on item subscription ${hashtagAddress}/${itemHash}: ${e.stack}`, e)
             } finally {
                 console.log('hashtag ' + hashtagAddress + ' subscription terminated')
             }
