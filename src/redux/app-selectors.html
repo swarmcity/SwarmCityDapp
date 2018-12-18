@@ -80,7 +80,7 @@
             chat: (state) => {
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
             },
-            notifications: (state) => toArray(state.notifications)
+            notifications: (state) => toArray(state.notifications).sort((a, b) => a.timestamp - b.timestamp)
         }
 
         function toArray(obj) {
@@ -88,6 +88,7 @@
             for (let key in obj) if (obj.hasOwnProperty(key)) array.push(obj[key]);
             return array;
         }
+
         // Export
         if (!window.AppStore) window.AppStore = {}
         window.AppStore.selectors = selectors;

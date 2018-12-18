@@ -58,6 +58,28 @@
             return JSON.parse(notification)
         }
 
+        function getBalance({ chain, token }) {
+            return localStorage.getItem(`balance-${token}-${chain}`)
+        }
+        function setBalance({ chain, token, balance }) {
+            localStorage.setItem(`balance-${token}-${chain}`, balance);
+        }
+
+        // Chat
+        function setChat(itemHash, chatCache) {
+            const key = `chat-${itemHash}`
+            localStorage.setItem(key, JSON.stringify(chatCache));
+        }
+        function getChat(itemHash) {
+            const key = `chat-${itemHash}`
+            const data = localStorage.getItem(key);
+            return JSON.parse(data)
+        }
+        function hasChat(itemHash) {
+            const key = `chat-${itemHash}`
+            return key in localStorage
+        }
+
         // For testing
         window.removeAllInvolvedItems = (confirmation) => {
             if (confirmation !== 'I am sure') {
@@ -76,6 +98,15 @@
                 .filter(key => key.startsWith('notification-'))
                 .forEach(key => localStorage.removeItem(key))
             return "Removed all notifications"
+        }
+        window.removeAllBalances = (confirmation) => {
+            if (confirmation !== 'I am sure') {
+                return console.warn(`Running this function will erase all balances. If you know what you are doing run the function again with: \n removeAllNotifications('I am sure')`)
+            }
+            Object.keys(localStorage)
+                .filter(key => key.startsWith('balance-'))
+                .forEach(key => localStorage.removeItem(key))
+            return "Removed all balances"
         }
 
         // For testing
@@ -104,6 +135,15 @@
                 get: getNotification,
                 set: setNotification,
                 getAll: getAllNotifications
+            },
+            balance: {
+                get: getBalance,
+                set: setBalance,
+            },
+            chat: {
+                get: getChat,
+                set: setChat,
+                has: hasChat,
             }
         };
 

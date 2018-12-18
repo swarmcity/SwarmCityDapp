@@ -1,5 +1,3 @@
-<link rel="import" href="./handleReplyItem.html">
-
 <script>
     (function () {
         // Items initialized in setup.html
@@ -11,9 +9,6 @@
 
         // Import contract data:
         const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
-
-        // Import methods
-        const { handleReplyItem } = window;
 
         const itemStatusIs = {
             open: (item) => item.status == 0,
@@ -40,6 +35,12 @@
         const isAddress = web3Local.utils.isAddress
         // Supports "0x0000000000000000000000000000000000000000" and "0x0"
         const isZeroAddress = (address) => parseInt(address) === 0
+
+
+        // Make sure there are no errors when generating error messages
+        function printItemId(item = {}) {
+            return `${item.hashtagAddress}/${item.itemHash}`
+        }
 
         // Crawl missing notifications
         // - Reference by blockNumber to signal the 24 hours, 
@@ -140,16 +141,16 @@
                     && youAre.seeker(newItem, yourAddress),
                 notificationData: async (item, newItem) => {
                     const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, newItem.hashtagAddress);
-                    const newReplies = await hashtagContract.methods.getItemReplies(newItem.itemHash).call()
-                        .then(replies => replies.slice(item.numberOfReplies, newItem.numberOfReplies))
-                    const repliers = await Promise.all(newReplies.map(replyMetadataHash =>
-                        resolveIpfsMetadata(replyMetadataHash).catch(e => {
-                            console.warn(`Error resolving ipfs metadata for reply: ${e.stack}`, item)
-                            return {}
-                        }).then(({ avatarHash, username }) => ({ avatarHash, username }))
-                    ))
-                    // all repliers + avatarHash and username of the LAST replier
-                    return { repliers, ...(repliers[repliers.length - 1] || {}) }
+                    const lastReplyMetadataHash = await hashtagContract.methods.getItemReply(newItem.itemHash, newItem.numberOfReplies - 1).call()
+                    const lastReply = await resolveIpfsMetadata(lastReplyMetadataHash).catch(e => {
+                        console.warn(`Error resolving ipfs metadata for reply: ${e.stack}`, item)
+                        return {}
+                    })
+                    return {
+                        avatarHash: lastReply.avatarHash,
+                        username: lastReply.username,
+                        replyCount: newItem.numberOfReplies - item.numberOfReplies
+                    }
                 }
             },
             // > item-selected
@@ -253,7 +254,7 @@
                 // Step 1. Load previous state of items involved from local storage:
                 // involvedItemKeys = ['involvedItem-0x1234-0xabcd', 'involvedItem-0x2345-0xbcde']
                 const involvedItems = localDb.item.getAll()
-                console.log(`Fetching new notifications of ${involvedItems.length} involved items`, { involvedItems })
+                console.log(`Loaded ${involvedItems.length} involved items from localStorage, fetching their new state`, { involvedItems })
 
                 // Step 2. For each item, call its contract to check the current state
                 //   - readItemData() -> status, providerAddress, numberOfReplies
@@ -264,7 +265,7 @@
                         yield fork(itemSubscription, item.hashtagAddress, item.itemHash)
                         return yield call(checkInvolvedItem, { item })
                     } catch (e) {
-                        console.error(`Error checking involved item ${item.hashtagAddress}/${item.itemHash}: ${e.stack}`)
+                        console.error(`Error checking involved item ${printItemId(item)}: ${e.stack}`)
                     }
                 })))
                 // notificationsArray is an array of arrays. Spread them to show all new notifications in the terminal
@@ -337,19 +338,19 @@
                         try {
                             data = yield call(notificationData, item, newItem)
                         } catch (e) {
-                            console.warn(`Error getting notification data for involved item ${newItem.hashtagAddress}/${newItem.itemHash} for notification ${type}: ${e.stack}`)
+                            console.warn(`Error getting notification data for involved item ${printItemId(newItem)} for notification ${type}: ${e.stack}`)
                         }
                         // Push notification to state. Append type and basic info
                         const notification = { type, ...basicItemInfo(newItem), ...(data || {}) }
                         yield call(pushNotification, { notification })
                         notifications.push(notification)
                     } catch (e) {
-                        console.error(`Error checking involved item ${newItem.hashtagAddress}/${newItem.itemHash} for notification ${type}: ${e.stack}`)
+                        console.error(`Error checking involved item ${printItemId(newItem)} for notification ${type}: ${e.stack}`)
                     }
                 })))
                 return notifications
             } catch (e) {
-                console.error(`Error checking involved item ${newItem.hashtagAddress}/${newItem.itemHash}: ${e.stack}`)
+                console.error(`Error checking involved item ${printItemId(newItem)}: ${e.stack}`)
             }
         }
 
@@ -381,7 +382,7 @@
         //     accessKey: accessKey,
         // }
         function resolveIpfsMetadata(hash) {
-            return ipfs.cat(hash).then(JSON.parse).catch(e => {
+            return ipfs.cat(hash, { parseJson: true }).catch(e => {
                 throw Error(`Error resolving ipfs metadata: ${e.stack}`)
             })
         }
@@ -437,7 +438,7 @@
                 const events = ['ItemChange', 'ReplyItem']
                 const subscribeInstances = events.map(eventName => {
                     try {
-                        return hashtagContract.events[eventName]({ filter: itemHash }, (err, event) => {
+                        return hashtagContract.events[eventName]({ filter: { itemHash } }, (err, event) => {
                             if (err) console.error('Error receiving event', err)
                             else emitter(event)
                         })
@@ -523,6 +524,7 @@
             notification.timestamp = Date.now();
             yield put(actions.pushNotificationToStore(notification))
             localDb.notification.set(notification)
+            console.log(`Pushing ${notification.type} notification`, { notification })
         }
 
         // Loads notifications from local storage into redux state
@@ -569,6 +571,51 @@
             }
         }
 
+        function* updateChatBefore({ chatObject, itemHash }) {
+            // Compare new chatObject with previous to compute notifications
+            try {
+                // Get previous values
+                const previousChatObject = yield select(state => state.chats[itemHash])
+                let previousMessageCount = 0
+                let previousUsersCount = 0
+                if (previousChatObject) {
+                    previousMessageCount = (previousChatObject.messages || []).length
+                    previousUsersCount = (previousChatObject.accessKeys || []).length
+                } else if (localDb.chat.has(itemHash)) {
+                    const chatCache = localDb.chat.get(itemHash)
+                    previousMessageCount = chatCache.messageCount
+                    previousUsersCount = chatCache.usersCount
+                }
+                // Get new values
+                const yourAddress = yield select(selectors.address)
+                const messageCount = (chatObject.messages || []).filter(message => message.sender !== yourAddress).length
+                const usersCount = (chatObject.accessKeys || []).length
+                // Store new values
+                localDb.chat.set(itemHash, { messageCount, usersCount })
+                if (messageCount > previousMessageCount) {
+                    yield put(actions.pushNotification({
+                        type: 'chat-message',
+                        itemHash,
+                        count: messageCount - previousMessageCount
+                    }))
+                }
+                if (usersCount > previousUsersCount) {
+                    yield put(actions.pushNotification({
+                        type: 'chat-member',
+                        itemHash,
+                        count: usersCount - previousUsersCount
+                    }))
+                }
+            } catch (e) {
+                console.error(`Error computing notifications for chat ${itemHash}: ${e.stack}`)
+            }
+
+            // Forward UPDATE_CHAT action
+            yield put({ type: 'UPDATE_CHAT', chatObject, itemHash })
+        }
+
+
+
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
@@ -578,6 +625,7 @@
                 takeEvery('PUSH_NOTIFICATION', pushNotification),
                 takeEvery('READ_ALL_NOTIFICATIONS', readAllNotifications),
                 takeEvery('READ_NOTIFICATION', readNotification),
+                takeEvery('UPDATE_CHAT_BEFORE', updateChatBefore),
                 fork(loadNotifications),
                 fork(startNotifications)
             ]);

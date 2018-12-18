@@ -1,24 +1,14 @@
 <script>
     (function () {
         // Items initialized in setup.html
-        const {
-            web3Local,
-            web3s,
-            ipfs,
-            ReduxSaga,
-            contractsData,
-            contracts,
-            AppStore
-        } = window;
+        const { web3Local, web3s, ipfs, ReduxSaga, contractsData, contracts, localDb } = window;
+        const { selectors, actions } = window.AppStore
         // ReduxSaga methods
         const { effects, eventChannel, delay } = ReduxSaga;
         const { call, fork, take, put, takeEvery, all, select } = effects;
 
         // Import contract data:
         const { swtToken, hashtagList, simpleDeal } = contractsData;
-
-        // Import actions:
-        const actions = AppStore.actions
 
         /*
          * Selector functions
@@ -72,9 +62,9 @@
                 while (true) {
                     const event = yield take(tokenTxsChannel)
                     const events = [event]
-                    const tokenTxs = handleTransferEvents(events, address, chain)
+                    const tokenTxs = yield call(handleTransferEvents, events, address, chain)
                     yield put({ type: 'UPDATE_TXS', chain, txs: tokenTxs });
-                    console.log('Received tx', chain, tokenTxs)
+                    console.log(`Received token txs on chain ${chain}`, { tokenTxs })
                     // Re-fetch balance
                     yield fork(getTokenBalance, { address, chain })
                     // take(END) will cause the saga to terminate by jumping to the finally block
@@ -100,7 +90,7 @@
             ))
             // Merge transactions
             const events = [...incoming, ...outgoing]
-            return handleTransferEvents(events, address, chain)
+            return await handleTransferEvents(events, address, chain)
         }
 
         async function handleTransferEvents(events, address, chain) {
@@ -217,20 +207,30 @@
 
         function* getBalance({ address, chain }) {
             try {
+                let oldEthBalance = yield select(state => (state.balance[chain] || {}).eth)
                 const ethBalance = yield call(getBalanceAsync, address, chain)
                 yield put({
                     type: 'UPDATE_BALANCE', chain, balance: {
                         eth: ethBalance
                     }
                 });
+                if (!oldEthBalance) oldEthBalance = localDb.balance.get({ chain, token: 'eth' })
                 // PUSH NOTIFICATION. B) WALLET-notification: Balance changed
                 // Check if the balance has actually changed
-                const oldEthBalance = yield select(state => ((state.balance[chain] || {}).balance || {}).eth)
-                if (oldEthBalance && ethBalance && ethBalance !== oldEthBalance) {
-                    yield put(actions.pushNotification({
-                        type: 'balance-update',
-                    }))
+                if ((oldEthBalance || ethBalance) && oldEthBalance !== ethBalance) {
+                    const oldEthBalanceBn = new web3Local.utils.BN(oldEthBalance || 0)
+                    const ethBalanceBn = new web3Local.utils.BN(ethBalance || 0)
+                    const diff = ethBalanceBn.sub(oldEthBalanceBn)
+                    if (!diff.isZero()) {
+                        yield put(actions.pushNotification({
+                            type: 'balance-update',
+                            token: 'eth',
+                            chain,
+                            balanceDifference: diff.toString(10)
+                        }))
+                    }
                 }
+                localDb.balance.set({ chain, token: 'eth', balance: ethBalance })
             } catch (e) {
                 console.error(e);
             }
@@ -238,20 +238,30 @@
 
         function* getTokenBalance({ address, chain }) {
             try {
+                let oldTokenBalance = yield select(state => (state.balance[chain] || {}).swt)
                 const tokenBalance = yield call(getTokenBalanceAsync, address, chain)
                 yield put({
                     type: 'UPDATE_BALANCE', chain, balance: {
                         swt: tokenBalance
                     }
                 });
+                if (!oldTokenBalance) oldTokenBalance = localDb.balance.get({ chain, token: 'swt' })
                 // PUSH NOTIFICATION. B) WALLET-notification: Balance changed
                 // Check if the balance has actually changed
-                const oldTokenBalance = yield select(state => ((state.balance[chain] || {}).balance || {}).swt)
-                if (oldTokenBalance && tokenBalance && tokenBalance !== oldTokenBalance) {
-                    yield put(actions.pushNotification({
-                        type: 'balance-update',
-                    }))
+                if ((oldTokenBalance || tokenBalance) && oldTokenBalance !== tokenBalance) {
+                    const oldTokenBalanceBn = new web3Local.utils.BN(oldTokenBalance || 0)
+                    const tokenBalanceBn = new web3Local.utils.BN(tokenBalance || 0)
+                    const diff = tokenBalanceBn.sub(oldTokenBalanceBn)
+                    if (!diff.isZero()) {
+                        yield put(actions.pushNotification({
+                            type: 'balance-update',
+                            token: 'swt',
+                            chain,
+                            balanceDifference: diff.toString(10)
+                        }))
+                    }
                 }
+                localDb.balance.set({ chain, token: 'swt', balance: tokenBalance })
             } catch (e) {
                 console.error(e);
             }

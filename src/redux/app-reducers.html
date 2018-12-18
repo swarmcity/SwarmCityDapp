@@ -376,6 +376,21 @@
                         }
                     })
                 }
+                case 'UPDATE_REPLY': {
+                    return deepmerge(state, {
+                        hashtags: {
+                            [toLowerCaseSafe(action.hashtagAddress)]: {
+                                items: {
+                                    [action.itemHash]: {
+                                        replies: {
+                                            [toLowerCaseSafe(action.providerAddress)]: action.data
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
                 case 'UPDATE_NEWHASHTAG': {
                     return deepmerge(state, {
                         hashtags: {
