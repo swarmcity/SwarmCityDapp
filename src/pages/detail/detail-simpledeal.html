@@ -213,16 +213,17 @@
               .then(receipt => {
                 console.log("Successfully transacted reply, receipt:", receipt);
                 const storage = JSON.parse(localStorage.getItem('SwarmCity'));
+                const replierAddress = replier.address ? replier.address.toLowerCase() : replier.address;
                 this.dispatch({
                   type: "UPDATE_ITEM",
                   hashtagAddress: hashtag.address,
                   itemHash: this.item.itemHash,
                   data: {
                     replies: {
-                      [replier.address]: {
+                      [replierAddress]: {
                         username: replier.username,
                         avatarHash: storage.user.avatarHash,
-                        replierAddress: replier.address,
+                        replierAddress,
                         message: reply.message
                       }
                     }
@@ -297,8 +298,9 @@
       }
       _showReplyButton(item) {
         if (
-          (item && item.seekerAddress || {}) == this.address ||
-          (item && item.replies && item.replies[this.address])
+          this.address &&
+          (item && (item.seekerAddress || '').toLowerCase()) == (this.address || '').toLowerCase() ||
+          (item && item.replies && this.address && item.replies[this.address.toLowerCase()])
         ) {
           return false;
         } else {
@@ -314,7 +316,7 @@
           && item.providerAddress
           && item.providerAddress == '0x0000000000000000000000000000000000000000'
           && item.seekerAddress
-          && item.seekerAddress == userAddress
+          && item.seekerAddress == userAddress  
         )
       }
 
