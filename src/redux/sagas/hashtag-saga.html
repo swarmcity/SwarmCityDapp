@@ -107,7 +107,7 @@
                         .call();
                     return {
                         numberOfReplies: res.numberOfReplies,
-                        providerAddress: res.providerAddress,
+                        providerAddress: toLowerCaseSafe(res.providerAddress),
                         providerRep: res.providerRep,
                         status: res.status
                     };
@@ -171,7 +171,7 @@
                 itemMetadataHash: event.returnValues.itemMetadataHash,
                 itemHash: event.returnValues.itemHash,
                 itemValue: event.returnValues.itemValue,
-                seekerAddress: event.returnValues.owner, // owner => seeker
+                seekerAddress: toLowerCaseSafe(event.returnValues.owner), // owner => seeker
                 seekerRep: event.returnValues.seekerRep,
                 hashtagAddress: toLowerCaseSafe(event.address), // MUST be here, needed for subsequent fetches
                 // If the item is new the status is 0 and the timestamp is the current
@@ -185,7 +185,7 @@
         function parseItemChangeEvent(event) {
             return {
                 status: event.returnValues.newstatus,
-                providerAddress: event.returnValues.providerAddress,
+                providerAddress: toLowerCaseSafe(event.returnValues.providerAddress),
                 itemHash: event.returnValues.itemHash,
                 hashtagAddress: toLowerCaseSafe(event.address), // MUST be here, needed for subsequent fetches
             }
@@ -503,6 +503,19 @@
          *   - After receiving: resolve replyMetadataHash
          *
          */
+
+        // ########## TEST CODE
+        window.testContractTime = (n) => {
+            const key = `${n} contracts`
+            console.time(key)
+            for (let i = 0; i < n; i++) {
+                const hashtagContract = new web3Local.eth.Contract(
+                    simpleDeal.abi,
+                    "0x6F2c7faFfF86D390bDf2A3ebBbfF18FFbBcB657d"
+                );
+            }
+            console.timeEnd(key)
+        }
 
         function createHashtagSubscriptionChannel(hashtagAddress) {
             const hashtagContract = new web3Local.eth.Contract(
