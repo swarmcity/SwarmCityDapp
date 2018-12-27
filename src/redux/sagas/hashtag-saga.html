@@ -98,18 +98,20 @@
             getItemState: {
                 name: "getItemState",
                 fetchFunction: async item => {
-                    const hashtagContract = new web3Local.eth.Contract(
-                        simpleDeal.abi,
-                        item.hashtagAddress
-                    );
-                    const res = await hashtagContract.methods
-                        .readItemData(item.itemHash)
-                        .call();
+                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, item.hashtagAddress);
+                    const [data, repliers] = await Promise.all([
+                        hashtagContract.methods.readItemData(item.itemHash).call(),
+                        hashtagContract.methods.getItemRepliers(item.itemHash).call()
+                    ])
                     return {
-                        numberOfReplies: res.numberOfReplies,
-                        providerAddress: toLowerCaseSafe(res.providerAddress),
-                        providerRep: res.providerRep,
-                        status: res.status
+                        numberOfReplies: data.numberOfReplies,
+                        providerAddress: toLowerCaseSafe(data.providerAddress),
+                        providerRep: data.providerRep,
+                        status: data.status,
+                        repliers: repliers.map(replierAddress => toLowerCaseSafe(replierAddress)).reduce((obj, replier) => {
+                            obj[replier] = true
+                            return obj
+                        }, {})
                     };
                 }
             },
@@ -124,21 +126,6 @@
                         seekerAvatarHash: res.avatar || res.avatarHash,
                         seekerPublicKey: res.publicKeySeeker,
                         seekerUsername: res.username
-                    };
-                }
-            },
-            getItemRepliers: {
-                name: "getItemRepliers",
-                fetchFunction: async item => {
-                    const hashtagContract = new web3Local.eth.Contract(
-                        simpleDeal.abi,
-                        item.hashtagAddress
-                    );
-                    const res = await hashtagContract.methods
-                        .getItemRepliers(item.itemHash)
-                        .call();
-                    return {
-                        repliers: res
                     };
                 }
             },
@@ -303,10 +290,17 @@
                     }
                 })));
 
+                // If new event update the reply count to trigger a notification safely
+                // ##### numberOfReplies should be incorporated in the reply event (maybe as index or count)
+                if (newEvent) {
+                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
+                    const numberOfReplies = yield call(hashtagContract.methods.getItemRepliesCount(itemHash).call)
+                    yield put(actions.updateItem({ hashtagAddress, itemHash, data: { numberOfReplies }, info: 'From handleReplyItem, numberOfReplies fetch' }))
+                }
+
                 // This is called for old events of newItem.
                 // Check for involved item, and chat
                 // Reply contains { hashtagAddress, itemHash }
-                yield call(checkToAddInvolvedItem, reply)
             } catch (e) {
                 console.error(`Error handling reply of itemHash: ${event.returnValues.itemHash}`, e)
             }
@@ -328,7 +322,7 @@
         async function getHashtagContractData(hashtagAddress) {
             const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             const fetchGenerators = {
-                maintainerAddress: hashtagContract.methods.payoutAddress().call(),
+                maintainerAddress: hashtagContract.methods.payoutAddress().call().then(toLowerCaseSafe),
                 hashtagName: hashtagContract.methods.hashtagName().call(),
                 hashtagMetadataHash: hashtagContract.methods.hashtagMetadataHash().call(),
                 hashtagFee: hashtagContract.methods.hashtagFee().call().then(parseInt),
@@ -420,67 +414,18 @@
                 const fetchGenerators = [
                     itemFetchGenerators.getItemState,
                     itemFetchGenerators.getItemMetadata,
-                    itemFetchGenerators.getItemRepliers,
                     itemFetchGenerators.getTimestamp,
                 ]
                 yield all(fetchGenerators.map(({ name, fetchFunction }) => call(function* () {
                     try {
                         const data = yield call(fetchFunction, item);
-                        yield put(actions.updateItem({ hashtagAddress, itemHash, data }))
+                        yield put(actions.updateItem({ hashtagAddress, itemHash, data, info: `From getItem / ${name}` }))
                     } catch (e) {
                         console.warn(`Error on getItem calling ${name} for item ${printItemId(item)}: ${e.stack}`);
                     }
                 })));
-
-                // This is called for old events of newItem.
-                // Check for involved item, and chat
-                yield call(checkToAddInvolvedItem, item)
-                yield call(checkToOpenChat, item)
             } catch (e) {
                 console.error(`Error on getItem for itemHash ${(item || {}).itemHash}: ${e.stack}`)
-            }
-        }
-
-        function* checkToAddInvolvedItem({ hashtagAddress, itemHash }) {
-            if (!hashtagAddress || !itemHash) {
-                return console.warn(`Can not check if you are involved in this item without a hashtagAddress ${hashtagAddress} and an itemHash ${itemHash}`)
-            }
-            const yourAddress = yield select(selectors.address);
-            if (!yourAddress) {
-                return console.warn(`Can not check if you are involved in this item without your address ${yourAddress}`)
-            }
-            const item = yield select(state => (state.hashtags[hashtagAddress] || {}).items[itemHash]);
-            const maintainerAddress = yield select(state => (state.hashtags[hashtagAddress] || {}).maintainerAddress);
-
-            // Check if you are involved
-            if (item.providerAddress === yourAddress ||
-                item.seekerAddress === yourAddress ||
-                maintainerAddress === yourAddress ||
-                (item.repliers || []).includes(yourAddress)
-            ) {
-                yield put({ type: "CHECK_INVOLVED_ITEM", newItem: item });
-            }
-        }
-
-        function* checkToOpenChat({ hashtagAddress, itemHash }) {
-            if (!hashtagAddress || !itemHash) {
-                return console.warn(`Can not check if you are involved in this item without a hashtagAddress ${hashtagAddress} and an itemHash ${itemHash}`)
-            }
-            const yourAddress = yield select(selectors.address);
-            if (!yourAddress) {
-                return console.warn(`Can not check if you are involved in this item without your address ${yourAddress}`)
-            }
-            const item = yield select(state => (state.hashtags[hashtagAddress] || {}).items[itemHash]);
-            const maintainerAddress = yield select(state => (state.hashtags[hashtagAddress] || {}).maintainerAddress);
-
-            // Check if should open the chat
-            if (((item.status == 1 || item.status == 3) &&
-                (item.providerAddress === yourAddress || item.seekerAddress === yourAddress))
-                || item.status == 3 && yourAddress == maintainerAddress
-            ) {
-                window.dispatchEvent(new CustomEvent("openChat", {
-                    detail: { itemHash, yourAddress }
-                }));
             }
         }
 
@@ -517,46 +462,42 @@
             console.timeEnd(key)
         }
 
-        function createHashtagSubscriptionChannel(hashtagAddress) {
-            const hashtagContract = new web3Local.eth.Contract(
-                simpleDeal.abi,
-                hashtagAddress
-            );
+        // If itemHash is defined, start an itemSubscription
+        function createHashtagSubscriptionChannel(hashtagAddress, itemHash) {
+            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             return eventChannel(emitter => {
                 // Unique place to subscribe to all hashtag relevant events
-                //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
                 //  - ItemChange(indexed itemHash, newstatus, providerAddress)
                 //  - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
-                const events = ["NewItem", "ItemChange", "ReplyItem"];
+                //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
+                //    Only subscribe to newItem if itemHash is not defined
+                const events = ["ItemChange", "ReplyItem", ...(itemHash ? [] : ["NewItem"])];
                 const subscribeInstances = events.map(eventName => {
                     try {
-                        return hashtagContract.events[eventName]((err, event) => {
+                        // If itemHash is defined, apply a filter to subscribe to that itemHash only
+                        const options = itemHash ? { filter: { itemHash } } : {}
+                        return hashtagContract.events[eventName](options, (err, event) => {
                             if (err) console.error("Error receiving event", err);
                             else emitter(event);
                         });
                     } catch (e) {
-                        console.error(
-                            "Error creating subscription to NewItem in " + hashtagAddress
-                        );
+                        console.error("Error creating subscription to NewItem in " + hashtagAddress);
                     }
                 });
 
+                // Demo of how to cancel a subscription externally
                 window.addEventListener("cancel-sub", () => {
                     emitter(END);
                 });
 
-                const unsubscribeFunction = () => {
-                    subscribeInstances.forEach(instance => {
-                        // Ensure that the instance exists
-                        if (instance)
-                            instance.unsubscribe(err => {
-                                if (err) console.error("Error unsubscribing from hashtag", err);
-                                else console.log("Successfully unsubscribed");
-                            });
-                    });
-                };
                 // The subscriber must return an unsubscribe function
-                return unsubscribeFunction;
+                return () => subscribeInstances.forEach(instance => {
+                    // Ensure that each instance exists
+                    if (instance) instance.unsubscribe(err => {
+                        if (err) console.error("Error unsubscribing from hashtag", err);
+                        else console.log("Successfully unsubscribed");
+                    });
+                })
             });
         }
 
@@ -565,7 +506,7 @@
             // Step 1. Store the item info
             console.log("Handling NewItemEvent", event);
             let item = parseNewItemEvent(event, true);
-            yield put(actions.updateItem({ item }));
+            yield put(actions.updateItem({ item, info: 'From handleNewItem' }));
 
             // getItemMetadata
             const { hashtagAddress, itemHash } = item;
@@ -575,36 +516,26 @@
             yield all(fetchGenerators.map(({ name, fetchFunction }) => call(function* () {
                 try {
                     const data = yield call(fetchFunction, item);
-                    yield put(actions.updateItem({ hashtagAddress, itemHash, data }))
+                    yield put(actions.updateItem({ hashtagAddress, itemHash, data, info: `From handleNewItem / ${name}` }))
                 } catch (e) {
                     console.warn(`Error on handleNewItem calling ${name} for item ${printItemId(item)}: ${e.stack}`);
                 }
             })));
-
-            // This is called for new events of newItem. The item must be in status Open
-            // Check for involved item, NOT chat
-            yield call(checkToAddInvolvedItem, item)
         }
 
-        function* handleItemChange(event, hashtagAddress) {
+        function* handleItemChange(event) {
             // ItemChange(indexed itemHash, newstatus, providerAddress)
             // Step 1. Store the item info
             console.log("Handling ItemChangeEvent", event);
             const item = parseItemChangeEvent(event)
-            yield put(actions.updateItem({ item }));
-
-            // This is called for old events of newItem.
-            // Check for involved item, and chat
-            yield call(checkToAddInvolvedItem, item)
-            yield call(checkToOpenChat, item)
+            yield put(actions.updateItem({ item, info: 'From handleItemChange' }));
         }
 
-        function* hashtagSubscription(hashtagAddress) {
+        // If itemHash is defined, start an itemSubscription
+        function* hashtagSubscription(hashtagAddress, itemHash) {
             try {
-                const hashtagSubscriptionChannel = yield call(
-                    createHashtagSubscriptionChannel,
-                    hashtagAddress
-                );
+                if (!hashtagAddress) throw Error('hashtagAddress must be defined to start an item subscription')
+                const hashtagSubscriptionChannel = yield call(createHashtagSubscriptionChannel, hashtagAddress, itemHash);
                 while (true) {
                     // take(END) will cause the saga to terminate by jumping to the finally block
                     let event = yield take(hashtagSubscriptionChannel);
@@ -614,10 +545,10 @@
                     //  - ReplyItem(indexed itemHash, replyMetadataHash, provider)
                     switch (event.event) {
                         case "NewItem":
-                            yield fork(handleNewItem, event, hashtagAddress);
+                            yield fork(handleNewItem, event);
                             break;
                         case "ItemChange":
-                            yield fork(handleItemChange, event, hashtagAddress);
+                            yield fork(handleItemChange, event);
                             break;
                         case "ReplyItem":
                             yield fork(handleReplyItem, event, true);
@@ -643,7 +574,8 @@
         window.AppStore.sagas.push(rootSaga);
 
         // Export other methods
-        window.handleReplyItem = handleReplyItem;
+        window.handleReplyItem = handleReplyItem; // Imported in item-saga.html
+        window.hashtagSubscription = hashtagSubscription; // Imported in notifications-saga.html
 
     }());
 </script>

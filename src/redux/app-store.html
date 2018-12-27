@@ -10,15 +10,19 @@
 
 <script>
     (function () {
+        const notificationsMiddleware = window.notificationsMiddleware
+
         const composeEnhancers = typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
             ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
             : Redux.compose;
         // create the saga middleware
         const createSagaMiddleware = ReduxSaga.default;
         const sagaMiddleware = createSagaMiddleware();
-        const enhancer = composeEnhancers(
-            Redux.applyMiddleware(sagaMiddleware),
-        );
+        // ! ADD MIDDLEWARE HERE !
+        const middleware = [sagaMiddleware]
+        if (notificationsMiddleware) middleware.push(notificationsMiddleware)
+        // Apply middleware
+        const enhancer = composeEnhancers(Redux.applyMiddleware(...middleware));
         const store = Redux.createStore(AppStore.rootReducer, enhancer);
         window.store = store;
         sagaMiddleware.run(AppStore.rootSaga);

@@ -72,6 +72,9 @@
                     };
                 }
             },
+            someItem: (state, hashtagAddress, itemHash) => {
+                return ((state.hashtags[hashtagAddress] || {}).items || {})[itemHash]
+            },
             chats: (state) => state.chats,
             reputation: (state) => state.reputation,
             notificationsCount: (state) => {
@@ -80,7 +83,8 @@
             chat: (state) => {
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
             },
-            notifications: (state) => toArray(state.notifications).sort((a, b) => a.timestamp - b.timestamp)
+            notifications: (state) => toArray(state.notifications).sort((a, b) => a.timestamp - b.timestamp),
+            getMaintainerAddress: (state, hashtagAddress) => (state.hashtags[hashtagAddress] || {}).maintainerAddress
         }
 
         function toArray(obj) {

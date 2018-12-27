@@ -1,6 +1,9 @@
 <script>
     (function () {
 
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
 
         const actions = {
             // yield put(action.updateHashtag({ hashtagAddress, data }));
@@ -12,18 +15,28 @@
             // Accepts that ids are incorporated in the item
             // yield put(action.updateItem({ hashtagAddress, itemHash, data }));
             // yield put(action.updateItem({ item }));
-            updateItem: ({ hashtagAddress, itemHash, data, item }) => ({
+            updateItem: ({ hashtagAddress, itemHash, data, item, info, skipNotification }) => ({
                 type: "UPDATE_ITEM",
                 hashtagAddress: hashtagAddress || item.hashtagAddress,
                 itemHash: itemHash || item.itemHash,
-                data: data || item
+                data: data || item,
+                info, // Use to add debugging metadata. Must be a text string
+                skipNotification // Assign true to avoid triggering notifications
             }),
-            updateReply: ({ hashtagAddress, itemHash, providerAddress, data, reply }) => ({
-                type: "UPDATE_REPLY",
+            // updateItem is gonna be used to trigger notifications in the middleware
+            // To simplify code it will only check UPDATE_ITEM.
+            // So updateReply action will be converted here to an UPDATE_ITEM action
+            updateReply: ({ hashtagAddress, itemHash, providerAddress, data, reply, info }) => ({
+                type: "UPDATE_ITEM",
                 hashtagAddress: hashtagAddress || reply.hashtagAddress,
                 itemHash: itemHash || reply.itemHash,
                 providerAddress: providerAddress || reply.providerAddress,
-                data: data || reply
+                data: {
+                    replies: {
+                        [toLowerCaseSafe(providerAddress || reply.providerAddress)]: data || reply
+                    }
+                },
+                info: `From updateReply / ${info}`
             }),
             readNotification: (id) => ({
                 type: 'READ_NOTIFICATION',
@@ -32,22 +45,11 @@
             readAllNotifications: () => ({
                 type: 'READ_ALL_NOTIFICATIONS'
             }),
-            pushNotification: (notification) => ({
+            pushNotification: (notification, { skipNotification } = {}) => ({
                 type: 'PUSH_NOTIFICATION',
-                notification
-            }),
-            // Use this to push ONLY ONE notification
-            pushNotificationToStore: (notification) => ({
-                type: 'PUSH_NOTIFICATION_TO_STORE',
                 notification,
+                skipNotification
             }),
-            // Use this to push MULTIPLE notifications in an object, 
-            // notifications = { [id]: notification }
-            pushNotificationsToStore: (notifications) => ({
-                type: 'PUSH_NOTIFICATIONS_TO_STORE',
-                notifications,
-            }),
-
             showSpinner: (doShowSpinner) => ({
                 type: doShowSpinner ? 'SHOW_LOADING_SPINNER' : 'LOADING_DONE'
             }),
@@ -71,6 +73,16 @@
                 type: 'ADD_TX',
                 tx
             }),
+            openChat: (itemHash) => ({
+                type: 'OPEN_CHAT',
+                itemHash
+            }),
+            updateChat: ({ itemHash, chatObject, skipNotification }) => ({
+                type: 'UPDATE_CHAT',
+                itemHash,
+                chatObject,
+                skipNotification
+            })
         }
 
         // Export
