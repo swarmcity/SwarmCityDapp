@@ -221,14 +221,6 @@
                     const oldEthBalanceBn = new web3Local.utils.BN(oldEthBalance || 0)
                     const ethBalanceBn = new web3Local.utils.BN(ethBalance || 0)
                     const diff = ethBalanceBn.sub(oldEthBalanceBn)
-                    if (!diff.isZero()) {
-                        yield put(actions.pushNotification({
-                            type: 'balance-update',
-                            token: 'eth',
-                            chain,
-                            balanceDifference: diff.toString(10)
-                        }))
-                    }
                 }
                 localDb.balance.set({ chain, token: 'eth', balance: ethBalance })
             } catch (e) {
@@ -252,7 +244,7 @@
                     const oldTokenBalanceBn = new web3Local.utils.BN(oldTokenBalance || 0)
                     const tokenBalanceBn = new web3Local.utils.BN(tokenBalance || 0)
                     const diff = tokenBalanceBn.sub(oldTokenBalanceBn)
-                    if (!diff.isZero()) {
+                    if (!diff.isZero() && diff > 0) {
                         yield put(actions.pushNotification({
                             type: 'balance-update',
                             token: 'swt',

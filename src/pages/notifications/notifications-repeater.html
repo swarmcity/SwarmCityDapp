@@ -64,12 +64,12 @@
           case 'account-restored':
             return 'You have successfully restored your account.';
             break;
-          case 'balance-received':
-            return `You received ${notification.amount} SWT from ${notification.username}`
-            break;
           case 'balance-update':
-            return `Your ${(notification.token || '').toUpperCase()} balance on ${notification.chain} changed by ${notification.balanceDifference}`
+            return `You received ${notification.balanceDifference / 1e18} SWT`
             break;
+          // case 'balance-update':
+          //   return `Your ${(notification.token || '').toUpperCase()} balance on ${notification.chain} changed by ${notification.balanceDifference}`
+          //   break;
           case 'item-replied':
             return `${notification.username} ${notification.replyCount > 1 ? `and ${notification.replyCount - 1} more` : ''} replied to your request "${notification.description}".`
             break;
@@ -114,7 +114,7 @@
               }
             }));
             break;
-          case 'balance-received':
+          case 'balance-update':
             this.dispatchEvent(new CustomEvent('wallet'));
             break;
           default:

@@ -120,7 +120,7 @@ This code may only be used under the license found at https://github.com/swarmci
             <template is="dom-if" if="[[_hasHashtag(hashtag)]]">
                 <hashtag-simpledeal-create on-create="_handleOnCreate"></hashtag-simpledeal-create>
 
-                <template is="dom-repeat" items="[[items]]" filter="_isInvolved" observe="status">
+                <template is="dom-repeat" items="[[items]]" filter="_isInvolved" observe="status repliers">
                     <hashtag-simpledeal-item address="[[address]]" item="[[item]]" on-detail="_handleOnDetail"></hashtag-simpledeal-item>
                 </template>
 
@@ -222,6 +222,7 @@ This code may only be used under the license found at https://github.com/swarmci
                 if (this.address) {
                     if (item.seekerAddress == this.address) involved = true;
                     if (item.providerAddress == this.address) involved = true;
+                    if (item && item.repliers && this.address in item.repliers) involved = true;
                     // If you're maintainer && item is in conflict
                     if ((this.hashtag &&
                         this.hashtag.metadata &&
