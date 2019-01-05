@@ -83,7 +83,16 @@
             chat: (state) => {
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
             },
-            notifications: (state) => toArray(state.notifications).sort((a, b) => b.timestamp - a.timestamp),
+            notifications: (state) => toArray(state.notifications).sort((a, b) => b.timestamp - a.timestamp).map(notification => {
+                const { description, hashtagAddress, itemHash, avatarHash, username } = notification
+                if ((!description || !avatarHash || !username)) {
+                    const item = ((state.hashtags[notification.hashtagAddress] || {}).items || {})[notification.itemHash] || {}
+                    if (!description) notification.description = item.description
+                    if (!avatarHash) notification.avatarHash = item.seekerAvatarHash
+                    if (!username) notification.username = item.seekerUsername
+                }
+                return notification
+            }),
             getMaintainerAddress: (state, hashtagAddress) => (state.hashtags[hashtagAddress] || {}).maintainerAddress
         }
 
