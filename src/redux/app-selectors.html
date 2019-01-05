@@ -87,9 +87,9 @@
                 const { description, hashtagAddress, itemHash, avatarHash, username } = notification
                 if ((!description || !avatarHash || !username)) {
                     const item = ((state.hashtags[notification.hashtagAddress] || {}).items || {})[notification.itemHash] || {}
-                    if (!description) notification.description = item.description
-                    if (!avatarHash) notification.avatarHash = item.seekerAvatarHash
-                    if (!username) notification.username = item.seekerUsername
+                    if (!description && item.description) notification.description = item.description
+                    if (!avatarHash && item.seekerAvatarHash) notification.avatarHash = item.seekerAvatarHash
+                    if (!username && item.seekerUsername) notification.username = item.seekerUsername
                 }
                 return notification
             }),

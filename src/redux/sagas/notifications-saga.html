@@ -518,7 +518,11 @@
                         }).then(data => {
                             // When an action is dispatched in a middleware, it runs the entire middleware stack
                             // So a notification dispatched from this middleware will be picked up by the notification handler middleware
-                            dispatch(actions.pushNotification({ type, hashtagAddress, itemHash, ...(data || {}) }))
+                            const description = nextItem.description || prevItem.description
+                            const avatarHash = nextItem.seekerAvatarHash || prevItem.seekerAvatarHash
+                            const username = nextItem.seekerUsername || prevItem.seekerUsername
+                            const basicData = { description, avatarHash, username }
+                            dispatch(actions.pushNotification({ type, hashtagAddress, itemHash, ...basicData, ...(data || {}) }))
                         })
                     })
                 }
