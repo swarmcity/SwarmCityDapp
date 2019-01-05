@@ -589,7 +589,7 @@
                 const newTxs = Object.values(action.txs || {})
                     .filter(tx => !tx.outgoing && tx.blockNumber > lastSeenBlock)
                     .sort((a, b) => b.blockNumber - a.blockNumber)
-                localStorage.setItem('lastSeenBlock', newTxs[0].blockNumber);
+                if (newTxs[0]) localStorage.setItem('lastSeenBlock', newTxs[0].blockNumber);
 
                 for (const newTx of newTxs) {
                     dispatch(actions.pushNotification({
