@@ -424,10 +424,10 @@
                     return console.error("Attempting to push an undefined notification, aborting. Action: ", action)
                 }
                 const notification = {
-                    ...action.notification,
+                    timestamp: Date.now(),
                     id: generateNotificationId(action.notification),
+                    ...action.notification,
                     read: false,
-                    timestamp: Date.now()
                 }
                 localDb.notification.set(notification)
                 console.log(`Pushing ${notification.type} notification`, { notification })
@@ -519,10 +519,7 @@
                             // When an action is dispatched in a middleware, it runs the entire middleware stack
                             // So a notification dispatched from this middleware will be picked up by the notification handler middleware
                             const description = nextItem.description || prevItem.description
-                            const avatarHash = nextItem.seekerAvatarHash || prevItem.seekerAvatarHash
-                            const username = nextItem.seekerUsername || prevItem.seekerUsername
-                            const basicData = { description, avatarHash, username }
-                            dispatch(actions.pushNotification({ type, hashtagAddress, itemHash, ...basicData, ...(data || {}) }))
+                            dispatch(actions.pushNotification({ type, hashtagAddress, itemHash, description, ...(data || {}) }))
                         })
                     })
                 }
@@ -576,6 +573,33 @@
                 localDb.chat.set({ ...nextChat, itemHash })
                 // Update action
                 return next({ ...action, chatObject: { ...action.chatObject, nextChat } })
+            }
+
+            if (action.type === 'UPDATE_TXS') {
+                // UPDATE_TXS: chain, txs
+                const { chain, txs } = action
+
+                // =====================================================================
+                // ==========  User token transfer notifications generator  ============
+                // =====================================================================
+
+                // Only not outgoing transactions
+                // Sort them from recent to old
+                // Only the ones newer than the last seen block
+                const lastSeenBlock = localStorage.getItem('lastSeenBlock') || 0
+                const newTxs = Object.values(txs)
+                    .filter(tx => !tx.outgoing && tx.blockNumber > lastSeenBlock)
+                    .sort((a, b) => b.blockNumber - a.blockNumber)
+                localStorage.setItem('lastSeenBlock', newTxs[0].blockNumber);
+
+                for (const newTx of newTxs) {
+                    dispatch(actions.pushNotification({
+                        type: 'balance-received',
+                        tokenAmount: newTx.amount,
+                        senderAddress: newTx.from,
+                        timestamp: newTx.timestamp * 1000
+                    }))
+                }
             }
 
             // Fallback return
