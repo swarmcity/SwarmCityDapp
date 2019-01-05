@@ -233,11 +233,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 })
             }
 
-            _subscribeToChat({ accessKeys, itemHash }) {
+            _subscribeToChat({ accessKeys, itemHash, hashtagAddress }) {
                 return new Promise((resolve, reject) => {
+                    // Store hashtagAddress in the db's chatObject to latter know 
+                    // which hashtag this item belongs to
+                    const info = hashtagAddress ? { hashtagAddress } : {}
                     this.socket.emit('subscribeToChat', {
                         accessKeys,
-                        itemHash
+                        itemHash,
+                        info
                     }, (reply) => {
                         if (reply.response == 200) {
                             resolve(reply.data);
