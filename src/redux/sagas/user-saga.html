@@ -31,10 +31,7 @@
 
                 tokenData = ((contracts || {}).token || {})[chain] || {}
                 if (tokenData.abi.length === 0) throw Error(`Empty ABI for token address ${address} chain ${chain}`)
-                const token = new web3s[chain].eth.Contract(
-                    tokenData.abi,
-                    tokenData.address
-                );
+                const token = new web3s[chain].eth.Contract(tokenData.abi, tokenData.address);
                 const handler = (err, event) => {
                     if (err) console.error(`Error receiving ${chain} token Transfer event`, err)
                     else emitter(event)
@@ -125,18 +122,8 @@
 
                 const txs = yield call(createLogsForDirection, address, chain)
                 yield put({ type: 'UPDATE_TXS', chain, txs });
-
-                // The code below is left as example / reference to add loaders during fetch
-
-                // let result = [1, 2, 3, 4, 5];
-                // yield put(MyApp.actions.setLoadedList(result));
-                // yield put(MyApp.actions.showSpinner(false));
-                // yield put(MyApp.actions.showInfo('List loaded'));
             } catch (e) {
                 console.error(e);
-                // yield put(MyApp.actions.showError('Error while fetching list', e));
-                // yield put(MyApp.actions.clearLoadedList());
-                // yield put(MyApp.actions.showSpinner(false));
             }
         }
 
@@ -209,11 +196,14 @@
             try {
                 let oldEthBalance = yield select(state => (state.balance[chain] || {}).eth)
                 const ethBalance = yield call(getBalanceAsync, address, chain)
-                yield put({
-                    type: 'UPDATE_BALANCE', chain, balance: {
-                        eth: ethBalance
-                    }
-                });
+                // Avoid polluting redux with unnecesary updates. Only update if the balance changed
+                if (ethBalance !== oldEthBalance) {
+                    yield put({
+                        type: 'UPDATE_BALANCE', chain, balance: {
+                            eth: ethBalance
+                        }
+                    });
+                }
                 if (!oldEthBalance) oldEthBalance = localDb.balance.get({ chain, token: 'eth' })
                 // PUSH NOTIFICATION. B) WALLET-notification: Balance changed
                 // Check if the balance has actually changed
@@ -228,6 +218,7 @@
                             chain,
                             balanceDifference: diff.toString(10)
                         }))
+
                     }
                 }
                 localDb.balance.set({ chain, token: 'eth', balance: ethBalance })
@@ -240,11 +231,14 @@
             try {
                 let oldTokenBalance = yield select(state => (state.balance[chain] || {}).swt)
                 const tokenBalance = yield call(getTokenBalanceAsync, address, chain)
-                yield put({
-                    type: 'UPDATE_BALANCE', chain, balance: {
-                        swt: tokenBalance
-                    }
-                });
+                // Avoid polluting redux with unnecesary updates. Only update if the balance changed
+                if (oldTokenBalance !== tokenBalance) {
+                    yield put({
+                        type: 'UPDATE_BALANCE', chain, balance: {
+                            swt: tokenBalance
+                        }
+                    });
+                }
                 if (!oldTokenBalance) oldTokenBalance = localDb.balance.get({ chain, token: 'swt' })
                 // PUSH NOTIFICATION. B) WALLET-notification: Balance changed
                 // Check if the balance has actually changed
