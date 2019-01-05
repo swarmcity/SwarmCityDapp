@@ -575,9 +575,8 @@
                 return next({ ...action, chatObject: { ...action.chatObject, nextChat } })
             }
 
-            if (action.type === 'UPDATE_TXS') {
+            if (action.type === 'UPDATE_TXS' && action.chain && action.chain === 'kovan') {
                 // UPDATE_TXS: chain, txs
-                const { chain, txs } = action
 
                 // =====================================================================
                 // ==========  User token transfer notifications generator  ============
@@ -587,7 +586,7 @@
                 // Sort them from recent to old
                 // Only the ones newer than the last seen block
                 const lastSeenBlock = localStorage.getItem('lastSeenBlock') || 0
-                const newTxs = Object.values(txs)
+                const newTxs = Object.values(action.txs || {})
                     .filter(tx => !tx.outgoing && tx.blockNumber > lastSeenBlock)
                     .sort((a, b) => b.blockNumber - a.blockNumber)
                 localStorage.setItem('lastSeenBlock', newTxs[0].blockNumber);
