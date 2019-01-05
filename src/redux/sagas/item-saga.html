@@ -30,7 +30,7 @@
                     hashtagContract.methods.readItemState(itemHash).call().then(res => {
                         itemData.itemValue = res._itemValue
                         itemData.seekerRep = res._seekerRep
-                        itemData.seekerAddress = res._seekerAddress
+                        itemData.seekerAddress = toLowerCaseSafe(res._seekerAddress)
                         itemData.itemMetadataHash = res._itemMetadataHash
                         itemData.creationBlock = res._creationBlock
                     }).catch(e => {
@@ -131,7 +131,14 @@
             }
         }
 
+        // ===============
+        // Parse functions 
+        // ===============
 
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
+        
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
