@@ -5,6 +5,7 @@ This code may only be used under the license found at https://github.com/swarmci
 -->
 <link rel="import" href="../../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../data/data-location.html">
 
 <!--
     Displays and shared styles only
@@ -14,7 +15,6 @@ This code may only be used under the license found at https://github.com/swarmci
 <link rel="import" href="./hashtag-simpledeal-item.html">
 <link rel="import" href="./hashtag-simpledeal-create.html">
 <link rel="import" href="./hashtag-filter.html">
-<link rel="import" href="../../data/data-location.html">
 
 <dom-module id="hashtag-simpledeal">
     <template>
@@ -28,8 +28,8 @@ This code may only be used under the license found at https://github.com/swarmci
 
             .container {
                 background-image: var(--sc-bg);
-                min-height: calc(100vh - 159px);
-                margin-top: 159px;
+                min-height: calc(100vh - 152px);
+                margin-top: 152px;
                 max-width: 100vw;
             }
 
@@ -38,10 +38,10 @@ This code may only be used under the license found at https://github.com/swarmci
                 @apply --layout-center-justified;
                 @apply --layout-end;
                 background-image: var(--sc-bg);
-                z-index: 11;
+                z-index: 20;
                 position: sticky;
                 position: -webkit-sticky;
-                top: 158px;
+                top: 151px;
                 width: 100%;
                 box-sizing: border-box;
                 padding: 0px 36px 15px 36px;
@@ -102,7 +102,7 @@ This code may only be used under the license found at https://github.com/swarmci
             }
 
             hashtag-filter {
-                margin-top: 232px;
+                margin-top: 225px;
                 position: absolute;
                 z-index: 31;
             }
@@ -133,7 +133,7 @@ This code may only be used under the license found at https://github.com/swarmci
                         </div>
                     </template>
                     <template is="dom-if" if="{{showFilter}}">
-                        <hashtag-filter on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
+                        <hashtag-filter chosen-value="{{chosenValue}}" on-close="_showFilter" on-filter="handleOnfilter"></hashtag-filter>
                     </template>
                 </div>
 
@@ -158,14 +158,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     items: Array,
                     count: Number,
                     showCounter: Boolean,
+                    chosenValue: Number,
                     showFilter: {
                         type: Boolean,
                         value: false,
                     },
-                    userLocation: {
-                        type: Array,
-                        value: [],
-                    },
+                    userLocation: Object,
                     range: {
                         type: Number,
                         value: 0,
@@ -194,25 +192,29 @@ This code may only be used under the license found at https://github.com/swarmci
                         } else this.showCounter = false;
                     }
                 })
-
             }
 
             _filterByRange(item) {
-                if (item
-                    && this.userLocation
-                    && this.userLocation.length >= 1
-                    && this.range
-                    && this.range < 8
-                ) {
-                    if (!item.location || item.location == null) return false
-                    let withinRange = false;
+                if ((!item.location || item.location == null || item.location == undefined) && this.range == 0) {
+                    // We only see worldwide items if the filter is set to worldwide
+                    return true
+                } else if (this.userLatLon && item.location && this.range > 0) {
+                    const userGeoHashes = webpack.locationToGeohashes(this.userLatLon, 7);
                     for (let itemGeohash of item.location) {
-                        for (let userGeohash of this.userLocation) {
-                            if (itemGeohash.startsWith(userGeohash)) return true;
+                        for (let userGeohash of userGeoHashes) {
+                            if (
+                                // We are within the item's range
+                                userGeohash.startsWith(itemGeohash)
+                                // The item's range is within our filter's resolution
+                                && itemGeohash.length >= this.range) {
+                                return true
+                            }
                         }
                     }
+                } else {
+                    return false;
                 }
-                return true
+
             }
 
             _isInvolved(item) {
@@ -259,28 +261,27 @@ This code may only be used under the license found at https://github.com/swarmci
                 }
             }
             handleOnfilter(e) {
-                this.range = e.detail;
+                const range = e.detail
+                this.$.location.getLocation()
+                    .then(({ latitude, longitude }) => {
+                        this.range = range;
+                        this.userLatLon = { lat: latitude, lon: longitude };
+                    })
+                    .catch(err => {
+                        console.error('No geolocation permissions')
+                        this.chosenValue = 8;
+                    })
+
             }
             _showFilter() {
-                navigator.permissions.query({ 'name': 'geolocation' })
-                    .then((permission) => {
-                        if (permission.state != 'granted') {
-                            this.dispatchEvent(new CustomEvent('location'));
-                        } else {
-                            this.$.location.getLocation()
-                                .then(({ latitude, longitude }) => {
-                                    this.userLocation = webpack.locationToGeohashes({ lat: latitude, lon: longitude }, 7)
-                                });
-                            this.showFilter = !this.showFilter;
-                            if (this.showFilter) {
-                                this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-toggled");
-                                this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-untoggled");
-                            } else {
-                                this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-toggled");
-                                this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-untoggled");
-                            }
-                        }
-                    });
+                this.showFilter = !this.showFilter;
+                if (this.showFilter) {
+                    this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-toggled");
+                    this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-untoggled");
+                } else {
+                    this.shadowRoot.querySelector("#filterbox").classList.remove("filterbox-toggled");
+                    this.shadowRoot.querySelector("#filterbox").classList.add("filterbox-untoggled");
+                }
             }
         }
         window.customElements.define(MyHashtagSimpledeal.is, MyHashtagSimpledeal);
