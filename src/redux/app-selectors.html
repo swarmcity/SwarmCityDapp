@@ -78,7 +78,11 @@
             chats: (state) => state.chats,
             reputation: (state) => state.reputation,
             notificationsCount: (state) => {
-                return toArray(state.notifications).length
+                let count = 0;
+                toArray(state.notifications).forEach((notification) => {
+                    if (notification.read == false) count++;
+                })
+                return count;
             },
             chat: (state) => {
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
