@@ -540,40 +540,40 @@
                 }
             }
 
-            if (action.type === 'UPDATE_CHAT') {
-                // UPDATE_CHAT: itemHash, chatObject
-                const { itemHash, chatObject } = action
+            // if (action.type === 'UPDATE_CHAT') {
+            //     // UPDATE_CHAT: itemHash, chatObject
+            //     const { itemHash, chatObject } = action
 
-                // =====================================================================
-                // =================  Chat notifications generator  ====================
-                // =====================================================================
-                const state = getState()
-                const yourAddress = selectors.address(state)
-                // Store only the count with minimal length keys to reduce storage
-                const getChatState = ({ messages, accessKeys, m, u }) => ({
-                    m: m || (messages || []).filter(message => message.sender !== yourAddress).length,
-                    u: u || (accessKeys || []).length
-                })
-                const prevChat = getChatState(state.chats[itemHash])
-                const nextChat = getChatState(chatObject)
+            //     // =====================================================================
+            //     // =================  Chat notifications generator  ====================
+            //     // =====================================================================
+            //     const state = getState()
+            //     const yourAddress = selectors.address(state)
+            //     // Store only the count with minimal length keys to reduce storage
+            //     const getChatState = ({ messages, accessKeys, m, u }) => ({
+            //         m: m || (messages || []).filter(message => message.sender !== yourAddress).length,
+            //         u: u || (accessKeys || []).length
+            //     })
+            //     const prevChat = getChatState(state.chats[itemHash])
+            //     const nextChat = getChatState(chatObject)
 
-                if (nextChat.m > prevChat.m) dispatch(actions.pushNotification({
-                    type: 'chat-message',
-                    itemHash,
-                    count: nextChat.u - prevChat.u
-                }))
+            //     if (nextChat.m > prevChat.m) dispatch(actions.pushNotification({
+            //         type: 'chat-message',
+            //         itemHash,
+            //         count: nextChat.u - prevChat.u
+            //     }))
 
-                if (nextChat.u > prevChat.u) dispatch(actions.pushNotification({
-                    type: 'chat-member',
-                    itemHash,
-                    count: nextChat.u - prevChat.u
-                }))
+            //     if (nextChat.u > prevChat.u) dispatch(actions.pushNotification({
+            //         type: 'chat-member',
+            //         itemHash,
+            //         count: nextChat.u - prevChat.u
+            //     }))
 
-                // Update localStorage
-                localDb.chat.set({ ...nextChat, itemHash })
-                // Update action
-                return next({ ...action, chatObject: { ...action.chatObject, nextChat } })
-            }
+            //     // Update localStorage
+            //     localDb.chat.set({ ...nextChat, itemHash })
+            //     // Update action
+            //     return next({ ...action, chatObject: { ...action.chatObject, nextChat } })
+            // }
 
             if (action.type === 'UPDATE_TXS' && action.chain && action.chain === 'kovan') {
                 // UPDATE_TXS: chain, txs
