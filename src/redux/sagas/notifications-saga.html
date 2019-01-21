@@ -436,11 +436,19 @@
 
             // UPDATE NOTIFICATION ON LOCAL STORAGE
             function readNotification(notification) {
-                if (notification) localDb.notification.set({ ...notification, read: true })
-                else console.warn(`Notification id ${id} not found`)
+                if (notification && typeof notification === 'object')
+                    localDb.notification.set({ ...notification, read: true })
+                else console.warn('notification object is not defined on readNotification')
             }
             if (action.type === 'READ_NOTIFICATION') {
-                readNotification(localDb.notification.get(id))
+                // Make sure the notification is properly defined
+                if (!action.id) {
+                    console.warn('action.id is not defined on READ_NOTIFICATION')
+                } else {
+                    const _notification = localDb.notification.get({ id: action.id })
+                    if (!_notification) console.warn(`notification by id ${action.id} is not found on localDb`)
+                    else readNotification(_notification)
+                }
                 return next(action)
             }
             if (action.type === 'READ_ALL_NOTIFICATIONS') {
