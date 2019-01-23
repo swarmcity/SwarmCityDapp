@@ -269,14 +269,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     placeholder="../images/defaultavatar.png" on-tap="_toUserReputation">
                 </iron-image>
 
-                <template is="dom-if" if="[[_isSeeker(item)]]">
+                <template is="dom-if" if="[[_isSeeker(item, address)]]">
                     <div id="seeker" class="seeker-info seeker-owner horizontal" on-tap="_toUserReputation">
                         <div class="truncate">[[item.seekerUsername]]</div>&nbsp;·
                         [[item.seekerRep]]
                     </div>
                 </template>
 
-                <template is="dom-if" if="[[!_isSeeker(item)]]">
+                <template is="dom-if" if="[[!_isSeeker(item, address)]]">
                     <div id="seeker" class="seeker-info horizontal" on-tap="_toUserReputation">
                         <div class="truncate">[[item.seekerUsername]]</div>&nbsp;·
                         [[item.seekerRep]]
@@ -368,8 +368,8 @@ This code may only be used under the license found at https://github.com/swarmci
             * @param {Object} hashtagItem the hashtagItem (request)
             * @return {Boolean} true when user owns this request
             */
-            _isSeeker(item) {
-                return (item && item.seekerAddress && this.address && item.seekerAddress == this.address);
+            _isSeeker(item, address) {
+                return (item && item.seekerAddress && address && item.seekerAddress == address);
             }
 
             makeRequest(method, url, done) {

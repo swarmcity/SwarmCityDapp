@@ -10,7 +10,7 @@
 
 <!-- Displays and shared styles only -->
 
-<dom-module id="notifications-notification">
+<dom-module id="notifications-notification-archive">
   <template>
     <style include="shared-styles">
       :host {
@@ -71,20 +71,17 @@
         width: 25px;
       }
 
-      .dot {
-        margin-top: 18px;
-        min-width: 8px;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
+      .trash {
+        @apply --xmark-grey3b-small;
       }
 
-      .dot-read {
-        background-color: var(--sc-grey2);
-      }
 
-      .dot-unread {
-        background-color: var(--sc-blue);
+      @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+      only screen and (min--moz-device-pixel-ratio: 1.5),
+      only screen and (min-resolution: 240dpi) {
+        .trash {
+          @apply --retina;
+        }
       }
     </style>
     <iron-media-query query="(min-width: 600px)" query-matches="{{wide}}"></iron-media-query>
@@ -97,42 +94,24 @@
         <div id="text" class="text text-unread">[[message]]
         </div>
       </div>
-      <div id="dot" class="dot dot-unread"></div>
+      <div class="trash"></div>
     </div>
   </template>
   <script>
-    class MyNotificationsNotification extends (new ReduxMixin(
+    class MyNotificationsNotificationArchive extends (new ReduxMixin(
       Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
     )) {
       static get is() {
-        return "notifications-notification";
+        return "notifications-notification-archive";
       }
       static get properties() {
         return {
           date: String,
           message: String,
           avatarHash: String,
-          read: {
-            type: Boolean,
-            observer: '_read',
-          },
         };
       }
-
-      _read() {
-        if (this.read) {
-          this.$.dot.classList.remove('dot-unread')
-          this.$.dot.classList.add('dot-read')
-          this.$.text.classList.remove('text-unread')
-          this.$.text.classList.add('text-read')
-        } else {
-          this.$.dot.classList.add('dot-unread')
-          this.$.dot.classList.remove('dot-read')
-          this.$.text.classList.add('text-unread')
-          this.$.text.classList.remove('text-read')
-        }
-      }
     }
-    window.customElements.define(MyNotificationsNotification.is, MyNotificationsNotification);
+    window.customElements.define(MyNotificationsNotificationArchive.is, MyNotificationsNotificationArchive);
   </script>
 </dom-module>

@@ -161,12 +161,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     this._subscribeToChat({
                         itemHash,
                     })
-                    .then(() => {
-                        console.log('Successfully joined chat channel for item: ', itemHash)
-                    })
-                    .catch(err => {
-                        console.log('Error instantiating chat channel:', err)
-                    });
+                        .then(() => console.log('Successfully joined chat channel for item: ', { itemHash }))
+                        .catch(e => console.error(`Error instantiating chat channel for itemHash ${itemHash}: ${e.stack}`));
                 }.bind(this), false);
             }
 
@@ -237,11 +233,15 @@ This code may only be used under the license found at https://github.com/swarmci
                 })
             }
 
-            _subscribeToChat({ accessKeys, itemHash}) {
+            _subscribeToChat({ accessKeys, itemHash, hashtagAddress }) {
                 return new Promise((resolve, reject) => {
+                    // Store hashtagAddress in the db's chatObject to latter know 
+                    // which hashtag this item belongs to
+                    const info = hashtagAddress ? { hashtagAddress } : {}
                     this.socket.emit('subscribeToChat', {
-                        accessKeys, 
-                        itemHash
+                        accessKeys,
+                        itemHash,
+                        info
                     }, (reply) => {
                         if (reply.response == 200) {
                             resolve(reply.data);

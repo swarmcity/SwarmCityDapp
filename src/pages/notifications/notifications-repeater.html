@@ -8,6 +8,7 @@
 
 <!-- Displays and shared styles only -->
 <link rel="import" href="./notifications-notification.html" />
+<link rel="import" href="./notifications-notification-archive.html" />
 <link rel="import" href="../../displays/display-divider.html" />
 
 <dom-module id="notifications-repeater">
@@ -21,7 +22,6 @@
         @apply --layout-vertical;
         background-image: var(--sc-bg);
         height: 100%;
-        min-height: 100vh;
         box-sizing: border-box;
         padding-top: 100px;
       }
@@ -37,10 +37,22 @@
       }
     </style>
     <div id="container" class="container">
-      <template is="dom-repeat" items="[[notifications]]" as="notification">
-        <notifications-notification class="notification" date="[[_formatDate(notification.timestamp)]]" message="[[_formatMessage(notification)]]"
-          avatar-hash="[[notification.avatarHash]]" read="[[notification.read]]" on-tap="_route"></notifications-notification>
-        <display-divider></display-divider>
+
+      <template is="dom-if" if="{{!archive}}">
+        <template is="dom-repeat" items="[[notifications]]" as="notification">
+          <notifications-notification class="notification" date="[[_formatDate(notification.timestamp)]]" message="[[_formatMessage(notification)]]"
+            avatar-hash="[[notification.avatarHash]]" read="[[notification.read]]" on-tap="_route"></notifications-notification>
+          <display-divider></display-divider>
+        </template>
+      </template>
+
+      <template is="dom-if" if="{{archive}}">
+        <template is="dom-repeat" items="[[notifications]]" as="notification">
+          <notifications-notification-archive class="notification" date="[[_formatDate(notification.timestamp)]]"
+            message="[[_formatMessage(notification)]]" avatar-hash="[[notification.avatarHash]]" read="[[notification.read]]"
+            on-tap="_route"></notifications-notification-archive>
+          <display-divider></display-divider>
+        </template>
       </template>
     </div>
   </template>
@@ -65,10 +77,17 @@
             return 'You have successfully restored your account.';
             break;
           case 'balance-received':
-            return `You received ${notification.amount} SWT from ${notification.username}`
+            return `You received ${(notification.tokenAmount / 1e18).toFixed(2)} SWT from 
+              ${notification.senderAddress === '0x0000000000000000000000000000000000000000' ? 'Reserves' : notification.senderAddress}`
             break;
+          case 'balance-update':
+            return `You received ${(notification.balanceDifference / 1e18).toFixed(2)} SWT`
+            break;
+          // case 'balance-update':
+          //   return `Your ${(notification.token || '').toUpperCase()} balance on ${notification.chain} changed by ${notification.balanceDifference}`
+          //   break;
           case 'item-replied':
-            return `${notification.repliers.length == 1 ? notification.username : notification.repliers.length + ' different people'} replied to your request "${notification.description}".`
+            return `${notification.username} ${notification.replyCount > 1 ? `and ${notification.replyCount - 1} more` : ''} replied to your request "${notification.description}".`
             break;
           case 'item-selected':
             return `You were selected by ${notification.username} for "${notification.description}".`
@@ -89,14 +108,18 @@
             return `"${notification.description}" was cancelled.`
             break;
           case 'chat-message':
-            return `New chat message for "${notification.description}".`
+            return (notification.count > 1 ? `${notification.count} new chat messages` : 'A new chat message') + ` for "${notification.description}".`;
             break;
           case 'chat-member':
-            return `${notification.username} was added to the chat.`;
+            return (notification.count > 1 ? `${notification.count} new members were` : 'A new member was') + ' added to the chat.';
             break;
         }
       }
       _route(e) {
+        this.dispatch({
+          type: "READ_NOTIFICATION",
+          action: e.model.__data.notification
+        });
         switch (e.model.__data.notification.type) {
           case 'account-created':
           case 'account-restored':
@@ -111,6 +134,7 @@
               }
             }));
             break;
+          case 'balance-update':
           case 'balance-received':
             this.dispatchEvent(new CustomEvent('wallet'));
             break;

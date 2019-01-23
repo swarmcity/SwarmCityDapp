@@ -10,7 +10,7 @@
         let storage = JSON.parse(localStorage.getItem('SwarmCity'));
 
         if (storage && storage.keyStore && storage.keyStore.address) {
-            publicKey = storage.keyStore.address;
+            publicKey = storage.keyStore.address.toLowerCase();
         } else {
             publicKey = null;
         }
@@ -31,100 +31,6 @@
             publicKey: publicKey,
             chats: {},
             confirmedTx: [],
-            notifications: {
-                '1544214026153': {
-                    read: false,
-                    type: 'account-created',
-                    avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
-                    timestamp: '1544214026153'
-                },
-                '1544218037253': {
-                    read: false,
-                    type: 'account-restored',
-                    avatarHash: 'QmT8Wk856PutpgkbPZ1i4gqo5LajM4oCkciyK2ZZScQjqL',
-                    timestamp: '1544218037253',
-                },
-                '1544208037253': {
-                    read: false,
-                    type: 'balance-received',
-                    avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
-                    username: 'Crystal',
-                    amount: '25',
-                    timestamp: '1544208037253'
-                },
-                '1544202037253': {
-                    read: false,
-                    type: 'item-replied',
-                    avatarHash: 'QmQfvtF2NnDPT1zkYJXE9ekKYcRKifVMjNzzmpvU1u8JbY',
-                    username: 'Tom',
-                    description: 'A ride to the hospital, quick!',
-                    timestamp: '1544202037253'
-                },
-                '1543208037253': {
-                    read: false,
-                    type: 'item-selected',
-                    avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
-                    username: 'Brenda',
-                    description: 'A ride to the coffee shop on 3rd and Grand Av',
-                    timestamp: '1543208037253'
-                },
-                '1544222037253': {
-                    read: false,
-                    type: 'item-funded',
-                    avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
-                    username: 'Crystal',
-                    description: 'A good joke to tell my mom',
-                    timestamp: '1544222037253'
-                },
-                '1544106037223': {
-                    read: false,
-                    type: 'item-paid',
-                    avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
-                    username: 'Crystal',
-                    description: 'A good joke to tell my dad',
-                    timestamp: '1544106037223'
-                },
-                '1544208037213': {
-                    read: false,
-                    type: 'item-conflict',
-                    avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
-                    username: 'Crystal',
-                    description: 'A good joke to tell my neighbor',
-                    timestamp: '1544208037213'
-                },
-                '1544208037133': {
-                    read: false,
-                    type: 'item-declined',
-                    avatarHash: 'QmQfvtF2NnDPT1zkYJXE9ekKYcRKifVMjNzzmpvU1u8JbY',
-                    username: 'Tom',
-                    description: 'Drive me from point A to point B',
-                    timestamp: '1544208037133'
-                },
-                '1544208037113': {
-                    read: false,
-                    type: 'item-cancelled',
-                    avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
-                    username: 'Brenda',
-                    description: 'Elect me as president of the USA',
-                    timestamp: '1544208037113'
-                },
-                '1544208026253': {
-                    read: false,
-                    type: 'chat-message',
-                    avatarHash: 'QmRyZfiCv31mbAYen3VCTuzTEhaXHqWabFdWzVH8ii4Wn2',
-                    username: 'Brenda',
-                    description: 'Elect me as president of the USA',
-                    timestamp: '1544208026253'
-                },
-                '1544208015253': {
-                    read: false,
-                    type: 'chat-member',
-                    avatarHash: 'QmbREHR1MYhEYUKsKffGYjtpR1PMRNhFpWaWHvNFrdb5Nh',
-                    username: 'Crystal',
-                    description: 'Elect me as president of the USA',
-                    timestamp: '1544208015253'
-                }
-            },
             shownTx: [],
             language: 'en',
             fx: {
@@ -163,6 +69,17 @@
         function toLowerCaseSafe(s) {
             return s ? s.toLowerCase() : s
         }
+
+        /** 
+         * @param {Array} array of objects: [ {id: 1}, {id: 2} ]
+         * @param {Function} keyGetter: (item) => item.id
+         * @return {Object} resulting object: { 1: {id: 1}, 2: {id: 2} }
+         */
+        const arrayToObject = (array, keyGetter) =>
+            array.reduce((obj, item) => {
+                obj[keyGetter(item)] = item
+                return obj
+            }, {})
 
         const reducer = function (state = initialState, action) {
             // console.log('NEW Top reducer: ', action)
@@ -407,12 +324,16 @@
                         }
                     })
                 }
+                // Do only a SHALLOW merge, some chatObject properties are array that need to be overwritten
                 case 'UPDATE_CHAT': {
                     return {
                         ...state,
                         chats: {
                             ...state.chats,
-                            [action.itemHash]: action.chatObject
+                            [action.itemHash]: {
+                                ...(state.chats[action.itemHash] || {}),
+                                ...action.chatObject
+                            }
                         }
                     }
                 }
@@ -423,17 +344,36 @@
                         }
                     })
                 }
-                case 'PUSH_NOTIFICATION_TO_STORE': {
+                // Accepts one notifications or multiple
+                // VALID: action.notification = <notification object>
+                // VALID: action.notification = [ <notification object 1>, <notification object 2> ]
+                case 'PUSH_NOTIFICATION': {
                     return deepmerge(state, {
-                        notifications: {
-                            [action.notification.id]: action.notification
-                        }
+                        notifications: arrayToObject(
+                            Array.isArray(action.notification) ? action.notification : [action.notification],
+                            notification => notification.id
+                        )
                     })
                 }
-                case 'PUSH_NOTIFICATIONS_TO_STORE': {
+                // Gets an array of all notification ids and create an object = 
+                //   { id1: {read: true}, id2: {read: true} }
+                // which is merged with the whole notifications object
+                case 'READ_ALL_NOTIFICATIONS': {
                     return deepmerge(state, {
-                        notifications: action.notifications
-                    })
+                        notifications: Object.keys(state.notifications).reduce((obj, id) => {
+                            obj[id] = { read: true }
+                            return obj
+                        }, {})
+                    });
+                }
+                // If the notification does not exist, do not modify state
+                case 'READ_NOTIFICATION': {
+                    return !(action.id in state.notifications) ? state :
+                        deepmerge(state, {
+                            notifications: {
+                                [action.id]: { read: true }
+                            }
+                        })
                 }
                 default: {
                     return state
@@ -441,6 +381,7 @@
 
             }
         };
+
         if (!window.AppStore) window.AppStore = {}
         window.AppStore.rootReducer = reducer
     }());

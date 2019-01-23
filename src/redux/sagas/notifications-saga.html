@@ -1,5 +1,3 @@
-<link rel="import" href="./handleReplyItem.html">
-
 <script>
     (function () {
         // Items initialized in setup.html
@@ -12,8 +10,8 @@
         // Import contract data:
         const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
 
-        // Import methods
-        const { handleReplyItem } = window;
+        // Import handlers
+        const { hashtagSubscription } = window
 
         const itemStatusIs = {
             open: (item) => item.status == 0,
@@ -21,13 +19,15 @@
             done: (item) => item.status == 2,
             disputed: (item) => item.status == 3,
             resolved: (item) => item.status == 4,
-            cancelled: (item) => item.status == 5
+            cancelled: (item) => item.status == 5,
+            // Special state. Non-existent in the contract
+            notActive: (item) => item.status == 2 || item.status == 4 || item.status == 5
         }
 
         const changedItem = {
             status: (item, newItem) => newItem.status !== item.status,
             providerAddress: (item, newItem) => newItem.providerAddress !== item.providerAddress,
-            numberOfReplies: (item, newItem) => newItem.numberOfReplies !== item.numberOfReplies,
+            numberOfReplies: (item, newItem) => String(newItem.numberOfReplies || 0) !== String(item.numberOfReplies || 0),
         }
 
         const youAre = {
@@ -39,7 +39,13 @@
 
         const isAddress = web3Local.utils.isAddress
         // Supports "0x0000000000000000000000000000000000000000" and "0x0"
-        const isZeroAddress = (address) => parseInt(address) === 0
+        // Assume null is a zero address too
+        const isZeroAddress = (address) => parseInt(address || 0) === 0
+
+        // Make sure there are no errors when generating error messages
+        function printItemId(item = {}) {
+            return `${item.hashtagAddress}/${item.itemHash}`
+        }
 
         // Crawl missing notifications
         // - Reference by blockNumber to signal the 24 hours, 
@@ -134,22 +140,23 @@
             // already selected someone (item status = 0)
             {
                 type: 'item-replied',
-                condition: (item, newItem, yourAddress) =>
-                    newItem.numberOfReplies > 0
-                    && changedItem.numberOfReplies(item, newItem)
-                    && youAre.seeker(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
-                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, newItem.hashtagAddress);
-                    const newReplies = await hashtagContract.methods.getItemReplies(newItem.itemHash).call()
-                        .then(replies => replies.slice(item.numberOfReplies, newItem.numberOfReplies))
-                    const repliers = await Promise.all(newReplies.map(replyMetadataHash =>
-                        resolveIpfsMetadata(replyMetadataHash).catch(e => {
-                            console.warn(`Error resolving ipfs metadata for reply: ${e.stack}`, item)
-                            return {}
-                        }).then(({ avatarHash, username }) => ({ avatarHash, username }))
-                    ))
-                    // all repliers + avatarHash and username of the LAST replier
-                    return { repliers, ...(repliers[repliers.length - 1] || {}) }
+                condition: (prevItem, nextItem, yourAddress) =>
+                    nextItem.numberOfReplies > 0
+                    && changedItem.numberOfReplies(prevItem, nextItem)
+                    && itemStatusIs.open(nextItem)
+                    && youAre.seeker(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
+                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, nextItem.hashtagAddress);
+                    const lastReplyMetadataHash = await hashtagContract.methods.getItemReply(nextItem.itemHash, nextItem.numberOfReplies - 1).call()
+                    const lastReply = await resolveIpfsMetadata(lastReplyMetadataHash).catch(e => {
+                        console.warn(`Error resolving ipfs metadata for reply: ${e.stack}`, prevItem)
+                        return {}
+                    })
+                    return {
+                        avatarHash: lastReply.avatarHash,
+                        username: lastReply.username,
+                        replyCount: nextItem.numberOfReplies - (prevItem.numberOfReplies || 0)
+                    }
                 }
             },
             // > item-selected
@@ -157,12 +164,16 @@
             // You were selected by ${notification.username} for "${notification.description}".
             {
                 type: 'item-selected',
-                condition: (item, newItem, yourAddress) =>
-                    changedItem.providerAddress(item, newItem)
-                    && youAre.provider(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
+                condition: (prevItem, nextItem, yourAddress) =>
+                    changedItem.providerAddress(prevItem, nextItem)
+                    && itemStatusIs.open(nextItem)
+                    && youAre.provider(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
                     // avatarHash and username of the seeker
-                    return getSeekerUserInfo(newItem)
+                    return {
+                        avatarHash: nextItem.seekerAvatarHash || prevItem.seekerAvatarHash,
+                        username: nextItem.seekerUsername || prevItem.seekerUsername,
+                    }
                 }
             },
             // > item-funded
@@ -170,16 +181,16 @@
             // ${notification.username} accepted and funded "${notification.description}". 
             {
                 type: 'item-funded',
-                condition: (item, newItem, yourAddress) =>
-                    changedItem.status(item, newItem)
-                    && itemStatusIs.funded(newItem)
-                    && youAre.seeker(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
+                condition: (prevItem, nextItem, yourAddress) =>
+                    changedItem.status(prevItem, nextItem)
+                    && itemStatusIs.funded(nextItem)
+                    && youAre.seeker(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
                     // The provider info is stored in the IPFS metadata of the reply
                     return await getUserInfoFromReply({
-                        itemHash: newItem.itemHash,
-                        hashtagAddress: newItem.hashtagAddress,
-                        userAddress: newItem.providerAddress
+                        itemHash: nextItem.itemHash,
+                        hashtagAddress: nextItem.hashtagAddress,
+                        userAddress: nextItem.providerAddress
                     })
                 }
             },
@@ -188,13 +199,16 @@
             // You have been paid for "${notification.description}".
             {
                 type: 'item-paid',
-                condition: (item, newItem, yourAddress) =>
-                    changedItem.status(item, newItem)
-                    && itemStatusIs.done(newItem)
-                    && youAre.provider(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
+                condition: (prevItem, nextItem, yourAddress) =>
+                    changedItem.status(prevItem, nextItem)
+                    && itemStatusIs.done(nextItem)
+                    && youAre.provider(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
                     // avatarHash and username of the seeker
-                    return getSeekerUserInfo(newItem)
+                    return {
+                        avatarHash: nextItem.seekerAvatarHash || prevItem.seekerAvatarHash,
+                        username: nextItem.seekerUsername || prevItem.seekerUsername,
+                    }
                 }
             },
             // > item-conflict
@@ -202,13 +216,16 @@
             // seeker or maintainer. "${notification.description}" was put into conflict.
             {
                 type: 'item-conflict',
-                condition: (item, newItem, yourAddress) =>
-                    changedItem.status(item, newItem)
-                    && itemStatusIs.disputed(newItem.status)
-                    && youAre.providerOrSeeker(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
+                condition: (prevItem, nextItem, yourAddress) =>
+                    changedItem.status(prevItem, nextItem)
+                    && itemStatusIs.disputed(nextItem)
+                    && youAre.providerOrSeeker(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
                     // avatarHash and username of the seeker
-                    return getSeekerUserInfo(newItem)
+                    return {
+                        avatarHash: nextItem.seekerAvatarHash || prevItem.seekerAvatarHash,
+                        username: nextItem.seekerUsername || prevItem.seekerUsername,
+                    }
                 }
             },
             // > item-declined
@@ -217,18 +234,19 @@
             // {notification.username} declined your deal "${notification.description}".
             {
                 type: 'item-declined',
-                condition: (item, newItem, yourAddress) =>
-                    changedItem.providerAddress(item, newItem)
-                    && isAddress(item.providerAddress)        // only if it went from a valid address
-                    && isZeroAddress(newItem.providerAddress) // to the zero address
-                    && youAre.seeker(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
+                condition: (prevItem, nextItem, yourAddress) =>
+                    changedItem.providerAddress(prevItem, nextItem)
+                    && isAddress(prevItem.providerAddress)        // only if it went from a valid address
+                    && isZeroAddress(nextItem.providerAddress) // to the zero address
+                    && itemStatusIs.open(nextItem)
+                    && youAre.seeker(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
                     // The selectee info is stored in the IPFS metadata of the reply
                     // This request is likely to fail if the previous state did not contain the providerAddress
                     return await getUserInfoFromReply({
-                        itemHash: item.itemHash,
-                        hashtagAddress: item.hashtagAddress,
-                        userAddress: item.providerAddress
+                        itemHash: prevItem.itemHash,
+                        hashtagAddress: prevItem.hashtagAddress,
+                        userAddress: prevItem.providerAddress
                     }).catch(() => { })
                 }
             },
@@ -237,138 +255,19 @@
             // "${notification.description}" was cancelled.
             {
                 type: 'item-cancelled',
-                condition: (item, newItem, yourAddress) =>
-                    changedItem.status(item, newItem)
-                    && itemStatusIs.cancelled(newItem)
-                    && youAre.providerOrSeeker(newItem, yourAddress),
-                notificationData: async (item, newItem) => {
+                condition: (prevItem, nextItem, yourAddress) =>
+                    changedItem.status(prevItem, nextItem)
+                    && itemStatusIs.cancelled(nextItem)
+                    && youAre.providerOrSeeker(nextItem, yourAddress),
+                notificationData: async (prevItem, nextItem) => {
                     // avatarHash and username of the seeker
-                    return getSeekerUserInfo(newItem)
+                    return {
+                        avatarHash: nextItem.seekerAvatarHash || prevItem.seekerAvatarHash,
+                        username: nextItem.seekerUsername || prevItem.seekerUsername,
+                    }
                 }
             }
         ]
-
-        function* startNotifications({ } = {}) {
-            try {
-                // Step 1. Load previous state of items involved from local storage:
-                // involvedItemKeys = ['involvedItem-0x1234-0xabcd', 'involvedItem-0x2345-0xbcde']
-                const involvedItems = localDb.item.getAll()
-                console.log(`Fetching new notifications of ${involvedItems.length} involved items`, { involvedItems })
-                const notificationsArray = yield all(involvedItems.map(item => call(function* () {
-                    try {
-                        return yield call(checkInvolvedItem, { item })
-                    } catch (e) {
-                        console.error(`Error checking involved item ${item.hashtagAddress}/${item.itemHash}: ${e.stack}`)
-                    }
-                })))
-                // notificationsArray is an array of arrays. Spread them to show all new notifications in the terminal
-                const notifications = notificationsArray.reduce((a, c) => [...a, ...c], [])
-                console.log(`Fetched new notifications of involvedItemKeys`, notifications)
-
-                // Step 2. For each item, call its contract to check the current state
-                //   - readItemData() -> status, providerAddress, numberOfReplies
-
-                // Step 3. If the state has changed, fire a notification and update the state
-            } catch (e) {
-                console.error(`Error on startNotifications: ${e.message}`, e)
-            }
-        }
-
-        /**
-         * Fetches the new item state and stores the blockNumber corresponding to that state
-         * 
-         * @param {Object} item
-         * @returns {Object} newItem
-         */
-        async function getNewItem(item) {
-            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, item.hashtagAddress);
-            // const [newState, blockNumber] = await Promise.all([
-            //     hashtagContract.methods.readItemData(item.itemHash).call(),
-            //     web3Local.eth.getBlockNumber()
-            // ])
-            const newState = await hashtagContract.methods.readItemData(item.itemHash).call()
-            return {
-                ...item,
-                numberOfReplies: newState.numberOfReplies,
-                providerAddress: newState.providerAddress,
-                status: newState.status,
-            }
-        }
-
-        // Checks involved item
-        // 1. Compare current state with state from the smart contract
-        // 2. Update currect state
-        // 3. If different check if a notification needs to be dispatched
-        function* checkInvolvedItem({ item, newItem }) {
-            try {
-                if (!newItem && !item) {
-                    throw Error(`Must provide either "item" or "newItem" to checkInvolvedItem`)
-                }
-                // If old item is provided, fetch new state
-                if (!newItem) {
-                    newItem = yield call(getNewItem, item)
-                }
-                // If new item is provided, get the old from the db, or generate a new one empty
-                if (!item) {
-                    if (localDb.item.has(newItem.hashtagAddress, newItem.itemHash)) {
-                        item = localDb.item.get(newItem.hashtagAddress, newItem.itemHash)
-                    } else {
-                        item = {
-                            ...newItem,
-                            numberOfReplies: 0,
-                            status: 0,
-                            providerAddress: null
-                        }
-                    }
-                }
-                // Store newItem
-                localDb.item.set(newItem)
-
-                const yourAddress = yield select(selectors.address)
-                const notifications = []
-                yield all(notificationGenerators.map(({ type, condition, notificationData }) => call(function* () {
-                    try {
-                        // If the notification's condition is not valid, return
-                        if (!condition(item, newItem, yourAddress)) return
-                        // Fetch notification's extra data
-                        let data
-                        try {
-                            data = yield call(notificationData, item, newItem)
-                        } catch (e) {
-                            console.warn(`Error getting notification data for involved item ${newItem.hashtagAddress}/${newItem.itemHash} for notification ${type}: ${e.stack}`)
-                        }
-                        // Push notification to state. Append type and basic info
-                        const notification = { type, ...basicItemInfo(newItem), ...(data || {}) }
-                        yield call(pushNotification, { notification })
-                        notifications.push(notification)
-                    } catch (e) {
-                        console.error(`Error checking involved item ${newItem.hashtagAddress}/${newItem.itemHash} for notification ${type}: ${e.stack}`)
-                    }
-                })))
-                return notifications
-            } catch (e) {
-                console.error(`Error checking involved item ${newItem.hashtagAddress}/${newItem.itemHash}: ${e.stack}`)
-            }
-        }
-
-        /**
-         * Utility methods
-         */
-
-        function basicItemInfo(item) {
-            return {
-                description: item.description,
-                hashtagAddress: item.hashtagAddress,
-                itemHash: item.itemHash
-            }
-        }
-
-        function getSeekerUserInfo(item) {
-            return {
-                avatarHash: item.seekerAvatarHash,
-                username: item.seekerUsername,
-            }
-        }
 
         // Reply metadata
         // {
@@ -379,7 +278,7 @@
         //     accessKey: accessKey,
         // }
         function resolveIpfsMetadata(hash) {
-            return ipfs.cat(hash).then(JSON.parse).catch(e => {
+            return ipfs.cat(hash, { parseJson: true }).catch(e => {
                 throw Error(`Error resolving ipfs metadata: ${e.stack}`)
             })
         }
@@ -402,138 +301,56 @@
             }
         }
 
+        // ================================================================
+        // ================================================================
+        // ===============     involved items managment      ==============
+        // ================================================================
+        // ================================================================
 
+        // 1. On start-up, load all involved items
+        // 2. Immediately fetch their state 
+        //    (the middleware takes care of issuing notifications and removing involved items)
+        // 3. Subscribe to each items state
 
-
-        /** 
-         * Data fetching strategy: 
-         * 
-         * SUBSCRIPTION
-         * ============
-         * 
-         * A subscription to all hashtag items will be activated. 
-         * The relevant events to listen are:
-         * - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
-         *   - Emitted on: newItem
-         *   - After receiving: resolve itemMetadataHash
-         * - ItemChange(indexed itemHash, newstatus, providerAddress)
-         *   - Emitted on: selectReplier, fundItem, payoutItem, cancelItem, disputeItem, resolveItem
-         *   - After receiving: -
-         * - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
-         *   - Emitted on: replyItem
-         *   - After receiving: resolve replyMetadataHash
-         * 
-        */
-
-
-        function createHashtagSubscriptionChannel(hashtagAddress) {
-            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
-            return eventChannel(emitter => {
-                // Unique place to subscribe to all hashtag relevant events
-                //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
-                //  - ItemChange(indexed itemHash, newstatus, providerAddress)
-                //  - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
-                const events = ['NewItem', 'ItemChange', 'ReplyItem']
-                const subscribeInstances = events.map(eventName => {
-                    try {
-                        return hashtagContract.events[eventName]((err, event) => {
-                            if (err) console.error('Error receiving event', err)
-                            else emitter(event)
-                        })
-                    } catch (e) {
-                        console.error('Error creating subscription to NewItem in ' + hashtagAddress)
-                    }
-                })
-
-                window.addEventListener('cancel-sub', () => {
-                    emitter(END)
-                });
-
-                const unsubscribeFunction = () => {
-                    subscribeInstances.forEach(instance => {
-                        // Ensure that the instance exists
-                        if (instance) instance.unsubscribe((err) => {
-                            if (err) console.error('Error unsubscribing from hashtag', err)
-                            else console.log('Successfully unsubscribed')
-                        });
-                    });
-                }
-                // The subscriber must return an unsubscribe function
-                return unsubscribeFunction;
-            })
-        }
-
-        function* handleNewItem(event, hashtagAddress, newEvent = false) {
-            // NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
-            // Step 1. Store the item info
-            console.log('Handling NewItem', event)
-            const item = {
-                blockNumber: event.blockNumber,
-                hashtagFee: event.returnValues.hashtagFee,
-                itemMetadataHash: event.returnValues.itemMetadataHash,
-                itemHash: event.returnValues.itemHash,
-                itemValue: event.returnValues.itemValue,
-                seekerAddress: event.returnValues.owner, // owner => seeker
-                seekerRep: event.returnValues.seekerRep,
-                status: 0,
-            }
-            const { itemHash, itemMetadataHash } = event.returnValues
-            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
-
-            // Step 2. Resolve its metadata
-            yield fork(getItemMetadata, item, hashtagAddress)
-
-            // Step 3. Get the timestamp
-            const timestamp = newEvent
-                ? Math.floor(Date.now() / 1000)
-                : yield call(getBlockTime, event.blockNumber)
-            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: { timestamp } });
-        }
-
-        function* handleItemChange(event, hashtagAddress) {
-            // ItemChange(indexed itemHash, newstatus, providerAddress)
-            // Step 1. Store the item info
-            console.log('Handling ItemChange', event)
-            const { itemHash, newstatus, providerAddress } = event.returnValues
-
-            yield put({
-                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    status: newstatus,
-                    providerAddress,
-                }
-            });
-            yield call(openChat, { hashtagAddress, itemHash, itemStatus: newstatus, providerAddress })
-        }
-
-
-        function* hashtagSubscription(hashtagAddress) {
+        function* loadInvolvedItems() {
             try {
-                const hashtagSubscriptionChannel = yield call(createHashtagSubscriptionChannel, hashtagAddress)
-                while (true) {
-                    // take(END) will cause the saga to terminate by jumping to the finally block
-                    let event = yield take(hashtagSubscriptionChannel)
-                    // Unique place to subscribe to all hashtag relevant events
-                    //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
-                    //  - ItemChange(indexed itemHash, newstatus, providerAddress)
-                    //  - ReplyItem(indexed itemHash, replyMetadataHash, provider)
-                    switch (event.event) {
-                        case 'NewItem':
-                            yield fork(handleNewItem, event, hashtagAddress, true)
-                            break;
-                        case 'ItemChange':
-                            yield fork(handleItemChange, event, hashtagAddress)
-                            break;
-                        case 'ReplyItem':
-                            yield fork(handleReplyItem, event, true)
-                            break;
-                        default:
-                            console.error('Received unknown event ' + event.event, event)
+                const involvedItems = localDb.involvedItem.getAll()
+                console.log(`Loaded ${involvedItems.length} involved items from localStorage`, { involvedItems })
+                yield all(involvedItems.map(item => call(function* () {
+                    try {
+                        const { hashtagAddress, itemHash } = item
+                        // 1. Load involved items. 
+                        // These represent the previously seen state by the user, so they should not trigger a notification
+                        yield put(actions.updateItem({ item, skipNotification: true }))
+                        // 2. Update their state
+                        const nextItemState = yield call(getNewItem, item)
+                        yield put(actions.updateItem({ hashtagAddress, itemHash, data: nextItemState, info: 'From load involved items / new state' }))
+                        // 3. Subscribe to their state
+                        yield fork(hashtagSubscription, hashtagAddress, itemHash)
+                    } catch (e) {
+                        console.error(`Error checking involved item ${printItemId(item)}: ${e.stack}`)
                     }
-                }
-            } finally {
-                console.log('hashtag ' + hashtagAddress + ' subscription terminated')
+                })))
+            } catch (e) {
+                console.error(`Error loading involved items: ${e.message}`, e)
             }
         }
+
+        async function getNewItem(item) {
+            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, item.hashtagAddress);
+            const newState = await hashtagContract.methods.readItemData(item.itemHash).call()
+            return {
+                numberOfReplies: newState.numberOfReplies,
+                providerAddress: newState.providerAddress,
+                status: newState.status,
+            }
+        }
+
+        // ================================================================
+        // ================================================================
+        // =============== END involved items managment END  ==============
+        // ================================================================
+        // ================================================================
 
         /**
          * @param {Object} notification 
@@ -555,36 +372,275 @@
             return base64Encoded
         }
 
-        // Intercept pushNotification to store it in redux and in localStorage
-        function* pushNotification({ notification }) {
-            if (!notification) {
-                return console.warn("Attempting to push an undefined notification, aborting.")
-            }
-            const id = generateNotificationId(notification)
-            notification.id = id;
-            notification.read = false;
-            notification.timestamp = Date.now();
-            yield put(actions.pushNotificationToStore(notification))
-            localDb.notification.set(notification, id)
-        }
-
         // Loads notifications from local storage into redux state
         function* loadNotifications() {
             try {
-                const notificationsArray = localDb.notification.getAll()
-                const notifications = {}
-                if (Array.isArray(notificationsArray)) {
-                    notificationsArray.forEach(notification => {
-                        notifications[notification.id] = notification
-                    })
-                } else {
-                    throw Error(`notificationsArray must be an array. notificationsArray: ${JSON.stringify(notificationsArray)}`)
-                }
-                yield put(actions.pushNotificationsToStore(notifications))
-                console.log(`Loaded ${Object.keys(notifications).length} notifications from localStorage`, { notifications })
+                const notifications = localDb.notification.getAll()
+                // Ensure notifications is an array to prevent wierd bugs down the line
+                if (!Array.isArray(notifications)) throw Error(`notifications must be an array: ${JSON.stringify(notifications)}`)
+                console.log(`Loaded ${notifications.length} notifications from localStorage`, { notifications })
+                // pushNotification action tolerates sending either one notification or multiple as an array
+                yield put(actions.pushNotification(notifications, { skipNotification: true }))
             } catch (e) {
-                console.error(`Error on load notifications: ${e.message}`, e)
+                console.error(`Error loading notifications: ${e.message}`, e)
             }
+        }
+
+        // Loads chat status from localStorage into redux store
+        function* loadChats() {
+            try {
+                const chats = localDb.chat.getAll()
+                console.log(`Loaded ${chats.length} chats from localStorage`, { chats })
+                for (const chat of chats) {
+                    yield put(actions.updateChat({ itemHash: chat.itemHash, chatObject: chat, skipNotification: true }))
+                }
+            } catch (e) {
+                console.error(`Error loading chats: ${e.message}`, e)
+            }
+        }
+
+        // ================================================================
+        // ================================================================
+        // ===============     notificationMiddleware.js     ==============
+        // ================================================================
+        // ================================================================
+
+        // A middleware is a composition of functions:
+        // - Current action being dispatched                              | action |
+        // - Next middleware or the reducer. Call to proceed      | next |
+        // - Store with part of the API |         store        | 
+        // This middleware compares the new state of an item with its previous step
+        // - To dispatch a notification you must be involved in the item + item changed
+        const notificationsMiddleware = ({ getState, dispatch }) => next => action => {
+            // if the action requests does not request a notify, skip
+            if (action.skipNotification) return next(action)
+
+            // EXTEND NOTIFICATIONS
+            // This part of the middleware intercepts notification actions and:
+            // 1. Attaches an ID and extra info
+            // 2. Stores it in the localDb notification registry
+            if (action.type === 'PUSH_NOTIFICATION') {
+                if (!action.notification) {
+                    return console.error("Attempting to push an undefined notification, aborting. Action: ", action)
+                }
+                const notification = {
+                    timestamp: Date.now(),
+                    id: generateNotificationId(action.notification),
+                    ...action.notification,
+                    read: false,
+                }
+                localDb.notification.set(notification)
+                console.log(`Pushing ${notification.type} notification`, { notification })
+                return next({ ...action, notification })
+            }
+
+            // UPDATE NOTIFICATION ON LOCAL STORAGE
+            function readNotification(notification) {
+                if (notification && typeof notification === 'object')
+                    localDb.notification.set({ ...notification, read: true })
+                else console.warn('notification object is not defined on readNotification')
+            }
+            if (action.type === 'READ_NOTIFICATION') {
+                // Make sure the notification is properly defined
+                if (!action.id) {
+                    console.warn('action.id is not defined on READ_NOTIFICATION')
+                } else {
+                    const _notification = localDb.notification.get({ id: action.id })
+                    if (!_notification) console.warn(`notification by id ${action.id} is not found on localDb`)
+                    else readNotification(_notification)
+                }
+                return next(action)
+            }
+            if (action.type === 'READ_ALL_NOTIFICATIONS') {
+                localDb.notification.getAll().forEach(readNotification)
+                return next(action)
+            }
+
+            // UPDATE_ITEM CHANGES => NOTIFICATIONS
+            // This part of the middleware computes differences in the items as they are updated and:
+            // 1. Dispatches notifications when necessary {type: 'PUSH_NOTIFICATION}, will all the extra data
+            // 2. Handles the localDb involved item registry, adding, updating and removing when necessary
+            if (action.type === 'UPDATE_ITEM') {
+                // UPDATE_ITEM: hashtagAddress, itemHash, data
+                const { hashtagAddress, itemHash, data } = action
+
+                // Helper functions
+                const state = getState()
+                const yourAddress = selectors.address(state)
+                const maintainerAddress = selectors.getMaintainerAddress(state, hashtagAddress)
+                // Computes if you are involved in an item and the type of involvment:
+                // - Item is active
+                // - You are the provider
+                // - You are the seeker
+                // - You are a replier and there is no provider
+                // - You are the mantainer of the item's hashtag + item disputed (to trim matches)
+                const involvedIn = (item = {}) => {
+                    if (!yourAddress) return null
+                    if (itemStatusIs.notActive(item)) return null
+                    const isSeeker = item.seekerAddress === yourAddress
+                    const isProvider = item.providerAddress === yourAddress
+                    const isReplier = isZeroAddress(item.providerAddress) && (Object.keys(item.repliers || [])).includes(yourAddress)
+                    const isMantainer = maintainerAddress === yourAddress && itemStatusIs.disputed(item)
+                    return isSeeker || isProvider || isReplier || isMantainer
+                        ? { isSeeker, isProvider, isReplier, isMantainer }
+                        : null
+                }
+
+                // =====================================================================
+                // =================    Involved items manager    ======================
+                // =====================================================================
+                // 
+                // No need to advance the store yet. 
+                // The data object represents the portion of the item state that will be updated
+                const prevItem = selectors.someItem(getState(), hashtagAddress, itemHash)
+                    // If the item does not exist, create a new item object with the hashtagAddress, itemHash
+                    || { hashtagAddress, itemHash }
+                const nextItem = { ...prevItem, ...data }
+                const involvedInPrev = involvedIn(prevItem)
+                const involvedInNext = involvedIn(nextItem)
+                const involvedInStor = localDb.involvedItem.has({ hashtagAddress, itemHash })
+
+                if (!involvedInStor && involvedInNext) {
+                    // If it is not stored and is involved => STORE
+                    localDb.involvedItem.set(nextItem)
+                } else if (involvedInStor && !involvedInNext) {
+                    // If it is stored and is not involved => REMOVE
+                    localDb.involvedItem.del({ hashtagAddress, itemHash })
+                } else if (involvedInStor && involvedInNext) {
+                    // If it is stored and is involved => UPDATE
+                    localDb.involvedItem.set(nextItem)
+                }
+
+                // =====================================================================
+                // =================  Item Notification generator  =====================
+                // =====================================================================
+                // 
+                // OPTIMIZATION: In order to prevent running code for all items a preliminar check is done:
+                // 1. Make sure something relevant has changed
+                // 2. Make sure you are or were involved in the item
+                if (('numberOfReplies' in data || 'providerAddress' in data || 'status' in data)
+                    && (involvedInStor || involvedInPrev || involvedInNext)) {
+                    // Run notifications. notificationGenerator object = {type, condition, notificationData}
+                    notificationGenerators.forEach(({ condition, notificationData, type }) => {
+                        if (!condition(prevItem, nextItem, yourAddress)) return
+                        notificationData(prevItem, nextItem).catch(e => {
+                            console.warn(`Error getting notification data for involved item ${printItemId(nextItem)} for notification ${type}: ${e.stack}`)
+                        }).then(data => {
+                            // When an action is dispatched in a middleware, it runs the entire middleware stack
+                            // So a notification dispatched from this middleware will be picked up by the notification handler middleware
+                            const description = nextItem.description || prevItem.description
+                            dispatch(actions.pushNotification({ type, hashtagAddress, itemHash, description, ...(data || {}) }))
+                        })
+                    })
+                }
+
+                // =====================================================================
+                // ====================       Chat manager      ========================
+                // =====================================================================
+                // 
+                // Check if you belong to a item susceptible of having a chat and subscribe to it
+                // - Also, to avoid opening the chat multiple times, check if it's already open
+                if (involvedInNext && (itemStatusIs.funded(nextItem) || itemStatusIs.disputed(nextItem))
+                    && !((state.chats[itemHash] || {}).isOpen)) {
+                    // Set skipNotification to avoid the risk of recursive redux actions
+                    dispatch({ type: 'UPDATE_CHAT', itemHash, chatObject: { isOpen: true }, skipNotification: true })
+                    window.dispatchEvent(new CustomEvent("openChat", {
+                        detail: { itemHash, yourAddress }
+                    }));
+                }
+            }
+
+            // if (action.type === 'UPDATE_CHAT') {
+            //     // UPDATE_CHAT: itemHash, chatObject
+            //     const { itemHash, chatObject } = action
+
+            //     // =====================================================================
+            //     // =================  Chat notifications generator  ====================
+            //     // =====================================================================
+            //     const state = getState()
+            //     const yourAddress = selectors.address(state)
+            //     // Store only the count with minimal length keys to reduce storage
+            //     const getChatState = ({ messages, accessKeys, m, u }) => ({
+            //         m: m || (messages || []).filter(message => message.sender !== yourAddress).length,
+            //         u: u || (accessKeys || []).length
+            //     })
+            //     const prevChat = getChatState(state.chats[itemHash])
+            //     const nextChat = getChatState(chatObject)
+
+            //     if (nextChat.m > prevChat.m) dispatch(actions.pushNotification({
+            //         type: 'chat-message',
+            //         itemHash,
+            //         count: nextChat.u - prevChat.u
+            //     }))
+
+            //     if (nextChat.u > prevChat.u) dispatch(actions.pushNotification({
+            //         type: 'chat-member',
+            //         itemHash,
+            //         count: nextChat.u - prevChat.u
+            //     }))
+
+            //     // Update localStorage
+            //     localDb.chat.set({ ...nextChat, itemHash })
+            //     // Update action
+            //     return next({ ...action, chatObject: { ...action.chatObject, nextChat } })
+            // }
+
+            if (action.type === 'UPDATE_TXS' && action.chain && action.chain === 'kovan') {
+                // UPDATE_TXS: chain, txs
+
+                // =====================================================================
+                // ==========  User token transfer notifications generator  ============
+                // =====================================================================
+
+                // Only not outgoing transactions
+                // Sort them from recent to old
+                // Only the ones newer than the last seen block
+                const lastSeenBlock = localStorage.getItem('lastSeenBlock') || 0
+                const newTxs = Object.values(action.txs || {})
+                    .filter(tx => !tx.outgoing && tx.blockNumber > lastSeenBlock)
+                    .sort((a, b) => b.blockNumber - a.blockNumber)
+                if (newTxs[0]) localStorage.setItem('lastSeenBlock', newTxs[0].blockNumber);
+
+                for (const newTx of newTxs) {
+                    dispatch(actions.pushNotification({
+                        type: 'balance-received',
+                        tokenAmount: newTx.amount,
+                        senderAddress: newTx.from,
+                        timestamp: newTx.timestamp * 1000
+                    }))
+                }
+            }
+
+            // Fallback return
+            return next(action)
+        }
+
+        window.notificationsMiddleware = notificationsMiddleware
+
+        // ================================================================
+        // ================================================================
+        // =============== END notificationMiddleware.js END ==============
+        // ================================================================
+        // ================================================================
+
+        // DEBUG METHODS
+        window.findItem = (searchWord) => {
+            const state = window.store.getState()
+            const matchesInStore = []
+            Object.values(state.hashtags).forEach(hashtag => {
+                Object.values(hashtag.items).forEach(item => {
+                    if (JSON.stringify(item).includes(searchWord)) matchesInStore.push(item)
+                })
+            })
+            const matchesInLocalStorage = []
+            const involvedItems = localDb.involvedItem.getAll()
+            Object.values(involvedItems).forEach(item => {
+                if (JSON.stringify(item).includes(searchWord)) matchesInLocalStorage.push(item)
+            })
+            console.group(`Search result for: ${searchWord}`)
+            console.log(`Found ${matchesInStore.length} items in REDUX STORE`, ...matchesInStore)
+            console.log(`Found ${matchesInLocalStorage.length} items in LOCAL STORAGE`, ...matchesInLocalStorage)
+            console.groupEnd()
         }
 
         /*
@@ -592,10 +648,9 @@
          */
         function* rootSaga() {
             yield all([
-                takeEvery('CHECK_INVOLVED_ITEM', checkInvolvedItem),
-                takeEvery('PUSH_NOTIFICATION', pushNotification),
                 fork(loadNotifications),
-                fork(startNotifications)
+                fork(loadInvolvedItems),
+                fork(loadChats),
             ]);
         }
 

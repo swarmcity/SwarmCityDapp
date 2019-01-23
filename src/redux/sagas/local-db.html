@@ -1,89 +1,69 @@
 <script>
     (function () {
+        const localDbSlots = [
+            {
+                name: 'involvedItem', merge: true, getId: ({ hashtagAddress, itemHash }) => {
+                    if (!hashtagAddress || typeof hashtagAddress !== 'string') console.error('Error: wrong hashtagAddress provided to involvedItem getId', hashtagAddress)
+                    if (!itemHash || typeof itemHash !== 'string') console.error('Error: wrong itemHash provided to involvedItem getId', itemHash)
+                    return `${hashtagAddress}-${itemHash}`
+                }
+            },
+            {
+                name: 'notification', getId: ({ id }) => {
+                    if (!id || typeof id !== 'string') console.error('Error: wrong id provided to notification getId', id)
+                    return id
+                }
+            },
+            {
+                name: 'chat', getId: ({ itemHash }) => {
+                    if (!itemHash || typeof itemHash !== 'string') console.error('Error: wrong itemHash provided to chat getId', itemHash)
+                    return itemHash
+                }
+            },
+        ]
 
-        // DB methods
-        function getInvolvedItemKey(hashtagAddress, itemHash) {
-            return `involvedItem-${hashtagAddress}-${itemHash}`
-        }
-        function getAllItems() {
-            const involvedItems = []
-            Object.keys(localStorage)
-                .filter(key => key.startsWith('involvedItem-'))
+        const localDb = {}
+        localDbSlots.forEach(({ name, getId, merge }) => {
+            const commonId = name + '-'
+            const key = (item) => commonId + getId(item)
+            const get = (item) => JSON.parse(localStorage.getItem(key(item)))
+            const has = (item) => key(item) in localStorage
+            const del = (item) => localStorage.removeItem(key(item));
+            const set = (item) => {
+                const nextItem = merge ? Object.assign(has(item) ? get(item) : {}, item) : item;
+                localStorage.setItem(key(item), JSON.stringify(nextItem));
+            }
+            const getAll = () => Object.keys(localStorage)
+                .filter(key => key.startsWith(commonId))
                 .map(key => {
                     try {
-                        involvedItems.push(JSON.parse(localStorage.getItem(key)))
+                        return JSON.parse(localStorage.getItem(key))
                     } catch (e) {
-                        console.warn(`Error reading involved item with key ${key}: ${e.message}`)
+                        console.warn(`Error reading ${name} with key ${key}: ${e.message}`)
                     }
-                })
-            return involvedItems
-        }
-        function setItem(item) {
-            const key = getInvolvedItemKey(item.hashtagAddress, item.itemHash)
-            localStorage.setItem(key, JSON.stringify(item));
-        }
-        function getItem(hashtagAddress, itemHash) {
-            const key = getInvolvedItemKey(hashtagAddress, itemHash)
-            const item = localStorage.getItem(key);
-            return JSON.parse(item)
-        }
-        function hasItem(hashtagAddress, itemHash) {
-            const key = getInvolvedItemKey(hashtagAddress, itemHash)
-            return key in localStorage
-        }
-
-        function getNotificationKey(id) {
-            return `notification-${id}`
-        }
-        function getAllNotifications() {
-            const notifications = []
-            Object.keys(localStorage)
-                .filter(key => key.startsWith('notification-'))
-                .map(key => {
-                    try {
-                        notifications.push(JSON.parse(localStorage.getItem(key)))
-                    } catch (e) {
-                        console.warn(`Error reading notification with key ${key}: ${e.message}`)
-                    }
-                })
-            return notifications
-        }
-        function setNotification(notification) {
-            const key = getNotificationKey(notification.id)
-            localStorage.setItem(key, JSON.stringify(notification));
-        }
-        function getNotification(id) {
-            const key = getNotificationKey(id)
-            const notification = localStorage.getItem(key);
-            return JSON.parse(notification)
-        }
-
-        // For testing
-        window.removeAllInvolvedItems = (confirmation) => {
-            if (confirmation !== 'I am sure') {
-                return console.warn(`Running this function will erase all involved items. If you know what you are doing run the function again with: \n removeAllNotifications('I am sure')`)
+                }).filter(item => item)
+            const removeAll = (confirmation) => {
+                if (confirmation !== 'I am sure') {
+                    return console.warn(`Running this function will erase all involved items. If you know what you are doing run the function again with: \n removeAllNotifications('I am sure')`)
+                }
+                Object.keys(localStorage)
+                    .filter(key => key.startsWith(commonId))
+                    .forEach(key => localStorage.removeItem(key))
+                return `Removed all ${name}s`
             }
-            Object.keys(localStorage)
-                .filter(key => key.startsWith('involvedItem-'))
-                .forEach(key => localStorage.removeItem(key))
-            return "Removed all involved items"
+            localDb[name] = { get, has, set, del, getAll, removeAll }
+        })
+
+        function getBalance({ chain, token }) {
+            return localStorage.getItem(`balance-${token}-${chain}`)
         }
-        window.removeAllNotifications = (confirmation) => {
-            if (confirmation !== 'I am sure') {
-                return console.warn(`Running this function will erase all notifications. If you know what you are doing run the function again with: \n removeAllNotifications('I am sure')`)
-            }
-            Object.keys(localStorage)
-                .filter(key => key.startsWith('notification-'))
-                .forEach(key => localStorage.removeItem(key))
-            return "Removed all notifications"
+        function setBalance({ chain, token, balance }) {
+            localStorage.setItem(`balance-${token}-${chain}`, balance);
         }
 
         // For testing
         window.localStorageSpace = () => {
-            var maxSpace = 5000000
-            var _lsTotal = 0;
-            var _xLen;
-            var _x;
+            var maxSpace = 5000000, _lsTotal = 0, _xLen, _x;
             for (_x in localStorage) {
                 _xLen = ((localStorage[_x].length + _x.length) * 2);
                 if (!isNaN(_xLen)) _lsTotal += _xLen;
@@ -94,17 +74,11 @@
 
 
         window.localDb = {
-            item: {
-                get: getItem,
-                set: setItem,
-                has: hasItem,
-                getAll: getAllItems,
+            ...localDb,
+            balance: {
+                get: getBalance,
+                set: setBalance,
             },
-            notification: {
-                get: getNotification,
-                set: setNotification,
-                getAll: getAllNotifications
-            }
         };
 
     }());
