@@ -1,0 +1,85 @@
+<script>
+    (function () {
+        const localDbSlots = [
+            {
+                name: 'involvedItem', merge: true, getId: ({ hashtagAddress, itemHash }) => {
+                    if (!hashtagAddress || typeof hashtagAddress !== 'string') console.error('Error: wrong hashtagAddress provided to involvedItem getId', hashtagAddress)
+                    if (!itemHash || typeof itemHash !== 'string') console.error('Error: wrong itemHash provided to involvedItem getId', itemHash)
+                    return `${hashtagAddress}-${itemHash}`
+                }
+            },
+            {
+                name: 'notification', getId: ({ id }) => {
+                    if (!id || typeof id !== 'string') console.error('Error: wrong id provided to notification getId', id)
+                    return id
+                }
+            },
+            {
+                name: 'chat', getId: ({ itemHash }) => {
+                    if (!itemHash || typeof itemHash !== 'string') console.error('Error: wrong itemHash provided to chat getId', itemHash)
+                    return itemHash
+                }
+            },
+        ]
+
+        const localDb = {}
+        localDbSlots.forEach(({ name, getId, merge }) => {
+            const commonId = name + '-'
+            const key = (item) => commonId + getId(item)
+            const get = (item) => JSON.parse(localStorage.getItem(key(item)))
+            const has = (item) => key(item) in localStorage
+            const del = (item) => localStorage.removeItem(key(item));
+            const set = (item) => {
+                const nextItem = merge ? Object.assign(has(item) ? get(item) : {}, item) : item;
+                localStorage.setItem(key(item), JSON.stringify(nextItem));
+            }
+            const getAll = () => Object.keys(localStorage)
+                .filter(key => key.startsWith(commonId))
+                .map(key => {
+                    try {
+                        return JSON.parse(localStorage.getItem(key))
+                    } catch (e) {
+                        console.warn(`Error reading ${name} with key ${key}: ${e.message}`)
+                    }
+                }).filter(item => item)
+            const removeAll = (confirmation) => {
+                if (confirmation !== 'I am sure') {
+                    return console.warn(`Running this function will erase all involved items. If you know what you are doing run the function again with: \n removeAllNotifications('I am sure')`)
+                }
+                Object.keys(localStorage)
+                    .filter(key => key.startsWith(commonId))
+                    .forEach(key => localStorage.removeItem(key))
+                return `Removed all ${name}s`
+            }
+            localDb[name] = { get, has, set, del, getAll, removeAll }
+        })
+
+        function getBalance({ chain, token }) {
+            return localStorage.getItem(`balance-${token}-${chain}`)
+        }
+        function setBalance({ chain, token, balance }) {
+            localStorage.setItem(`balance-${token}-${chain}`, balance);
+        }
+
+        // For testing
+        window.localStorageSpace = () => {
+            var maxSpace = 5000000, _lsTotal = 0, _xLen, _x;
+            for (_x in localStorage) {
+                _xLen = ((localStorage[_x].length + _x.length) * 2);
+                if (!isNaN(_xLen)) _lsTotal += _xLen;
+                console.log(_x.substr(0, 50) + " = " + (_xLen / 1024).toFixed(2) + " KB")
+            };
+            console.log("Total = " + (_lsTotal / 1024).toFixed(2) + " KB (" + (100 * _lsTotal / maxSpace).toFixed(2) + "%)");
+        }
+
+
+        window.localDb = {
+            ...localDb,
+            balance: {
+                get: getBalance,
+                set: setBalance,
+            },
+        };
+
+    }());
+</script>

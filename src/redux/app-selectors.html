@@ -56,9 +56,11 @@
             confirmedTx: (state) => state.confirmedTx,
             hashtagList: (state) => state.hashtagList,
             visitedHashtags: (state) => state.visitedHashtags,
-            address: (state) => state.publicKey,
+            address: (state) => state.publicKey.toLowerCase(),
             username: (state) => state.username,
             language: (state) => state.language,
+            txsKovan: (state) => toArray(state.txs.kovan || {}),
+            txsMainnet: (state) => toArray(state.txs.mainnet || {}),
             avatarHash: (state) => state.avatarHash,
             avatar: (state) => state.avatarHash,
             item: (state) => {
@@ -70,11 +72,38 @@
                     };
                 }
             },
+            someItem: (state, hashtagAddress, itemHash) => {
+                return ((state.hashtags[hashtagAddress] || {}).items || {})[itemHash]
+            },
             chats: (state) => state.chats,
             reputation: (state) => state.reputation,
+            notificationsCount: (state) => {
+                let count = 0;
+                toArray(state.notifications).forEach((notification) => {
+                    if (notification.read == false) count++;
+                })
+                return count;
+            },
             chat: (state) => {
                 if (state.chats[state.current.item]) return state.chats[state.current.item]
             },
+            notifications: (state) => toArray(state.notifications).sort((a, b) => b.timestamp - a.timestamp).map(notification => {
+                const { description, hashtagAddress, itemHash, avatarHash, username } = notification
+                if ((!description || !avatarHash || !username)) {
+                    const item = ((state.hashtags[notification.hashtagAddress] || {}).items || {})[notification.itemHash] || {}
+                    if (!description && item.description) notification.description = item.description
+                    if (!avatarHash && item.seekerAvatarHash) notification.avatarHash = item.seekerAvatarHash
+                    if (!username && item.seekerUsername) notification.username = item.seekerUsername
+                }
+                return notification
+            }),
+            getMaintainerAddress: (state, hashtagAddress) => (state.hashtags[hashtagAddress] || {}).maintainerAddress
+        }
+
+        function toArray(obj) {
+            let array = [];
+            for (let key in obj) if (obj.hasOwnProperty(key)) array.push(obj[key]);
+            return array;
         }
 
         // Export

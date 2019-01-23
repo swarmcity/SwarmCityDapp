@@ -159,18 +159,23 @@ This code may only be used under the license found at https://github.com/swarmci
                 margin-top: 6vh;
 
                 @apply --sc-paper-input;
+
                 --paper-input-container-label: {
                     @apply --body-default;
                 }
+
                 --paper-input-container-input: {
                     @apply --body-bold;
                 }
+
                 --paper-input-error: {
                     @apply --body-bold;
                 }
+
                 --paper-input-prefix: {
                     @apply --body-default;
                 }
+
                 --paper-input-suffix: {
                     @apply --body-default;
                 }
@@ -334,6 +339,7 @@ This code may only be used under the license found at https://github.com/swarmci
             @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
             only screen and (min--moz-device-pixel-ratio: 1.5),
             only screen and (min-resolution: 240dpi) {
+
                 .arrowup,
                 .close {
                     @apply --retina;
@@ -347,7 +353,8 @@ This code may only be used under the license found at https://github.com/swarmci
                 <div class="close" on-click="_close"></div>
                 <div class="avatarcontainer">
                     <div class="avatar">
-                        <iron-image id="avatarimg" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]" on-click="_toResizeAvatar" placeholder="../images/defaultavatar.png"></iron-image>
+                        <iron-image id="avatarimg" sizing="cover" preload src="https://scapiweb3-c.swarm.city/img/[[avatarHash]]"
+                            on-click="_toResizeAvatar" placeholder="../images/defaultavatar.png"></iron-image>
                         <div id="arrowcontainer" class="arrowcontainer" on-click="_toResizeAvatar">
                             <div class="arrowup"></div>
                         </div>
@@ -357,12 +364,12 @@ This code may only be used under the license found at https://github.com/swarmci
                     <div class="username">
                         <paper-input label="{{localize('Username')}}" value="{{username}}" always-float-label on-keyup="_saveUsername"></paper-input>
                     </div>
-                    <display-show-keys toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
-                        route="{{route}}"></display-show-keys>
+                    <display-show-keys toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}"
+                        private-key="{{privateKey}}" route="{{route}}"></display-show-keys>
 
                 </div>
                 <div class="topright" id="notifications">
-                    <div class="notifications" on-click="_toNotifications">{{localize('no notifications')}}</div>
+                    <div class="notifications" on-click="_toNotifications">[[notificationMessage]]</div>
                 </div>
             </div>
             <div class="divider" id="divider1"></div>
@@ -375,8 +382,8 @@ This code may only be used under the license found at https://github.com/swarmci
         </div>
         <dom-if if="{{toggleUnlock}}">
             <template>
-                <display-unlock blue toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}" private-key="{{privateKey}}"
-                    qr-code-private-key="{{qrCodePrivateKey}}" qr-code-public-key="{{qrCodePublicKey}}">
+                <display-unlock blue toggle-unlock="{{toggleUnlock}}" toggle-private-key="{{togglePrivateKey}}"
+                    private-key="{{privateKey}}" qr-code-private-key="{{qrCodePrivateKey}}" qr-code-public-key="{{qrCodePublicKey}}">
                 </display-unlock>
             </template>
         </dom-if>
@@ -404,6 +411,14 @@ This code may only be used under the license found at https://github.com/swarmci
                     path: {
                         type: String,
                         observer: '_path',
+                    },
+                    notifications: {
+                        type: Object,
+                        statePath: AppStore.selectors.notifications,
+                    },
+                    notificationMessage: {
+                        type: String,
+                        computed: '_notificationMessage(notifications)',
                     },
                     /**
                     * pageID is an id givven to every page specific
@@ -500,6 +515,9 @@ This code may only be used under the license found at https://github.com/swarmci
                 this.loadResources(this.resolveUrl('../text-translations.json'));
                 super.ready();
             }
+            _notificationMessage(notifications) {
+                if (notifications && notifications.length >= 0) return `${notifications.length} new notifications`;
+            }
             /**
             * takes the user to originating page
             */
@@ -537,11 +555,14 @@ This code may only be used under the license found at https://github.com/swarmci
             _toResizeAvatar() {
                 this.path = 'resize-avatar/';
             }
+            _notificationCount() {
+                return 'nooo'
+            }
             /**
             * takes the user to page notifications
             */
             _toNotifications() {
-                // this.path = 'notifications/';
+                this.path = 'notifications/' + this.address;
             }
 
             /**

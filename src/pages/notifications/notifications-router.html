@@ -1,0 +1,110 @@
+<!--
+  @license
+  Copyright (c) 2018 Swarm City
+  This code may only be used under the license found at https://github.com/swarmcity/license
+-->
+<link rel="import" href="../../../bower_components/polymer/polymer-element.html" />
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout.html" />
+<link rel="import" href="../../../bower_components/app-route/app-location.html" />
+<link rel="import" href="../../redux-state.html" />
+
+<!-- Displays and shared styles only -->
+<link rel="import" href="../../shared-styles.html" />
+<link rel="import" href="../../displays/display-icon-close.html" />
+<link rel="import" href="../../displays/display-icon-back.html" />
+<link rel="import" href="../../displays/display-button-text.html" />
+<link rel="import" href="./notifications-repeater.html" />
+
+<dom-module id="page-notifications">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        min-height: 100vh;
+        background-image: var(--sc-bg);
+      }
+      display-button-text {
+        margin: 25px calc(50% - 57px);
+      }
+    </style>
+    <app-location route="{{route}}"></app-location>
+
+    <template is="dom-if" if="{{archive}}">
+      <display-icon-back on-back="_toggleArchive"></display-icon-back>
+    </template>
+
+    <notifications-repeater archive="[[archive]]" notifications="[[_showNotifications(notifications, archive)]]"
+      on-detail="_handleOnDetail" on-chat="_handleOnChat" on-profile="_handleOnProfile" on-wallet="_handleOnWallet">
+    </notifications-repeater>
+
+    <template is="dom-if" if="{{!archive}}">
+      <display-icon-close on-close="_handleOnClose"></display-icon-close>
+      <display-button-text label="[[_archiveLabel()]]" on-tap="_toggleArchive"></display-button-text>
+    </template>
+    
+  </template>
+  <script>
+    class MyNotificationsRouter extends (new ReduxMixin(
+      Polymer.mixinBehaviors([Polymer.AppLocalizeBehavior], Polymer.Element)
+    )) {
+      static get is() {
+        return "page-notifications";
+      }
+      static get properties() {
+        return {
+          route: Object,
+          archive: {
+            type: Boolean,
+            value: false,
+          },
+          notifications: {
+            type: Object,
+            statePath: AppStore.selectors.notifications,
+          },
+          shown: Array,
+        };
+      }
+      _handleOnDetail(e) {
+        this.set('route.path', `/detail/${e.detail.hashtagAddress}/${e.detail.itemHash}`);
+      }
+      _handleOnChat(e) {
+        this.set('route.path', `/chat/${e.detail.hashtagAddress}/${e.detail.itemHash}`);
+      }
+      _archiveLabel() {
+        return "see archive";
+      }
+      _handleOnProfile(e) {
+        this.set('route.path', '/my-profile/');
+      }
+      _handleOnWallet(e) {
+        this.set('route.path', '/my-wallet/');
+      }
+      _showNotifications(notifications) {
+        if (!this.archive) {
+          return notifications.filter(notification => {
+            return notification.timestamp && (Date.now() - notification.timestamp <= 24 * 60 * 60 * 1000)
+          })
+        } else {
+          return notifications.filter(notification => {
+            return notification.timestamp && (Date.now() - notification.timestamp > 24 * 60 * 60 * 1000)
+          })
+        }
+      }
+      _toggleArchive() {
+        this.archive = !this.archive;
+      }
+      _handleOnClose() {
+        this.dispatch({ type: "READ_ALL_NOTIFICATIONS" });
+        if (sessionStorage.getItem('origin')) {
+          this.set('route.path', sessionStorage.getItem('origin'));
+          sessionStorage.removeItem('origin');
+        }
+        else {
+          this.set('route.path', 'hashtag-list');
+        }
+      }
+
+    }
+    window.customElements.define(MyNotificationsRouter.is, MyNotificationsRouter);
+  </script>
+</dom-module>

@@ -10,7 +10,7 @@
         let storage = JSON.parse(localStorage.getItem('SwarmCity'));
 
         if (storage && storage.keyStore && storage.keyStore.address) {
-            publicKey = storage.keyStore.address;
+            publicKey = storage.keyStore.address.toLowerCase();
         } else {
             publicKey = null;
         }
@@ -45,7 +45,8 @@
             hashtags: {},
             current: {},
             reputation: {},
-            txs: {}
+            txs: {},
+            notifications: {}
         };
         /**
          * safely parse a string to Number. Independent of locale ( , or . )
@@ -68,6 +69,17 @@
         function toLowerCaseSafe(s) {
             return s ? s.toLowerCase() : s
         }
+
+        /** 
+         * @param {Array} array of objects: [ {id: 1}, {id: 2} ]
+         * @param {Function} keyGetter: (item) => item.id
+         * @return {Object} resulting object: { 1: {id: 1}, 2: {id: 2} }
+         */
+        const arrayToObject = (array, keyGetter) =>
+            array.reduce((obj, item) => {
+                obj[keyGetter(item)] = item
+                return obj
+            }, {})
 
         const reducer = function (state = initialState, action) {
             // console.log('NEW Top reducer: ', action)
@@ -296,6 +308,9 @@
                     })
                 }
                 case 'CURRENT_ITEM': {
+                    // window.dispatchEvent(new CustomEvent('newItem', {
+                    //     detail: action.item,
+                    // }));
                     return deepmerge(state, {
                         current: {
                             item: action.item
@@ -309,12 +324,16 @@
                         }
                     })
                 }
+                // Do only a SHALLOW merge, some chatObject properties are array that need to be overwritten
                 case 'UPDATE_CHAT': {
                     return {
                         ...state,
                         chats: {
                             ...state.chats,
-                            [action.itemHash]: action.chatObject
+                            [action.itemHash]: {
+                                ...(state.chats[action.itemHash] || {}),
+                                ...action.chatObject
+                            }
                         }
                     }
                 }
@@ -325,12 +344,44 @@
                         }
                     })
                 }
+                // Accepts one notifications or multiple
+                // VALID: action.notification = <notification object>
+                // VALID: action.notification = [ <notification object 1>, <notification object 2> ]
+                case 'PUSH_NOTIFICATION': {
+                    return deepmerge(state, {
+                        notifications: arrayToObject(
+                            Array.isArray(action.notification) ? action.notification : [action.notification],
+                            notification => notification.id
+                        )
+                    })
+                }
+                // Gets an array of all notification ids and create an object = 
+                //   { id1: {read: true}, id2: {read: true} }
+                // which is merged with the whole notifications object
+                case 'READ_ALL_NOTIFICATIONS': {
+                    return deepmerge(state, {
+                        notifications: Object.keys(state.notifications).reduce((obj, id) => {
+                            obj[id] = { read: true }
+                            return obj
+                        }, {})
+                    });
+                }
+                // If the notification does not exist, do not modify state
+                case 'READ_NOTIFICATION': {
+                    return !(action.id in state.notifications) ? state :
+                        deepmerge(state, {
+                            notifications: {
+                                [action.id]: { read: true }
+                            }
+                        })
+                }
                 default: {
                     return state
                 }
 
             }
         };
+
         if (!window.AppStore) window.AppStore = {}
         window.AppStore.rootReducer = reducer
     }());

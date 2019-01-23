@@ -1,84 +1,344 @@
-<link rel="import" href="./handleReplyItem.html">
-
 <script>
     (function () {
         // Items initialized in setup.html
-        const { web3Local, ipfs, ReduxSaga, contractsData, bs58 } = window;
-        const { selectors } = window.AppStore
+        const { web3Local, ipfs, ReduxSaga, contractsData } = window;
+        const { selectors, actions } = window.AppStore;
         // ReduxSaga methods
-        const { effects, eventChannel, delay, END } = ReduxSaga;
+        const { effects, eventChannel, END } = ReduxSaga;
         const { call, fork, take, put, takeEvery, all, select } = effects;
 
         // Import contract data:
-        const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
+        const { simpleDeal, kovSwtToken } = contractsData;
 
-        // Import methods
-        const { handleReplyItem } = window;
-
-        /** 
-         * Data fetching strategy: 
-         * 
+        /**
+         * Data fetching strategy:
+         *
          * INITIAL FETCH
          * =============
-         * 
+         *
          * The following steps will be follow to gather all necessary data.
          * After each step, an event will be fired to progressively update the state.
-         * 
+         *
          * ENTRYPOINT => 'GET_HASHTAG' action, args: [hashtagAddress]
-         * 
-         * Step 1. Call contract state: 
+         *
+         * Step 1. Call contract state:
          *   - hashtagName() -> hashtagName
          *   - hashtagMetadata() -> hashtagMetadata
          *   - deployBlock() -> deployBlock
-         * 
+         *
          * Step 2A. Resolve hashtagMetadata with IPFS
          *   - ipfs.cat(hashtagMetadata) -> description
-         * 
+         *
          * Step 2B. Get hashtag items from past events
          *   - getPastEvents('NewItem') -> itemHash, itemMetadataHash, itemValue, seekerAddr, seekerRep, blockNumber
-         * 
+         *
          * Step 3B. Call contract state to get item status
          *   - readItem(itemHash) -> status, providerAddress, numberOfReplies
-         * 
+         *
          * Step 3C. Resolve itemMetadataHash
          *   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
-         * 
-         * 
+         *
+         *
          * SUBSCRIPTION
          * ============
-         * 
-         * A subscription to all hashtag items will be activated. 
+         *
+         * A subscription to all hashtag items will be activated.
          * The relevant events to listen are:
          * - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
          *   - Emitted on: newItem
          *   - After receiving: resolve itemMetadataHash
          * - ItemChange(indexed itemHash, newstatus, providerAddress)
          *   - Emitted on: selectReplier, fundItem, payoutItem, cancelItem, disputeItem, resolveItem
-         *   - After receiving: -
+         *   - After receiving: n/a
          * - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
          *   - Emitted on: replyItem
          *   - After receiving: resolve replyMetadataHash
-         * 
-        */
+         *
+         */
 
+        /**
+         * NOTIFICATIONS:
+         * Notify a change in state. There are two types of changes
+         * - Previously store state => new state on startup
+         * - Current state in execution => new incoming state change
+         *
+         * POSSIBLE FLOW:
+         * 0. The notifications section will involve extra subscriptions, which will only trigger notifications
+         *    The actual data will be fetched on the regular sagas.
+         * 1. Receive state change
+         * 2. Run the state change through logic to decide if you are concerned on it or not
+         * 3. If you are concerned and it changed, push notification
+         * INVOLVED RULES:
+         * - If you are owner, you are always intersted
+         * - If you are provider you are interested until the item is finished
+         * - If you are replier, it's complicated:
+         *   - Once you replier: Item becames involved
+         *   - If some else is selected: Item is not involved
+         *   - If the item is unselected: Item becames of interest again
+         *   - If the item is funded by some else: Item will never be involved again
+         *
+         * B) WALLET-notification:
+         * - Balance changed, received funds only: (transfer event _to: yourAddress)
+         *
+         * C) DEALS-notifications (only applicable to items you care about):
+         * - New reply on request: (number of replies increase)
+         * - Replier selected: (providerAddress changes)
+         * - Replier declined: (providerAddress changes)
+         * - Replier funds: (item state changes)
+         * - Deal payout: (item state changes)
+         * - Deal conflict: (item state changes)
+         * - Deal cancelled: (item state changes)
+         *
+         * D) CHAT-notifications:
+         * - Incoming chat message
+         * - Chat member added (hashtagmaintainer in case of conflict)
+         */
+
+        const itemFetchGenerators = {
+            getItemState: {
+                name: "getItemState",
+                fetchFunction: async item => {
+                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, item.hashtagAddress);
+                    const [data, repliers] = await Promise.all([
+                        hashtagContract.methods.readItemData(item.itemHash).call(),
+                        hashtagContract.methods.getItemRepliers(item.itemHash).call()
+                    ])
+                    return {
+                        numberOfReplies: data.numberOfReplies,
+                        providerAddress: toLowerCaseSafe(data.providerAddress),
+                        providerRep: data.providerRep,
+                        status: data.status,
+                        repliers: repliers.map(replierAddress => toLowerCaseSafe(replierAddress)).reduce((obj, replier) => {
+                            obj[replier] = true
+                            return obj
+                        }, {})
+                    };
+                }
+            },
+            getItemMetadata: {
+                name: "getItemMetadata",
+                fetchFunction: async item => {
+                    if (!item.itemMetadataHash) throw Error('item must contain an itemMetadataHash property')
+                    const res = await ipfs.cat(item.itemMetadataHash, { parseJson: true });
+                    return {
+                        description: res.description,
+                        location: res.location,
+                        seekerAvatarHash: res.avatar || res.avatarHash,
+                        seekerPublicKey: res.publicKeySeeker,
+                        seekerUsername: res.username
+                    };
+                }
+            },
+            getTimestamp: {
+                name: "getTimestamp",
+                fetchFunction: async item => {
+                    const block = await web3Local.eth.getBlock(item.blockNumber);
+                    return {
+                        timestamp: (block || {}).timestamp
+                            ? parseInt(block.timestamp)
+                            : "error"
+                    };
+                }
+            }
+        }
+
+
+        // ===============
+        // Parse functions 
+        // ===============
+
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
+
+        function parseNewItemEvent(event, newItem) {
+            return {
+                blockNumber: event.blockNumber,
+                hashtagFee: event.returnValues.hashtagFee,
+                itemMetadataHash: event.returnValues.itemMetadataHash,
+                itemHash: event.returnValues.itemHash,
+                itemValue: event.returnValues.itemValue,
+                seekerAddress: toLowerCaseSafe(event.returnValues.owner), // owner => seeker
+                seekerRep: event.returnValues.seekerRep,
+                hashtagAddress: toLowerCaseSafe(event.address), // MUST be here, needed for subsequent fetches
+                // If the item is new the status is 0 and the timestamp is the current
+                ...(newItem ? {
+                    status: 0,
+                    timestamp: Math.floor(Date.now() / 1000)
+                } : {})
+            }
+        }
+
+        function parseItemChangeEvent(event) {
+            return {
+                status: event.returnValues.newstatus,
+                providerAddress: toLowerCaseSafe(event.returnValues.providerAddress),
+                itemHash: event.returnValues.itemHash,
+                hashtagAddress: toLowerCaseSafe(event.address), // MUST be here, needed for subsequent fetches
+            }
+        }
+
+        // Make sure there are no errors when generating error messages
+        function printItemId(item = {}) {
+            return `${item.hashtagAddress}/${item.itemHash}`
+        }
+
+        // ================================================================
+        // ================================================================
+        // ==================     handleReplyItem.js    ===================
+        // ================================================================
+        // ================================================================
+
+        const replyFetchGenerators = {
+            // Step 2A. Resolve its metadata
+            getReplyMetadata: {
+                name: "getReplyMetadata",
+                fetchFunction: async reply => {
+                    const res = await ipfs.cat(reply.replyMetadataHash, { parseJson: true });
+                    return {
+                        ...res
+                    };
+                }
+            },
+            // Step 2B. Get the providers reputation
+            getProvidersReputation: {
+                name: "getProvidersReputation",
+                fetchFunction: async reply => {
+                    // ### The reputation is an ERC20 token balance that should be fetch from the blockchain
+                    // HashtagAddress = smart contract simple deal
+                    // => Get the providerRep smart contract address
+                    // => Do balanceOf(replier.address)
+                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, reply.hashtagAddress);
+                    if (!hashtagContract.methods.ProviderRep) {
+                        throw Error('Incorrect contrat ABI, ProviderRep method not found');
+                    }
+                    // eslint-disable-next-line new-cap
+                    const providerRepContractAddress = await hashtagContract.methods.ProviderRep().call()
+                    if (!providerRepContractAddress) {
+                        throw Error('Missing providerRepContractAddress: ' + providerRepContractAddress);
+                    }
+                    const providerRepContract = new web3Local.eth.Contract(kovSwtToken.abi, providerRepContractAddress);
+                    const providerRep = await providerRepContract.methods.balanceOf(reply.providerAddress).call();
+                    return {
+                        providerRep
+                    };
+                }
+            },
+            // Step 2C. Get the timestamp
+            getTimestamp: {
+                name: "getTimestamp",
+                fetchFunction: async reply => {
+                    const block = await web3Local.eth.getBlock(reply.blockNumber);
+                    return {
+                        timestamp: (block || {}).timestamp ? parseInt(block.timestamp) : "error"
+                    };
+                }
+            }
+        }
+
+        // ===============
+        // Parse functions 
+        // ===============
+
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
+
+        function parseNewItemReplyEvent(event, newReply) {
+            return {
+                blockNumber: event.blockNumber,
+                replyMetadataHash: event.returnValues.replyMetadataHash,
+                itemHash: event.returnValues.itemHash,
+                providerAddress: toLowerCaseSafe(event.returnValues.provider),
+                hashtagAddress: toLowerCaseSafe(event.address), // MUST be here, needed for subsequent fetches
+                // If the item is new the status is 0 and the timestamp is the current
+                ...(newReply ? {
+                    timestamp: Math.floor(Date.now() / 1000)
+                } : {})
+            }
+        }
+
+        // Make sure there are no errors when generating error messages
+        function printReplyId(reply = {}) {
+            return `${reply.hashtagAddress}/${reply.itemHash} - ${reply.providerAddress}`
+        }
+
+        // ===========================
+        // ENTRYPOINT: handleReplyItem
+        // ===========================
+
+        function* handleReplyItem(event, newEvent = false) {
+            try {
+                // ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
+                // Step 1. Store the reply info
+                console.log('Handling ReplyItemEvent', event)
+                const reply = parseNewItemReplyEvent(event, newEvent)
+                yield put(actions.updateReply({ reply }))
+
+                const { hashtagAddress, itemHash, providerAddress } = reply
+                const fetchGenerators = [
+                    replyFetchGenerators.getReplyMetadata,
+                    replyFetchGenerators.getTimestamp,
+                    replyFetchGenerators.getProvidersReputation
+                ]
+                yield all(fetchGenerators.map(({ name, fetchFunction }) => call(function* () {
+                    try {
+                        const data = yield call(fetchFunction, reply);
+                        yield put(actions.updateReply({ hashtagAddress, itemHash, providerAddress, data }))
+                    } catch (e) {
+                        console.warn(`Error on handleReplyItem calling ${name} for reply ${printReplyId(reply)}: ${e.stack}`);
+                    }
+                })));
+
+                // If new event update the reply count to trigger a notification safely
+                // ##### numberOfReplies should be incorporated in the reply event (maybe as index or count)
+                if (newEvent) {
+                    const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
+                    const numberOfReplies = yield call(hashtagContract.methods.getItemRepliesCount(itemHash).call)
+                    yield put(actions.updateItem({ hashtagAddress, itemHash, data: { numberOfReplies }, info: 'From handleReplyItem, numberOfReplies fetch' }))
+                }
+
+                // This is called for old events of newItem.
+                // Check for involved item, and chat
+                // Reply contains { hashtagAddress, itemHash }
+            } catch (e) {
+                console.error(`Error handling reply of itemHash: ${event.returnValues.itemHash}`, e)
+            }
+        }
+
+        // ================================================================
+        // ================================================================
+        // ================== END handleReplyItem.js END ==================
+        // ================================================================
+        // ================================================================
+
+        // ======================
+        // ENTRYPOINT: getHashtag
+        // ======================
 
         /**
          * Gets hashtag from the blockchain
          */
         async function getHashtagContractData(hashtagAddress) {
             const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
-            let deployBlock;
-            try {
-                deployBlock = parseInt(await hashtagContract.methods.deployBlock().call())
-            } catch (e) {
-                console.log('Error retrieving deployBlock from ' + hashtagAddress, e, e.stack)
+            const fetchGenerators = {
+                maintainerAddress: hashtagContract.methods.payoutAddress().call().then(toLowerCaseSafe),
+                hashtagName: hashtagContract.methods.hashtagName().call(),
+                hashtagMetadataHash: hashtagContract.methods.hashtagMetadataHash().call(),
+                hashtagFee: hashtagContract.methods.hashtagFee().call().then(parseInt),
+                deployBlock: hashtagContract.methods.deployBlock().call().then(parseInt)
             }
+            const returnValues = {}
+            await Promise.all(Object.keys(fetchGenerators).map(async key => {
+                try {
+                    returnValues[key] = await fetchGenerators[key]
+                } catch (e) {
+                    console.warn(`Error geting ${key} from hashtagAddress ${hashtagAddress}: ${e.stack}`)
+                }
+            }))
             return {
-                maintainerAddress: await hashtagContract.methods.payoutAddress().call(),
-                hashtagName: await hashtagContract.methods.hashtagName().call(),
-                hashtagMetadataHash: await hashtagContract.methods.hashtagMetadataHash().call(),
-                hashtagFee: parseInt(await hashtagContract.methods.hashtagFee().call()),
-                deployBlock: deployBlock || 8149489,
+                deployBlock: 8149489, // Default deployBlock value in case of error
+                ...returnValues,
                 address: hashtagAddress,
                 hashtagAddress
             }
@@ -86,212 +346,96 @@
 
         async function getPastItems(hashtagAddress, fromBlock) {
             const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
-            const events = await hashtagContract.getPastEvents('NewItem', {
-                fromBlock,
-                toBlock: 'latest',
-            })
-            console.log('events', events, 'fromBlock', fromBlock)
-            const items = {}
-            for (event of events) {
-                items[event.returnValues.itemHash] = {
-                    blockNumber: event.blockNumber,
-                    hashtagFee: event.returnValues.hashtagFee,
-                    itemMetadataHash: event.returnValues.itemMetadataHash,
-                    itemHash: event.returnValues.itemHash,
-                    itemValue: event.returnValues.itemValue,
-                    seekerAddress: event.returnValues.owner, // owner => seeker
-                    seekerRep: event.returnValues.seekerRep,
-                }
+            // Get past events from block (provided) to latest
+            const events = await hashtagContract.getPastEvents("NewItem", { fromBlock });
+            // Convert the newItemEvents array into an object of parsed items
+            const items = {};
+            for (const event of events) {
+                items[event.returnValues.itemHash] = parseNewItemEvent(event);
             }
+            console.log(`Got ${Object.keys(items).length} past items for hashtag ${hashtagAddress} from block ${fromBlock}`, { items })
             return items;
         }
 
-        async function getBlockTime(blockNumber) {
-            try {
-                const block = await web3Local.eth.getBlock(blockNumber);
-                if (block && block.timestamp) {
-                    return parseInt(block.timestamp);
-                } else {
-                    console.error('Error fetching block ' + blockNumber + ' :', block)
-                    return 'error';
-                }
-            } catch (e) {
-                console.error('Error fetching timestamp for block ' + blockNumber, e)
-            }
-        }
-
-        async function multipleGetBlockTime(items) {
-            const itemsTimestamp = {}
-            await Promise.all(Object.values(items).map(async (item) => {
-                itemsTimestamp[item.itemHash] = {
-                    timestamp: await getBlockTime(item.blockNumber)
-                }
-            }))
-            return itemsTimestamp;
-        }
-
         async function getHashtagMetadata(hash) {
-            const metadataString = await ipfs.cat(hash)
-            let metadata;
-            try {
-                metadata = JSON.parse(metadataString)
-            } catch (e) {
-                throw Error('JSON parsing error, string: ' + metadataString)
-            }
+            const metadata = await ipfs.cat(hash, { parseJson: true });
             return {
                 metadata
-            }
+            };
         }
 
         function* getHashtag({ hashtag: hashtagAddress }) {
-            console.log('GET HASHTAG req', hashtagAddress)
+            console.log("GET HASHTAG req", hashtagAddress);
             try {
+                if (!web3Local.utils.isAddress(hashtagAddress)) {
+                    throw Error(`Provided hashtagAddress ${hashtagAddress} is not a valid address`)
+                }
                 // Entrypoint, hashtagAddress
-                yield fork(hashtagSubscription, hashtagAddress)
+                yield fork(hashtagSubscription, hashtagAddress);
 
-                // Step 1. Call contract state: 
+                // Step 1. Call contract state:
                 //   - hashtagName() -> hashtagName
                 //   - hashtagMetadata() -> hashtagMetadata
                 //   - deployBlock() -> deployBlock
-                const hashtagContractData = yield call(getHashtagContractData, hashtagAddress)
-                yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagContractData });
-                yield put({ type: 'ADD_VISITED_HASHTAG', hashtag: hashtagContractData })
+                const hashtagContractData = yield call(getHashtagContractData, hashtagAddress);
+                yield put(actions.updateHashtag({ hashtagAddress, data: hashtagContractData }));
+                yield put({ type: "ADD_VISITED_HASHTAG", hashtag: hashtagContractData });
 
                 // Step 2A. Resolve hashtagMetadata with IPFS
                 //   - ipfs.cat(hashtagMetadata) -> description
                 try {
-                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash)
-                    //const res = yield call(catIpfsMetadata, hashtagContractData.hashtagMetadataHash)
-                    //console.log('flurkello res: ', hashtagContractData.hashtagMetadataHash);
-                    yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: hashtagMetadata });
+                    const hashtagMetadata = yield call(getHashtagMetadata, hashtagContractData.hashtagMetadataHash);
+                    yield put(actions.updateHashtag({ hashtagAddress, data: hashtagMetadata }));
                 } catch (e) {
-                    console.error('Error fetching hashtag metadata of ' + hashtagAddress, e);
+                    console.error("Error fetching hashtag metadata of " + hashtagAddress, e);
                 }
 
                 // Step 2B. Get hashtag items from past events
                 //   - getPastEvents('NewItem') -> itemHash, itemMetadataHash, itemValue, seekerAddr, seekerRep, blockNumber
-                const items = yield call(getPastItems, hashtagAddress, hashtagContractData.deployBlock)
-                yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: { items } });
+                const items = yield call(getPastItems, hashtagAddress, hashtagContractData.deployBlock);
+                yield put(actions.updateHashtag({ hashtagAddress, data: { items } }));
 
-                const itemsTimestamp = yield call(multipleGetBlockTime, items)
-                // This fetch happens really quick and would generate too many re-renders at once.
-                yield put({ type: 'UPDATE_NEWHASHTAG', hashtagAddress, data: { items: itemsTimestamp } });
+                // Step 3. Get the current status of all items
+                yield all(Object.values(items).map(item => call(getItem, item)));
 
-                // Step 3B. Call contract state to get item status
-                //   - readItem(itemHash) -> status, providerAddress, numberOfReplies
-                // 
-                // Step 3C. Resolve itemMetadataHash
-                //   - ipfs.cat(itemMetadataHash) -> seeker, avatarHash, description, publicKey
-
-                // Pass the contract object to avoid many concurrent initializations
-                const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
-                yield all(Object.values(items).map(item => all([
-                    call(getItemState, item, hashtagAddress, hashtagContract),
-                    call(getItemMetadata, item, hashtagAddress),
-                    call(getItemRepliers, item, hashtagAddress, hashtagContract)
-                ])))
-
-                console.log('Finished fetching items!!')
-
+                console.log("Finished fetching items!!");
             } catch (e) {
-                console.error(e);
+                console.error(`Error on getHashtag hashtagAddress ${hashtagAddress}: ${e.stack}`);
             }
         }
 
-        function readItemData(itemHash, hashtagContract) {
-            return hashtagContract.methods.readItemData(itemHash).call();
-        }
-
-        function* getItemState(item, hashtagAddress, hashtagContract) {
-            const { itemHash } = item;
+        function* getItem(item) {
             try {
-                const res = yield call(readItemData, itemHash, hashtagContract)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        numberOfReplies: res.numberOfReplies,
-                        providerAddress: res.providerAddress,
-                        providerRep: res.providerRep,
-                        status: res.status,
+                if (!item) throw Error('item is not defined')
+                const { hashtagAddress, itemHash } = item;
+                if (!hashtagAddress) throw Error('hashtagAddress is not defined')
+                if (!itemHash) throw Error('itemHash is not defined')
+
+                const fetchGenerators = [
+                    itemFetchGenerators.getItemState,
+                    itemFetchGenerators.getItemMetadata,
+                    itemFetchGenerators.getTimestamp,
+                ]
+                yield all(fetchGenerators.map(({ name, fetchFunction }) => call(function* () {
+                    try {
+                        const data = yield call(fetchFunction, item);
+                        yield put(actions.updateItem({ hashtagAddress, itemHash, data, info: `From getItem / ${name}` }))
+                    } catch (e) {
+                        console.warn(`Error on getItem calling ${name} for item ${printItemId(item)}: ${e.stack}`);
                     }
-                });
-                yield call(openChat, { hashtagAddress, itemHash, itemStatus: res.status, providerAddress: res.providerAddress, seekerAddress: item.seekerAddress })
+                })));
             } catch (e) {
-                console.log('Error calling readItem() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
+                console.error(`Error on getItem for itemHash ${(item || {}).itemHash}: ${e.stack}`)
             }
         }
 
-        function catIpfsMetadata(hash) {
-            return ipfs.cat(hash).then(JSON.parse)
-        }
-
-        function* getItemMetadata(item, hashtagAddress) {
-            try {
-                const { itemMetadataHash: hash, itemHash } = item;
-                const res = yield call(catIpfsMetadata, hash)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        seekerAvatarHash: res.avatar || res.avatarHash,
-                        description: res.description,
-                        seekerPublicKey: res.publicKeySeeker,
-                        seekerUsername: res.username,
-                        location: res.location
-                    }
-                });
-            } catch (e) {
-                console.log('Error getting IPFS metadata for item: ' + item.itemHash + ' in hashtag: ' + hashtagAddress, e);
-            }
-        }
-
-        function callGetItemRepliers(itemHash, hashtagContract) {
-            return hashtagContract.methods.getItemRepliers(itemHash).call();
-        }
-
-        function* getItemRepliers(item, hashtagAddress, hashtagContract) {
-            const { itemHash } = item;
-            try {
-                const res = yield call(callGetItemRepliers, itemHash, hashtagContract)
-                yield put({
-                    type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                        repliers: res,
-                    }
-                });
-            } catch (e) {
-                console.log('Error calling getItemRepliers() for item: ' + itemHash + ' in hashtag: ' + hashtagAddress, e);
-            }
-        }
-
-        function* openChat({ hashtagAddress, itemHash, itemStatus, providerAddress, seekerAddress }) {
-            // ##### 
-            // Check if the item may contain a conversation that you are interested in
-            // First, the item must be in Funded or Disputed state.
-            const getHashtag = (state) => state.hashtags[hashtagAddress] || {}
-            const getItem = (state) => ((getHashtag(state)).items || {})[itemHash] || {}
-
-            if (itemStatus == 1 || itemStatus == 3) {
-                // If the seeker or the provider are not provided, fetch them from the current state
-                if (!seekerAddress) seekerAddress = yield select(getItem).seekerAddress
-                if (!providerAddress) providerAddress = yield select(getItem).providerAddress
-                const maintainerAddress = yield select(getHashtag).maintainerAddress
-                const yourAddress = yield select(selectors.address)
-                if (!yourAddress) {
-                    console.warn('Warning, yourAddress is not defined at the moment of checking if you belong in a chat. Possible race condition.')
-                }
-                // Check if the user is either the seeker or the provider
-                if (providerAddress == yourAddress || seekerAddress == yourAddress || (itemStatus == 3 && yourAddress == maintainerAddress)) {
-                    window.dispatchEvent(new CustomEvent('openChat', {
-                        detail: { itemHash, yourAddress }
-                    }));
-                }
-            }
-        }
-
-        /** 
-         * Data fetching strategy: 
-         * 
+        /**
+         * Data fetching strategy:
+         *
          * SUBSCRIPTION
          * ============
-         * 
-         * A subscription to all hashtag items will be activated. 
+         *
+         * A subscription to all hashtag items will be activated.
          * The relevant events to listen are:
          * - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
          *   - Emitted on: newItem
@@ -302,131 +446,136 @@
          * - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
          *   - Emitted on: replyItem
          *   - After receiving: resolve replyMetadataHash
-         * 
-        */
+         *
+         */
 
+        // ########## TEST CODE
+        window.testContractTime = (n) => {
+            const key = `${n} contracts`
+            console.time(key)
+            for (let i = 0; i < n; i++) {
+                const hashtagContract = new web3Local.eth.Contract(
+                    simpleDeal.abi,
+                    "0x6F2c7faFfF86D390bDf2A3ebBbfF18FFbBcB657d"
+                );
+            }
+            console.timeEnd(key)
+        }
 
-        function createHashtagSubscriptionChannel(hashtagAddress) {
+        // If itemHash is defined, start an itemSubscription
+        function createHashtagSubscriptionChannel(hashtagAddress, itemHash) {
             const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
             return eventChannel(emitter => {
                 // Unique place to subscribe to all hashtag relevant events
-                //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
                 //  - ItemChange(indexed itemHash, newstatus, providerAddress)
                 //  - ReplyItem(indexed itemHash, replyMetadataHash, provider) // provider => providerAddress
-                const events = ['NewItem', 'ItemChange', 'ReplyItem']
+                //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
+                //    Only subscribe to newItem if itemHash is not defined
+                const events = ["ItemChange", "ReplyItem", ...(itemHash ? [] : ["NewItem"])];
                 const subscribeInstances = events.map(eventName => {
                     try {
-                        return hashtagContract.events[eventName]((err, event) => {
-                            if (err) console.error('Error receiving event', err)
-                            else emitter(event)
-                        })
+                        // If itemHash is defined, apply a filter to subscribe to that itemHash only
+                        const options = itemHash ? { filter: { itemHash } } : {}
+                        return hashtagContract.events[eventName](options, (err, event) => {
+                            if (err) console.error("Error receiving event", err);
+                            else emitter(event);
+                        });
                     } catch (e) {
-                        console.error('Error creating subscription to NewItem in ' + hashtagAddress)
+                        console.error("Error creating subscription to NewItem in " + hashtagAddress);
                     }
-                })
-
-                window.addEventListener('cancel-sub', () => {
-                    emitter(END)
                 });
 
-                const unsubscribeFunction = () => {
-                    subscribeInstances.forEach(instance => {
-                        // Ensure that the instance exists
-                        if (instance) instance.unsubscribe((err) => {
-                            if (err) console.error('Error unsubscribing from hashtag', err)
-                            else console.log('Successfully unsubscribed')
-                        });
-                    });
-                }
+                // Demo of how to cancel a subscription externally
+                window.addEventListener("cancel-sub", () => {
+                    emitter(END);
+                });
+
                 // The subscriber must return an unsubscribe function
-                return unsubscribeFunction;
-            })
+                return () => subscribeInstances.forEach(instance => {
+                    // Ensure that each instance exists
+                    if (instance) instance.unsubscribe(err => {
+                        if (err) console.error("Error unsubscribing from hashtag", err);
+                        else console.log("Successfully unsubscribed");
+                    });
+                })
+            });
         }
 
-        function* handleNewItem(event, hashtagAddress, newEvent = false) {
+        function* handleNewItem(event) {
             // NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
             // Step 1. Store the item info
-            console.log('Handling NewItem', event)
-            const item = {
-                blockNumber: event.blockNumber,
-                hashtagFee: event.returnValues.hashtagFee,
-                itemMetadataHash: event.returnValues.itemMetadataHash,
-                itemHash: event.returnValues.itemHash,
-                itemValue: event.returnValues.itemValue,
-                seekerAddress: event.returnValues.owner, // owner => seeker
-                seekerRep: event.returnValues.seekerRep,
-                status: 0,
-            }
-            const { itemHash, itemMetadataHash } = event.returnValues
-            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: item });
+            console.log("Handling NewItemEvent", event);
+            let item = parseNewItemEvent(event, true);
+            yield put(actions.updateItem({ item, info: 'From handleNewItem' }));
 
-            // Step 2. Resolve its metadata
-            yield fork(getItemMetadata, item, hashtagAddress)
-
-            // Step 3. Get the timestamp
-            const timestamp = newEvent
-                ? Math.floor(Date.now() / 1000)
-                : yield call(getBlockTime, event.blockNumber)
-            yield put({ type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: { timestamp } });
+            // getItemMetadata
+            const { hashtagAddress, itemHash } = item;
+            const fetchGenerators = [
+                itemFetchGenerators.getItemMetadata,
+            ]
+            yield all(fetchGenerators.map(({ name, fetchFunction }) => call(function* () {
+                try {
+                    const data = yield call(fetchFunction, item);
+                    yield put(actions.updateItem({ hashtagAddress, itemHash, data, info: `From handleNewItem / ${name}` }))
+                } catch (e) {
+                    console.warn(`Error on handleNewItem calling ${name} for item ${printItemId(item)}: ${e.stack}`);
+                }
+            })));
         }
 
-        function* handleItemChange(event, hashtagAddress) {
+        function* handleItemChange(event) {
             // ItemChange(indexed itemHash, newstatus, providerAddress)
             // Step 1. Store the item info
-            console.log('Handling ItemChange', event)
-            const { itemHash, newstatus, providerAddress } = event.returnValues
-
-            yield put({
-                type: 'UPDATE_ITEM', hashtagAddress, itemHash, data: {
-                    status: newstatus,
-                    providerAddress,
-                }
-            });
-            yield call(openChat, { hashtagAddress, itemHash, itemStatus: newstatus, providerAddress })
+            console.log("Handling ItemChangeEvent", event);
+            const item = parseItemChangeEvent(event)
+            yield put(actions.updateItem({ item, info: 'From handleItemChange' }));
         }
 
-
-        function* hashtagSubscription(hashtagAddress) {
+        // If itemHash is defined, start an itemSubscription
+        function* hashtagSubscription(hashtagAddress, itemHash) {
             try {
-                const hashtagSubscriptionChannel = yield call(createHashtagSubscriptionChannel, hashtagAddress)
+                if (!hashtagAddress) throw Error('hashtagAddress must be defined to start an item subscription')
+                const hashtagSubscriptionChannel = yield call(createHashtagSubscriptionChannel, hashtagAddress, itemHash);
                 while (true) {
                     // take(END) will cause the saga to terminate by jumping to the finally block
-                    let event = yield take(hashtagSubscriptionChannel)
+                    let event = yield take(hashtagSubscriptionChannel);
                     // Unique place to subscribe to all hashtag relevant events
                     //  - NewItem(owner, itemHash, itemMetadataHash, itemValue, hashtagFee, seekerRep)
                     //  - ItemChange(indexed itemHash, newstatus, providerAddress)
                     //  - ReplyItem(indexed itemHash, replyMetadataHash, provider)
                     switch (event.event) {
-                        case 'NewItem':
-                            yield fork(handleNewItem, event, hashtagAddress, true)
+                        case "NewItem":
+                            yield fork(handleNewItem, event);
                             break;
-                        case 'ItemChange':
-                            yield fork(handleItemChange, event, hashtagAddress)
+                        case "ItemChange":
+                            yield fork(handleItemChange, event);
                             break;
-                        case 'ReplyItem':
-                            yield fork(handleReplyItem, event, true)
+                        case "ReplyItem":
+                            yield fork(handleReplyItem, event, true);
                             break;
                         default:
-                            console.error('Received unknown event ' + event.event, event)
+                            console.error("Received unknown event " + event.event, event);
                     }
                 }
             } finally {
-                console.log('hashtag ' + hashtagAddress + ' subscription terminated')
+                console.log("hashtag " + hashtagAddress + " subscription terminated");
             }
         }
-
 
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */
         function* rootSaga() {
-            yield all([
-                yield takeEvery('GET_HASHTAG', getHashtag),
-            ]);
+            yield all([yield takeEvery("GET_HASHTAG", getHashtag)]);
         }
 
-        if (!window.AppStore) window.AppStore = {}
-        if (!window.AppStore.sagas) window.AppStore.sagas = []
-        window.AppStore.sagas.push(rootSaga)
+        if (!window.AppStore) window.AppStore = {};
+        if (!window.AppStore.sagas) window.AppStore.sagas = [];
+        window.AppStore.sagas.push(rootSaga);
+
+        // Export other methods
+        window.handleReplyItem = handleReplyItem; // Imported in item-saga.html
+        window.hashtagSubscription = hashtagSubscription; // Imported in notifications-saga.html
+
     }());
 </script>

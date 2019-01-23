@@ -1,5 +1,3 @@
-<link rel="import" href="./handleReplyItem.html">
-
 <script>
     (function () {
         // Items initialized in setup.html
@@ -12,7 +10,7 @@
         const { kovSwtToken, hashtagList, simpleDeal } = contractsData;
 
         // Import methods
-        const { handleReplyItem } = window;
+        const { handleReplyItem } = window; // It is in ./hashtag-saga.html
 
         /**
          * Gets hashtag from the blockchain
@@ -32,7 +30,7 @@
                     hashtagContract.methods.readItemState(itemHash).call().then(res => {
                         itemData.itemValue = res._itemValue
                         itemData.seekerRep = res._seekerRep
-                        itemData.seekerAddress = res._seekerAddress
+                        itemData.seekerAddress = toLowerCaseSafe(res._seekerAddress)
                         itemData.itemMetadataHash = res._itemMetadataHash
                         itemData.creationBlock = res._creationBlock
                     }).catch(e => {
@@ -46,7 +44,7 @@
         }
 
         function catIpfsMetadata(hash) {
-            return ipfs.cat(hash).then(JSON.parse)
+            return ipfs.cat(hash, { parseJson: true })
         }
 
         function getPastReplies(hashtagContract, itemHash, fromBlock) {
@@ -67,17 +65,14 @@
         }
 
         function* getItem({ item: itemHash }) {
-            console.log('GET ITEM req', itemHash)
-            if (!itemHash || !itemHash.startsWith('0x')) {
-                return console.error(`itemHash is not correct, itemHash = ${itemHash}`)
+            console.log(`GET ITEM request for itemHash ${itemHash}`)
+            if (!itemHash) {
+                return console.error('Error: itemHash is not defined')
             }
 
             // Get current hashtag
             const hashtagAddress = yield select(state => state.current.hashtag)
-            const hashtagContract = new web3Local.eth.Contract(
-                simpleDeal.abi,
-                hashtagAddress
-            );
+            const hashtagContract = new web3Local.eth.Contract(simpleDeal.abi, hashtagAddress);
 
             // Step 1. Call contract state: 
             // Revelant props:
@@ -94,7 +89,6 @@
                 call(function* () {
                     try {
                         const res = yield call(catIpfsMetadata, itemMetadataHash)
-                        console.log(res)
                         yield put(updateThisItem({
                             seekerAvatarHash: res.avatar || res.avatarHash,
                             description: res.description,
@@ -137,7 +131,14 @@
             }
         }
 
+        // ===============
+        // Parse functions 
+        // ===============
 
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
+        
         /*
          * redux-saga root function, which is responsible to call the correct workers
          */

@@ -1,43 +1,88 @@
 <script>
     (function () {
-        const actions = {
-            showSpinner: (doShowSpinner) => {
-                if (doShowSpinner) {
-                    return { type: 'SHOW_LOADING_SPINNER' };
-                }
-                return { type: 'LOADING_DONE' };
-            },
-            locationChanged: (newLocation) => {
-                return {
-                    type: 'LOCATION_CHANGED',
-                    location: newLocation
-                };
-            },
-            getBlock: () => {
-                return {
-                    type: 'GET_BLOCK'
-                };
-            },
-            getTxs: (address) => {
-                return {
-                    type: 'GET_TXS',
-                    address
-                };
-            },
-            updateTxs: (chain, txs) => {
-                return {
-                    type: 'UPDATE_TXS',
-                    chain,
-                    txs
-                };
-            },
-            addTx: (tx) => {
-                return {
-                    type: 'ADD_TX',
-                    tx
-                };
-            }
 
+        function toLowerCaseSafe(s) {
+            return s ? s.toLowerCase() : s
+        }
+
+        const actions = {
+            // yield put(action.updateHashtag({ hashtagAddress, data }));
+            updateHashtag: ({ hashtagAddress, data }) => ({
+                type: "UPDATE_NEWHASHTAG",
+                hashtagAddress,
+                data
+            }),
+            // Accepts that ids are incorporated in the item
+            // yield put(action.updateItem({ hashtagAddress, itemHash, data }));
+            // yield put(action.updateItem({ item }));
+            updateItem: ({ hashtagAddress, itemHash, data, item, info, skipNotification }) => ({
+                type: "UPDATE_ITEM",
+                hashtagAddress: hashtagAddress || item.hashtagAddress,
+                itemHash: itemHash || item.itemHash,
+                data: data || item,
+                info, // Use to add debugging metadata. Must be a text string
+                skipNotification // Assign true to avoid triggering notifications
+            }),
+            // updateItem is gonna be used to trigger notifications in the middleware
+            // To simplify code it will only check UPDATE_ITEM.
+            // So updateReply action will be converted here to an UPDATE_ITEM action
+            updateReply: ({ hashtagAddress, itemHash, providerAddress, data, reply, info }) => ({
+                type: "UPDATE_ITEM",
+                hashtagAddress: hashtagAddress || reply.hashtagAddress,
+                itemHash: itemHash || reply.itemHash,
+                providerAddress: providerAddress || reply.providerAddress,
+                data: {
+                    replies: {
+                        [toLowerCaseSafe(providerAddress || reply.providerAddress)]: data || reply
+                    }
+                },
+                info: `From updateReply / ${info}`
+            }),
+            readNotification: (id) => ({
+                type: 'READ_NOTIFICATION',
+                id
+            }),
+            readAllNotifications: () => ({
+                type: 'READ_ALL_NOTIFICATIONS'
+            }),
+            pushNotification: (notification, { skipNotification } = {}) => ({
+                type: 'PUSH_NOTIFICATION',
+                notification,
+                skipNotification
+            }),
+            showSpinner: (doShowSpinner) => ({
+                type: doShowSpinner ? 'SHOW_LOADING_SPINNER' : 'LOADING_DONE'
+            }),
+            locationChanged: (newLocation) => ({
+                type: 'LOCATION_CHANGED',
+                location: newLocation
+            }),
+            getBlock: () => ({
+                type: 'GET_BLOCK'
+            }),
+            getTxs: (address) => ({
+                type: 'GET_TXS',
+                address
+            }),
+            updateTxs: (chain, txs) => ({
+                type: 'UPDATE_TXS',
+                chain,
+                txs
+            }),
+            addTx: (tx) => ({
+                type: 'ADD_TX',
+                tx
+            }),
+            openChat: (itemHash) => ({
+                type: 'OPEN_CHAT',
+                itemHash
+            }),
+            updateChat: ({ itemHash, chatObject, skipNotification }) => ({
+                type: 'UPDATE_CHAT',
+                itemHash,
+                chatObject,
+                skipNotification
+            })
         }
 
         // Export

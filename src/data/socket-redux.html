@@ -58,51 +58,6 @@ This code may only be used under the license found at https://github.com/swarmci
                         type: Number,
                     },
                     /**
-                     * This is the shortCode we want a public key for
-                     * as given by the ETH network
-                     * @type {Number}
-                     */
-                    reqtokey: {
-                        type: Number,
-                        statePath: 'reqtokey',
-                        observer: '_reqToKey',
-                    },
-                    /**
-                     * Historic transactions for publickey
-                     * @type {Array}
-                     */
-                    transactions: {
-                        type: Array,
-                        statePath: 'transactions',
-                    },
-                    /**
-                     * Get base 64 image from IPFS hash
-                     * @type {Array}
-                     */
-                    reqipfs: {
-                        type: String,
-                        statePath: 'reqipfs',
-                        observer: '_reqipfs',
-                    },
-                    /**
-                     * An ipfs hash we want to resolve over the API
-                     * @type {Array}
-                     */
-                    ipfsHash: {
-                        type: String,
-                        statePath: 'ipfsHash',
-                        observer: '_ipfsHashResolve',
-                    },
-                    /**
-                     * Send new request metadata to IPFS
-                     * @type {Object}
-                     */
-                    itemToIpfs: {
-                        type: Object,
-                        statePath: 'itemToIpfs',
-                        observer: '_itemToIpfs',
-                    },
-                    /**
                      * Send new signed tx to the blockchain
                      * @type {Object}
                      */
@@ -118,27 +73,6 @@ This code may only be used under the license found at https://github.com/swarmci
                     confirmedTx: {
                         type: Array,
                         statePath: 'confirmedTx',
-                    },
-                    /**
-                     * An Object containing the data for a hashtagItem
-                     * @type {Object}
-                     */
-                    hashtagItem: {
-                        type: Object,
-                        statePath: 'hashtagItem',
-                    },
-                    /**
-                     * The selected user's reputation balance
-                     * @type {Object}
-                     */
-                    userReputation: {
-                        type: Object,
-                        statePath: 'userReputation',
-                        observer: '_getUserReputation',
-                    },
-                    chats: {
-                        type: Object,
-                        statePath: AppStore.selectors.chats,
                     },
                 };
             }
@@ -227,12 +161,8 @@ This code may only be used under the license found at https://github.com/swarmci
                     this._subscribeToChat({
                         itemHash,
                     })
-                    .then(() => {
-                        console.log('Successfully joined chat channel for item: ', itemHash)
-                    })
-                    .catch(err => {
-                        console.log('Error instantiating chat channel:', err)
-                    });
+                        .then(() => console.log('Successfully joined chat channel for item: ', { itemHash }))
+                        .catch(e => console.error(`Error instantiating chat channel for itemHash ${itemHash}: ${e.stack}`));
                 }.bind(this), false);
             }
 
@@ -302,25 +232,16 @@ This code may only be used under the license found at https://github.com/swarmci
                         });
                 })
             }
-            // Get a certain user's reputation balance by address
-            _getUserReputation() {
-                if (this.userReputation.request) {
-                    this.socket.emit('getReputation', {
-                        address: this.userReputation.request,
-                    }, (reply) => {
-                        this.dispatch({
-                            type: 'USERREPUTATION',
-                            userReputation: reply.data
-                        });
-                    });
-                }
-            }
 
-            _subscribeToChat({ accessKeys, itemHash}) {
+            _subscribeToChat({ accessKeys, itemHash, hashtagAddress }) {
                 return new Promise((resolve, reject) => {
+                    // Store hashtagAddress in the db's chatObject to latter know 
+                    // which hashtag this item belongs to
+                    const info = hashtagAddress ? { hashtagAddress } : {}
                     this.socket.emit('subscribeToChat', {
-                        accessKeys, 
-                        itemHash
+                        accessKeys,
+                        itemHash,
+                        info
                     }, (reply) => {
                         if (reply.response == 200) {
                             resolve(reply.data);

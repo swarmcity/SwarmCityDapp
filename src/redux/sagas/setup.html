@@ -6,6 +6,8 @@
 <script src="../../web3/web3.min.js"></script>
 <script src="../contractsData.js"></script>
 <script src="../contractAbis.js"></script>
+<!-- TESTING testing -->
+<script src="./testingJsImports.js"></script>
 
 <script>
   (function () {
@@ -217,7 +219,7 @@
       }
     }
 
-    function ipfsCat(hash) {
+    async function ipfsCat(hash, options = {}) {
       if (!hash) {
         throw Error("In ipfs.cat, hash is not defined");
       }
@@ -227,12 +229,21 @@
       if (hash.startsWith("0x") || !isIpfsHash(hash)) {
         hash = bytes32ToHash(hash);
       }
-      return ipfs.cat(hash).then(file => file.toString("utf8"));
+      const data = await retryable(ipfs.cat)(hash).then(file => file.toString("utf8"));
+      if (data && options.parseJson) {
+        try {
+          return JSON.parse(data);
+        } catch (e) {
+          throw Error(`Error parsing JSON string: ${data}`);
+        }
+      } else {
+        return data
+      }
     }
 
     window.ipfs = {
       add: retryable(ipfsAdd),
-      cat: retryable(ipfsCat)
+      cat: ipfsCat
     };
 
     window.ipfsUtils = {
