@@ -22,6 +22,7 @@
         display: block;
         min-height: 100vh;
         background-image: var(--sc-bg);
+        padding: 0 0 50px 0;
       }
       display-button-text {
         margin: 25px calc(50% - 57px);
@@ -82,11 +83,11 @@
       _showNotifications(notifications) {
         if (!this.archive) {
           return notifications.filter(notification => {
-            return notification.timestamp && (Date.now() - notification.timestamp <= 24 * 60 * 60 * 1000)
+            return !notification.read
           })
         } else {
           return notifications.filter(notification => {
-            return notification.timestamp && (Date.now() - notification.timestamp > 24 * 60 * 60 * 1000)
+            return notification.read && notification.timestamp && (Date.now() - notification.timestamp > 24 * 60 * 60 * 1000)
           })
         }
       }
